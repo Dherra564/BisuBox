@@ -1,22 +1,29 @@
 <?php
 
-namespace Aplicacion\Modelo;
+namespace Aplicacion\Modelos;
 
 use DateTime;
+use InvalidArgumentException;
 
 class Sesion
 {
-    
+    // Tipos de usuario permitidos; usar siempre estas constantes, nunca el texto a mano
     public const TIPO_SUPERADMIN = 'SuperAdmin';
     public const TIPO_VENDEDOR = 'Vendedor';
-    public const TIPO_CLIENTE = 'Cliente';
+    public const TIPO_CLIENTE = 'Cliente';   // reservado para cuando existan clientes
+
+    // Tipos que se aceptan por ahora en el modulo 1
+    private const TIPOS_VALIDOS = [
+        self::TIPO_SUPERADMIN,
+        self::TIPO_VENDEDOR,
+    ];
 
     private ?int $idSesion;
     private ?int $idUsuario;
     private ?string $tipoUsuario;
     private DateTime $fechaInicioSesion;
-    private ?DateTime $fechaCierreSesion;   
-    private bool $estado;                   
+    private ?DateTime $fechaCierreSesion;
+    private bool $estado;
 
     public function __construct(
         ?int $idSesion = null,
@@ -28,9 +35,9 @@ class Sesion
     ) {
         $this->idSesion = $idSesion;
         $this->idUsuario = $idUsuario;
-        $this->tipoUsuario = $tipoUsuario;
-        $this->fechaInicioSesion = $fechaInicioSesion ?? new DateTime();  
-        $this->fechaCierreSesion = $fechaCierreSesion;                    
+        $this->setTipoUsuario($tipoUsuario);   // valida tambien al crear el objeto
+        $this->fechaInicioSesion = $fechaInicioSesion ?? new DateTime();
+        $this->fechaCierreSesion = $fechaCierreSesion;
         $this->estado = $estado;
     }
 
@@ -77,8 +84,12 @@ class Sesion
         $this->idUsuario = $idUsuario;
     }
 
+    // Solo acepta los tipos de TIPOS_VALIDOS; cualquier otro texto lanza un error
     public function setTipoUsuario(?string $tipoUsuario): void
     {
+        if ($tipoUsuario !== null && !in_array($tipoUsuario, self::TIPOS_VALIDOS, true)) {
+            throw new InvalidArgumentException('Tipo de usuario no válido: ' . $tipoUsuario);
+        }
         $this->tipoUsuario = $tipoUsuario;
     }
 
