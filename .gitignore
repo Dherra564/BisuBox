@@ -1,0 +1,17 @@
+# Credenciales reales: nunca se suben
+.env
+
+# Dependencias de Composer: cada quien las instala con "composer install"
+vendor/
+
+# Archivos que genera el sistema (se conserva la carpeta con .gitkeep)
+Almacenamiento/Fotos/Perfiles/*
+!Almacenamiento/Fotos/Perfiles/.gitkeep
+Almacenamiento/Registros/*
+!Almacenamiento/Registros/.gitkeep
+
+# Archivos del editor y del sistema operativo
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

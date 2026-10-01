@@ -1,0 +1,19 @@
+{
+    "name": "bisubox/bisubox",
+    "description": "Sistema administrativo para bisutería BisuBox",
+    "type": "project",
+    "require": {
+        "php": ">=8.2",
+        "ext-pdo": "*",
+        "ext-fileinfo": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Aplicacion\\": "Aplicacion/",
+            "Configuracion\\": "Configuracion/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}
