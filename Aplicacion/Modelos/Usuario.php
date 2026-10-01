@@ -11,7 +11,7 @@ class Usuario
     protected ?string $nombreCompleto;
     protected ?string $fotoPerfil;
     protected ?string $correoUsuario;
-    protected ?string $contrasena;          // aquí se guarda el hash, nunca la clave en texto
+    protected ?string $contrasena;        
     protected DateTime $fechaRegistro;
     protected bool $estado;
 
