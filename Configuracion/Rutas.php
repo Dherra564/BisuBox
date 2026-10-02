@@ -1,16 +1,30 @@
 <?php
 
-use Aplicacion\Controladores\AutenticacionControlador;
+
+
+use Aplicacion\Controladores\FotoControlador;
+use Aplicacion\Controladores\InicioControlador;
+use Aplicacion\Controladores\PerfilControlador;
 use Aplicacion\Nucleo\Enrutador;
 
 return function (Enrutador $enrutador): void {
 
-    // Prueba temporal: confirma que el enrutador funciona. Se borra cuando exista el panel de inicio.
-    $enrutador->get('/', function (): void {
-        echo 'BisuBox funcionando';
-    });
+    // Inicio (Damian lo completa con el panel segun el rol)
+    $enrutador->get('/', [InicioControlador::class, 'panel']);
 
-    $enrutador->post('/ingresar', [AutenticacionControlador::class, 'iniciarSesion']);
-    $enrutador->post('/salir', [AutenticacionControlador::class, 'cerrarSesion']);
+    // Prueba temporal de mensajes. Se borra cuando la plantilla este revisada.
+    $enrutador->get('/prueba/mensajes', [InicioControlador::class, 'probarMensajes']);
 
+    // Autenticacion (Damian)
+
+    // Mi perfil (Allison). Hay un solo SuperAdmin: sus datos se editan aqui.
+    $enrutador->get('/perfil', [PerfilControlador::class, 'mostrar']);
+    $enrutador->post('/perfil/actualizar', [PerfilControlador::class, 'actualizar']);
+    $enrutador->get('/perfil/contrasena', [PerfilControlador::class, 'formularioContrasena']);
+    $enrutador->post('/perfil/contrasena', [PerfilControlador::class, 'cambiarContrasena']);
+    $enrutador->get('/fotos/perfil', [FotoControlador::class, 'mostrarPerfil']);
+
+    // Vendedores (Mariana)
+
+    // Sesiones (Damian)
 };

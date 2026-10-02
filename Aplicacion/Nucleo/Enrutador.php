@@ -43,27 +43,31 @@ class Enrutador
     }
 
     
+       // Devuelve la ruta sin la carpeta del proyecto: /BisuBox/Publico/vendedores -> /vendedores
     private function rutaActual(): string
     {
         $ruta = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 
         
-        $carpetaBase = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
-        $carpetaBase = rtrim($carpetaBase, '/');
-
-        if ($carpetaBase !== '' && str_starts_with($ruta, $carpetaBase)) {
-            $ruta = substr($ruta, strlen($carpetaBase));
-        }
+        $carpetaBase = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/');
+        $carpetaProyecto = rtrim(str_replace('\\', '/', dirname($carpetaBase)), '/.');
 
         
-        $carpetaProyecto = rtrim(dirname($carpetaBase), '/');
-        if ($carpetaProyecto !== '' && str_starts_with($ruta, $carpetaProyecto . '/')) {
-            $ruta = substr($ruta, strlen($carpetaProyecto));
+        foreach ([$carpetaBase, $carpetaProyecto] as $prefijo) {
+            if ($prefijo === '') {
+                continue;
+            }
+            if (strcasecmp($ruta, $prefijo) === 0) {
+                return '/';
+            }
+            if (stripos($ruta, $prefijo . '/') === 0) {
+                $ruta = substr($ruta, strlen($prefijo));
+                break;
+            }
         }
 
         return $this->normalizar($ruta);
     }
-
     
     private function normalizar(string $ruta): string
     {

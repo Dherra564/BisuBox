@@ -1,0 +1,840 @@
+/*
+ * Estilos de BisuBox, segun los wireframes v2.
+ * Los colores, fuentes y medidas estan en variables: para cambiar el diseño, cambiar solo esta parte.
+ * Mariana completa los componentes que falten (modal, etc.) usando estas mismas variables.
+ */
+/* Fuentes guardadas en el proyecto (Publico/fuentes): funcionan sin internet. Licencia SIL Open Font. */
+@font-face {
+    font-family: "Figtree";
+    src: url("../fuentes/figtree400.woff2") format("woff2");
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Figtree";
+    src: url("../fuentes/figtree500.woff2") format("woff2");
+    font-weight: 500;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Figtree";
+    src: url("../fuentes/figtree600.woff2") format("woff2");
+    font-weight: 600;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Figtree";
+    src: url("../fuentes/figtree700.woff2") format("woff2");
+    font-weight: 700;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Fraunces";
+    src: url("../fuentes/fraunces.woff2") format("woff2");
+    font-weight: 100 900;
+    font-display: swap;
+}
+
+:root {
+    /* Verdes */
+    --colorMenu: #284f0b;              /* fondo del menu lateral y barra en celular */
+    --colorMenuActivo: #3d6b1c;        /* opcion activa del menu */
+    --colorPrincipal: #3b6d13;         /* botones, enlaces */
+    --colorPrincipalOscuro: #2c540d;
+    --colorTitulo: #2a5410;            /* titulos y encabezados de tabla */
+    --colorFondo: #f4f7ef;             /* fondo de las paginas */
+    --colorFondoInicio: #e8f1dd;       /* fondo de la pantalla de inicio de sesion */
+    --colorVerdeClaro: #e7f0db;        /* encabezado de tablas, cajas informativas */
+    --colorSuperficie: #ffffff;
+    --colorTexto: #1f2a17;
+    --colorTextoSuave: #5c6653;
+    --colorBorde: #dfe6d5;
+    --colorBordeCampo: #cfd8c2;
+
+    /* Estados */
+    --colorExito: #2f6b12;
+    --colorExitoFondo: #e7f0db;
+    --colorError: #9b1c1c;
+    --colorErrorFondo: #fbe4e2;
+    --colorErrorBorde: #efb4ae;
+    --colorAdvertencia: #7a4b00;
+    --colorAdvertenciaFondo: #fdeccb;
+    --colorAdvertenciaBorde: #f0cf8f;
+
+    /* Formas y fuentes */
+    --radio: 12px;
+    --radioCampo: 8px;
+    --fuente: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --fuenteTitulos: "Fraunces", Georgia, "Times New Roman", serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: var(--fuente);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--colorTexto);
+    background: var(--colorFondo);
+}
+
+a {
+    color: var(--colorTitulo);
+}
+
+h1, h2, h3 {
+    color: var(--colorTitulo);
+}
+
+/* ---------- Estructura: menu lateral + zona principal ---------- */
+.aplicacion {
+    display: flex;
+    min-height: 100vh;
+}
+
+.menuLateral {
+    width: 242px;
+    flex-shrink: 0;
+    padding: 24px 16px;
+    background: var(--colorMenu);
+    color: #ffffff;
+}
+
+.logo {
+    display: block;
+    margin: 4px 14px 28px;
+    font-family: var(--fuenteTitulos);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.menuLateral ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.menuLateral li a,
+.menuLateral li span {
+    display: block;
+    padding: 9px 12px;
+    margin-bottom: 2px;
+    border-radius: 8px;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.menuLateral li a:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.menuLateral li a.activo {
+    background: var(--colorMenuActivo);
+    font-weight: 600;
+}
+
+.menuSeccion {
+    margin: 28px 12px 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.menuProximas li span {
+    color: rgba(255, 255, 255, 0.55);
+    cursor: default;
+}
+
+.zonaPrincipal {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ---------- Barra superior ---------- */
+.barraSuperior {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 66px;
+    padding: 0 32px;
+    background: var(--colorSuperficie);
+    border-bottom: 1px solid var(--colorBorde);
+}
+
+.nombreNegocio {
+    color: var(--colorTextoSuave);
+}
+
+.botonMenu,
+.logoCelular {
+    display: none;
+}
+
+.usuarioActual {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.nombreUsuario {
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.nombreUsuario:hover {
+    text-decoration: underline;
+}
+
+/* ---------- Contenido ---------- */
+.contenido {
+    flex: 1;
+    padding: 28px 32px 40px;
+    max-width: 1200px;
+    width: 100%;
+}
+
+.encabezadoPagina {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.tituloPagina {
+    margin: 0;
+    font-family: var(--fuenteTitulos);
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.subtitulo {
+    margin: 4px 0 0;
+    color: var(--colorTextoSuave);
+}
+
+.textoAyuda {
+    margin: 6px 0 0;
+    font-size: 0.85rem;
+    color: var(--colorTextoSuave);
+}
+
+/* ---------- Mensajes ---------- */
+.alerta {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 18px;
+    margin-bottom: 16px;
+    border-radius: var(--radio);
+    border: 1px solid transparent;
+}
+
+.alerta p {
+    margin: 0;
+    flex: 1;
+}
+
+.alertaIcono {
+    font-weight: 700;
+}
+
+.alertaCerrar {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    line-height: 1;
+    cursor: pointer;
+    color: inherit;
+}
+
+.alertaExito {
+    background: var(--colorExitoFondo);
+    color: var(--colorExito);
+    border-color: #c5d9ae;
+}
+
+.alertaError {
+    background: var(--colorErrorFondo);
+    color: var(--colorError);
+    border-color: var(--colorErrorBorde);
+}
+
+.alertaAdvertencia {
+    background: var(--colorAdvertenciaFondo);
+    color: var(--colorAdvertencia);
+    border-color: var(--colorAdvertenciaBorde);
+}
+
+/* Caja informativa verde (como la de "Sugerido" en Faltantes) */
+.cajaInformativa {
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    border-radius: var(--radio);
+    background: var(--colorVerdeClaro);
+    border: 1px solid #c5d9ae;
+}
+
+/* ---------- Tarjetas ---------- */
+.tarjetas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.tarjeta {
+    background: var(--colorSuperficie);
+    border: 1px solid var(--colorBorde);
+    border-radius: var(--radio);
+    padding: 20px 22px;
+}
+
+.tarjeta h2 {
+    margin: 0 0 12px;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.tarjeta p {
+    margin: 0;
+}
+
+/* Tarjeta de numero (como "Artículos activos 124") */
+.tarjetaDato h2 {
+    margin: 0 0 4px;
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: var(--colorTextoSuave);
+}
+
+.tarjetaNumero {
+    font-family: var(--fuenteTitulos);
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--colorTitulo);
+}
+
+.tarjetaAdvertencia {
+    border-color: var(--colorAdvertenciaBorde);
+}
+
+.tarjetaAdvertencia .tarjetaNumero {
+    color: #8a4b07;
+}
+
+.tarjetaError {
+    border-color: var(--colorErrorBorde);
+}
+
+.tarjetaError .tarjetaNumero {
+    color: var(--colorError);
+}
+
+/* ---------- Botones ---------- */
+.boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 11px 20px;
+    border-radius: var(--radioCampo);
+    border: 1px solid var(--colorPrincipal);
+    background: var(--colorPrincipal);
+    color: #ffffff;
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.boton:hover {
+    background: var(--colorPrincipalOscuro);
+}
+
+.botonSecundario {
+    background: var(--colorSuperficie);
+    color: var(--colorTitulo);
+}
+
+.botonSecundario:hover {
+    background: var(--colorVerdeClaro);
+}
+
+.botonPeligro {
+    background: var(--colorError);
+    border-color: var(--colorError);
+}
+
+.botonPeligro:hover {
+    background: #7d1515;
+}
+
+.botonPequeno {
+    padding: 7px 16px;
+    font-weight: 500;
+}
+
+.botonCompleto {
+    width: 100%;
+}
+
+.grupoBotones {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ---------- Formularios ---------- */
+.formularioSeccion {
+    background: var(--colorSuperficie);
+    border: 1px solid var(--colorBorde);
+    border-radius: var(--radio);
+    padding: 20px 22px;
+    margin-bottom: 16px;
+}
+
+.formularioSeccion h2 {
+    margin: 0 0 14px;
+    font-size: 1.05rem;
+}
+
+.filaCampos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0 14px;
+}
+
+.campo {
+    margin-bottom: 14px;
+}
+
+.campo label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.campo .obligatorio {
+    color: var(--colorError);
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+    width: 100%;
+    padding: 10px 12px;
+    font: inherit;
+    color: var(--colorTexto);
+    border: 1px solid var(--colorBordeCampo);
+    border-radius: var(--radioCampo);
+    background: var(--colorSuperficie);
+}
+
+.campo input[readonly] {
+    background: var(--colorVerdeClaro);
+    color: var(--colorTextoSuave);
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
+    outline: 2px solid var(--colorPrincipal);
+    outline-offset: 1px;
+}
+
+.campoConError input,
+.campoConError select,
+.campoConError textarea {
+    border-color: var(--colorError);
+}
+
+.errorCampo {
+    margin: 6px 0 0;
+    color: var(--colorError);
+    font-size: 0.85rem;
+}
+
+/* Zona para subir foto (borde punteado verde) */
+.zonaFoto {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 200px;
+    padding: 20px;
+    border: 2px dashed #b9d29d;
+    border-radius: var(--radio);
+    text-align: center;
+    color: var(--colorTextoSuave);
+}
+
+/* ---------- Tablas ---------- */
+.tablaContenedor {
+    background: var(--colorSuperficie);
+    border: 1px solid var(--colorBorde);
+    border-radius: var(--radio);
+    overflow-x: auto;
+}
+
+.tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla th {
+    padding: 12px 14px;
+    background: var(--colorVerdeClaro);
+    color: var(--colorTitulo);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.tabla td {
+    padding: 12px 14px;
+    border-top: 1px solid var(--colorBorde);
+}
+
+.tabla .numero {
+    text-align: right;
+}
+
+.tabla .acciones {
+    white-space: nowrap;
+}
+
+.tabla .acciones a,
+.tabla .acciones button {
+    margin-right: 10px;
+    font-weight: 600;
+}
+
+/* Boton que se ve como enlace (para acciones POST dentro de tablas) */
+.botonEnlace {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: var(--colorTitulo);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.paginacion {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+    color: var(--colorTextoSuave);
+}
+
+/* ---------- Etiquetas de estado ---------- */
+.etiqueta {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.etiquetaActivo,
+.etiquetaNormal,
+.etiquetaRol {
+    background: var(--colorVerdeClaro);
+    color: var(--colorExito);
+}
+
+.etiquetaBajo {
+    background: var(--colorAdvertenciaFondo);
+    color: var(--colorAdvertencia);
+}
+
+.etiquetaAgotado {
+    background: var(--colorErrorFondo);
+    color: var(--colorError);
+}
+
+.etiquetaInactivo {
+    background: #ececea;
+    color: #55574f;
+}
+
+/* ---------- Listas con filtros (Vendedores) y Mi perfil ---------- */
+.filtros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0 14px;
+    margin-bottom: 16px;
+    padding: 16px 18px 2px;
+    background: var(--colorSuperficie);
+    border: 1px solid var(--colorBorde);
+    border-radius: var(--radio);
+}
+
+.filtros .campo:first-child {
+    flex: 1 1 260px;
+}
+
+.filtros .campo {
+    flex: 0 1 180px;
+}
+
+.filtrosBotones {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.estadoVacio {
+    padding: 40px 20px;
+    background: var(--colorSuperficie);
+    border: 1px dashed var(--colorBordeCampo);
+    border-radius: var(--radio);
+    text-align: center;
+    color: var(--colorTextoSuave);
+}
+
+.formularioEnLinea {
+    display: inline;
+}
+
+/* Formulario a la izquierda y foto a la derecha */
+.disenoFormulario {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+.fotoPerfilGrande {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--colorVerdeClaro);
+    background: var(--colorVerdeClaro);
+}
+
+/* El input de archivo queda oculto; se usa el boton (label) que esta encima */
+.campoArchivo {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+}
+
+.zonaFoto:focus-within .boton {
+    outline: 2px solid var(--colorPrincipal);
+    outline-offset: 2px;
+}
+
+.nombreArchivo {
+    font-size: 0.85rem;
+    color: var(--colorTextoSuave);
+    word-break: break-all;
+}
+
+.accionesFormulario {
+    justify-content: flex-end;
+}
+
+.listaDatos {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 10px 24px;
+    margin: 0 0 20px;
+}
+
+.listaDatos dt {
+    font-weight: 600;
+    color: var(--colorTextoSuave);
+}
+
+.listaDatos dd {
+    margin: 0;
+    word-break: break-word;
+}
+
+.textoCentrado {
+    text-align: center;
+}
+
+.formularioAngosto {
+    max-width: 520px;
+}
+
+/* ---------- Pantalla de inicio de sesion (Damian) ---------- */
+.paginaAcceso {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    background: var(--colorFondoInicio);
+}
+
+.tarjetaAcceso {
+    width: 100%;
+    max-width: 440px;
+    padding: 40px;
+    background: var(--colorSuperficie);
+    border: 1px solid var(--colorBorde);
+    border-radius: 16px;
+}
+
+.tarjetaAcceso .logo {
+    margin: 0 0 20px;
+    color: var(--colorTitulo);
+}
+
+/* ---------- Celular ---------- */
+@media (max-width: 768px) {
+    .menuLateral {
+        display: none;
+        position: fixed;
+        top: 60px;
+        left: 0;
+        bottom: 0;
+        z-index: 20;
+        overflow-y: auto;
+    }
+
+    .menuLateral.abierto {
+        display: block;
+    }
+
+    .menuLateral .logo {
+        display: none;
+    }
+
+    .barraSuperior {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        height: 60px;
+        padding: 0 16px;
+        background: var(--colorMenu);
+        border-bottom: none;
+    }
+
+    .botonMenu {
+        display: block;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #ffffff;
+        cursor: pointer;
+    }
+
+    .logoCelular {
+        display: block;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: var(--fuenteTitulos);
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+    .nombreNegocio,
+    .usuarioActual {
+        display: none;
+    }
+
+    .contenido {
+        padding: 20px 16px 32px;
+    }
+
+    .tituloPagina {
+        font-size: 1.6rem;
+    }
+
+    /* Tablas como tarjetas: cada <td> necesita data-etiqueta="Nombre de la columna" */
+    .tablaContenedor {
+        background: none;
+        border: none;
+    }
+
+    .tabla thead {
+        display: none;
+    }
+
+    .tabla tr {
+        display: block;
+        margin-bottom: 12px;
+        padding: 14px 16px;
+        background: var(--colorSuperficie);
+        border: 1px solid var(--colorBorde);
+        border-radius: var(--radio);
+    }
+
+    .tabla td {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 4px 0;
+        border: none;
+        text-align: right;
+    }
+
+    .tabla td::before {
+        content: attr(data-etiqueta);
+        font-weight: 600;
+        color: var(--colorTextoSuave);
+        text-align: left;
+    }
+
+    .disenoFormulario {
+        grid-template-columns: 1fr;
+    }
+
+    /* En celular la foto va primero */
+    .disenoFormulario > aside {
+        order: -1;
+    }
+
+    .filtros .campo,
+    .filtrosBotones {
+        flex: 1 1 100%;
+    }
+
+    .listaDatos {
+        grid-template-columns: 1fr;
+        gap: 2px;
+    }
+
+    .listaDatos dd {
+        margin-bottom: 10px;
+    }
+
+    .accionesFormulario .boton {
+        flex: 1;
+        text-align: center;
+    }
+}

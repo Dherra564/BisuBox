@@ -11,7 +11,7 @@ class Usuario
     protected ?string $nombreCompleto;
     protected ?string $fotoPerfil;
     protected ?string $correoUsuario;
-    protected ?string $contrasena;        
+    protected ?string $contrasena;          
     protected DateTime $fechaRegistro;
     protected bool $estado;
 
@@ -35,7 +35,7 @@ class Usuario
         $this->estado = $estado;
     }
 
-    // Getters
+    
     public function getIdUsuario(): ?int
     {
         return $this->idUsuario;
@@ -76,8 +76,7 @@ class Usuario
         return $this->estado;
     }
 
-    // Setters
-    // El id sí tiene setter porque el repositorio se lo asigna al guardar
+    
     public function setIdUsuario(?int $idUsuario): void
     {
         $this->idUsuario = $idUsuario;
