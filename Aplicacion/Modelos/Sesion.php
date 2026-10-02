@@ -7,12 +7,12 @@ use InvalidArgumentException;
 
 class Sesion
 {
-    // Tipos de usuario permitidos; usar siempre estas constantes, nunca el texto a mano
+    
     public const TIPO_SUPERADMIN = 'SuperAdmin';
     public const TIPO_VENDEDOR = 'Vendedor';
-    public const TIPO_CLIENTE = 'Cliente';   // reservado para cuando existan clientes
+    public const TIPO_CLIENTE = 'Cliente';   
 
-    // Tipos que se aceptan por ahora en el modulo 1
+    
     private const TIPOS_VALIDOS = [
         self::TIPO_SUPERADMIN,
         self::TIPO_VENDEDOR,
@@ -35,13 +35,13 @@ class Sesion
     ) {
         $this->idSesion = $idSesion;
         $this->idUsuario = $idUsuario;
-        $this->setTipoUsuario($tipoUsuario);   // valida tambien al crear el objeto
+        $this->setTipoUsuario($tipoUsuario);   
         $this->fechaInicioSesion = $fechaInicioSesion ?? new DateTime();
         $this->fechaCierreSesion = $fechaCierreSesion;
         $this->estado = $estado;
     }
 
-    // Getters
+    
     public function getIdSesion(): ?int
     {
         return $this->idSesion;
@@ -72,8 +72,7 @@ class Sesion
         return $this->estado;
     }
 
-    // Setters
-    // El id tiene setter porque el repositorio se lo asigna al guardar
+    
     public function setIdSesion(?int $idSesion): void
     {
         $this->idSesion = $idSesion;
@@ -84,7 +83,7 @@ class Sesion
         $this->idUsuario = $idUsuario;
     }
 
-    // Solo acepta los tipos de TIPOS_VALIDOS; cualquier otro texto lanza un error
+
     public function setTipoUsuario(?string $tipoUsuario): void
     {
         if ($tipoUsuario !== null && !in_array($tipoUsuario, self::TIPOS_VALIDOS, true)) {
