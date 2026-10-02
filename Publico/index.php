@@ -2,11 +2,15 @@
 
 
 use Aplicacion\Nucleo\Enrutador;
+use Aplicacion\Nucleo\ManejadorSesion;
 use Configuracion\Configuracion;
+use Throwable;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 try {
+    ManejadorSesion::arrancar();
+    ManejadorSesion::enviarEncabezadosSinCache();
     Configuracion::cargar();
 
     $enrutador = new Enrutador();

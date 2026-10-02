@@ -7,10 +7,9 @@ use InvalidArgumentException;
 
 class Sesion
 {
-    // Tipos de usuario permitidos; usar siempre estas constantes, nunca el texto a mano
     public const TIPO_SUPERADMIN = 'SuperAdmin';
     public const TIPO_VENDEDOR = 'Vendedor';
-    public const TIPO_CLIENTE = 'Cliente';   // reservado para cuando existan clientes
+    public const TIPO_CLIENTE = 'Cliente';
 
     // Tipos que se aceptan por ahora en el modulo 1
     private const TIPOS_VALIDOS = [

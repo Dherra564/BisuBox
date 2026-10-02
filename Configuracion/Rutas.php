@@ -1,6 +1,6 @@
 <?php
 
-
+use Aplicacion\Controladores\AutenticacionControlador;
 use Aplicacion\Nucleo\Enrutador;
 
 return function (Enrutador $enrutador): void {
@@ -9,5 +9,8 @@ return function (Enrutador $enrutador): void {
     $enrutador->get('/', function (): void {
         echo 'BisuBox funcionando';
     });
+
+    $enrutador->post('/ingresar', [AutenticacionControlador::class, 'iniciarSesion']);
+    $enrutador->post('/salir', [AutenticacionControlador::class, 'cerrarSesion']);
 
 };
