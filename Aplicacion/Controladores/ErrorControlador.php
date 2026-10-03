@@ -5,11 +5,7 @@ namespace Aplicacion\Controladores;
 use Aplicacion\Nucleo\UsuarioActual;
 use Configuracion\Configuracion;
 
-/**
- * Páginas de error: 403, 404, 405 y 500.
- * Los métodos son estáticos para poder llamarlos desde cualquier parte
- * (Enrutador, Permiso, index.php) sin crear el controlador.
- */
+
 class ErrorControlador
 {
     public static function noEncontrado(): never
@@ -27,7 +23,7 @@ class ErrorControlador
         self::mostrar(405, 'Acción no permitida', 'Esta dirección no acepta esa acción. Vuelva al inicio e intente de nuevo.');
     }
 
-    // $detalle solo se muestra en modo desarrollo
+
     public static function errorInterno(?string $detalle = null): never
     {
         self::mostrar(
@@ -49,7 +45,6 @@ class ErrorControlador
         exit;
     }
 
-    // Si la configuración no cargó (por ejemplo, falta el .env), se deduce de la URL actual
     private static function urlBase(): string
     {
         $url = Configuracion::obtener('appUrl');

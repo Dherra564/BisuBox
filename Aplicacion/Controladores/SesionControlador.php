@@ -7,12 +7,10 @@ use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Repositorios\SesionRepositorio;
 use Configuracion\Configuracion;
 
-/**
- * Historial de sesiones: quién ingresó al sistema y cuándo. Solo para el SuperAdmin.
- */
+
 class SesionControlador
 {
-    // GET /sesiones
+    
     public function listar(): void
     {
         Permiso::exigir('sesiones.ver');

@@ -9,11 +9,8 @@ use Aplicacion\Nucleo\Enrutador;
 
 return function (Enrutador $enrutador): void {
 
-    // Inicio (Damian lo completa con el panel segun el rol)
     $enrutador->get('/', [InicioControlador::class, 'panel']);
 
-
-    // Autenticacion (Damian)
     $enrutador->get('/ingresar', [AutenticacionControlador::class, 'mostrarLogin']);
     $enrutador->post('/ingresar', [AutenticacionControlador::class, 'iniciarSesion']);
     $enrutador->post('/salir', [AutenticacionControlador::class, 'cerrarSesion']);

@@ -7,12 +7,10 @@ use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Repositorios\UsuarioRepositorio;
 use Configuracion\Configuracion;
 
-/**
- * Página de inicio (panel). Muestra lo que corresponde al rol del usuario conectado.
- */
+
 class InicioControlador
 {
-    // GET /
+    
     public function panel(): void
     {
         Permiso::exigir('panel.ver');

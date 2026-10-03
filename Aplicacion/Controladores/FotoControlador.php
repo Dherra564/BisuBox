@@ -29,7 +29,7 @@ class FotoControlador
         readfile($ruta);
     }
 
-    // Circulo gris con una silueta, dibujado en SVG: no necesita ningun archivo de imagen
+   
     private function mostrarAvatarPorDefecto(): void
     {
         header('Content-Type: image/svg+xml');

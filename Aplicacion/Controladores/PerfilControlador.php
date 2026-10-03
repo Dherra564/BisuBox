@@ -25,7 +25,7 @@ class PerfilControlador
         $this->usuario            = $this->cargarUsuarioActual();
     }
 
-    // GET /perfil
+    
     public function mostrar(): void
     {
         $this->mostrarPerfil([
@@ -35,7 +35,7 @@ class PerfilControlador
         ], []);
     }
 
-    // POST /perfil/actualizar
+
     public function actualizar(): void
     {
         $this->verificarCsrf('/perfil');
@@ -43,7 +43,7 @@ class PerfilControlador
         $leer              = fn(string $campo): string => is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
         $puedeEditarAcceso = UsuarioActual::esSuperAdmin();
 
-        // El Vendedor solo cambia nombre y foto; su identificacion y correo los cambia el SuperAdmin
+        
         $datos = [
             'numeroIdentificacion' => $puedeEditarAcceso
                 ? strtoupper($leer('numeroIdentificacion'))
@@ -97,7 +97,7 @@ class PerfilControlador
     {
         $this->verificarCsrf('/perfil/contrasena');
 
-        // Las contrasenas no se recortan: los espacios pueden ser parte de ellas
+        
         $leer      = fn(string $campo): string => is_string($_POST[$campo] ?? null) ? $_POST[$campo] : '';
         $actual    = $leer('contrasenaActual');
         $nueva     = $leer('contrasenaNueva');
@@ -137,12 +137,12 @@ class PerfilControlador
 
     private function cargarUsuarioActual(): Usuario
     {
-        // Exige sesión iniciada, no expirada y con permiso para ver el perfil
+        
         Permiso::exigir('perfil.ver');
 
         $usuario = $this->usuarioRepositorio->buscarPorId((int) UsuarioActual::id());
         if ($usuario === null || ! $usuario->getEstado()) {
-            // La cuenta se borró o se desactivó mientras estaba conectado
+            
             $idSesionBd = ManejadorSesion::obtenerIdSesionBd();
             if ($idSesionBd !== null) {
                 (new SesionRepositorio())->cerrarPorId($idSesionBd);

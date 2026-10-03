@@ -17,7 +17,6 @@ class AutenticacionControlador
     private const MENSAJE_FALLO       = 'Correo o contraseña incorrectos';
     private const MENSAJE_DESACTIVADA = 'Su cuenta está desactivada. Comuníquese con el administrador.';
 
-    // POST /ingresar
     public function iniciarSesion(): void
     {
         // 1. Token CSRF
@@ -62,8 +61,7 @@ class AutenticacionControlador
         ManejadorSesion::regenerarId();
 
         $repositorioSesion = new SesionRepositorio();
-        // Opcional: cierra sesiones viejas que quedaron abiertas (por ejemplo, si cerró el navegador)
-        // $repositorioSesion->cerrarTodasDeUsuario($usuario->getIdUsuario());
+        $repositorioSesion->cerrarTodasDeUsuario($usuario->getIdUsuario());
 
         $sesion = new Sesion(
             idUsuario: $usuario->getIdUsuario(),
@@ -78,7 +76,7 @@ class AutenticacionControlador
         $this->redirigir('/');
     }
 
-    // POST /salir
+    
     public function cerrarSesion(): void
     {
         if (! Csrf::esValido()) {
@@ -106,7 +104,7 @@ class AutenticacionControlador
             return ['tipo' => Sesion::TIPO_SUPERADMIN, 'activo' => $superAdmin->getEstadoSuperAdmin()];
         }
 
-        $vendedor = (new VendedorRepositorio())->buscarPorIdUsuario($idUsuario); // ASUMIDO (es de Mariana)
+        $vendedor = (new VendedorRepositorio())->buscarPorIdUsuario($idUsuario); 
         if ($vendedor !== null) {
             return ['tipo' => Sesion::TIPO_VENDEDOR, 'activo' => $vendedor->getEstadoVendedor()];
         }
@@ -126,10 +124,10 @@ class AutenticacionControlador
         require Configuracion::rutaBase() . '/Aplicacion/Vistas/' . $vista . '.php';
     }
 
-    // GET /ingresar
+    
     public function mostrarLogin(): void
     {
-        // Si ya inició sesión, no tiene sentido ver el login
+        
         if (UsuarioActual::haySesion()) {
             $this->redirigir('/');
         }
