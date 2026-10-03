@@ -70,7 +70,9 @@ class Permiso
 
         UsuarioActual::cerrar();
         ManejadorSesion::destruir();
+        // Sesión nueva y vacía, con su propia cookie, solo para mostrar el aviso en el login
         ManejadorSesion::arrancar();
+        ManejadorSesion::regenerarId();
 
         Mensaje::advertencia('Su sesión se cerró por inactividad. Ingrese de nuevo.');
         self::redirigir('/ingresar');

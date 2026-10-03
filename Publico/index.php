@@ -8,16 +8,11 @@ use Configuracion\Configuracion;
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 try {
-    ManejadorSesion::arrancar();
-    ManejadorSesion::enviarEncabezadosSinCache();
     Configuracion::cargar();
 
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start([
-            'cookie_httponly' => true,
-            'cookie_samesite' => 'Lax',
-        ]);
-    }
+    // La sesión se arranca después de cargar la configuración, para que sus errores vayan al registro
+    ManejadorSesion::arrancar();
+    ManejadorSesion::enviarEncabezadosSinCache();
 
     $enrutador = new Enrutador();
     $registrarRutas = require dirname(__DIR__) . '/Configuracion/Rutas.php';

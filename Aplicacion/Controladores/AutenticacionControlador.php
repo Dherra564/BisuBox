@@ -71,7 +71,7 @@ class AutenticacionControlador
 
         ManejadorSesion::guardarIdSesionBd($sesion->getIdSesion());
         ManejadorSesion::registrarActividad();
-        UsuarioActual::iniciar($usuario->getIdUsuario(), $rol['tipo'], $usuario->getNombreCompleto()); // ASUMIDO
+        UsuarioActual::iniciar($usuario->getIdUsuario(), $rol['tipo'], $usuario->getNombreCompleto(), $usuario->getFotoPerfil());
 
         $this->redirigir('/');
     }
@@ -91,6 +91,10 @@ class AutenticacionControlador
 
         UsuarioActual::cerrar();
         ManejadorSesion::destruir();
+        // Sesión nueva y vacía, con su propia cookie, solo para mostrar el mensaje en el login
+        ManejadorSesion::arrancar();
+        ManejadorSesion::regenerarId();
+        Mensaje::exito('Sesión cerrada correctamente');
 
         ManejadorSesion::arrancar();
         Mensaje::exito('Sesión cerrada correctamente');

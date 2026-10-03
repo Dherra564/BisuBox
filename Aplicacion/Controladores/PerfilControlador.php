@@ -83,7 +83,8 @@ class PerfilControlador
             SubidaArchivo::eliminarFotoPerfil($fotoAnterior);
         }
         UsuarioActual::actualizarNombre($this->usuario->getNombreCompleto());
-
+        UsuarioActual::actualizarFoto($this->usuario->getFotoPerfil());
+        
         Mensaje::exito('Perfil actualizado correctamente');
         $this->redirigir('/perfil');
     }

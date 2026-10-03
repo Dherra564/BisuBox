@@ -4,6 +4,7 @@ namespace Aplicacion\Controladores;
 
 use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\SubidaArchivo;
+use Configuracion\Configuracion;
 use finfo;
 
 
@@ -29,14 +30,18 @@ class FotoControlador
         readfile($ruta);
     }
 
-   
+    // Imagen para quien no tiene foto: Publico/imagenes/avatarPorDefecto.jpg
     private function mostrarAvatarPorDefecto(): void
     {
-        header('Content-Type: image/svg+xml');
-        echo '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">'
-            . '<circle cx="50" cy="50" r="50" fill="#d9d9de"/>'
-            . '<circle cx="50" cy="40" r="17" fill="#ffffff"/>'
-            . '<path d="M20 84c4-16 17-25 30-25s26 9 30 25" fill="#ffffff"/>'
-            . '</svg>';
+        $ruta = Configuracion::rutaBase() . '/Publico/imagenes/avatarPorDefecto.jpg';
+        if (!is_file($ruta)) {
+            error_log("No existe el avatar por defecto: {$ruta}");
+            http_response_code(404);
+            return;
+        }
+
+        header('Content-Type: image/jpeg');
+        header('Content-Length: ' . filesize($ruta));
+        readfile($ruta);
     }
 }
