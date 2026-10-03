@@ -2,6 +2,7 @@
 
 namespace Aplicacion\Controladores;
 
+use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\SubidaArchivo;
 use Configuracion\Configuracion;
 use finfo;
@@ -11,7 +12,7 @@ class FotoControlador
 {
     public function mostrarPerfil(): void
     {
-        // Pendiente (Damian): cuando exista el inicio de sesion, permitir esto solo a usuarios con sesion
+        Permiso::exigirSesion();
 
         $nombre = is_string($_GET['archivo'] ?? null) ? $_GET['archivo'] : '';
         $ruta = SubidaArchivo::rutaFotoPerfil($nombre);

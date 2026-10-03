@@ -56,7 +56,6 @@
     --colorSuperficie: #ffffff;
     --colorTexto: #36403c;
     --colorTextoSuave: #63706b;
-    --colorTextoClaro: #ffffff;        /* texto sobre botones oscuros (peligro) */
     --colorBorde: #dbe6e1;
     --colorBordeCampo: #c9d9d1;
     --colorBordeFoto: #a9dbc4;         /* borde punteado de la zona para subir foto */
@@ -125,7 +124,7 @@ h1, h2, h3 {
     font-family: var(--fuenteTitulos);
     font-size: 1.75rem;
     font-weight: 700;
-    color: var(--colorTextoClaro);
+    color: var(--colorTextoSobrePrincipal);
     text-decoration: none;
 }
 
@@ -141,7 +140,7 @@ h1, h2, h3 {
     padding: 9px 12px;
     margin-bottom: 2px;
     border-radius: 8px;
-    color: var(--colorTextoClaro);
+    color: var(--colorTextoSobrePrincipal);
     text-decoration: none;
 }
 
@@ -369,7 +368,7 @@ h1, h2, h3 {
     border-radius: var(--radioCampo);
     border: 1px solid var(--colorPrincipal);
     background: var(--colorPrincipal);
-    color: var(--colorTextoClaro);
+    color: var(--colorTextoSobrePrincipal);
     font: inherit;
     font-weight: 600;
     text-decoration: none;
@@ -661,7 +660,7 @@ h1, h2, h3 {
 }
 
 .zonaFoto:focus-within .boton {
-    outline: 2px solid var(--colorPrincipal);
+    outline: 2px solid var(--colorFoco);
     outline-offset: 2px;
 }
 
@@ -770,7 +769,7 @@ h1, h2, h3 {
 
 .paginacionEnlaces .paginaActual {
     background: var(--colorPrincipal);
-    color: var(--colorTextoClaro);
+    color: var(--colorTextoSobrePrincipal);
 }
 
 .paginacionEnlaces .paginaSeparador {
@@ -866,7 +865,7 @@ h1, h2, h3 {
         background: none;
         border: none;
         font-size: 1.5rem;
-        color: var(--colorTextoClaro);
+        color: var(--colorTextoSobrePrincipal);
         cursor: pointer;
     }
 
@@ -878,7 +877,7 @@ h1, h2, h3 {
         font-family: var(--fuenteTitulos);
         font-size: 1.4rem;
         font-weight: 700;
-        color: var(--colorTextoClaro);
+        color: var(--colorTextoSobrePrincipal);
         text-decoration: none;
     }
 
@@ -957,4 +956,9 @@ h1, h2, h3 {
         flex: 1;
         text-align: center;
     }
+
+    .formularioSalir {
+    display: inline;
+    margin: 0;
+}
 }

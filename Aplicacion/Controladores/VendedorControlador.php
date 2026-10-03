@@ -6,7 +6,7 @@ use Aplicacion\Modelos\Vendedor;
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\Mensaje;
 use Aplicacion\Nucleo\SubidaArchivo;
-use Aplicacion\Nucleo\UsuarioActual;
+use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\Validador;
 use Aplicacion\Repositorios\UsuarioRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
@@ -25,7 +25,7 @@ class VendedorControlador
 
     public function __construct()
     {
-        $this->verificarAcceso();
+        Permiso::exigir('vendedores.gestionar');
         $this->vendedorRepositorio = new VendedorRepositorio();
         $this->usuarioRepositorio = new UsuarioRepositorio();
     }
@@ -212,19 +212,6 @@ class VendedorControlador
 
         Mensaje::exito($activo ? 'El vendedor fue activado' : 'El vendedor fue desactivado');
         $this->redirigir($this->rutaDeRegreso($vendedor));
-    }
-
-    // Pendiente (Damian): reemplazar esta revisión por su clase Permiso cuando exista
-    private function verificarAcceso(): void
-    {
-        if (!UsuarioActual::haySesion()) {
-            Mensaje::advertencia('Inicie sesión para continuar.');
-            $this->redirigir('/');
-        }
-        if (!UsuarioActual::esSuperAdmin()) {
-            Mensaje::error('No tiene permiso para ver esta página.');
-            $this->redirigir('/');
-        }
     }
 
     // Busca el vendedor por el id recibido; si no existe, vuelve a la lista con un mensaje

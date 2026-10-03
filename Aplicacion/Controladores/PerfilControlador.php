@@ -1,17 +1,18 @@
 <?php
-
 namespace Aplicacion\Controladores;
 
 use Aplicacion\Modelos\Usuario;
 use Aplicacion\Nucleo\Csrf;
+use Aplicacion\Nucleo\ManejadorSesion;
 use Aplicacion\Nucleo\Mensaje;
+use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\SubidaArchivo;
 use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Nucleo\Validador;
+use Aplicacion\Repositorios\SesionRepositorio;
 use Aplicacion\Repositorios\UsuarioRepositorio;
 use Configuracion\Configuracion;
 use Throwable;
-
 
 class PerfilControlador
 {
@@ -21,7 +22,7 @@ class PerfilControlador
     public function __construct()
     {
         $this->usuarioRepositorio = new UsuarioRepositorio();
-        $this->usuario = $this->cargarUsuarioActual();
+        $this->usuario            = $this->cargarUsuarioActual();
     }
 
     // GET /perfil
@@ -29,8 +30,8 @@ class PerfilControlador
     {
         $this->mostrarPerfil([
             'numeroIdentificacion' => $this->usuario->getNumeroIdentificacion(),
-            'nombreCompleto' => $this->usuario->getNombreCompleto(),
-            'correoUsuario' => $this->usuario->getCorreoUsuario(),
+            'nombreCompleto'       => $this->usuario->getNombreCompleto(),
+            'correoUsuario'        => $this->usuario->getCorreoUsuario(),
         ], []);
     }
 
@@ -39,7 +40,7 @@ class PerfilControlador
     {
         $this->verificarCsrf('/perfil');
 
-        $leer = fn (string $campo): string => is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
+        $leer              = fn(string $campo): string => is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
         $puedeEditarAcceso = UsuarioActual::esSuperAdmin();
 
         // El Vendedor solo cambia nombre y foto; su identificacion y correo los cambia el SuperAdmin
@@ -47,15 +48,15 @@ class PerfilControlador
             'numeroIdentificacion' => $puedeEditarAcceso
                 ? strtoupper($leer('numeroIdentificacion'))
                 : $this->usuario->getNumeroIdentificacion(),
-            'nombreCompleto' => $leer('nombreCompleto'),
-            'correoUsuario' => $puedeEditarAcceso
+            'nombreCompleto'       => $leer('nombreCompleto'),
+            'correoUsuario'        => $puedeEditarAcceso
                 ? mb_strtolower($leer('correoUsuario'), 'UTF-8')
                 : $this->usuario->getCorreoUsuario(),
         ];
 
-        $validador = $this->validarDatos($datos, $puedeEditarAcceso);
+        $validador  = $this->validarDatos($datos, $puedeEditarAcceso);
         $nombreFoto = $this->subirFoto($validador);
-        if (!$validador->esValido()) {
+        if (! $validador->esValido()) {
             SubidaArchivo::eliminarFotoPerfil($nombreFoto);
             $this->mostrarPerfil($datos, $validador->errores());
             return;
@@ -78,7 +79,6 @@ class PerfilControlador
             $this->redirigir('/perfil');
         }
 
-        
         if ($nombreFoto !== null && $fotoAnterior !== null) {
             SubidaArchivo::eliminarFotoPerfil($fotoAnterior);
         }
@@ -89,21 +89,19 @@ class PerfilControlador
         $this->redirigir('/perfil');
     }
 
-    
     public function formularioContrasena(): void
     {
         $this->mostrarVista('Perfil/cambiarContrasena', ['errores' => []]);
     }
-
 
     public function cambiarContrasena(): void
     {
         $this->verificarCsrf('/perfil/contrasena');
 
         // Las contrasenas no se recortan: los espacios pueden ser parte de ellas
-        $leer = fn (string $campo): string => is_string($_POST[$campo] ?? null) ? $_POST[$campo] : '';
-        $actual = $leer('contrasenaActual');
-        $nueva = $leer('contrasenaNueva');
+        $leer      = fn(string $campo): string => is_string($_POST[$campo] ?? null) ? $_POST[$campo] : '';
+        $actual    = $leer('contrasenaActual');
+        $nueva     = $leer('contrasenaNueva');
         $confirmar = $leer('confirmarContrasena');
 
         $validador = new Validador();
@@ -114,14 +112,14 @@ class PerfilControlador
             ->coinciden('confirmarContrasena', $confirmar, $nueva, 'Las contraseñas no coinciden');
 
         if ($validador->error('contrasenaActual') === null
-            && !password_verify($actual, (string) $this->usuario->getContrasena())) {
+            && ! password_verify($actual, (string) $this->usuario->getContrasena())) {
             $validador->agregarError('contrasenaActual', 'La contraseña actual no es correcta');
         }
         if ($validador->error('contrasenaNueva') === null && $actual === $nueva) {
             $validador->agregarError('contrasenaNueva', 'La contraseña nueva debe ser diferente a la actual');
         }
 
-        if (!$validador->esValido()) {
+        if (! $validador->esValido()) {
             $this->mostrarVista('Perfil/cambiarContrasena', ['errores' => $validador->errores()]);
             return;
         }
@@ -138,28 +136,27 @@ class PerfilControlador
         $this->redirigir('/perfil');
     }
 
-    
-
-    // Pendiente (Damian): reemplazar la revision de sesion por su clase Permiso cuando exista
     private function cargarUsuarioActual(): Usuario
     {
-        if (!UsuarioActual::haySesion()) {
-            Mensaje::advertencia('Inicie sesión para continuar.');
-            $this->redirigir('/');
-        }
+        // Exige sesión iniciada, no expirada y con permiso para ver el perfil
+        Permiso::exigir('perfil.ver');
 
         $usuario = $this->usuarioRepositorio->buscarPorId((int) UsuarioActual::id());
-        if ($usuario === null || !$usuario->getEstado()) {
-            // La cuenta se borro o se desactivo mientras estaba conectado
+        if ($usuario === null || ! $usuario->getEstado()) {
+            // La cuenta se borró o se desactivó mientras estaba conectado
+            $idSesionBd = ManejadorSesion::obtenerIdSesionBd();
+            if ($idSesionBd !== null) {
+                (new SesionRepositorio())->cerrarPorId($idSesionBd);
+            }
+
             UsuarioActual::cerrar();
             Mensaje::error('Su cuenta no está activa. Comuníquese con un administrador.');
-            $this->redirigir('/');
+            $this->redirigir('/ingresar');
         }
 
         return $usuario;
     }
 
-    
     private function validarDatos(array $datos, bool $puedeEditarAcceso): Validador
     {
         $validador = new Validador();
@@ -169,7 +166,7 @@ class PerfilControlador
             ->longitud('nombreCompleto', $datos['nombreCompleto'], 3, 100, 'El nombre debe tener entre 3 y 100 caracteres')
             ->soloLetras('nombreCompleto', $datos['nombreCompleto'], 'El nombre solo puede tener letras y espacios');
 
-        if (!$puedeEditarAcceso) {
+        if (! $puedeEditarAcceso) {
             return $validador;
         }
 
@@ -181,7 +178,6 @@ class PerfilControlador
         $validador->requerido('correoUsuario', $datos['correoUsuario'], 'Ingrese el correo')
             ->correo('correoUsuario', $datos['correoUsuario']);
 
-        
         if ($validador->error('correoUsuario') === null
             && $this->usuarioRepositorio->existeCorreo($datos['correoUsuario'], $idUsuario)) {
             $validador->agregarError('correoUsuario', 'Este correo ya lo usa otro usuario');
@@ -194,10 +190,9 @@ class PerfilControlador
         return $validador;
     }
 
-
     private function subirFoto(Validador $validador): ?string
     {
-        if (!SubidaArchivo::seEnvio($_FILES['fotoPerfil'] ?? null)) {
+        if (! SubidaArchivo::seEnvio($_FILES['fotoPerfil'] ?? null)) {
             return null;
         }
         $subida = new SubidaArchivo();
@@ -211,23 +206,22 @@ class PerfilControlador
     private function mostrarPerfil(array $datos, array $errores): void
     {
         $this->mostrarVista('Perfil/miPerfil', [
-            'usuario' => $this->usuario,
-            'rol' => (string) UsuarioActual::tipo(),
+            'usuario'           => $this->usuario,
+            'rol'               => (string) UsuarioActual::tipo(),
             'puedeEditarAcceso' => UsuarioActual::esSuperAdmin(),
-            'datos' => $datos,
-            'errores' => $errores,
+            'datos'             => $datos,
+            'errores'           => $errores,
         ]);
     }
 
     private function verificarCsrf(string $rutaSiFalla): void
     {
-        if (!Csrf::esValido()) {
+        if (! Csrf::esValido()) {
             Mensaje::error('La página expiró. Recargue e intente de nuevo.');
             $this->redirigir($rutaSiFalla);
         }
     }
 
-    
     private function mostrarVista(string $vista, array $variablesVista): void
     {
         $variablesVista['mensajes'] = Mensaje::obtener();

@@ -1,13 +1,11 @@
 <?php
 
+use Aplicacion\Controladores\AutenticacionControlador;
 use Aplicacion\Controladores\FotoControlador;
 use Aplicacion\Controladores\InicioControlador;
 use Aplicacion\Controladores\PerfilControlador;
-use Aplicacion\Nucleo\Enrutador;
 use Aplicacion\Controladores\VendedorControlador;
-use Aplicacion\Modelos\Sesion;
-use Aplicacion\Nucleo\UsuarioActual;
-use Configuracion\Configuracion;
+use Aplicacion\Nucleo\Enrutador;
 
 return function (Enrutador $enrutador): void {
 
@@ -17,7 +15,10 @@ return function (Enrutador $enrutador): void {
     // Prueba temporal de mensajes. Se borra cuando la plantilla este revisada.
     $enrutador->get('/prueba/mensajes', [InicioControlador::class, 'probarMensajes']);
 
-    // Autenticacion (Damian)
+    // Autenticación (Damian)
+    $enrutador->get('/ingresar', [AutenticacionControlador::class, 'mostrarLogin']);
+    $enrutador->post('/ingresar', [AutenticacionControlador::class, 'iniciarSesion']);
+    $enrutador->post('/salir', [AutenticacionControlador::class, 'cerrarSesion']);
 
     // Mi perfil (Allison). Hay un solo SuperAdmin: sus datos se editan aqui.
     $enrutador->get('/perfil', [PerfilControlador::class, 'mostrar']);
@@ -34,16 +35,6 @@ return function (Enrutador $enrutador): void {
     $enrutador->get('/vendedores/editar', [VendedorControlador::class, 'editar']);
     $enrutador->post('/vendedores/actualizar', [VendedorControlador::class, 'actualizar']);
     $enrutador->post('/vendedores/estado', [VendedorControlador::class, 'cambiarEstado']);
-
-    // Temporal, solo en desarrollo: entra como el SuperAdmin inicial mientras no exista el login.
-    // Borrar cuando Damian suba el inicio de sesión.
-    if (Configuracion::esDesarrollo()) {
-        $enrutador->get('/prueba/ingresar', function (): void {
-            UsuarioActual::iniciar(1, Sesion::TIPO_SUPERADMIN, 'Administrador General');
-            header('Location: ' . rtrim((string) Configuracion::obtener('appUrl'), '/') . '/vendedores');
-            exit;
-        });
-    }
 
     // Sesiones (Damian)
 };

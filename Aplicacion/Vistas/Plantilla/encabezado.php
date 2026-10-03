@@ -1,6 +1,7 @@
 <?php
 
-
+use Aplicacion\Nucleo\Csrf;
+use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\UsuarioActual;
 use Configuracion\Configuracion;
 
@@ -10,18 +11,15 @@ $paginaActual = $paginaActual ?? '';
 $botonAccion = $botonAccion ?? null;
 $mensajes = $mensajes ?? [];
 
-// Opciones del módulo de usuarios. Las marcadas con soloSuperAdmin no se le muestran al vendedor.
-// Ocultarlas no reemplaza la revisión de permisos en el servidor (Damian, clase Permiso).
+// Opciones del módulo de usuarios. Cada una se muestra solo si el rol tiene su permiso (ver Permiso.php).
+// Ocultarlas no reemplaza la revisión en el servidor: cada controlador llama a Permiso::exigir().
 $opcionesMenu = [
-    'inicio' => ['texto' => 'Inicio', 'ruta' => '/'],
-    'vendedores' => ['texto' => 'Vendedores', 'ruta' => '/vendedores', 'soloSuperAdmin' => true],
-    'sesiones' => ['texto' => 'Historial de sesiones', 'ruta' => '/sesiones', 'soloSuperAdmin' => true],
-    'perfil' => ['texto' => 'Mi perfil', 'ruta' => '/perfil'],
+    'inicio' => ['texto' => 'Inicio', 'ruta' => '/', 'permiso' => 'panel.ver'],
+    'vendedores' => ['texto' => 'Vendedores', 'ruta' => '/vendedores', 'permiso' => 'vendedores.gestionar'],
+    'sesiones' => ['texto' => 'Historial de sesiones', 'ruta' => '/sesiones', 'permiso' => 'sesiones.ver'],
+    'perfil' => ['texto' => 'Mi perfil', 'ruta' => '/perfil', 'permiso' => 'perfil.ver'],
 ];
-$opcionesMenu = array_filter(
-    $opcionesMenu,
-    fn(array $opcion): bool => empty($opcion['soloSuperAdmin']) || UsuarioActual::esSuperAdmin()
-);
+$opcionesMenu = array_filter($opcionesMenu, fn(array $opcion): bool => Permiso::puede($opcion['permiso']));
 
 // Modulos que todavia no existen: se muestran en gris, sin enlace
 $proximasFases = ['Inventario', 'Proveedores', 'Compras', 'Producción', 'Pedidos', 'Ventas y caja', 'Gastos', 'Reportes'];
@@ -74,8 +72,10 @@ $proximasFases = ['Inventario', 'Proveedores', 'Compras', 'Producción', 'Pedido
                         <a href="<?= $urlBase ?>/perfil"
                             class="nombreUsuario"><?= htmlspecialchars((string) UsuarioActual::nombre()) ?></a>
                         <span class="etiqueta etiquetaRol"><?= htmlspecialchars((string) UsuarioActual::tipo()) ?></span>
-                        <!-- Pendiente (Damian): formulario POST con Csrf::campo() para cerrar sesion -->
-                        <a href="<?= $urlBase ?>/salir" class="boton botonSecundario botonPequeno">Cerrar sesión</a>
+                        <form method="post" action="<?= $urlBase ?>/salir" class="formularioSalir">
+                            <?= Csrf::campo() ?>
+                            <button type="submit" class="boton botonSecundario botonPequeno">Cerrar sesión</button>
+                        </form>
                     <?php else: ?>
                         <span class="etiqueta etiquetaInactivo">Sin sesión</span>
                     <?php endif; ?>
