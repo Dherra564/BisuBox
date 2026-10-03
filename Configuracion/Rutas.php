@@ -4,6 +4,7 @@ use Aplicacion\Controladores\AutenticacionControlador;
 use Aplicacion\Controladores\FotoControlador;
 use Aplicacion\Controladores\InicioControlador;
 use Aplicacion\Controladores\PerfilControlador;
+use Aplicacion\Controladores\SesionControlador;
 use Aplicacion\Nucleo\Enrutador;
 
 return function (Enrutador $enrutador): void {
@@ -11,10 +12,11 @@ return function (Enrutador $enrutador): void {
     // Inicio (Damian lo completa con el panel segun el rol)
     $enrutador->get('/', [InicioControlador::class, 'panel']);
 
-    // Prueba temporal de mensajes. Se borra cuando la plantilla este revisada.
-    $enrutador->get('/prueba/mensajes', [InicioControlador::class, 'probarMensajes']);
 
     // Autenticacion (Damian)
+    $enrutador->get('/ingresar', [AutenticacionControlador::class, 'mostrarLogin']);
+    $enrutador->post('/ingresar', [AutenticacionControlador::class, 'iniciarSesion']);
+    $enrutador->post('/salir', [AutenticacionControlador::class, 'cerrarSesion']);
 
     // Mi perfil (Allison). Hay un solo SuperAdmin: sus datos se editan aqui.
     $enrutador->get('/perfil', [PerfilControlador::class, 'mostrar']);
@@ -26,7 +28,6 @@ return function (Enrutador $enrutador): void {
     // Vendedores (Mariana)
 
     // Sesiones (Damian)
-    $enrutador->get('/ingresar', [AutenticacionControlador::class, 'mostrarLogin']);
-    $enrutador->post('/ingresar', [AutenticacionControlador::class, 'iniciarSesion']);
-    $enrutador->post('/salir', [AutenticacionControlador::class, 'cerrarSesion']);
+    $enrutador->get('/sesiones', [SesionControlador::class, 'listar']);
+
 };

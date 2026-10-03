@@ -2,6 +2,7 @@
 
 namespace Configuracion;
 
+use Configuracion\Configuracion;
 use DateTime;
 use InvalidArgumentException;
 use PDO;

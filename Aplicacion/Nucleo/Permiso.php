@@ -1,8 +1,11 @@
 <?php
-
 namespace Aplicacion\Nucleo;
 
+use Aplicacion\Controladores\ErrorControlador;
 use Aplicacion\Modelos\Sesion;
+use Aplicacion\Nucleo\ManejadorSesion;
+use Aplicacion\Nucleo\Mensaje;
+use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Repositorios\SesionRepositorio;
 use Configuracion\Configuracion;
 
@@ -28,13 +31,13 @@ class Permiso
         $tipo = UsuarioActual::tipo();
 
         return $tipo !== null
-            && in_array($tipo, self::PERMISOS[$permiso] ?? [], true);
+        && in_array($tipo, self::PERMISOS[$permiso] ?? [], true);
     }
 
     // Exige sesión iniciada y no expirada. Si falla, redirige al login.
     public static function exigirSesion(): void
     {
-        if (!UsuarioActual::haySesion()) {
+        if (! UsuarioActual::haySesion()) {
             Mensaje::advertencia('Inicie sesión para continuar.');
             self::redirigir('/ingresar');
         }
@@ -52,7 +55,7 @@ class Permiso
     {
         self::exigirSesion();
 
-        if (!self::puede($permiso)) {
+        if (! self::puede($permiso)) {
             self::denegar();
         }
     }
@@ -75,10 +78,7 @@ class Permiso
 
     private static function denegar(): never
     {
-        http_response_code(403);
-        // Pendiente (paso 5): reemplazar por la vista de error 403 con ErrorControlador
-        echo 'No tiene permiso para acceder a esta página.';
-        exit;
+        ErrorControlador::prohibido();
     }
 
     private static function redirigir(string $ruta): never

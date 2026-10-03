@@ -1,5 +1,4 @@
 <?php
-
 namespace Aplicacion\Repositorios;
 
 use Aplicacion\Modelos\Sesion;
@@ -36,10 +35,9 @@ class SesionRepositorio
         }
     }
 
-   
     public function registrarCierre(Sesion $sesion): void
     {
-        
+
         if ($sesion->estaActiva()) {
             $sesion->cerrar();
         }
@@ -84,5 +82,23 @@ class SesionRepositorio
         ]);
 
         return $sentencia->rowCount();
+    }
+
+    // Últimas sesiones con el nombre y correo de quien ingresó (las más recientes primero)
+    public function listarConUsuario(int $limite = 100): array
+    {
+        $sql = 'SELECT s.tbsesionid            AS id,
+                   u.tbusuarionombrecompleto AS nombre,
+                   u.tbusuariocorreo         AS correo,
+                   s.tbsesionusuariotipo     AS tipo,
+                   s.tbsesionfechainicio     AS inicio,
+                   s.tbsesionfechacierre     AS cierre,
+                   s.tbsesionactivo          AS abierta
+            FROM tbsesion s
+            LEFT JOIN tbusuario u ON u.tbusuarioid = s.tbsesionusuarioid
+            ORDER BY s.tbsesionfechainicio DESC, s.tbsesionid DESC
+            LIMIT ' . max(1, $limite);
+
+        return BaseDatos::obtenerConexion()->query($sql)->fetchAll();
     }
 }

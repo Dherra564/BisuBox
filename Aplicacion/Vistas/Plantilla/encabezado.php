@@ -1,8 +1,9 @@
 <?php
 
-use Aplicacion\Nucleo\Csrf;
-use Aplicacion\Nucleo\UsuarioActual;
-use Configuracion\Configuracion;
+    use Aplicacion\Nucleo\Csrf;
+    use Aplicacion\Nucleo\Permiso;
+    use Aplicacion\Nucleo\UsuarioActual;
+    use Configuracion\Configuracion;
 
     $urlBase      = rtrim((string) Configuracion::obtener('appUrl', ''), '/');
     $titulo       = $titulo ?? 'BisuBox';
@@ -10,13 +11,14 @@ use Configuracion\Configuracion;
     $botonAccion  = $botonAccion ?? null;
     $mensajes     = $mensajes ?? [];
 
-    // Opciones del modulo de usuarios. Pendiente (Damian): mostrar solo las que permite el rol.
+    // Opciones del módulo de usuarios; cada rol ve solo las que su permiso le deja
     $opcionesMenu = [
-    'inicio'     => ['texto' => 'Inicio', 'ruta' => '/'],
-    'vendedores' => ['texto' => 'Vendedores', 'ruta' => '/vendedores'],
-    'sesiones'   => ['texto' => 'Historial de sesiones', 'ruta' => '/sesiones'],
-    'perfil'     => ['texto' => 'Mi perfil', 'ruta' => '/perfil'],
+    'inicio'     => ['texto' => 'Inicio', 'ruta' => '/', 'permiso' => 'panel.ver'],
+    'vendedores' => ['texto' => 'Vendedores', 'ruta' => '/vendedores', 'permiso' => 'vendedores.gestionar'],
+    'sesiones'   => ['texto' => 'Historial de sesiones', 'ruta' => '/sesiones', 'permiso' => 'sesiones.ver'],
+    'perfil'     => ['texto' => 'Mi perfil', 'ruta' => '/perfil', 'permiso' => 'perfil.ver'],
     ];
+    $opcionesMenu = array_filter($opcionesMenu, fn(array $opcion): bool => Permiso::puede($opcion['permiso']));
 
     // Modulos que todavia no existen: se muestran en gris, sin enlace
     $proximasFases = ['Inventario', 'Proveedores', 'Compras', 'Producción', 'Pedidos', 'Ventas y caja', 'Gastos', 'Reportes'];

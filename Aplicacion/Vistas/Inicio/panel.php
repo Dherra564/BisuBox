@@ -1,59 +1,51 @@
 <?php
 /**
+ * Panel de inicio según el rol.
+ *
  * @var int $totalUsuarios Viene de InicioControlador
  * @var string $urlBase Viene de encabezado.php
  */
+
+use Aplicacion\Nucleo\Permiso;
+use Aplicacion\Nucleo\UsuarioActual;
+
 $titulo = 'Inicio';
 $paginaActual = 'inicio';
 require __DIR__ . '/../Plantilla/encabezado.php';
+
+// Accesos directos: cada rol ve solo los que tiene permitidos
+$accesos = [
+    ['texto' => 'Mi perfil', 'permiso' => 'perfil.ver', 'ruta' => '/perfil',
+     'descripcion' => 'Edite sus datos y cambie su contraseña.'],
+    ['texto' => 'Historial de sesiones', 'permiso' => 'sesiones.ver', 'ruta' => '/sesiones',
+     'descripcion' => 'Consulte quién ha ingresado al sistema.'],
+    ['texto' => 'Vendedores', 'permiso' => 'vendedores.gestionar', 'ruta' => '/vendedores',
+     'descripcion' => 'Administre las cuentas de los vendedores.'],
+];
+$accesos = array_filter($accesos, fn (array $acceso): bool => Permiso::puede($acceso['permiso']));
 ?>
 
+<p class="subtitulo">Hola, <?= htmlspecialchars((string) UsuarioActual::nombre()) ?>.</p>
+
+<?php if (UsuarioActual::esSuperAdmin()): ?>
+    <div class="tarjetas">
+        <section class="tarjeta tarjetaDato">
+            <h2>Usuarios registrados</h2>
+            <p class="tarjetaNumero"><?= (int) $totalUsuarios ?></p>
+        </section>
+    </div>
+<?php endif; ?>
+
 <div class="tarjetas">
-    <section class="tarjeta tarjetaDato">
-        <h2>Usuarios registrados</h2>
-        <p class="tarjetaNumero"><?= (int) $totalUsuarios ?></p>
-    </section>
-    <section class="tarjeta tarjetaDato">
-        <h2>Conexión a la base</h2>
-        <p><span class="etiqueta etiquetaNormal">✔ Correcta</span></p>
-    </section>
+    <?php foreach ($accesos as $acceso): ?>
+        <section class="tarjeta">
+            <h2><?= htmlspecialchars($acceso['texto']) ?></h2>
+            <p class="textoAyuda"><?= htmlspecialchars($acceso['descripcion']) ?></p>
+            <p style="margin-top: 14px;">
+                <a href="<?= $urlBase . $acceso['ruta'] ?>" class="boton botonSecundario botonPequeno">Abrir</a>
+            </p>
+        </section>
+    <?php endforeach; ?>
 </div>
-
-<div class="cajaInformativa">
-    <strong>Página de prueba:</strong> confirma que la plantilla, el enrutador y la base de datos funcionan juntos.
-</div>
-
-<div class="tablaContenedor">
-    <table class="tabla">
-        <thead>
-            <tr><th>Ejemplo</th><th>Estado</th><th class="numero">Cantidad</th><th>Acciones</th></tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td data-etiqueta="Ejemplo">Cuenta perla 6mm</td>
-                <td data-etiqueta="Estado"><span class="etiqueta etiquetaBajo">Bajo</span></td>
-                <td data-etiqueta="Cantidad" class="numero">2</td>
-                <td data-etiqueta="Acciones" class="acciones"><a href="#">Editar</a></td>
-            </tr>
-            <tr>
-                <td data-etiqueta="Ejemplo">Cadena dorada</td>
-                <td data-etiqueta="Estado"><span class="etiqueta etiquetaAgotado">Agotado</span></td>
-                <td data-etiqueta="Cantidad" class="numero">0</td>
-                <td data-etiqueta="Acciones" class="acciones"><a href="#">Editar</a></td>
-            </tr>
-            <tr>
-                <td data-etiqueta="Ejemplo">Arete luna plata</td>
-                <td data-etiqueta="Estado"><span class="etiqueta etiquetaNormal">Normal</span></td>
-                <td data-etiqueta="Cantidad" class="numero">18</td>
-                <td data-etiqueta="Acciones" class="acciones"><a href="#">Editar</a></td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-<p class="grupoBotones" style="margin-top: 20px;">
-    <a href="<?= $urlBase ?>/prueba/mensajes" class="boton">Probar mensajes</a>
-    <a href="<?= $urlBase ?>/fotos/perfil" class="boton botonSecundario">Ver avatar por defecto</a>
-</p>
 
 <?php require __DIR__ . '/../Plantilla/pie.php'; ?>
