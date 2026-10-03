@@ -4,7 +4,7 @@
 use Aplicacion\Nucleo\Enrutador;
 use Aplicacion\Nucleo\ManejadorSesion;
 use Configuracion\Configuracion;
-use Throwable;
+
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
