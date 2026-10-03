@@ -40,30 +40,42 @@
 }
 
 :root {
-    /* Verdes */
-    --colorMenu: #284f0b;              /* fondo del menu lateral y barra en celular */
-    --colorMenuActivo: #3d6b1c;        /* opcion activa del menu */
-    --colorPrincipal: #3b6d13;         /* botones, enlaces */
-    --colorPrincipalOscuro: #2c540d;
-    --colorTitulo: #2a5410;            /* titulos y encabezados de tabla */
-    --colorFondo: #f4f7ef;             /* fondo de las paginas */
-    --colorFondoInicio: #e8f1dd;       /* fondo de la pantalla de inicio de sesion */
-    --colorVerdeClaro: #e7f0db;        /* encabezado de tablas, cajas informativas */
+    /* Menta (referencia: Petunia) */
+    --colorMenu: #c2e6d5;              /* fondo del menú lateral y barra en celular */
+    --colorMenuActivo: #a9dbc4;        /* opción activa del menú */
+    --colorMenuHover: rgba(255, 255, 255, 0.35);
+    --colorMenuTenue: #4f5c57;         /* opciones del menú que aún no existen */
+    --colorPrincipal: #c2e6d5;         /* botones principales y página actual */
+    --colorPrincipalOscuro: #a9dbc4;   /* botón principal al pasar el mouse */
+    --colorTextoSobrePrincipal: #36403c; /* texto sobre el menta: menú, botones, barra en celular */
+    --colorTitulo: #2b7358;            /* títulos, enlaces y encabezados de tabla */
+    --colorFoco: #2b7358;              /* borde de foco de campos y botones */
+    --colorFondo: #f4f8f6;             /* fondo de las páginas */
+    --colorFondoInicio: #e6f4ed;       /* fondo de la pantalla de inicio de sesión */
+    --colorVerdeClaro: #e6f4ed;        /* encabezado de tablas, cajas informativas */
     --colorSuperficie: #ffffff;
-    --colorTexto: #1f2a17;
-    --colorTextoSuave: #5c6653;
-    --colorBorde: #dfe6d5;
-    --colorBordeCampo: #cfd8c2;
+    --colorTexto: #36403c;
+    --colorTextoSuave: #63706b;
+    --colorTextoClaro: #ffffff;        /* texto sobre botones oscuros (peligro) */
+    --colorBorde: #dbe6e1;
+    --colorBordeCampo: #c9d9d1;
+    --colorBordeFoto: #a9dbc4;         /* borde punteado de la zona para subir foto */
+    --colorVelo: rgba(38, 64, 54, 0.45);   /* fondo oscuro detrás del modal */
 
     /* Estados */
-    --colorExito: #2f6b12;
-    --colorExitoFondo: #e7f0db;
-    --colorError: #9b1c1c;
-    --colorErrorFondo: #fbe4e2;
-    --colorErrorBorde: #efb4ae;
-    --colorAdvertencia: #7a4b00;
-    --colorAdvertenciaFondo: #fdeccb;
-    --colorAdvertenciaBorde: #f0cf8f;
+    --colorExito: #1f6b4a;
+    --colorExitoFondo: #e3f4ea;
+    --colorExitoBorde: #b3dec7;
+    --colorError: #a5302a;
+    --colorErrorFondo: #fdecea;
+    --colorErrorBorde: #f3c1bc;
+    --colorErrorOscuro: #8a2721;       /* botón de peligro al pasar el mouse */
+    --colorAdvertencia: #735200;
+    --colorAdvertenciaFondo: #fff4d4;
+    --colorAdvertenciaBorde: #efd68f;
+    --colorAdvertenciaFuerte: #735200; /* número de las tarjetas de advertencia */
+    --colorInactivo: #5b6461;
+    --colorInactivoFondo: #eceff0;
 
     /* Formas y fuentes */
     --radio: 12px;
@@ -104,7 +116,7 @@ h1, h2, h3 {
     flex-shrink: 0;
     padding: 24px 16px;
     background: var(--colorMenu);
-    color: #ffffff;
+    color: var(--colorTextoSobrePrincipal);
 }
 
 .logo {
@@ -113,7 +125,7 @@ h1, h2, h3 {
     font-family: var(--fuenteTitulos);
     font-size: 1.75rem;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--colorTextoClaro);
     text-decoration: none;
 }
 
@@ -129,12 +141,12 @@ h1, h2, h3 {
     padding: 9px 12px;
     margin-bottom: 2px;
     border-radius: 8px;
-    color: #ffffff;
+    color: var(--colorTextoClaro);
     text-decoration: none;
 }
 
 .menuLateral li a:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--colorMenuHover);
 }
 
 .menuLateral li a.activo {
@@ -148,11 +160,11 @@ h1, h2, h3 {
     font-weight: 600;
     letter-spacing: 1px;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--colorMenuTenue);
 }
 
 .menuProximas li span {
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--colorMenuTenue);
     cursor: default;
 }
 
@@ -266,7 +278,7 @@ h1, h2, h3 {
 .alertaExito {
     background: var(--colorExitoFondo);
     color: var(--colorExito);
-    border-color: #c5d9ae;
+    border-color: var(--colorExitoBorde);
 }
 
 .alertaError {
@@ -287,7 +299,7 @@ h1, h2, h3 {
     margin-bottom: 20px;
     border-radius: var(--radio);
     background: var(--colorVerdeClaro);
-    border: 1px solid #c5d9ae;
+    border: 1px solid var(--colorExitoBorde);
 }
 
 /* ---------- Tarjetas ---------- */
@@ -336,7 +348,7 @@ h1, h2, h3 {
 }
 
 .tarjetaAdvertencia .tarjetaNumero {
-    color: #8a4b07;
+    color: var(--colorAdvertenciaFuerte);
 }
 
 .tarjetaError {
@@ -357,7 +369,7 @@ h1, h2, h3 {
     border-radius: var(--radioCampo);
     border: 1px solid var(--colorPrincipal);
     background: var(--colorPrincipal);
-    color: #ffffff;
+    color: var(--colorTextoClaro);
     font: inherit;
     font-weight: 600;
     text-decoration: none;
@@ -380,10 +392,11 @@ h1, h2, h3 {
 .botonPeligro {
     background: var(--colorError);
     border-color: var(--colorError);
+    color: var(--colorTextoClaro);
 }
 
 .botonPeligro:hover {
-    background: #7d1515;
+    background: var(--colorErrorOscuro);
 }
 
 .botonPequeno {
@@ -456,7 +469,7 @@ h1, h2, h3 {
 .campo input:focus,
 .campo select:focus,
 .campo textarea:focus {
-    outline: 2px solid var(--colorPrincipal);
+    outline: 2px solid var(--colorFoco);
     outline-offset: 1px;
 }
 
@@ -481,7 +494,7 @@ h1, h2, h3 {
     gap: 8px;
     min-height: 200px;
     padding: 20px;
-    border: 2px dashed #b9d29d;
+    border: 2px dashed var(--colorBordeFoto);
     border-radius: var(--radio);
     text-align: center;
     color: var(--colorTextoSuave);
@@ -577,8 +590,8 @@ h1, h2, h3 {
 }
 
 .etiquetaInactivo {
-    background: #ececea;
-    color: #55574f;
+    background: var(--colorInactivoFondo);
+    color: var(--colorInactivo);
 }
 
 /* ---------- Listas con filtros (Vendedores) y Mi perfil ---------- */
@@ -711,6 +724,113 @@ h1, h2, h3 {
     color: var(--colorTitulo);
 }
 
+/* ---------- Foto del usuario en la barra superior ---------- */
+.fotoUsuario {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--colorVerdeClaro);
+    background: var(--colorVerdeClaro);
+}
+
+/* ---------- Paginación (Plantilla/paginacion.php) ---------- */
+.paginacionEnlaces {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.paginacionEnlaces a,
+.paginacionEnlaces span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    border-radius: var(--radioCampo);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.paginacionEnlaces a {
+    border: 1px solid var(--colorBorde);
+    background: var(--colorSuperficie);
+    color: var(--colorTitulo);
+}
+
+.paginacionEnlaces a:hover {
+    background: var(--colorVerdeClaro);
+}
+
+.paginacionEnlaces .paginaActual {
+    background: var(--colorPrincipal);
+    color: var(--colorTextoClaro);
+}
+
+.paginacionEnlaces .paginaSeparador {
+    min-width: auto;
+    padding: 0 2px;
+    color: var(--colorTextoSuave);
+}
+
+/* ---------- Contador de caracteres (validaciones.js) ---------- */
+.contadorCaracteres {
+    margin: 6px 0 0;
+    font-size: 0.85rem;
+    color: var(--colorTextoSuave);
+    text-align: right;
+}
+
+.contadorCaracteres.alLimite {
+    color: var(--colorAdvertencia);
+}
+
+/* Botón bloqueado mientras el formulario se envía */
+.boton:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+/* ---------- Modal de confirmación (Plantilla/modalConfirmacion.php) ---------- */
+.modal {
+    width: min(440px, calc(100% - 32px));
+    padding: 0;
+    border: none;
+    border-radius: 16px;
+    background: var(--colorSuperficie);
+    color: var(--colorTexto);
+    box-shadow: 0 16px 40px var(--colorVelo);
+}
+
+.modal::backdrop {
+    background: var(--colorVelo);
+}
+
+.modalContenido {
+    padding: 28px;
+}
+
+.modalTitulo {
+    margin: 0 0 8px;
+    font-family: var(--fuenteTitulos);
+    font-size: 1.35rem;
+}
+
+.modalMensaje {
+    margin: 0 0 24px;
+    color: var(--colorTextoSuave);
+}
+
+.modal .grupoBotones {
+    justify-content: flex-end;
+}
+
 /* ---------- Celular ---------- */
 @media (max-width: 768px) {
     .menuLateral {
@@ -746,7 +866,7 @@ h1, h2, h3 {
         background: none;
         border: none;
         font-size: 1.5rem;
-        color: #ffffff;
+        color: var(--colorTextoClaro);
         cursor: pointer;
     }
 
@@ -758,7 +878,7 @@ h1, h2, h3 {
         font-family: var(--fuenteTitulos);
         font-size: 1.4rem;
         font-weight: 700;
-        color: #ffffff;
+        color: var(--colorTextoClaro);
         text-decoration: none;
     }
 
@@ -833,7 +953,7 @@ h1, h2, h3 {
         margin-bottom: 10px;
     }
 
-    .accionesFormulario .boton {
+    .accionesFormulario .boton, .modal .boton {
         flex: 1;
         text-align: center;
     }

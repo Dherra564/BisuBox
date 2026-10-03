@@ -16,14 +16,58 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Confirmacion antes de activar, desactivar, etc.
+    // Confirmación antes de activar, desactivar, etc., con el modal de la plantilla (modalConfirmacion.php).
+    // Si el navegador no soporta <dialog>, se usa la ventana del navegador.
+    var modal = document.getElementById('modalConfirmacion');
+    var formularioPendiente = null;
+
+    function abrirModal(formulario) {
+        var botonConfirmar = modal.querySelector('.modalConfirmar');
+
+        formularioPendiente = formulario;
+        modal.querySelector('.modalTitulo').textContent = formulario.getAttribute('data-titulo') || 'Confirmar acción';
+        modal.querySelector('.modalMensaje').textContent = formulario.getAttribute('data-confirmar');
+        botonConfirmar.textContent = formulario.getAttribute('data-boton') || 'Confirmar';
+        botonConfirmar.classList.toggle('botonPeligro', formulario.hasAttribute('data-peligro'));
+        modal.showModal();
+    }
+
     document.querySelectorAll('form[data-confirmar]').forEach(function (formulario) {
         formulario.addEventListener('submit', function (evento) {
-            if (!window.confirm(formulario.getAttribute('data-confirmar'))) {
-                evento.preventDefault();
+            evento.preventDefault();
+            if (modal && typeof modal.showModal === 'function') {
+                abrirModal(formulario);
+            } else if (window.confirm(formulario.getAttribute('data-confirmar'))) {
+                formulario.submit();
             }
         });
     });
+
+    if (modal) {
+        modal.querySelector('.modalCancelar').addEventListener('click', function () {
+            modal.close();
+        });
+
+        modal.querySelector('.modalConfirmar').addEventListener('click', function () {
+            var formulario = formularioPendiente;
+            modal.close();
+            // submit() no vuelve a pasar por el evento, así que el modal no se abre otra vez
+            if (formulario) {
+                formulario.submit();
+            }
+        });
+
+        // Un clic en el fondo oscuro también cancela
+        modal.addEventListener('click', function (evento) {
+            if (evento.target === modal) {
+                modal.close();
+            }
+        });
+
+        modal.addEventListener('close', function () {
+            formularioPendiente = null;
+        });
+    }
 
     // Nombre de la foto elegida y vista previa
     document.querySelectorAll('.campoArchivo').forEach(function (campo) {
@@ -40,130 +84,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if (imagen && archivo && archivo.type.indexOf('image/') === 0) {
                 imagen.src = URL.createObjectURL(archivo);
             }
-        });
-    });
-
-    
-    var reglas = {
-        alfanumerico: {
-            patron: /^[A-Za-z0-9]+$/,
-            mensaje: 'Solo se permiten letras y números, sin espacios ni guiones'
-        },
-        soloLetras: {
-            patron: /^\p{L}+(\s+\p{L}+)*$/u,
-            mensaje: 'Solo se permiten letras y espacios'
-        },
-        correo: {
-            patron: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-            mensaje: 'Ingrese un correo válido, por ejemplo nombre@correo.com'
-        },
-        contrasena: {
-            patron: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)\S{8,20}$/,
-            mensaje: 'La contraseña debe tener entre 8 y 20 caracteres, una mayúscula, una minúscula y un número, sin espacios'
-        }
-    };
-
-    function quitarError(campo) {
-        var contenedor = campo.closest('.campo');
-        if (!contenedor) {
-            return;
-        }
-        contenedor.classList.remove('campoConError');
-        var error = contenedor.querySelector('.errorCampo');
-        if (error) {
-            error.remove();
-        }
-    }
-
-    function ponerError(campo, mensaje) {
-        quitarError(campo);
-        var contenedor = campo.closest('.campo');
-        if (!contenedor) {
-            return;
-        }
-        contenedor.classList.add('campoConError');
-        var error = document.createElement('p');
-        error.className = 'errorCampo';
-        error.textContent = mensaje;
-        contenedor.appendChild(error);
-    }
-
-    // Devuelve el mensaje de error del campo, o '' si esta bien
-    function revisarCampo(campo, formulario) {
-        var valor = campo.type === 'password' ? campo.value : campo.value.trim();
-
-        if (valor === '') {
-            return campo.required ? 'Este campo es obligatorio' : '';
-        }
-
-        var regla = reglas[campo.getAttribute('data-regla')];
-        if (regla && !regla.patron.test(valor)) {
-            return regla.mensaje;
-        }
-
-        var idOtro = campo.getAttribute('data-igual-a');
-        if (idOtro) {
-            var otro = formulario.querySelector('#' + idOtro);
-            if (otro && otro.value !== campo.value) {
-                return 'Las contraseñas no coinciden';
-            }
-        }
-
-        var idDistinto = campo.getAttribute('data-distinto-de');
-        if (idDistinto) {
-            var anterior = formulario.querySelector('#' + idDistinto);
-            if (anterior && anterior.value === campo.value) {
-                return 'La contraseña nueva debe ser diferente a la actual';
-            }
-        }
-
-        return '';
-    }
-
-    document.querySelectorAll('form.validarFormulario').forEach(function (formulario) {
-        var campos = formulario.querySelectorAll('input[required], input[data-regla], input[data-igual-a], input[data-distinto-de]');
-
-        // Si confirmar contrasena tiene valor, se exige aunque la contrasena sea opcional (al editar)
-        function camposPorRevisar() {
-            return Array.prototype.filter.call(campos, function (campo) {
-                var idOtro = campo.getAttribute('data-igual-a');
-                if (idOtro && campo.value === '' && !campo.required) {
-                    var otro = formulario.querySelector('#' + idOtro);
-                    return otro && otro.value !== '';
-                }
-                return true;
-            });
-        }
-
-        formulario.addEventListener('submit', function (evento) {
-            var primero = null;
-
-            camposPorRevisar().forEach(function (campo) {
-                var mensaje = revisarCampo(campo, formulario);
-                if (mensaje === '' && campo.getAttribute('data-igual-a') && campo.value === '') {
-                    mensaje = 'Confirme la contraseña';
-                }
-                if (mensaje !== '') {
-                    ponerError(campo, mensaje);
-                    primero = primero || campo;
-                } else {
-                    quitarError(campo);
-                }
-            });
-
-            if (primero) {
-                evento.preventDefault();
-                primero.focus();
-            }
-        });
-
-        // Al corregir un campo, se quita su error
-        campos.forEach(function (campo) {
-            campo.addEventListener('input', function () {
-                if (campo.closest('.campoConError') && revisarCampo(campo, formulario) === '') {
-                    quitarError(campo);
-                }
-            });
         });
     });
 });

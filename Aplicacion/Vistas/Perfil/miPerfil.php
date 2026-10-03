@@ -16,9 +16,9 @@ $titulo = 'Mi perfil';
 $paginaActual = 'perfil';
 require __DIR__ . '/../Plantilla/encabezado.php';
 
-$valor = fn (string $campo): string => htmlspecialchars((string) ($datos[$campo] ?? ''));
-$claseCampo = fn (string $campo): string => isset($errores[$campo]) ? 'campo campoConError' : 'campo';
-$mensajeError = fn (string $campo): string => isset($errores[$campo])
+$valor = fn(string $campo): string => htmlspecialchars((string) ($datos[$campo] ?? ''));
+$claseCampo = fn(string $campo): string => isset($errores[$campo]) ? 'campo campoConError' : 'campo';
+$mensajeError = fn(string $campo): string => isset($errores[$campo])
     ? '<p class="errorCampo">' . htmlspecialchars($errores[$campo]) . '</p>'
     : '';
 ?>
@@ -30,7 +30,8 @@ $mensajeError = fn (string $campo): string => isset($errores[$campo])
     </div>
 <?php endif; ?>
 
-<form method="post" action="<?= $urlBase ?>/perfil/actualizar" enctype="multipart/form-data" novalidate class="validarFormulario">
+<form method="post" action="<?= $urlBase ?>/perfil/actualizar" enctype="multipart/form-data" novalidate
+    class="validarFormulario">
     <?= Csrf::campo() ?>
 
     <div class="disenoFormulario">
@@ -39,22 +40,29 @@ $mensajeError = fn (string $campo): string => isset($errores[$campo])
                 <h2>Datos personales</h2>
                 <div class="<?= $claseCampo('nombreCompleto') ?>">
                     <label for="nombreCompleto">Nombre completo <span class="obligatorio">*</span></label>
-                    <input type="text" id="nombreCompleto" name="nombreCompleto" maxlength="100"
-                           required data-regla="soloLetras" value="<?= $valor('nombreCompleto') ?>">
+                    <input type="text" id="nombreCompleto" name="nombreCompleto" minlength="3" maxlength="100" required
+                        data-regla="soloLetras" data-contador data-mensaje-requerido="Ingrese su nombre completo"
+                        data-mensaje-regla="El nombre solo puede tener letras y espacios"
+                        data-mensaje-largo="El nombre debe tener entre 3 y 100 caracteres"
+                        value="<?= $valor('nombreCompleto') ?>">
                     <?= $mensajeError('nombreCompleto') ?>
                 </div>
                 <div class="filaCampos">
                     <?php if ($puedeEditarAcceso): ?>
                         <div class="<?= $claseCampo('numeroIdentificacion') ?>">
                             <label for="numeroIdentificacion">Identificación <span class="obligatorio">*</span></label>
-                            <input type="text" id="numeroIdentificacion" name="numeroIdentificacion" maxlength="20"
-                                   required data-regla="alfanumerico" value="<?= $valor('numeroIdentificacion') ?>">
+                            <input type="text" id="numeroIdentificacion" name="numeroIdentificacion" minlength="6"
+                                maxlength="20" required data-regla="alfanumerico"
+                                data-mensaje-requerido="Ingrese la identificación"
+                                data-mensaje-largo="La identificación debe tener entre 6 y 20 caracteres"
+                                value="<?= $valor('numeroIdentificacion') ?>">
                             <?= $mensajeError('numeroIdentificacion') ?>
                         </div>
                         <div class="<?= $claseCampo('correoUsuario') ?>">
                             <label for="correoUsuario">Correo <span class="obligatorio">*</span></label>
-                            <input type="email" id="correoUsuario" name="correoUsuario" maxlength="150"
-                                   required data-regla="correo" value="<?= $valor('correoUsuario') ?>">
+                            <input type="email" id="correoUsuario" name="correoUsuario" maxlength="150" required
+                                data-regla="correo" data-mensaje-requerido="Ingrese el correo"
+                                value="<?= $valor('correoUsuario') ?>">
                             <p class="textoAyuda">Con este correo inicia sesión</p>
                             <?= $mensajeError('correoUsuario') ?>
                         </div>
@@ -62,12 +70,12 @@ $mensajeError = fn (string $campo): string => isset($errores[$campo])
                         <div class="campo">
                             <label for="numeroIdentificacion">Identificación</label>
                             <input type="text" id="numeroIdentificacion" readonly
-                                   value="<?= htmlspecialchars((string) $usuario->getNumeroIdentificacion()) ?>">
+                                value="<?= htmlspecialchars((string) $usuario->getNumeroIdentificacion()) ?>">
                         </div>
                         <div class="campo">
                             <label for="correoUsuario">Correo</label>
                             <input type="email" id="correoUsuario" readonly
-                                   value="<?= htmlspecialchars((string) $usuario->getCorreoUsuario()) ?>">
+                                value="<?= htmlspecialchars((string) $usuario->getCorreoUsuario()) ?>">
                         </div>
                     <?php endif; ?>
                 </div>
@@ -97,11 +105,12 @@ $mensajeError = fn (string $campo): string => isset($errores[$campo])
                 <div class="<?= $claseCampo('fotoPerfil') ?>">
                     <div class="zonaFoto">
                         <img src="<?= $urlBase ?>/fotos/perfil?archivo=<?= urlencode((string) ($usuario->getFotoPerfil() ?? '')) ?>"
-                             alt="Su foto de perfil" class="fotoPerfilGrande">
+                            alt="Su foto de perfil" class="fotoPerfilGrande">
                         <label for="fotoPerfil" class="boton botonSecundario">
                             <?= $usuario->getFotoPerfil() ? 'Cambiar foto' : 'Elegir foto' ?>
                         </label>
-                        <input type="file" id="fotoPerfil" name="fotoPerfil" accept="image/jpeg,image/png" class="campoArchivo">
+                        <input type="file" id="fotoPerfil" name="fotoPerfil" accept="image/jpeg,image/png"
+                            class="campoArchivo">
                         <span class="nombreArchivo">JPG o PNG, máximo 5 MB</span>
                     </div>
                     <?= $mensajeError('fotoPerfil') ?>
