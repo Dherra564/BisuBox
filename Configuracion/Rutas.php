@@ -1,7 +1,6 @@
 <?php
 
-
-
+use Aplicacion\Controladores\AutenticacionControlador;
 use Aplicacion\Controladores\FotoControlador;
 use Aplicacion\Controladores\InicioControlador;
 use Aplicacion\Controladores\PerfilControlador;
@@ -27,4 +26,7 @@ return function (Enrutador $enrutador): void {
     // Vendedores (Mariana)
 
     // Sesiones (Damian)
+    $enrutador->get('/ingresar', [AutenticacionControlador::class, 'mostrarLogin']);
+    $enrutador->post('/ingresar', [AutenticacionControlador::class, 'iniciarSesion']);
+    $enrutador->post('/salir', [AutenticacionControlador::class, 'cerrarSesion']);
 };
