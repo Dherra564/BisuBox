@@ -1,11 +1,9 @@
 <?php
+
 namespace Aplicacion\Nucleo;
 
 use Aplicacion\Controladores\ErrorControlador;
 use Aplicacion\Modelos\Sesion;
-use Aplicacion\Nucleo\ManejadorSesion;
-use Aplicacion\Nucleo\Mensaje;
-use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Repositorios\SesionRepositorio;
 use Configuracion\Configuracion;
 
@@ -31,19 +29,25 @@ class Permiso
         $tipo = UsuarioActual::tipo();
 
         return $tipo !== null
-        && in_array($tipo, self::PERMISOS[$permiso] ?? [], true);
+            && in_array($tipo, self::PERMISOS[$permiso] ?? [], true);
     }
 
     // Exige sesión iniciada y no expirada. Si falla, redirige al login.
     public static function exigirSesion(): void
     {
-        if (! UsuarioActual::haySesion()) {
+        if (!UsuarioActual::haySesion()) {
             Mensaje::advertencia('Inicie sesión para continuar.');
             self::redirigir('/ingresar');
         }
 
         if (ManejadorSesion::haExpirado()) {
-            self::cerrarPorInactividad();
+            self::cerrarYAvisar('Su sesión se cerró por inactividad. Ingrese de nuevo.');
+        }
+
+        // La sesión pudo cerrarse desde otro lado (por ejemplo, al desactivar la cuenta de un vendedor)
+        $idSesionBd = ManejadorSesion::obtenerIdSesionBd();
+        if ($idSesionBd !== null && !(new SesionRepositorio())->estaAbierta($idSesionBd)) {
+            self::cerrarYAvisar('Su sesión ya no está activa. Ingrese de nuevo.');
         }
 
         // Cada petición válida reinicia el contador de los 30 minutos
@@ -55,12 +59,12 @@ class Permiso
     {
         self::exigirSesion();
 
-        if (! self::puede($permiso)) {
+        if (!self::puede($permiso)) {
             self::denegar();
         }
     }
 
-    private static function cerrarPorInactividad(): never
+    private static function cerrarYAvisar(string $aviso): never
     {
         // Mismo orden que en AutenticacionControlador::cerrarSesion()
         $idSesionBd = ManejadorSesion::obtenerIdSesionBd();
@@ -74,7 +78,7 @@ class Permiso
         ManejadorSesion::arrancar();
         ManejadorSesion::regenerarId();
 
-        Mensaje::advertencia('Su sesión se cerró por inactividad. Ingrese de nuevo.');
+        Mensaje::advertencia($aviso);
         self::redirigir('/ingresar');
     }
 

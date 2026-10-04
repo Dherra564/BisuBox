@@ -4,18 +4,7 @@ namespace Aplicacion\Nucleo;
 
 use Aplicacion\Modelos\Sesion;
 
-/**
- * Quien esta conectado en este momento (datos guardados en la sesion de PHP).
- *
- * Damian, en el inicio de sesion, despues de verificar correo y contraseña:
- *   UsuarioActual::iniciar($usuario->getIdUsuario(), Sesion::TIPO_SUPERADMIN, $usuario->getNombreCompleto(), $usuario->getFotoPerfil());
- * Y al cerrar sesion:
- *   UsuarioActual::cerrar();
- *
- * En los controladores:
- *   UsuarioActual::id()             id de tbusuario, o null si nadie inicio sesion
- *   UsuarioActual::esSuperAdmin()   true si el rol es SuperAdmin
- */
+
 class UsuarioActual
 {
     private const CLAVE_ID = 'idUsuario';
@@ -72,7 +61,7 @@ class UsuarioActual
         return $_SESSION[self::CLAVE_FOTO] ?? null;
     }
 
-    // Para que la barra superior muestre la foto nueva después de cambiarla en "Mi perfil"
+    
     public static function actualizarFoto(?string $foto): void
     {
         if (self::haySesion()) {

@@ -101,4 +101,15 @@ class SesionRepositorio
 
         return BaseDatos::obtenerConexion()->query($sql)->fetchAll();
     }
+
+    // ¿Sigue abierta esta sesión en la base? Si se cerró o ya no existe, devuelve false
+    public function estaAbierta(int $idSesion): bool
+    {
+        $sentencia = BaseDatos::obtenerConexion()->prepare(
+            'SELECT tbsesionactivo FROM tbsesion WHERE tbsesionid = :id'
+        );
+        $sentencia->execute([':id' => $idSesion]);
+
+        return (int) $sentencia->fetchColumn() === 1;
+    }
 }
