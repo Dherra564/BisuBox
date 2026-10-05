@@ -76,7 +76,6 @@ class AutenticacionControlador
         $this->redirigir('/');
     }
 
-    
     public function cerrarSesion(): void
     {
         if (! Csrf::esValido()) {
@@ -91,13 +90,10 @@ class AutenticacionControlador
 
         UsuarioActual::cerrar();
         ManejadorSesion::destruir();
-        // Sesión nueva y vacía, con su propia cookie, solo para mostrar el mensaje en el login
         ManejadorSesion::arrancar();
         ManejadorSesion::regenerarId();
         Mensaje::exito('Sesión cerrada correctamente');
 
-        ManejadorSesion::arrancar();
-        Mensaje::exito('Sesión cerrada correctamente');
         $this->redirigir('/ingresar');
     }
 
@@ -108,7 +104,7 @@ class AutenticacionControlador
             return ['tipo' => Sesion::TIPO_SUPERADMIN, 'activo' => $superAdmin->getEstadoSuperAdmin()];
         }
 
-        $vendedor = (new VendedorRepositorio())->buscarPorIdUsuario($idUsuario); 
+        $vendedor = (new VendedorRepositorio())->buscarPorIdUsuario($idUsuario);
         if ($vendedor !== null) {
             return ['tipo' => Sesion::TIPO_VENDEDOR, 'activo' => $vendedor->getEstadoVendedor()];
         }
@@ -128,10 +124,9 @@ class AutenticacionControlador
         require Configuracion::rutaBase() . '/Aplicacion/Vistas/' . $vista . '.php';
     }
 
-    
     public function mostrarLogin(): void
     {
-        
+
         if (UsuarioActual::haySesion()) {
             $this->redirigir('/');
         }
