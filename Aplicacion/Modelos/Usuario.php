@@ -12,7 +12,8 @@ class Usuario
     protected ?string $nombreCompleto;
     protected ?string $fotoPerfil;
     protected ?string $correoUsuario;
-    protected ?string $contrasena;          
+    protected ?string $numeroTelefonico;
+    protected ?string $contrasena;
     protected DateTime $fechaRegistro;
     protected bool $estado;
 
@@ -23,6 +24,7 @@ class Usuario
         ?string $nombreCompleto = null,
         ?string $fotoPerfil = null,
         ?string $correoUsuario = null,
+        ?string $numeroTelefonico = null,
         ?string $contrasena = null,
         ?DateTime $fechaRegistro = null,
         bool $estado = true
@@ -33,11 +35,12 @@ class Usuario
         $this->nombreCompleto = $nombreCompleto;
         $this->fotoPerfil = $fotoPerfil;
         $this->correoUsuario = $correoUsuario;
+        $this->numeroTelefonico = $numeroTelefonico;
         $this->contrasena = $contrasena;
         $this->fechaRegistro = $fechaRegistro ?? new DateTime();
         $this->estado = $estado;
     }
-    
+
     public function getIdUsuario(): ?int
     {
         return $this->idUsuario;
@@ -68,6 +71,11 @@ class Usuario
         return $this->correoUsuario;
     }
 
+    public function getNumeroTelefonico(): ?string
+    {
+        return $this->numeroTelefonico;
+    }
+
     public function getContrasena(): ?string
     {
         return $this->contrasena;
@@ -82,7 +90,7 @@ class Usuario
     {
         return $this->estado;
     }
-    
+
     public function setIdUsuario(?int $idUsuario): void
     {
         $this->idUsuario = $idUsuario;
@@ -111,6 +119,11 @@ class Usuario
     public function setCorreoUsuario(?string $correoUsuario): void
     {
         $this->correoUsuario = $correoUsuario;
+    }
+
+    public function setNumeroTelefonico(?string $numeroTelefonico): void
+    {
+        $this->numeroTelefonico = $numeroTelefonico;
     }
 
     public function setContrasena(?string $contrasena): void
