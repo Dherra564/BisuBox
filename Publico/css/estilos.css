@@ -286,7 +286,6 @@ h1, h2, h3 {
     border-color: var(--colorAdvertenciaBorde);
 }
 
-/* Caja informativa verde */
 .cajaInformativa {
     padding: 12px 20px;
     margin-bottom: 20px;
@@ -320,7 +319,6 @@ h1, h2, h3 {
     margin: 0;
 }
 
-/* Tarjeta de numero */
 .tarjetaDato h2 {
     margin: 0 0 4px;
     font-size: 0.95rem;
@@ -479,7 +477,7 @@ h1, h2, h3 {
     font-size: 0.85rem;
 }
 
-/* Zona para subir foto */
+
 .zonaFoto {
     display: flex;
     flex-direction: column;
@@ -536,7 +534,6 @@ h1, h2, h3 {
     font-weight: 600;
 }
 
-/* Boton que se ve como enlace */
 .botonEnlace {
     background: none;
     border: none;
@@ -628,7 +625,7 @@ h1, h2, h3 {
     display: inline;
 }
 
-/* Formulario a la izquierda y foto a la derecha */
+
 .disenoFormulario {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -645,7 +642,7 @@ h1, h2, h3 {
     background: var(--colorVerdeClaro);
 }
 
-/* El input de archivo queda oculto; se usa el boton (label) que esta encima */
+
 .campoArchivo {
     position: absolute;
     width: 1px;
@@ -838,7 +835,6 @@ h1, h2, h3 {
     margin-top: 6px;
 }
 
-/* Etiqueta arriba y dato abajo, para que el correo no se corte en la tarjeta */
 .listaContacto {
     grid-template-columns: 1fr;
     gap: 2px;

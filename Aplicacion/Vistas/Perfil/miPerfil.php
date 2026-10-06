@@ -1,14 +1,11 @@
 <?php
 /**
- * Mi perfil: el SuperAdmin cambia todos sus datos; el Vendedor, su nombre, su teléfono y su foto.
- * Se abre en modo lectura: los campos se habilitan con el botón Editar (ver alertas.js, formularioEditable).
- *
- * @var \Aplicacion\Modelos\Usuario $usuario Viene de PerfilControlador
- * @var string $rol 'SuperAdmin' o 'Vendedor'
- * @var bool $puedeEditarAcceso true para el SuperAdmin: puede cambiar su identificación y su correo
- * @var array $datos Valores escritos (se conservan si hay errores)
- * @var array $errores ['campo' => 'mensaje']
- * @var string $urlBase Viene de encabezado.php
+ * @var \Aplicacion\Modelos\Usuario $usuario
+ * @var string $rol
+ * @var bool $puedeEditarAcceso
+ * @var array $datos
+ * @var array $errores
+ * @var string $urlBase
  */
 
 use Aplicacion\Nucleo\Csrf;
@@ -18,7 +15,6 @@ $titulo = 'Mi perfil';
 $paginaActual = 'perfil';
 require __DIR__ . '/../Plantilla/encabezado.php';
 
-// Si el servidor devolvió errores, el formulario vuelve abierto para corregirlos
 $editando = $errores !== [];
 
 $valor = fn (string $campo): string => htmlspecialchars((string) ($datos[$campo] ?? ''));

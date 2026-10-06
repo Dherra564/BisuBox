@@ -84,7 +84,6 @@ class SesionRepositorio
         return $sentencia->rowCount();
     }
 
-    // Últimas sesiones con el nombre y correo de quien ingresó (las más recientes primero)
     public function listarConUsuario(int $limite = 100): array
     {
         $sql = 'SELECT s.tbsesionid            AS id,
@@ -102,7 +101,6 @@ class SesionRepositorio
         return BaseDatos::obtenerConexion()->query($sql)->fetchAll();
     }
 
-    // ¿Sigue abierta esta sesión en la base? Si se cerró o ya no existe, devuelve false
     public function estaAbierta(int $idSesion): bool
     {
         $sentencia = BaseDatos::obtenerConexion()->prepare(

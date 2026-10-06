@@ -7,9 +7,6 @@ use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Repositorios\SuperAdminRepositorio;
 use Configuracion\Configuracion;
 
-/**
- * Pestaña Ayuda: cómo contactar a los administradores (SuperAdmin) activos.
- */
 class AyudaControlador
 {
     public function mostrar(): void

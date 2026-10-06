@@ -11,8 +11,6 @@ $paginaActual = $paginaActual ?? '';
 $botonAccion = $botonAccion ?? null;
 $mensajes = $mensajes ?? [];
 
-// Opciones del módulo de usuarios. Cada una se muestra solo si el rol tiene su permiso (ver Permiso.php).
-// Ocultarlas no reemplaza la revisión en el servidor: cada controlador llama a Permiso::exigir().
 $opcionesMenu = [
     'inicio' => ['texto' => 'Inicio', 'ruta' => '/', 'permiso' => 'panel.ver'],
     'vendedores' => ['texto' => 'Vendedores', 'ruta' => '/vendedores', 'permiso' => 'vendedores.gestionar'],
@@ -22,7 +20,6 @@ $opcionesMenu = [
 ];
 $opcionesMenu = array_filter($opcionesMenu, fn(array $opcion): bool => Permiso::puede($opcion['permiso']));
 
-// Modulos que todavia no existen: se muestran en gris, sin enlace
 $proximasFases = ['Inventario', 'Proveedores', 'Compras', 'Producción', 'Pedidos', 'Ventas y caja', 'Gastos', 'Reportes'];
 ?>
 <!DOCTYPE html>
@@ -32,7 +29,6 @@ $proximasFases = ['Inventario', 'Proveedores', 'Compras', 'Producción', 'Pedido
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= htmlspecialchars($titulo) ?> | BisuBox</title>
-    <!-- Sin icono en la pestaña. "data:," evita que el navegador pida favicon.ico y salga un error 404 -->
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="<?= $urlBase ?>/css/estilos.css">
 </head>

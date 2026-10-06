@@ -7,15 +7,8 @@ use Aplicacion\Modelos\Sesion;
 use Aplicacion\Repositorios\SesionRepositorio;
 use Configuracion\Configuracion;
 
-/**
- * Quién puede hacer qué. Se usa al inicio de cada acción de un controlador:
- *   Permiso::exigir('vendedores.gestionar');
- * y en las vistas, para mostrar solo lo que el rol permite:
- *   if (Permiso::puede('sesiones.ver')) { ... }
- */
 class Permiso
 {
-    // permiso => roles que lo tienen
     private const PERMISOS = [
         'panel.ver' => [Sesion::TIPO_SUPERADMIN, Sesion::TIPO_VENDEDOR],
         'perfil.ver' => [Sesion::TIPO_SUPERADMIN, Sesion::TIPO_VENDEDOR],
@@ -24,7 +17,6 @@ class Permiso
         'ayuda.ver' => [Sesion::TIPO_SUPERADMIN, Sesion::TIPO_VENDEDOR],
     ];
 
-    // ¿El usuario conectado tiene este permiso? (no redirige, solo responde)
     public static function puede(string $permiso): bool
     {
         $tipo = UsuarioActual::tipo();
@@ -33,7 +25,6 @@ class Permiso
             && in_array($tipo, self::PERMISOS[$permiso] ?? [], true);
     }
 
-    // Exige sesión iniciada y no expirada. Si falla, redirige al login.
     public static function exigirSesion(): void
     {
         if (!UsuarioActual::haySesion()) {
@@ -45,17 +36,14 @@ class Permiso
             self::cerrarYAvisar('Su sesión se cerró por inactividad. Ingrese de nuevo.');
         }
 
-        // La sesión pudo cerrarse desde otro lado (por ejemplo, al desactivar la cuenta de un vendedor)
         $idSesionBd = ManejadorSesion::obtenerIdSesionBd();
         if ($idSesionBd !== null && !(new SesionRepositorio())->estaAbierta($idSesionBd)) {
             self::cerrarYAvisar('Su sesión ya no está activa. Ingrese de nuevo.');
         }
 
-        // Cada petición válida reinicia el contador de los 30 minutos
         ManejadorSesion::registrarActividad();
     }
 
-    // Exige sesión y además el permiso. Si no lo tiene, responde 403.
     public static function exigir(string $permiso): void
     {
         self::exigirSesion();
@@ -67,7 +55,6 @@ class Permiso
 
     private static function cerrarYAvisar(string $aviso): never
     {
-        // Mismo orden que en AutenticacionControlador::cerrarSesion()
         $idSesionBd = ManejadorSesion::obtenerIdSesionBd();
         if ($idSesionBd !== null) {
             (new SesionRepositorio())->cerrarPorId($idSesionBd);
@@ -75,7 +62,6 @@ class Permiso
 
         UsuarioActual::cerrar();
         ManejadorSesion::destruir();
-        // Sesión nueva y vacía, con su propia cookie, solo para mostrar el aviso en el login
         ManejadorSesion::arrancar();
         ManejadorSesion::regenerarId();
 

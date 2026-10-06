@@ -2,7 +2,6 @@
 
 namespace Aplicacion\Nucleo;
 
-
 class Validador
 {
     private array $errores = [];

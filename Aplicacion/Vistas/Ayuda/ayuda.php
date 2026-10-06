@@ -1,10 +1,7 @@
 <?php
 /**
- * Ayuda: datos de contacto de los administradores activos.
- * Se leen de la base en cada visita, así que si un administrador cambia sus datos, aquí se ven de inmediato.
- *
- * @var \Aplicacion\Modelos\SuperAdmin[] $administradores Viene de AyudaControlador
- * @var string $urlBase Viene de encabezado.php
+ * @var \Aplicacion\Modelos\SuperAdmin[] $administradores 
+ * @var string $urlBase 
  */
 
 $titulo = 'Ayuda';

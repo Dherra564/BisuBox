@@ -184,7 +184,6 @@ class PerfilControlador
             return $validador;
         }
 
-        // Cada tipo tiene su propia regla (ver TipoIdentificacion)
         $validador->tipoIdentificacion('tipoIdentificacion', $datos['tipoIdentificacion']);
         $validador->requerido('numeroIdentificacion', $datos['numeroIdentificacion'], 'Ingrese la identificación')
             ->identificacion('numeroIdentificacion', $datos['tipoIdentificacion'], $datos['numeroIdentificacion']);

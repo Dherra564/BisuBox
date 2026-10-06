@@ -1,6 +1,5 @@
 <?php
 /**
- *
  * @var \Aplicacion\Modelos\Vendedor $vendedor
  * @var string $urlBase
  */
