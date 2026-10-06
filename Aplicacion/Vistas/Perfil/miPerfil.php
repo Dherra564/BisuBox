@@ -1,12 +1,14 @@
 <?php
 /**
+ * Mi perfil: el SuperAdmin cambia todos sus datos; el Vendedor, su nombre, su teléfono y su foto.
+ * Se abre en modo lectura: los campos se habilitan con el botón Editar (ver alertas.js, formularioEditable).
  *
- * @var \Aplicacion\Modelos\Usuario $usuario
- * @var string $rol
- * @var bool $puedeEditarAcceso 
- * @var array $datos 
- * @var array $errores 
- * @var string $urlBase 
+ * @var \Aplicacion\Modelos\Usuario $usuario Viene de PerfilControlador
+ * @var string $rol 'SuperAdmin' o 'Vendedor'
+ * @var bool $puedeEditarAcceso true para el SuperAdmin: puede cambiar su identificación y su correo
+ * @var array $datos Valores escritos (se conservan si hay errores)
+ * @var array $errores ['campo' => 'mensaje']
+ * @var string $urlBase Viene de encabezado.php
  */
 
 use Aplicacion\Nucleo\Csrf;
@@ -16,6 +18,7 @@ $titulo = 'Mi perfil';
 $paginaActual = 'perfil';
 require __DIR__ . '/../Plantilla/encabezado.php';
 
+// Si el servidor devolvió errores, el formulario vuelve abierto para corregirlos
 $editando = $errores !== [];
 
 $valor = fn (string $campo): string => htmlspecialchars((string) ($datos[$campo] ?? ''));
@@ -89,15 +92,27 @@ $soloLectura = $editando ? '' : 'readonly';
                             <?= $mensajeError('numeroIdentificacion') ?>
                         </div>
                     </div>
-                    <div class="<?= $claseCampo('correoUsuario') ?>">
-                        <label for="correoUsuario">Correo <span class="obligatorio">*</span></label>
-                        <input type="email" id="correoUsuario" name="correoUsuario" maxlength="150"
-                               required data-regla="correo" <?= $soloLectura ?>
-                               data-editable data-original="<?= htmlspecialchars((string) $usuario->getCorreoUsuario()) ?>"
-                               data-mensaje-requerido="Ingrese el correo"
-                               value="<?= $valor('correoUsuario') ?>">
-                        <p class="textoAyuda">Con este correo inicia sesión</p>
-                        <?= $mensajeError('correoUsuario') ?>
+                    <div class="filaCampos">
+                        <div class="<?= $claseCampo('correoUsuario') ?>">
+                            <label for="correoUsuario">Correo <span class="obligatorio">*</span></label>
+                            <input type="email" id="correoUsuario" name="correoUsuario" maxlength="150"
+                                   required data-regla="correo" <?= $soloLectura ?>
+                                   data-editable data-original="<?= htmlspecialchars((string) $usuario->getCorreoUsuario()) ?>"
+                                   data-mensaje-requerido="Ingrese el correo"
+                                   value="<?= $valor('correoUsuario') ?>">
+                            <p class="textoAyuda">Con este correo inicia sesión</p>
+                            <?= $mensajeError('correoUsuario') ?>
+                        </div>
+                        <div class="<?= $claseCampo('numeroTelefonico') ?>">
+                            <label for="numeroTelefonico">Teléfono <span class="obligatorio">*</span></label>
+                            <input type="tel" id="numeroTelefonico" name="numeroTelefonico" maxlength="15"
+                                   required data-regla="telefono" inputmode="tel" <?= $soloLectura ?>
+                                   data-editable data-original="<?= htmlspecialchars((string) $usuario->getNumeroTelefonico()) ?>"
+                                   data-mensaje-requerido="Ingrese su teléfono"
+                                   value="<?= $valor('numeroTelefonico') ?>">
+                            <p class="textoAyuda">8 dígitos, por ejemplo 88451290</p>
+                            <?= $mensajeError('numeroTelefonico') ?>
+                        </div>
                     </div>
                 <?php else: ?>
                     <div class="filaCampos">
@@ -112,14 +127,29 @@ $soloLectura = $editando ? '' : 'readonly';
                                    value="<?= htmlspecialchars(TipoIdentificacion::formatear($usuario->getTipoIdentificacion(), $usuario->getNumeroIdentificacion())) ?>">
                         </div>
                     </div>
-                    <div class="campo">
-                        <label for="correoUsuario">Correo</label>
-                        <input type="email" id="correoUsuario" readonly
-                               value="<?= htmlspecialchars((string) $usuario->getCorreoUsuario()) ?>">
+                    <div class="filaCampos">
+                        <div class="campo">
+                            <label for="correoUsuario">Correo</label>
+                            <input type="email" id="correoUsuario" readonly
+                                   value="<?= htmlspecialchars((string) $usuario->getCorreoUsuario()) ?>">
+                        </div>
+                        <div class="<?= $claseCampo('numeroTelefonico') ?>">
+                            <label for="numeroTelefonico">Teléfono <span class="obligatorio">*</span></label>
+                            <input type="tel" id="numeroTelefonico" name="numeroTelefonico" maxlength="15"
+                                   required data-regla="telefono" inputmode="tel" <?= $soloLectura ?>
+                                   data-editable data-original="<?= htmlspecialchars((string) $usuario->getNumeroTelefonico()) ?>"
+                                   data-mensaje-requerido="Ingrese su teléfono"
+                                   value="<?= $valor('numeroTelefonico') ?>">
+                            <p class="textoAyuda">8 dígitos, por ejemplo 88451290</p>
+                            <?= $mensajeError('numeroTelefonico') ?>
+                        </div>
                     </div>
                 <?php endif; ?>
                 <?php if (!$puedeEditarAcceso): ?>
-                    <p class="textoAyuda">Para cambiar la identificación o el correo, comuníquese con el administrador.</p>
+                    <p class="textoAyuda">
+                        Si desea cambiar su identificación o su correo, comuníquese con un administrador.
+                        Más información en la pestaña de <a href="<?= $urlBase ?>/ayuda">Ayuda</a>.
+                    </p>
                 <?php endif; ?>
             </section>
 

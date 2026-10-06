@@ -17,10 +17,11 @@ class Permiso
 {
     // permiso => roles que lo tienen
     private const PERMISOS = [
-        'panel.ver'            => [Sesion::TIPO_SUPERADMIN, Sesion::TIPO_VENDEDOR],
-        'perfil.ver'           => [Sesion::TIPO_SUPERADMIN, Sesion::TIPO_VENDEDOR],
+        'panel.ver' => [Sesion::TIPO_SUPERADMIN, Sesion::TIPO_VENDEDOR],
+        'perfil.ver' => [Sesion::TIPO_SUPERADMIN, Sesion::TIPO_VENDEDOR],
         'vendedores.gestionar' => [Sesion::TIPO_SUPERADMIN],
-        'sesiones.ver'         => [Sesion::TIPO_SUPERADMIN],
+        'sesiones.ver' => [Sesion::TIPO_SUPERADMIN],
+        'ayuda.ver' => [Sesion::TIPO_SUPERADMIN, Sesion::TIPO_VENDEDOR],
     ];
 
     // ¿El usuario conectado tiene este permiso? (no redirige, solo responde)

@@ -7,7 +7,6 @@ use DateTime;
 class Vendedor extends Usuario
 {
     private ?int $idVendedor;
-    private ?string $numeroTelefonico;
     private DateTime $registroFechaVendedor;
     private bool $estadoVendedor;
 
@@ -18,15 +17,14 @@ class Vendedor extends Usuario
         ?string $nombreCompleto = null,
         ?string $fotoPerfil = null,
         ?string $correoUsuario = null,
+        ?string $numeroTelefonico = null,
         ?string $contrasena = null,
         ?DateTime $fechaRegistro = null,
         bool $estado = true,
         ?int $idVendedor = null,
-        ?string $numeroTelefonico = null,
         ?DateTime $registroFechaVendedor = null,
         bool $estadoVendedor = true
     ) {
-
         parent::__construct(
             $idUsuario,
             $tipoIdentificacion,
@@ -34,25 +32,20 @@ class Vendedor extends Usuario
             $nombreCompleto,
             $fotoPerfil,
             $correoUsuario,
+            $numeroTelefonico,
             $contrasena,
             $fechaRegistro,
             $estado
         );
 
         $this->idVendedor = $idVendedor;
-        $this->numeroTelefonico = $numeroTelefonico;
         $this->registroFechaVendedor = $registroFechaVendedor ?? new DateTime();
         $this->estadoVendedor = $estadoVendedor;
     }
-    
+
     public function getIdVendedor(): ?int
     {
         return $this->idVendedor;
-    }
-
-    public function getNumeroTelefonico(): ?string
-    {
-        return $this->numeroTelefonico;
     }
 
     public function getRegistroFechaVendedor(): DateTime
@@ -70,14 +63,8 @@ class Vendedor extends Usuario
         $this->idVendedor = $idVendedor;
     }
 
-    public function setNumeroTelefonico(?string $numeroTelefonico): void
-    {
-        $this->numeroTelefonico = $numeroTelefonico;
-    }
-
     public function setEstadoVendedor(bool $estadoVendedor): void
     {
         $this->estadoVendedor = $estadoVendedor;
     }
-
 }

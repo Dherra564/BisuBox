@@ -17,6 +17,7 @@ class SuperAdminRepositorio
         $this->conexion = BaseDatos::obtenerConexion();
     }
 
+    // Devuelve el SuperAdmin de ese usuario, o null si el usuario no es SuperAdmin
     public function buscarPorIdUsuario(int $idUsuario): ?SuperAdmin
     {
         $consulta = $this->conexion->prepare(
@@ -31,6 +32,25 @@ class SuperAdminRepositorio
         return $fila ? $this->crearDesdeFila($fila) : null;
     }
 
+    /**
+     * SuperAdmin activos, ordenados por nombre. Se usa en la pestaña Ayuda.
+     * Se lee siempre de la base, así que cualquier cambio en sus datos se ve de inmediato.
+     *
+     * @return SuperAdmin[]
+     */
+    public function listarActivos(): array
+    {
+        $consulta = $this->conexion->query(
+            'SELECT u.*, s.tbsuperadminid, s.tbsuperadminactivo
+             FROM tbsuperadmin s
+             INNER JOIN tbusuario u ON u.tbusuarioid = s.tbusuarioid
+             WHERE s.tbsuperadminactivo = 1 AND u.tbusuarioactivo = 1
+             ORDER BY u.tbusuarionombrecompleto ASC'
+        );
+
+        return array_map(fn(array $fila): SuperAdmin => $this->crearDesdeFila($fila), $consulta->fetchAll());
+    }
+
     private function crearDesdeFila(array $fila): SuperAdmin
     {
         return new SuperAdmin(
@@ -40,6 +60,7 @@ class SuperAdminRepositorio
             $fila['tbusuarionombrecompleto'],
             $fila['tbusuarioperfilimagen'],
             $fila['tbusuariocorreo'],
+            $fila['tbusuariotelefono'],
             $fila['tbusuariocontrasena'],
             $fila['tbusuarioregistrofecha'] !== null ? new DateTime($fila['tbusuarioregistrofecha']) : null,
             (bool) $fila['tbusuarioactivo'],

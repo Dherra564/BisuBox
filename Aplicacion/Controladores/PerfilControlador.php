@@ -34,6 +34,7 @@ class PerfilControlador
             'numeroIdentificacion' => $this->usuario->getNumeroIdentificacion(),
             'nombreCompleto' => $this->usuario->getNombreCompleto(),
             'correoUsuario' => $this->usuario->getCorreoUsuario(),
+            'numeroTelefonico' => $this->usuario->getNumeroTelefonico(),
         ], []);
     }
 
@@ -57,6 +58,7 @@ class PerfilControlador
             'correoUsuario' => $puedeEditarAcceso
                 ? mb_strtolower($leer('correoUsuario'), 'UTF-8')
                 : $this->usuario->getCorreoUsuario(),
+            'numeroTelefonico' => $leer('numeroTelefonico'),
         ];
 
         $validador = $this->validarDatos($datos, $puedeEditarAcceso);
@@ -72,6 +74,7 @@ class PerfilControlador
         $this->usuario->setNumeroIdentificacion($datos['numeroIdentificacion']);
         $this->usuario->setNombreCompleto(UsuarioRepositorio::limpiarEspacios($datos['nombreCompleto']));
         $this->usuario->setCorreoUsuario($datos['correoUsuario']);
+        $this->usuario->setNumeroTelefonico(Validador::limpiarTelefono($datos['numeroTelefonico']));
         if ($nombreFoto !== null) {
             $this->usuario->setFotoPerfil($nombreFoto);
         }
@@ -174,12 +177,17 @@ class PerfilControlador
             ->longitud('nombreCompleto', $datos['nombreCompleto'], 3, 100, 'El nombre debe tener entre 3 y 100 caracteres')
             ->soloLetras('nombreCompleto', $datos['nombreCompleto'], 'El nombre solo puede tener letras y espacios');
 
+        $validador->requerido('numeroTelefonico', $datos['numeroTelefonico'], 'Ingrese su teléfono')
+            ->telefono('numeroTelefonico', $datos['numeroTelefonico']);
+
         if (!$puedeEditarAcceso) {
             return $validador;
         }
 
+        // Cada tipo tiene su propia regla (ver TipoIdentificacion)
         $validador->tipoIdentificacion('tipoIdentificacion', $datos['tipoIdentificacion']);
-        $validador->requerido('numeroIdentificacion', $datos['numeroIdentificacion'], 'Ingrese la identificación') ->identificacion('numeroIdentificacion', $datos['tipoIdentificacion'], $datos['numeroIdentificacion']);
+        $validador->requerido('numeroIdentificacion', $datos['numeroIdentificacion'], 'Ingrese la identificación')
+            ->identificacion('numeroIdentificacion', $datos['tipoIdentificacion'], $datos['numeroIdentificacion']);
 
         $validador->requerido('correoUsuario', $datos['correoUsuario'], 'Ingrese el correo')
             ->correo('correoUsuario', $datos['correoUsuario']);

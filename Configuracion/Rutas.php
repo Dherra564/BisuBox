@@ -1,6 +1,7 @@
 <?php
 
 use Aplicacion\Controladores\AutenticacionControlador;
+use Aplicacion\Controladores\AyudaControlador;
 use Aplicacion\Controladores\FotoControlador;
 use Aplicacion\Controladores\InicioControlador;
 use Aplicacion\Controladores\PerfilControlador;
@@ -33,6 +34,9 @@ return function (Enrutador $enrutador): void {
     $enrutador->get('/vendedores/editar', [VendedorControlador::class, 'editar']);
     $enrutador->post('/vendedores/actualizar', [VendedorControlador::class, 'actualizar']);
     $enrutador->post('/vendedores/estado', [VendedorControlador::class, 'cambiarEstado']);
+
+    // Ayuda (Mariana): datos de contacto de los administradores
+    $enrutador->get('/ayuda', [AyudaControlador::class, 'mostrar']);
 
     // Sesiones (Damian). Solo para el SuperAdmin.
     $enrutador->get('/sesiones', [SesionControlador::class, 'listar']);

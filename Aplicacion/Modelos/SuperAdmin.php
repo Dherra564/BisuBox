@@ -6,7 +6,6 @@ use DateTime;
 
 class SuperAdmin extends Usuario
 {
-   
     private ?int $idSuperAdmin;
     private bool $estadoSuperAdmin;
 
@@ -17,13 +16,13 @@ class SuperAdmin extends Usuario
         ?string $nombreCompleto = null,
         ?string $fotoPerfil = null,
         ?string $correoUsuario = null,
+        ?string $numeroTelefonico = null,
         ?string $contrasena = null,
         ?DateTime $fechaRegistro = null,
         bool $estado = true,
         ?int $idSuperAdmin = null,
         bool $estadoSuperAdmin = true
     ) {
-    
         parent::__construct(
             $idUsuario,
             $tipoIdentificacion,
@@ -31,6 +30,7 @@ class SuperAdmin extends Usuario
             $nombreCompleto,
             $fotoPerfil,
             $correoUsuario,
+            $numeroTelefonico,
             $contrasena,
             $fechaRegistro,
             $estado
