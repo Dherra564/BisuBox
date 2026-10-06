@@ -102,6 +102,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     campo.readOnly = !editando;
                 }
             });
+            if (archivo) {
+                archivo.disabled = !editando;
+            }
         }
 
         formulario.querySelector('.formularioEditar').addEventListener('click', function () {

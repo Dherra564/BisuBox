@@ -146,7 +146,10 @@ $soloLectura = $editando ? '' : 'readonly';
                     </div>
                 <?php endif; ?>
                 <?php if (!$puedeEditarAcceso): ?>
-                    <p class="textoAyuda">Para cambiar la identificación o el correo, comuníquese con el administrador.</p>
+                    <p class="textoAyuda">
+                        Si desea cambiar su identificación o su correo, comuníquese con un administrador.
+                        Más información en la pestaña de <a href="<?= $urlBase ?>/ayuda">Ayuda</a>.
+                    </p>
                 <?php endif; ?>
             </section>
 
