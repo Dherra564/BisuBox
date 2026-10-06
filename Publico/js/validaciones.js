@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', function () {
             patron: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)\S{8,20}$/,
             mensaje: 'La contraseña debe tener entre 8 y 20 caracteres, una mayúscula, una minúscula y un número, sin espacios'
         },
-        // Igual que Validador::limpiarTelefono: acepta +506, espacios y guiones
         telefono: {
             prueba: function (valor) {
                 var numeros = valor.replace(/\D/g, '');
@@ -32,6 +31,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function cumpleRegla(regla, valor) {
         return regla.prueba ? regla.prueba(valor) : regla.patron.test(valor);
+    }
+
+    function limpiarIdentificacion(valor) {
+        return valor.replace(/[\s-]+/g, '').toUpperCase();
+    }
+
+    function opcionTipoIdentificacion(campo) {
+        var tipo = document.getElementById(campo.getAttribute('data-tipo'));
+        if (!tipo || tipo.value === '') {
+            return null;
+        }
+        return tipo.options[tipo.selectedIndex];
     }
 
     function quitarError(campo) {
@@ -59,12 +70,20 @@ document.addEventListener('DOMContentLoaded', function () {
         contenedor.appendChild(error);
     }
 
-    // Devuelve el mensaje de error del campo, o '' si está bien
     function revisarCampo(campo, formulario) {
         var valor = campo.type === 'password' ? campo.value : campo.value.trim();
 
         if (valor === '') {
             return campo.required ? (campo.getAttribute('data-mensaje-requerido') || 'Este campo es obligatorio') : '';
+        }
+
+        if (campo.getAttribute('data-regla') === 'identificacion') {
+            var opcion = opcionTipoIdentificacion(campo);
+            if (opcion && opcion.getAttribute('data-patron')
+                && !new RegExp(opcion.getAttribute('data-patron')).test(limpiarIdentificacion(valor))) {
+                return opcion.getAttribute('data-mensaje');
+            }
+            return '';
         }
 
         var regla = reglas[campo.getAttribute('data-regla')];
@@ -102,7 +121,6 @@ document.addEventListener('DOMContentLoaded', function () {
             'input[required], input[data-regla], input[minlength], input[data-igual-a], input[data-distinto-de], select[required], textarea[required]'
         );
 
-        // Si confirmar contraseña tiene valor, se exige aunque la contraseña sea opcional (al editar)
         function camposPorRevisar() {
             return Array.prototype.filter.call(campos, function (campo) {
                 var idOtro = campo.getAttribute('data-igual-a');
@@ -136,7 +154,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Al corregir un campo, se quita su error
         campos.forEach(function (campo) {
             campo.addEventListener('input', function () {
                 if (campo.closest('.campoConError') && revisarCampo(campo, formulario) === '') {
@@ -146,7 +163,29 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Contador de caracteres debajo de los campos con data-contador y maxlength
+    document.querySelectorAll('[data-regla="identificacion"]').forEach(function (campo) {
+        var tipo = document.getElementById(campo.getAttribute('data-tipo'));
+        var ayuda = document.getElementById(campo.getAttribute('data-campo-ayuda'));
+        if (!tipo) {
+            return;
+        }
+
+        tipo.addEventListener('change', function () {
+            var opcion = opcionTipoIdentificacion(campo);
+            if (ayuda) {
+                ayuda.textContent = opcion ? opcion.getAttribute('data-ayuda') : 'Primero seleccione el tipo';
+            }
+            if (campo.closest('.campoConError') && campo.value !== '') {
+                var mensaje = revisarCampo(campo, campo.form);
+                if (mensaje === '') {
+                    quitarError(campo);
+                } else {
+                    ponerError(campo, mensaje);
+                }
+            }
+        });
+    });
+
     document.querySelectorAll('[data-contador]').forEach(function (campo) {
         var maximo = campo.maxLength;
         if (maximo <= 0) {
@@ -166,8 +205,6 @@ document.addEventListener('DOMContentLoaded', function () {
         actualizar();
     });
 
-    // Evita que un formulario POST se envíe dos veces (doble clic o Enter repetido).
-    // Va en document para correr después de la validación y del modal: si alguno detuvo el envío, no hace nada.
     document.addEventListener('submit', function (evento) {
         var formulario = evento.target;
         if (evento.defaultPrevented || formulario.method.toLowerCase() !== 'post') {
@@ -183,7 +220,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Si la persona vuelve con el botón Atrás, los formularios quedan usables otra vez
     window.addEventListener('pageshow', function (evento) {
         if (!evento.persisted) {
             return;

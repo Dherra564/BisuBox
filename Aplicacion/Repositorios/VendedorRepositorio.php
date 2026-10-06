@@ -3,15 +3,12 @@
 namespace Aplicacion\Repositorios;
 
 use Aplicacion\Modelos\Vendedor;
+use Aplicacion\Nucleo\TipoIdentificacion;
 use Configuracion\BaseDatos;
 use DateTime;
 use PDO;
 use Throwable;
 
-/**
- * Cada vendedor ocupa una fila en tbusuario y otra en tbvendedor. Se leen juntas
- * y se guardan juntas, en una sola transacción.
- */
 class VendedorRepositorio
 {
     public const POR_PAGINA = 10;
@@ -44,7 +41,6 @@ class VendedorRepositorio
         return $fila ? $this->crearDesdeFila($fila) : null;
     }
 
-    // Devuelve el vendedor de ese usuario, o null si el usuario no es vendedor (lo usa el inicio de sesión)
     public function buscarPorIdUsuario(int $idUsuario): ?Vendedor
     {
         $consulta = $this->conexion->prepare(
@@ -59,15 +55,10 @@ class VendedorRepositorio
         return $fila ? $this->crearDesdeFila($fila) : null;
     }
 
-    /**
-     * Una página de vendedores ordenada por nombre.
-     * $busqueda filtra por nombre, correo o identificación; $activo en null trae todos.
-     */
     public function listar(string $busqueda, ?bool $activo, int $pagina): array
     {
         [$condiciones, $valores] = $this->construirFiltros($busqueda, $activo);
 
-        // LIMIT y OFFSET van escritos en el SQL porque son enteros calculados aquí, nunca texto del usuario
         $desplazamiento = (max(1, $pagina) - 1) * self::POR_PAGINA;
         $consulta = $this->conexion->prepare(
             'SELECT u.*, v.tbvendedorid, v.tbvendedortelefono, v.tbvendedorregistrofecha, v.tbvendedoractivo
@@ -82,7 +73,6 @@ class VendedorRepositorio
         return array_map(fn(array $fila): Vendedor => $this->crearDesdeFila($fila), $consulta->fetchAll());
     }
 
-    // Cantidad de vendedores con los mismos filtros de listar(), para la paginación
     public function contar(string $busqueda, ?bool $activo): int
     {
         [$condiciones, $valores] = $this->construirFiltros($busqueda, $activo);
@@ -98,10 +88,6 @@ class VendedorRepositorio
         return (int) $consulta->fetchColumn();
     }
 
-    /**
-     * Guarda tbusuario y tbvendedor en una sola transacción y devuelve el id del vendedor.
-     * Si cualquiera de los dos falla, no se guarda ninguno.
-     */
     public function insertar(Vendedor $vendedor): int
     {
         BaseDatos::iniciarTransaccion();
@@ -133,10 +119,6 @@ class VendedorRepositorio
         return $idVendedor;
     }
 
-    /**
-     * Actualiza los datos del usuario y el teléfono.
-     * Si llega $contrasenaNueva (en texto), también se restablece la contraseña.
-     */
     public function actualizar(Vendedor $vendedor, ?string $contrasenaNueva = null): void
     {
         BaseDatos::iniciarTransaccion();
@@ -160,7 +142,6 @@ class VendedorRepositorio
         }
     }
 
-    // Activa o desactiva tbusuario y tbvendedor juntos. Al desactivar se cierran sus sesiones abiertas.
     public function cambiarEstado(Vendedor $vendedor, bool $activo): void
     {
         BaseDatos::iniciarTransaccion();
@@ -183,7 +164,6 @@ class VendedorRepositorio
         $vendedor->setEstadoVendedor($activo);
     }
 
-    // Arma el WHERE de listar() y contar(), para que las dos usen exactamente los mismos filtros
     private function construirFiltros(string $busqueda, ?bool $activo): array
     {
         $condiciones = [];
@@ -191,10 +171,10 @@ class VendedorRepositorio
 
         $busqueda = trim($busqueda);
         if ($busqueda !== '') {
-            // % y _ se escapan para que se busquen como texto y no como comodines
             $patron = '%' . addcslashes($busqueda, '%_\\') . '%';
+            $patronIdentificacion = '%' . addcslashes(TipoIdentificacion::limpiar($busqueda), '%_\\') . '%';
             $condiciones[] = '(u.tbusuarionombrecompleto LIKE ? OR u.tbusuariocorreo LIKE ? OR u.tbusuarioidentificacionnumero LIKE ?)';
-            array_push($valores, $patron, $patron, $patron);
+            array_push($valores, $patron, $patron, $patronIdentificacion);
         }
 
         if ($activo !== null) {
@@ -207,11 +187,11 @@ class VendedorRepositorio
         return [$sql, $valores];
     }
 
-    // Convierte una fila de tbusuario + tbvendedor en un objeto Vendedor
     private function crearDesdeFila(array $fila): Vendedor
     {
         return new Vendedor(
             (int) $fila['tbusuarioid'],
+            $fila['tbusuarioidentificaciontipo'],
             $fila['tbusuarioidentificacionnumero'],
             $fila['tbusuarionombrecompleto'],
             $fila['tbusuarioperfilimagen'],

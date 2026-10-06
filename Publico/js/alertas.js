@@ -96,11 +96,12 @@ document.addEventListener('DOMContentLoaded', function () {
         function cambiarModo(editando) {
             formulario.classList.toggle('editando', editando);
             campos.forEach(function (campo) {
-                campo.readOnly = !editando;
+                if (campo.tagName === 'SELECT') {
+                    campo.disabled = !editando;
+                } else {
+                    campo.readOnly = !editando;
+                }
             });
-            if (archivo) {
-                archivo.disabled = !editando;
-            }
         }
 
         formulario.querySelector('.formularioEditar').addEventListener('click', function () {
@@ -113,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
         formulario.querySelector('.formularioCancelar').addEventListener('click', function () {
             campos.forEach(function (campo) {
                 campo.value = campo.getAttribute('data-original');
-                campo.dispatchEvent(new Event('input'));
+                campo.dispatchEvent(new Event(campo.tagName === 'SELECT' ? 'change' : 'input'));
             });
             if (archivo) {
                 archivo.value = '';

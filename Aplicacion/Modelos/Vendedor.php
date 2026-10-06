@@ -13,6 +13,7 @@ class Vendedor extends Usuario
 
     public function __construct(
         ?int $idUsuario = null,
+        ?string $tipoIdentificacion = null,
         ?string $numeroIdentificacion = null,
         ?string $nombreCompleto = null,
         ?string $fotoPerfil = null,
@@ -28,6 +29,7 @@ class Vendedor extends Usuario
 
         parent::__construct(
             $idUsuario,
+            $tipoIdentificacion,
             $numeroIdentificacion,
             $nombreCompleto,
             $fotoPerfil,
@@ -42,8 +44,7 @@ class Vendedor extends Usuario
         $this->registroFechaVendedor = $registroFechaVendedor ?? new DateTime();
         $this->estadoVendedor = $estadoVendedor;
     }
-
-    // Getters
+    
     public function getIdVendedor(): ?int
     {
         return $this->idVendedor;

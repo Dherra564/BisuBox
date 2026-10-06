@@ -1,14 +1,11 @@
 <?php
 /**
- * Página de error. No usa la plantilla con menú para que funcione
- * aunque no haya sesión ni conexión a la base de datos.
- *
  * @var int $codigo
  * @var string $titulo
  * @var string $mensaje
  * @var string $urlBase
  * @var bool $haySesion
- * @var ?string $detalle Solo en desarrollo
+ * @var ?string $detalle
  */
 ?>
 <!DOCTYPE html>

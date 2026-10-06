@@ -12,6 +12,7 @@ class SuperAdmin extends Usuario
 
     public function __construct(
         ?int $idUsuario = null,
+        ?string $tipoIdentificacion = null,
         ?string $numeroIdentificacion = null,
         ?string $nombreCompleto = null,
         ?string $fotoPerfil = null,
@@ -25,6 +26,7 @@ class SuperAdmin extends Usuario
     
         parent::__construct(
             $idUsuario,
+            $tipoIdentificacion,
             $numeroIdentificacion,
             $nombreCompleto,
             $fotoPerfil,
@@ -38,7 +40,6 @@ class SuperAdmin extends Usuario
         $this->estadoSuperAdmin = $estadoSuperAdmin;
     }
 
-    // Getters
     public function getIdSuperAdmin(): ?int
     {
         return $this->idSuperAdmin;

@@ -1,15 +1,14 @@
 <?php
 /**
- * Lista de vendedores con búsqueda, filtro de estado y paginación.
  *
- * @var \Aplicacion\Modelos\Vendedor[] $vendedores Viene de VendedorControlador
- * @var string $busqueda Texto buscado
- * @var string $estado '' (todos), '1' (activos) o '0' (inactivos)
- * @var int $pagina Página actual
+ * @var \Aplicacion\Modelos\Vendedor[] $vendedores
+ * @var string $busqueda
+ * @var string $estado
+ * @var int $pagina
  * @var int $totalPaginas
- * @var int $total Cantidad de vendedores que cumplen los filtros
+ * @var int $total
  * @var int $porPagina
- * @var string $urlBase Viene de encabezado.php
+ * @var string $urlBase
  */
 
 use Aplicacion\Nucleo\Csrf;
@@ -21,7 +20,6 @@ require __DIR__ . '/../Plantilla/encabezado.php';
 
 $hayFiltros = $busqueda !== '' || $estado !== '';
 
-// 88451290 -> 8845-1290
 $formatoTelefono = fn (?string $telefono): string => strlen((string) $telefono) === 8
     ? substr($telefono, 0, 4) . '-' . substr($telefono, 4)
     : (string) $telefono;

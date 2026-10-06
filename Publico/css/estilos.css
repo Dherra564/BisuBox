@@ -1,9 +1,3 @@
-/*
- * Estilos de BisuBox, segun los wireframes v2.
- * Los colores, fuentes y medidas estan en variables: para cambiar el diseño, cambiar solo esta parte.
- * Mariana completa los componentes que falten (modal, etc.) usando estas mismas variables.
- */
-/* Fuentes guardadas en el proyecto (Publico/fuentes): funcionan sin internet. Licencia SIL Open Font. */
 @font-face {
     font-family: "Figtree";
     src: url("../fuentes/figtree400.woff2") format("woff2");
@@ -460,7 +454,8 @@ h1, h2, h3 {
     background: var(--colorSuperficie);
 }
 
-.campo input[readonly] {
+.campo input[readonly],
+.campo select:disabled {
     background: var(--colorVerdeClaro);
     color: var(--colorTextoSuave);
 }
