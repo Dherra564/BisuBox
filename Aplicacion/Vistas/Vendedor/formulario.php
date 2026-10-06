@@ -1,14 +1,14 @@
 <?php
 /**
- * Formulario para registrar un vendedor nuevo o editar uno existente.
  *
- * @var \Aplicacion\Modelos\Vendedor|null $vendedor null al registrar; el vendedor al editar
- * @var array $datos Valores escritos (se conservan si hay errores; la contraseña nunca)
- * @var array $errores ['campo' => 'mensaje']
- * @var string $urlBase Viene de encabezado.php
+ * @var \Aplicacion\Modelos\Vendedor|null $vendedor
+ * @var array $datos
+ * @var array $errores
+ * @var string $urlBase 
  */
 
 use Aplicacion\Nucleo\Csrf;
+use Aplicacion\Nucleo\TipoIdentificacion;
 
 $esNuevo = $vendedor === null;
 $titulo = $esNuevo ? 'Nuevo vendedor' : 'Editar vendedor';
@@ -54,14 +54,34 @@ $rutaCancelar = $esNuevo ? '/vendedores' : '/vendedores/detalle?id=' . (int) $ve
                     <?= $mensajeError('nombreCompleto') ?>
                 </div>
                 <div class="filaCampos">
+                    <div class="<?= $claseCampo('tipoIdentificacion') ?>">
+                        <label for="tipoIdentificacion">Tipo de identificación <span class="obligatorio">*</span></label>
+                        <select id="tipoIdentificacion" name="tipoIdentificacion" required
+                                data-mensaje-requerido="Seleccione el tipo de identificación">
+                            <option value="">Seleccione el tipo</option>
+                            <?php foreach (TipoIdentificacion::todos() as $codigo => $tipo): ?>
+                                <option value="<?= $codigo ?>" <?= ($datos['tipoIdentificacion'] ?? '') === $codigo ? 'selected' : '' ?>
+                                        data-patron="<?= htmlspecialchars($tipo['patron']) ?>"
+                                        data-mensaje="<?= htmlspecialchars($tipo['mensaje']) ?>"
+                                        data-ayuda="<?= htmlspecialchars($tipo['ayuda']) ?>">
+                                    <?= htmlspecialchars($tipo['nombre']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <?= $mensajeError('tipoIdentificacion') ?>
+                    </div>
                     <div class="<?= $claseCampo('numeroIdentificacion') ?>">
                         <label for="numeroIdentificacion">Identificación <span class="obligatorio">*</span></label>
-                        <input type="text" id="numeroIdentificacion" name="numeroIdentificacion" minlength="6" maxlength="20"
-                               required data-regla="alfanumerico"
+                        <input type="text" id="numeroIdentificacion" name="numeroIdentificacion" maxlength="25"
+                               required data-regla="identificacion" data-tipo="tipoIdentificacion"
+                               data-campo-ayuda="ayudaIdentificacion"
                                data-mensaje-requerido="Ingrese la identificación"
-                               data-mensaje-largo="La identificación debe tener entre 6 y 20 caracteres"
                                value="<?= $valor('numeroIdentificacion') ?>">
-                        <p class="textoAyuda">Solo letras y números, sin espacios ni guiones</p>
+                        <p class="textoAyuda" id="ayudaIdentificacion">
+                            <?= htmlspecialchars(TipoIdentificacion::existe($datos['tipoIdentificacion'] ?? null)
+                                ? TipoIdentificacion::todos()[$datos['tipoIdentificacion']]['ayuda']
+                                : 'Primero seleccione el tipo') ?>
+                        </p>
                         <?= $mensajeError('numeroIdentificacion') ?>
                     </div>
                     <div class="<?= $claseCampo('numeroTelefonico') ?>">

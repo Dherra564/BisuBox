@@ -6,6 +6,7 @@ use Aplicacion\Modelos\Vendedor;
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\Mensaje;
 use Aplicacion\Nucleo\SubidaArchivo;
+use Aplicacion\Nucleo\TipoIdentificacion;
 use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\Validador;
 use Aplicacion\Repositorios\UsuarioRepositorio;
@@ -14,10 +15,6 @@ use Configuracion\Configuracion;
 use DateTime;
 use Throwable;
 
-/**
- * CRUD de vendedores. Solo lo usa el SuperAdmin.
- * Nada se borra: los vendedores se activan o desactivan.
- */
 class VendedorControlador
 {
     private VendedorRepositorio $vendedorRepositorio;
@@ -30,7 +27,6 @@ class VendedorControlador
         $this->usuarioRepositorio = new UsuarioRepositorio();
     }
 
-    // GET /vendedores
     public function listar(): void
     {
         $busqueda = is_string($_GET['busqueda'] ?? null) ? mb_substr(trim($_GET['busqueda']), 0, 100, 'UTF-8') : '';
@@ -52,7 +48,6 @@ class VendedorControlador
         ]);
     }
 
-    // GET /vendedores/detalle?id=5
     public function detalle(): void
     {
         $this->mostrarVista('Vendedor/detalle', [
@@ -60,10 +55,10 @@ class VendedorControlador
         ]);
     }
 
-    // GET /vendedores/nuevo
     public function nuevo(): void
     {
         $this->mostrarFormulario(null, [
+            'tipoIdentificacion' => TipoIdentificacion::CEDULA,
             'numeroIdentificacion' => '',
             'nombreCompleto' => '',
             'correoUsuario' => '',
@@ -71,7 +66,6 @@ class VendedorControlador
         ], []);
     }
 
-    // POST /vendedores/crear
     public function crear(): void
     {
         $this->verificarCsrf('/vendedores/nuevo');
@@ -93,9 +87,9 @@ class VendedorControlador
             return;
         }
 
-        // Las dos fechas de registro llevan el mismo momento
         $ahora = new DateTime();
         $vendedor = new Vendedor(
+            tipoIdentificacion: $datos['tipoIdentificacion'],
             numeroIdentificacion: $datos['numeroIdentificacion'],
             nombreCompleto: UsuarioRepositorio::limpiarEspacios($datos['nombreCompleto']),
             fotoPerfil: $nombreFoto,
@@ -120,12 +114,12 @@ class VendedorControlador
         $this->redirigir('/vendedores');
     }
 
-    // GET /vendedores/editar?id=5
     public function editar(): void
     {
         $vendedor = $this->cargarVendedor($_GET['id'] ?? null);
 
         $this->mostrarFormulario($vendedor, [
+            'tipoIdentificacion' => $vendedor->getTipoIdentificacion(),
             'numeroIdentificacion' => $vendedor->getNumeroIdentificacion(),
             'nombreCompleto' => $vendedor->getNombreCompleto(),
             'correoUsuario' => $vendedor->getCorreoUsuario(),
@@ -133,7 +127,6 @@ class VendedorControlador
         ], []);
     }
 
-    // POST /vendedores/actualizar
     public function actualizar(): void
     {
         $this->verificarCsrf('/vendedores');
@@ -145,7 +138,6 @@ class VendedorControlador
 
         $validador = $this->validarDatos($datos, $vendedor->getIdUsuario());
 
-        // La contraseña es opcional al editar: si se escribe una, se restablece
         $restablecer = $contrasena !== '' || $confirmar !== '';
         if ($restablecer) {
             $validador->requerido('contrasena', $contrasena, 'Ingrese la contraseña nueva')
@@ -162,6 +154,7 @@ class VendedorControlador
         }
 
         $fotoAnterior = $vendedor->getFotoPerfil();
+        $vendedor->setTipoIdentificacion($datos['tipoIdentificacion']);
         $vendedor->setNumeroIdentificacion($datos['numeroIdentificacion']);
         $vendedor->setNombreCompleto(UsuarioRepositorio::limpiarEspacios($datos['nombreCompleto']));
         $vendedor->setCorreoUsuario($datos['correoUsuario']);
@@ -180,7 +173,6 @@ class VendedorControlador
             return;
         }
 
-        // La foto vieja se borra solo cuando la nueva ya quedó guardada
         if ($nombreFoto !== null && $fotoAnterior !== null) {
             SubidaArchivo::eliminarFotoPerfil($fotoAnterior);
         }
@@ -189,7 +181,6 @@ class VendedorControlador
         $this->redirigir('/vendedores/detalle?id=' . $vendedor->getIdVendedor());
     }
 
-    // POST /vendedores/estado
     public function cambiarEstado(): void
     {
         $this->verificarCsrf('/vendedores');
@@ -214,7 +205,6 @@ class VendedorControlador
         $this->redirigir($this->rutaDeRegreso($vendedor));
     }
 
-    // Busca el vendedor por el id recibido; si no existe, vuelve a la lista con un mensaje
     private function cargarVendedor(mixed $id): Vendedor
     {
         $idVendedor = is_string($id) && ctype_digit($id) ? (int) $id : 0;
@@ -228,39 +218,30 @@ class VendedorControlador
         return $vendedor;
     }
 
-    // Datos del formulario ya limpios: identificación en mayúscula y correo en minúscula
     private function leerDatos(): array
     {
         $leer = fn(string $campo): string => is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
 
         return [
-            'numeroIdentificacion' => strtoupper($leer('numeroIdentificacion')),
+            'tipoIdentificacion' => $leer('tipoIdentificacion'),
+            'numeroIdentificacion' => TipoIdentificacion::limpiar($leer('numeroIdentificacion')),
             'nombreCompleto' => $leer('nombreCompleto'),
             'correoUsuario' => mb_strtolower($leer('correoUsuario'), 'UTF-8'),
             'numeroTelefonico' => $leer('numeroTelefonico'),
         ];
     }
 
-    // Las contraseñas no se recortan: los espacios pueden ser parte de ellas
     private function leerContrasena(string $campo): string
     {
         return is_string($_POST[$campo] ?? null) ? $_POST[$campo] : '';
     }
 
-    // Al editar, $idUsuario excluye al propio vendedor de la revisión de duplicados
     private function validarDatos(array $datos, ?int $idUsuario): Validador
     {
         $validador = new Validador();
 
-        $validador->requerido('numeroIdentificacion', $datos['numeroIdentificacion'], 'Ingrese la identificación')
-            ->alfanumerico('numeroIdentificacion', $datos['numeroIdentificacion'])
-            ->longitud(
-                'numeroIdentificacion',
-                $datos['numeroIdentificacion'],
-                6,
-                20,
-                'La identificación debe tener entre 6 y 20 caracteres'
-            );
+        $validador->tipoIdentificacion('tipoIdentificacion', $datos['tipoIdentificacion']);
+        $validador->requerido('numeroIdentificacion', $datos['numeroIdentificacion'], 'Ingrese la identificación') ->identificacion('numeroIdentificacion', $datos['tipoIdentificacion'], $datos['numeroIdentificacion']);
 
         $validador->requerido('nombreCompleto', $datos['nombreCompleto'], 'Ingrese el nombre completo')
             ->longitud('nombreCompleto', $datos['nombreCompleto'], 3, 100, 'El nombre debe tener entre 3 y 100 caracteres')
@@ -301,7 +282,6 @@ class VendedorControlador
         return $nombre;
     }
 
-    // Después de activar o desactivar se vuelve a la pantalla desde donde se hizo
     private function rutaDeRegreso(Vendedor $vendedor): string
     {
         return ($_POST['volver'] ?? '') === 'detalle'
@@ -318,8 +298,6 @@ class VendedorControlador
         ]);
     }
 
-    // Pendiente: verificarCsrf, mostrarVista y redirigir son iguales a los de PerfilControlador;
-    // cuando exista ControladorBase se borran de aquí.
     private function verificarCsrf(string $rutaSiFalla): void
     {
         if (!Csrf::esValido()) {

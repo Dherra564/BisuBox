@@ -1,12 +1,12 @@
 <?php
 /**
- * Todos los datos de un vendedor, con su foto y sus acciones.
  *
- * @var \Aplicacion\Modelos\Vendedor $vendedor Viene de VendedorControlador
- * @var string $urlBase Viene de encabezado.php
+ * @var \Aplicacion\Modelos\Vendedor $vendedor
+ * @var string $urlBase
  */
 
 use Aplicacion\Nucleo\Csrf;
+use Aplicacion\Nucleo\TipoIdentificacion;
 
 $titulo = 'Detalle del vendedor';
 $paginaActual = 'vendedores';
@@ -25,8 +25,10 @@ $estaActivo = $vendedor->getEstadoVendedor();
         <h2><?= $nombre ?></h2>
         <dl class="listaDatos">
             <dt>Identificación</dt>
-            <dd><?= htmlspecialchars((string) $vendedor->getNumeroIdentificacion()) ?></dd>
-
+            <dd>
+                <?= htmlspecialchars(TipoIdentificacion::nombre($vendedor->getTipoIdentificacion())) ?>:
+                <?= htmlspecialchars(TipoIdentificacion::formatear($vendedor->getTipoIdentificacion(), $vendedor->getNumeroIdentificacion())) ?>
+            </dd>
             <dt>Correo</dt>
             <dd><?= htmlspecialchars((string) $vendedor->getCorreoUsuario()) ?></dd>
 
@@ -48,14 +50,13 @@ $estaActivo = $vendedor->getEstadoVendedor();
         </dl>
 
         <div class="grupoBotones">
-            <a href="<?= $urlBase ?>/vendedores/editar?id=<?= (int) $vendedor->getIdVendedor() ?>" class="boton">Editar</a>
-            <form method="post" action="<?= $urlBase ?>/vendedores/estado" class="formularioEnLinea"
-                  data-confirmar="<?= $estaActivo
-                      ? "¿Desea desactivar a {$nombre}? No podrá iniciar sesión hasta que se active de nuevo."
-                      : "¿Desea activar a {$nombre}? Podrá iniciar sesión de nuevo." ?>"
-                  data-titulo="<?= $estaActivo ? 'Desactivar vendedor' : 'Activar vendedor' ?>"
-                  data-boton="<?= $estaActivo ? 'Desactivar' : 'Activar' ?>"
-                  <?= $estaActivo ? 'data-peligro' : '' ?>>
+            <a href="<?= $urlBase ?>/vendedores/editar?id=<?= (int) $vendedor->getIdVendedor() ?>"
+                class="boton">Editar</a>
+            <form method="post" action="<?= $urlBase ?>/vendedores/estado" class="formularioEnLinea" data-confirmar="<?= $estaActivo
+                  ? "¿Desea desactivar a {$nombre}? No podrá iniciar sesión hasta que se active de nuevo."
+                  : "¿Desea activar a {$nombre}? Podrá iniciar sesión de nuevo." ?>"
+                data-titulo="<?= $estaActivo ? 'Desactivar vendedor' : 'Activar vendedor' ?>"
+                data-boton="<?= $estaActivo ? 'Desactivar' : 'Activar' ?>" <?= $estaActivo ? 'data-peligro' : '' ?>>
                 <?= Csrf::campo() ?>
                 <input type="hidden" name="id" value="<?= (int) $vendedor->getIdVendedor() ?>">
                 <input type="hidden" name="activo" value="<?= $estaActivo ? '0' : '1' ?>">
@@ -70,7 +71,7 @@ $estaActivo = $vendedor->getEstadoVendedor();
     <aside>
         <section class="formularioSeccion textoCentrado">
             <img src="<?= $urlBase ?>/fotos/perfil?archivo=<?= urlencode((string) ($vendedor->getFotoPerfil() ?? '')) ?>"
-                 alt="Foto de perfil de <?= $nombre ?>" class="fotoPerfilGrande">
+                alt="Foto de perfil de <?= $nombre ?>" class="fotoPerfilGrande">
         </section>
     </aside>
 </div>

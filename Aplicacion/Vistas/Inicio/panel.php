@@ -1,9 +1,7 @@
 <?php
 /**
- * Panel de inicio según el rol.
- *
- * @var int $totalUsuarios Viene de InicioControlador
- * @var string $urlBase Viene de encabezado.php
+ * @var int $totalUsuarios
+ * @var string $urlBase
  */
 
 use Aplicacion\Nucleo\Permiso;
@@ -13,7 +11,6 @@ $titulo = 'Inicio';
 $paginaActual = 'inicio';
 require __DIR__ . '/../Plantilla/encabezado.php';
 
-// Accesos directos: cada rol ve solo los que tiene permitidos
 $accesos = [
     ['texto' => 'Mi perfil', 'permiso' => 'perfil.ver', 'ruta' => '/perfil',
      'descripcion' => 'Edite sus datos y cambie su contraseña.'],

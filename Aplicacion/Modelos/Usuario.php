@@ -7,6 +7,7 @@ use DateTime;
 class Usuario
 {
     protected ?int $idUsuario;
+    protected ?string $tipoIdentificacion;
     protected ?string $numeroIdentificacion;
     protected ?string $nombreCompleto;
     protected ?string $fotoPerfil;
@@ -17,6 +18,7 @@ class Usuario
 
     public function __construct(
         ?int $idUsuario = null,
+        ?string $tipoIdentificacion = null,
         ?string $numeroIdentificacion = null,
         ?string $nombreCompleto = null,
         ?string $fotoPerfil = null,
@@ -26,6 +28,7 @@ class Usuario
         bool $estado = true
     ) {
         $this->idUsuario = $idUsuario;
+        $this->tipoIdentificacion = $tipoIdentificacion;
         $this->numeroIdentificacion = $numeroIdentificacion;
         $this->nombreCompleto = $nombreCompleto;
         $this->fotoPerfil = $fotoPerfil;
@@ -34,11 +37,15 @@ class Usuario
         $this->fechaRegistro = $fechaRegistro ?? new DateTime();
         $this->estado = $estado;
     }
-
     
     public function getIdUsuario(): ?int
     {
         return $this->idUsuario;
+    }
+
+    public function getTipoIdentificacion(): ?string
+    {
+        return $this->tipoIdentificacion;
     }
 
     public function getNumeroIdentificacion(): ?string
@@ -75,11 +82,15 @@ class Usuario
     {
         return $this->estado;
     }
-
     
     public function setIdUsuario(?int $idUsuario): void
     {
         $this->idUsuario = $idUsuario;
+    }
+
+    public function setTipoIdentificacion(?string $tipoIdentificacion): void
+    {
+        $this->tipoIdentificacion = $tipoIdentificacion;
     }
 
     public function setNumeroIdentificacion(?string $numeroIdentificacion): void
@@ -111,6 +122,4 @@ class Usuario
     {
         $this->estado = $estado;
     }
-
-    // No hay setFechaRegistro: la fecha se asigna al guardar y no debería cambiar
 }

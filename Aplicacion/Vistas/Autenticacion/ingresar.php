@@ -1,8 +1,7 @@
 <?php
 /**
- * Pantalla de inicio de sesión.
  *
- * @var array $mensajes Viene de AutenticacionControlador
+ * @var array $mensajes
  */
 
 use Aplicacion\Nucleo\Csrf;

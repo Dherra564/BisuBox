@@ -17,7 +17,6 @@ class SuperAdminRepositorio
         $this->conexion = BaseDatos::obtenerConexion();
     }
 
-    // Devuelve el SuperAdmin de ese usuario, o null si el usuario no es SuperAdmin
     public function buscarPorIdUsuario(int $idUsuario): ?SuperAdmin
     {
         $consulta = $this->conexion->prepare(
@@ -36,6 +35,7 @@ class SuperAdminRepositorio
     {
         return new SuperAdmin(
             (int) $fila['tbusuarioid'],
+            $fila['tbusuarioidentificaciontipo'],
             $fila['tbusuarioidentificacionnumero'],
             $fila['tbusuarionombrecompleto'],
             $fila['tbusuarioperfilimagen'],

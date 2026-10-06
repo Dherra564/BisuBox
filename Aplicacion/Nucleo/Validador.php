@@ -42,12 +42,27 @@ class Validador
         }
         return $this;
     }
-
     
     public function alfanumerico(string $campo, ?string $valor, string $mensaje = 'Solo se permiten letras y números, sin espacios ni guiones'): self
     {
         if ($this->debeRevisar($campo, $valor) && !preg_match('/^[A-Za-z0-9]+$/', $valor)) {
             $this->agregarError($campo, $mensaje);
+        }
+        return $this;
+    }
+    public function tipoIdentificacion(string $campo, ?string $tipo, string $mensaje = 'Seleccione el tipo de identificación'): self
+    {
+        if (!isset($this->errores[$campo]) && !TipoIdentificacion::existe($tipo)) {
+            $this->agregarError($campo, $mensaje);
+        }
+        return $this;
+    }
+
+    public function identificacion(string $campo, ?string $tipo, ?string $numero): self
+    {
+        if ($this->debeRevisar($campo, $numero) && TipoIdentificacion::existe($tipo)
+            && !TipoIdentificacion::esValida($tipo, $numero)) {
+            $this->agregarError($campo, TipoIdentificacion::mensaje($tipo));
         }
         return $this;
     }
