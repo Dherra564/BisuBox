@@ -92,8 +92,6 @@ CREATE TABLE `tbvendedor` (
 
 --
 -- Datos iniciales: administrador por defecto
--- La contraseña va encriptada con password_hash.
--- El teléfono es de ejemplo: el administrador lo cambia por el suyo en Mi perfil.
 --
 
 INSERT INTO
@@ -131,8 +129,43 @@ INSERT INTO
 VALUES (1, 1, 1);
 
 --
--- Índices para tablas volcadas
+-- Datos iniciales: vendedor por defecto
 --
+
+INSERT INTO
+    `tbusuario` (
+        `tbusuarioid`,
+        `tbusuarioidentificaciontipo`,
+        `tbusuarioidentificacionnumero`,
+        `tbusuarionombrecompleto`,
+        `tbusuarioperfilimagen`,
+        `tbusuariocorreo`,
+        `tbusuariotelefono`,
+        `tbusuariocontrasena`,
+        `tbusuarioregistrofecha`,
+        `tbusuarioactivo`
+    )
+VALUES (
+        2,
+        'Cedula',
+        '200000002',
+        'Vendedor de Prueba',
+        NULL,
+        'vendedor@bisubox.com',
+        '77777777',
+        '$2y$12$cy7xzNTAn0Gl/Ymia8TU1evpuuyjzp4UfwlBRIY0ocJvWYYVhAdzm',
+        NOW(),
+        1
+    );
+
+INSERT INTO
+    `tbvendedor` (
+        `tbvendedorid`,
+        `tbusuarioid`,
+        `tbvendedorregistrofecha`,
+        `tbvendedoractivo`
+    )
+VALUES (1, 2, NOW(), 1);
 
 --
 -- Indices de la tabla `tbsesion`
