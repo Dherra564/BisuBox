@@ -69,7 +69,8 @@ $proximasFases = ['Inventario', 'Proveedores', 'Compras', 'Producción', 'Pedido
                         <a href="<?= $urlBase ?>/perfil"
                             class="nombreUsuario"><?= htmlspecialchars((string) UsuarioActual::nombre()) ?></a>
                         <span class="etiqueta etiquetaRol"><?= htmlspecialchars((string) UsuarioActual::tipo()) ?></span>
-                        <form method="post" action="<?= $urlBase ?>/salir" class="formularioSalir">
+                        <form method="post" action="<?= $urlBase ?>/salir" class="formularioSalir"
+                            data-confirmar="¿Desea cerrar sesión?" data-titulo="Cerrar sesión" data-boton="Cerrar sesión">
                             <?= Csrf::campo() ?>
                             <button type="submit" class="boton botonSecundario botonPequeno">Cerrar sesión</button>
                         </form>
