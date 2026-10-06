@@ -33,11 +33,11 @@ $rutaCancelar = $esNuevo ? '/vendedores' : '/vendedores/detalle?id=' . (int) $ve
 <?php endif; ?>
 
 <form method="post" action="<?= $urlBase ?>/vendedores/<?= $esNuevo ? 'crear' : 'actualizar' ?>"
-      enctype="multipart/form-data" novalidate class="validarFormulario">
-    <?= Csrf::campo() ?>
-    <?php if (!$esNuevo): ?>
-        <input type="hidden" name="id" value="<?= (int) $vendedor->getIdVendedor() ?>">
-    <?php endif; ?>
+      enctype="multipart/form-data" novalidate class="validarFormulario"
+      <?php if (!$esNuevo): ?>
+          data-confirmar="¿Desea guardar los cambios de <?= htmlspecialchars((string) $vendedor->getNombreCompleto()) ?>?"
+          data-titulo="Guardar cambios" data-boton="Guardar"
+      <?php endif; ?>>
 
     <div class="disenoFormulario">
         <div>

@@ -65,6 +65,16 @@ class UsuarioRepositorio
         return (int) $consulta->fetchColumn() > 0;
     }
 
+    public function existeTelefono(string $telefono, ?int $excluirIdUsuario = null): bool
+    {
+        $consulta = $this->conexion->prepare(
+            'SELECT COUNT(*) FROM tbusuario WHERE tbusuariotelefono = ? AND tbusuarioid <> ?'
+        );
+        $consulta->execute([$telefono, $excluirIdUsuario ?? 0]);
+
+        return (int) $consulta->fetchColumn() > 0;
+    }
+
     public function insertar(Usuario $usuario): int
     {
         $transaccionPropia = !$this->conexion->inTransaction();

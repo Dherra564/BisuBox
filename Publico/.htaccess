@@ -1,7 +1,7 @@
 # No mostrar la lista de archivos de una carpeta
 Options -Indexes
 
-# Bloquear archivos ocultos (.env, .htaccess, .git...) por si alguien los pide directo
+# Bloquear archivos ocultos (.env, .htaccess, .git...)
 <FilesMatch "^\.">
     Require all denied
 </FilesMatch>
