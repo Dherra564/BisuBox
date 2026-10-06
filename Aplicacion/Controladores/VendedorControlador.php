@@ -241,7 +241,7 @@ class VendedorControlador
         $validador = new Validador();
 
         $validador->tipoIdentificacion('tipoIdentificacion', $datos['tipoIdentificacion']);
-        $validador->requerido('numeroIdentificacion', $datos['numeroIdentificacion'], 'Ingrese la identificación') ->identificacion('numeroIdentificacion', $datos['tipoIdentificacion'], $datos['numeroIdentificacion']);
+        $validador->requerido('numeroIdentificacion', $datos['numeroIdentificacion'], 'Ingrese la identificación')->identificacion('numeroIdentificacion', $datos['tipoIdentificacion'], $datos['numeroIdentificacion']);
 
         $validador->requerido('nombreCompleto', $datos['nombreCompleto'], 'Ingrese el nombre completo')
             ->longitud('nombreCompleto', $datos['nombreCompleto'], 3, 100, 'El nombre debe tener entre 3 y 100 caracteres')
@@ -264,6 +264,12 @@ class VendedorControlador
             && $this->usuarioRepositorio->existeIdentificacion($datos['numeroIdentificacion'], $idUsuario)
         ) {
             $validador->agregarError('numeroIdentificacion', 'Ya existe otro usuario con esta identificación');
+        }
+        if (
+            $validador->error('numeroTelefonico') === null
+            && $this->usuarioRepositorio->existeTelefono(Validador::limpiarTelefono($datos['numeroTelefonico']), $idUsuario)
+        ) {
+            $validador->agregarError('numeroTelefonico', 'Este teléfono ya lo usa otro usuario');
         }
 
         return $validador;

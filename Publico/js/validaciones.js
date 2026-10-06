@@ -10,8 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
             mensaje: 'Solo se permiten letras y espacios'
         },
         correo: {
-            patron: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-            mensaje: 'Ingrese un correo válido, por ejemplo nombre@correo.com'
+            patron: /^[a-z0-9](\.?[a-z0-9])*@gmail\.com$/i,
+            mensaje: 'Ingrese un correo de Gmail válido, por ejemplo nombre@gmail.com'
         },
         contrasena: {
             patron: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)\S{8,20}$/,
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 return /^[0-9]{8}$/.test(numeros);
             },
-            mensaje: 'El teléfono debe tener 8 dígitos'
+            mensaje: 'El teléfono debe tener 8 dígitos, solo números'
         }
     };
 

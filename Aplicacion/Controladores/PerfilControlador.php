@@ -179,6 +179,12 @@ class PerfilControlador
 
         $validador->requerido('numeroTelefonico', $datos['numeroTelefonico'], 'Ingrese su teléfono')
             ->telefono('numeroTelefonico', $datos['numeroTelefonico']);
+        if (
+            $validador->error('numeroTelefonico') === null
+            && $this->usuarioRepositorio->existeTelefono(Validador::limpiarTelefono($datos['numeroTelefonico']), $idUsuario)
+        ) {
+            $validador->agregarError('numeroTelefonico', 'Este teléfono ya lo usa otro usuario');
+        }
 
         if (!$puedeEditarAcceso) {
             return $validador;
