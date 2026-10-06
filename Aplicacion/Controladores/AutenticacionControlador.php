@@ -14,18 +14,18 @@ use Configuracion\Configuracion;
 
 class AutenticacionControlador
 {
-    private const MENSAJE_FALLO       = 'Correo o contraseña incorrectos';
+    private const MENSAJE_FALLO = 'Correo o contraseña incorrectos';
     private const MENSAJE_DESACTIVADA = 'Su cuenta está desactivada. Comuníquese con el administrador.';
 
     public function iniciarSesion(): void
     {
         // 1. Token CSRF
-        if (! Csrf::esValido()) {
+        if (!Csrf::esValido()) {
             Mensaje::error('La página expiró. Recargue e intente de nuevo.');
             $this->redirigir('/ingresar');
         }
 
-        $correo     = strtolower(trim($_POST['correo'] ?? ''));
+        $correo = strtolower(trim($_POST['correo'] ?? ''));
         $contrasena = $_POST['contrasena'] ?? '';
 
         if ($correo === '') {
@@ -43,7 +43,7 @@ class AutenticacionControlador
             $this->redirigir('/ingresar');
         }
 
-        if (! $usuario->getEstado()) {
+        if (!$usuario->getEstado()) {
             Mensaje::error(self::MENSAJE_DESACTIVADA);
             $this->redirigir('/ingresar');
         }
@@ -53,7 +53,7 @@ class AutenticacionControlador
             Mensaje::error('Su cuenta no tiene un rol asignado. Comuníquese con el administrador.');
             $this->redirigir('/ingresar');
         }
-        if (! $rol['activo']) {
+        if (!$rol['activo']) {
             Mensaje::error(self::MENSAJE_DESACTIVADA);
             $this->redirigir('/ingresar');
         }
@@ -76,10 +76,10 @@ class AutenticacionControlador
         $this->redirigir('/');
     }
 
-    
+
     public function cerrarSesion(): void
     {
-        if (! Csrf::esValido()) {
+        if (!Csrf::esValido()) {
             Mensaje::error('La página expiró. Recargue e intente de nuevo.');
             $this->redirigir('/');
         }
@@ -91,12 +91,8 @@ class AutenticacionControlador
 
         UsuarioActual::cerrar();
         ManejadorSesion::destruir();
-        // Sesión nueva y vacía, con su propia cookie, solo para mostrar el mensaje en el login
         ManejadorSesion::arrancar();
         ManejadorSesion::regenerarId();
-        Mensaje::exito('Sesión cerrada correctamente');
-
-        ManejadorSesion::arrancar();
         Mensaje::exito('Sesión cerrada correctamente');
         $this->redirigir('/ingresar');
     }
@@ -108,7 +104,7 @@ class AutenticacionControlador
             return ['tipo' => Sesion::TIPO_SUPERADMIN, 'activo' => $superAdmin->getEstadoSuperAdmin()];
         }
 
-        $vendedor = (new VendedorRepositorio())->buscarPorIdUsuario($idUsuario); 
+        $vendedor = (new VendedorRepositorio())->buscarPorIdUsuario($idUsuario);
         if ($vendedor !== null) {
             return ['tipo' => Sesion::TIPO_VENDEDOR, 'activo' => $vendedor->getEstadoVendedor()];
         }
@@ -128,10 +124,10 @@ class AutenticacionControlador
         require Configuracion::rutaBase() . '/Aplicacion/Vistas/' . $vista . '.php';
     }
 
-    
+
     public function mostrarLogin(): void
     {
-        
+
         if (UsuarioActual::haySesion()) {
             $this->redirigir('/');
         }

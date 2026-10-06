@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('.alertaCerrar').forEach(function (boton) {
@@ -16,8 +15,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Confirmación antes de activar, desactivar, etc., con el modal de la plantilla (modalConfirmacion.php).
-    // Si el navegador no soporta <dialog>, se usa la ventana del navegador.
     var modal = document.getElementById('modalConfirmacion');
     var formularioPendiente = null;
 
@@ -32,15 +29,18 @@ document.addEventListener('DOMContentLoaded', function () {
         modal.showModal();
     }
 
-    document.querySelectorAll('form[data-confirmar]').forEach(function (formulario) {
-        formulario.addEventListener('submit', function (evento) {
-            evento.preventDefault();
-            if (modal && typeof modal.showModal === 'function') {
-                abrirModal(formulario);
-            } else if (window.confirm(formulario.getAttribute('data-confirmar'))) {
-                formulario.submit();
-            }
-        });
+    document.addEventListener('submit', function (evento) {
+        var formulario = evento.target;
+        if (!formulario.hasAttribute('data-confirmar') || evento.defaultPrevented) {
+            return;
+        }
+
+        evento.preventDefault();
+        if (modal && typeof modal.showModal === 'function') {
+            abrirModal(formulario);
+        } else if (window.confirm(formulario.getAttribute('data-confirmar'))) {
+            formulario.submit();
+        }
     });
 
     if (modal) {
@@ -51,13 +51,12 @@ document.addEventListener('DOMContentLoaded', function () {
         modal.querySelector('.modalConfirmar').addEventListener('click', function () {
             var formulario = formularioPendiente;
             modal.close();
-            // submit() no vuelve a pasar por el evento, así que el modal no se abre otra vez
+            
             if (formulario) {
                 formulario.submit();
             }
         });
 
-        // Un clic en el fondo oscuro también cancela
         modal.addEventListener('click', function (evento) {
             if (evento.target === modal) {
                 modal.close();
@@ -69,7 +68,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Nombre de la foto elegida y vista previa
     document.querySelectorAll('.campoArchivo').forEach(function (campo) {
         var zona = campo.closest('.zonaFoto');
         var texto = zona ? zona.querySelector('.nombreArchivo') : null;
@@ -83,6 +81,66 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             if (imagen && archivo && archivo.type.indexOf('image/') === 0) {
                 imagen.src = URL.createObjectURL(archivo);
+            }
+        });
+    });
+
+    document.querySelectorAll('.formularioEditable').forEach(function (formulario) {
+        var campos = formulario.querySelectorAll('[data-editable]');
+        var archivo = formulario.querySelector('.campoArchivo');
+        var imagen = formulario.querySelector('.fotoPerfilGrande');
+        var nombreArchivo = formulario.querySelector('.nombreArchivo');
+        var imagenOriginal = imagen ? imagen.src : '';
+        var textoArchivoOriginal = nombreArchivo ? nombreArchivo.textContent : '';
+
+        function cambiarModo(editando) {
+            formulario.classList.toggle('editando', editando);
+            campos.forEach(function (campo) {
+                campo.readOnly = !editando;
+            });
+            if (archivo) {
+                archivo.disabled = !editando;
+            }
+        }
+
+        formulario.querySelector('.formularioEditar').addEventListener('click', function () {
+            cambiarModo(true);
+            if (campos.length > 0) {
+                campos[0].focus();
+            }
+        });
+
+        formulario.querySelector('.formularioCancelar').addEventListener('click', function () {
+            campos.forEach(function (campo) {
+                campo.value = campo.getAttribute('data-original');
+                campo.dispatchEvent(new Event('input'));
+            });
+            if (archivo) {
+                archivo.value = '';
+            }
+            if (imagen) {
+                imagen.src = imagenOriginal;
+            }
+            if (nombreArchivo) {
+                nombreArchivo.textContent = textoArchivoOriginal;
+            }
+
+            formulario.querySelectorAll('.errorCampo').forEach(function (error) {
+                error.remove();
+            });
+            formulario.querySelectorAll('.campoConError').forEach(function (campo) {
+                campo.classList.remove('campoConError');
+            });
+            document.querySelectorAll('.alertaFormulario').forEach(function (alerta) {
+                alerta.remove();
+            });
+
+            cambiarModo(false);
+        });
+
+        formulario.addEventListener('submit', function (evento) {
+            if (!formulario.classList.contains('editando')) {
+                evento.preventDefault();
             }
         });
     });

@@ -56,6 +56,7 @@
     --colorSuperficie: #ffffff;
     --colorTexto: #36403c;
     --colorTextoSuave: #63706b;
+    --colorTextoClaro: #ffffff;
     --colorBorde: #dbe6e1;
     --colorBordeCampo: #c9d9d1;
     --colorBordeFoto: #a9dbc4;         /* borde punteado de la zona para subir foto */
@@ -830,6 +831,14 @@ h1, h2, h3 {
     justify-content: flex-end;
 }
 
+/* ---------- Formulario que se edita con un botón (Mi perfil, ver alertas.js) ---------- */
+.formularioEditable:not(.editando) .formularioCancelar,
+.formularioEditable:not(.editando) .formularioGuardar,
+.formularioEditable:not(.editando) .zonaFoto .boton,
+.formularioEditable.editando .formularioEditar {
+    display: none;
+}
+
 /* ---------- Celular ---------- */
 @media (max-width: 768px) {
     .menuLateral {
@@ -958,7 +967,7 @@ h1, h2, h3 {
     }
 
     .formularioSalir {
-    display: inline;
-    margin: 0;
-}
+        display: inline;
+        margin: 0;
+    }
 }
