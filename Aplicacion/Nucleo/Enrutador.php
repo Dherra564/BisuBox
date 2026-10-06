@@ -7,7 +7,6 @@ use RuntimeException;
 
 class Enrutador
 {
-    // Estructura: ['GET' => ['/vendedores' => accion], 'POST' => [...]]
     private array $rutas = ['GET' => [], 'POST' => []];
 
     public function get(string $ruta, array | Closure $accion): void
@@ -20,7 +19,6 @@ class Enrutador
         $this->rutas['POST'][$this->normalizar($ruta)] = $accion;
     }
 
-    // Busca la ruta de la peticion actual y ejecuta su accion
     public function despachar(): void
     {
         $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
@@ -31,7 +29,6 @@ class Enrutador
             return;
         }
 
-        // La ruta existe pero con otro metodo (por ejemplo, abrir con GET algo que es POST)
         $otroMetodo = $metodo === 'GET' ? 'POST' : 'GET';
         if (isset($this->rutas[$otroMetodo][$ruta])) {
             ErrorControlador::metodoNoPermitido();
@@ -40,7 +37,6 @@ class Enrutador
         $this->rutaNoEncontrada();
     }
 
-    // Devuelve la ruta sin la carpeta del proyecto: /BisuBox/Publico/vendedores -> /vendedores
     private function rutaActual(): string
     {
         $ruta = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';

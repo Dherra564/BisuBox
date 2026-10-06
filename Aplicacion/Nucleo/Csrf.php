@@ -29,7 +29,6 @@ class Csrf
         $enviado = $_POST[self::CLAVE] ?? '';
         $guardado = $_SESSION[self::CLAVE] ?? '';
 
-        // hash_equals compara sin dar pistas por el tiempo que tarda
         return is_string($enviado) && $guardado !== '' && hash_equals($guardado, $enviado);
     }
 }

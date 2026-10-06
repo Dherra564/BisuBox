@@ -30,7 +30,6 @@ class FotoControlador
         readfile($ruta);
     }
 
-    // Imagen para quien no tiene foto: Publico/imagenes/avatarPorDefecto.jpg
     private function mostrarAvatarPorDefecto(): void
     {
         $ruta = Configuracion::rutaBase() . '/Publico/imagenes/avatarPorDefecto.jpg';

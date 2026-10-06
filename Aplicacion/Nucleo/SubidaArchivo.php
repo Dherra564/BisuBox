@@ -8,9 +8,8 @@ use finfo;
 
 class SubidaArchivo
 {
-    public const TAMANO_MAXIMO = 5 * 1024 * 1024;   // 5 MB
+    public const TAMANO_MAXIMO = 5 * 1024 * 1024; 
 
-    // Tipo real del archivo => extension con la que se guarda
     private const TIPOS_PERMITIDOS = [
         'image/jpeg' => 'jpg',
         'image/png' => 'png',
@@ -18,13 +17,11 @@ class SubidaArchivo
 
     private string $error = '';
 
-    // true si la persona eligio un archivo en el formulario (la foto es opcional)
     public static function seEnvio(?array $archivo): bool
     {
         return $archivo !== null && ($archivo['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE;
     }
 
-    // Guarda la foto y devuelve el nombre generado, o null si no se pudo (ver obtenerError())
     public function guardarFotoPerfil(array $archivo): ?string
     {
         $this->error = '';
@@ -42,7 +39,6 @@ class SubidaArchivo
             return $this->fallar('La foto debe ser JPG o PNG y pesar como máximo 5 MB');
         }
 
-        // Tipo real segun el contenido: un .exe o un .php renombrado a .jpg se rechaza
         $tipo = (new finfo(FILEINFO_MIME_TYPE))->file($temporal);
         if (!isset(self::TIPOS_PERMITIDOS[$tipo]) || @getimagesize($temporal) === false) {
             return $this->fallar('La foto debe ser JPG o PNG y pesar como máximo 5 MB');
@@ -50,7 +46,6 @@ class SubidaArchivo
 
         $carpeta = self::carpetaPerfiles();
         if (!is_dir($carpeta) || !is_writable($carpeta)) {
-            // En Linux pasa si la carpeta no tiene permiso de escritura para el servidor web (www-data)
             error_log("La carpeta de fotos no existe o no tiene permiso de escritura: {$carpeta}");
             return $this->fallar('No se pudo guardar la foto. Intente de nuevo más tarde.');
         }
@@ -61,7 +56,6 @@ class SubidaArchivo
             return $this->fallar('No se pudo guardar la foto. Intente de nuevo más tarde.');
         }
 
-        // Solo lectura y escritura para el dueño, lectura para el resto; nunca ejecutable
         @chmod($carpeta . '/' . $nombre, 0644);
 
         return $nombre;
@@ -72,7 +66,6 @@ class SubidaArchivo
         return $this->error;
     }
 
-    // Borra una foto anterior (por ejemplo, al cambiarla). Si no existe, no hace nada.
     public static function eliminarFotoPerfil(?string $nombre): void
     {
         $ruta = $nombre !== null ? self::rutaFotoPerfil($nombre) : null;
@@ -81,10 +74,6 @@ class SubidaArchivo
         }
     }
 
-    /**
-     * Ruta completa de una foto, o null si el nombre no es valido o no existe.
-     * El nombre se revisa con un patron estricto: asi nadie puede pedir "../../.env".
-     */
     public static function rutaFotoPerfil(string $nombre): ?string
     {
         if (!preg_match('/^[a-f0-9]{32}\.(jpg|png)$/', $nombre)) {

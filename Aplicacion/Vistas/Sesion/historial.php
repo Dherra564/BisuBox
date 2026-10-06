@@ -1,9 +1,7 @@
 <?php
 /**
- * Historial de sesiones.
- *
- * @var array $sesiones Viene de SesionControlador
- * @var string $urlBase Viene de encabezado.php
+ * @var array $sesiones
+ * @var string $urlBase
  */
 
 

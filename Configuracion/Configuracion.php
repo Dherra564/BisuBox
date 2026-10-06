@@ -9,8 +9,6 @@ class Configuracion
 {
     private static array $valores = [];
     private static bool $cargada = false;
-
-    // Carpeta raiz del proyecto (bisubox/), sin barra al final
     public static function rutaBase(): string
     {
         return dirname(__DIR__);
@@ -27,7 +25,6 @@ class Configuracion
             throw new RuntimeException('No existe el archivo .env. Copie .env.ejemplo como .env y complete sus datos.');
         }
 
-        // Lee cada linea "clave=valor"; ignora vacias y comentarios (#)
         $lineas = file($rutaEnv, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         foreach ($lineas as $linea) {
             $linea = trim($linea);
@@ -40,10 +37,8 @@ class Configuracion
 
         self::verificarClaves(['bdServidor', 'bdPuerto', 'bdNombre', 'bdUsuario', 'zonaHoraria']);
 
-        // Zona horaria: si no se define, las fechas salen con horas de diferencia
         date_default_timezone_set(self::obtener('zonaHoraria'));
 
-        // En desarrollo se ven los errores; en produccion solo van al registro
         $esDesarrollo = self::esDesarrollo();
         ini_set('display_errors', $esDesarrollo ? '1' : '0');
         ini_set('log_errors', '1');

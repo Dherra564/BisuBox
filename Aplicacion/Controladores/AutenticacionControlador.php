@@ -19,7 +19,7 @@ class AutenticacionControlador
 
     public function iniciarSesion(): void
     {
-        // 1. Token CSRF
+
         if (!Csrf::esValido()) {
             Mensaje::error('La página expiró. Recargue e intente de nuevo.');
             $this->redirigir('/ingresar');

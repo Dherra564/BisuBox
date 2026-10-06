@@ -8,19 +8,25 @@
 -- Versión de PHP: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+
 START TRANSACTION;
+
 SET time_zone = "+00:00";
 
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */
+;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */
+;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */
+;
+/*!40101 SET NAMES utf8mb4 */
+;
 
 --
 -- Base de datos: `bdbisubox`
 --
 CREATE DATABASE IF NOT EXISTS `bdbisubox` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 USE `bdbisubox`;
 
 -- --------------------------------------------------------
@@ -30,13 +36,13 @@ USE `bdbisubox`;
 --
 
 CREATE TABLE `tbsesion` (
-  `tbsesionid` int(11) NOT NULL,
-  `tbsesionusuarioid` int(11) DEFAULT NULL,
-  `tbsesionusuariotipo` varchar(20) DEFAULT NULL,
-  `tbsesionfechainicio` datetime DEFAULT current_timestamp(),
-  `tbsesionfechacierre` datetime DEFAULT NULL,
-  `tbsesionactivo` tinyint(4) DEFAULT 1
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `tbsesionid` int(11) NOT NULL,
+    `tbsesionusuarioid` int(11) DEFAULT NULL,
+    `tbsesionusuariotipo` varchar(20) DEFAULT NULL,
+    `tbsesionfechainicio` datetime DEFAULT current_timestamp(),
+    `tbsesionfechacierre` datetime DEFAULT NULL,
+    `tbsesionactivo` tinyint(4) DEFAULT 1
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -45,10 +51,10 @@ CREATE TABLE `tbsesion` (
 --
 
 CREATE TABLE `tbsuperadmin` (
-  `tbsuperadminid` int(11) NOT NULL,
-  `tbusuarioid` int(11) DEFAULT NULL,
-  `tbsuperadminactivo` tinyint(4) DEFAULT 1
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `tbsuperadminid` int(11) NOT NULL,
+    `tbusuarioid` int(11) DEFAULT NULL,
+    `tbsuperadminactivo` tinyint(4) DEFAULT 1
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -57,15 +63,17 @@ CREATE TABLE `tbsuperadmin` (
 --
 
 CREATE TABLE `tbusuario` (
-  `tbusuarioid` int(11) NOT NULL,
-  `tbusuarioidentificacionnumero` varchar(50) DEFAULT NULL,
-  `tbusuarionombrecompleto` varchar(100) DEFAULT NULL,
-  `tbusuarioperfilimagen` varchar(500) DEFAULT NULL,
-  `tbusuariocorreo` varchar(150) DEFAULT NULL,
-  `tbusuariocontrasena` varchar(255) DEFAULT NULL,
-  `tbusuarioregistrofecha` datetime DEFAULT current_timestamp(),
-  `tbusuarioactivo` tinyint(4) DEFAULT 1
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `tbusuarioid` int(11) NOT NULL,
+    `tbusuarioidentificaciontipo` varchar(20) DEFAULT NULL,
+    `tbusuarioidentificacionnumero` varchar(50) DEFAULT NULL,
+    `tbusuarionombrecompleto` varchar(100) DEFAULT NULL,
+    `tbusuarioperfilimagen` varchar(500) DEFAULT NULL,
+    `tbusuariocorreo` varchar(150) DEFAULT NULL,
+    `tbusuariotelefono` varchar(50) DEFAULT NULL,
+    `tbusuariocontrasena` varchar(255) DEFAULT NULL,
+    `tbusuarioregistrofecha` datetime DEFAULT current_timestamp(),
+    `tbusuarioactivo` tinyint(4) DEFAULT 1
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -74,12 +82,53 @@ CREATE TABLE `tbusuario` (
 --
 
 CREATE TABLE `tbvendedor` (
-  `tbvendedorid` int(11) NOT NULL,
-  `tbusuarioid` int(11) DEFAULT NULL,
-  `tbvendedortelefono` varchar(50) DEFAULT NULL,
-  `tbvendedorregistrofecha` datetime DEFAULT current_timestamp(),
-  `tbvendedoractivo` tinyint(4) DEFAULT 1
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `tbvendedorid` int(11) NOT NULL,
+    `tbusuarioid` int(11) DEFAULT NULL,
+    `tbvendedorregistrofecha` datetime DEFAULT current_timestamp(),
+    `tbvendedoractivo` tinyint(4) DEFAULT 1
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Datos iniciales: administrador por defecto
+-- La contraseña va encriptada con password_hash.
+-- El teléfono es de ejemplo: el administrador lo cambia por el suyo en Mi perfil.
+--
+
+INSERT INTO
+    `tbusuario` (
+        `tbusuarioid`,
+        `tbusuarioidentificaciontipo`,
+        `tbusuarioidentificacionnumero`,
+        `tbusuarionombrecompleto`,
+        `tbusuarioperfilimagen`,
+        `tbusuariocorreo`,
+        `tbusuariotelefono`,
+        `tbusuariocontrasena`,
+        `tbusuarioregistrofecha`,
+        `tbusuarioactivo`
+    )
+VALUES (
+        1,
+        'Cedula',
+        '100000001',
+        'Administrador General',
+        NULL,
+        'admin@bisubox.com',
+        '88888888',
+        '$2y$12$sNrx5WFwUFGk.6EZAWlEeupmQr6jtzbEHnDtvetlS98knq7HpxoYi',
+        NOW(),
+        1
+    );
+
+INSERT INTO
+    `tbsuperadmin` (
+        `tbsuperadminid`,
+        `tbusuarioid`,
+        `tbsuperadminactivo`
+    )
+VALUES (1, 1, 1);
 
 --
 -- Índices para tablas volcadas
@@ -88,28 +137,28 @@ CREATE TABLE `tbvendedor` (
 --
 -- Indices de la tabla `tbsesion`
 --
-ALTER TABLE `tbsesion`
-  ADD PRIMARY KEY (`tbsesionid`);
+ALTER TABLE `tbsesion` ADD PRIMARY KEY (`tbsesionid`);
 
 --
 -- Indices de la tabla `tbsuperadmin`
 --
-ALTER TABLE `tbsuperadmin`
-  ADD PRIMARY KEY (`tbsuperadminid`);
+ALTER TABLE `tbsuperadmin` ADD PRIMARY KEY (`tbsuperadminid`);
 
 --
 -- Indices de la tabla `tbusuario`
 --
-ALTER TABLE `tbusuario`
-  ADD PRIMARY KEY (`tbusuarioid`);
+ALTER TABLE `tbusuario` ADD PRIMARY KEY (`tbusuarioid`);
 
 --
 -- Indices de la tabla `tbvendedor`
 --
-ALTER TABLE `tbvendedor`
-  ADD PRIMARY KEY (`tbvendedorid`);
+ALTER TABLE `tbvendedor` ADD PRIMARY KEY (`tbvendedorid`);
+
 COMMIT;
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */
+;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */
+;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */
+;

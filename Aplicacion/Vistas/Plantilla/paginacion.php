@@ -1,28 +1,23 @@
 <?php
 /**
- * Paginación para cualquier lista. La vista define estas variables y después la incluye:
- *   require __DIR__ . '/../Plantilla/paginacion.php';
- *
- * @var int $pagina Página actual
+ * @var int $pagina
  * @var int $totalPaginas
- * @var int $total Cantidad de registros que cumplen los filtros
+ * @var int $total
  * @var int $porPagina
- * @var string $rutaPaginacion Ruta de la lista, por ejemplo '/vendedores'
- * @var array $parametrosPaginacion Filtros que se conservan al cambiar de página, por ejemplo ['busqueda' => 'ana']
- * @var string $nombreRegistros Palabra del resumen, por ejemplo 'vendedores'
- * @var string $urlBase Viene de encabezado.php
+ * @var string $rutaPaginacion
+ * @var array $parametrosPaginacion
+ * @var string $nombreRegistros
+ * @var string $urlBase
  */
 
-// Enlace a otra página con los mismos filtros; los filtros vacíos no se agregan a la dirección
-$enlacePagina = fn (int $numero): string => $urlBase . $rutaPaginacion . '?' . http_build_query(array_filter(
+$enlacePagina = fn(int $numero): string => $urlBase . $rutaPaginacion . '?' . http_build_query(array_filter(
     $parametrosPaginacion + ['pagina' => $numero],
-    fn ($valor): bool => $valor !== '' && $valor !== null
+    fn($valor): bool => $valor !== '' && $valor !== null
 ));
 
-// Se muestran la primera, la última y las vecinas de la actual: 1 … 4 5 6 … 12
 $numeros = array_unique(array_filter(
     [1, $pagina - 1, $pagina, $pagina + 1, $totalPaginas],
-    fn (int $numero): bool => $numero >= 1 && $numero <= $totalPaginas
+    fn(int $numero): bool => $numero >= 1 && $numero <= $totalPaginas
 ));
 sort($numeros);
 
@@ -47,7 +42,8 @@ $anterior = 0;
                     <?php if ($numero === $pagina): ?>
                         <span class="paginaActual" aria-current="page"><?= $numero ?></span>
                     <?php else: ?>
-                        <a href="<?= htmlspecialchars($enlacePagina($numero)) ?>" aria-label="Página <?= $numero ?>"><?= $numero ?></a>
+                        <a href="<?= htmlspecialchars($enlacePagina($numero)) ?>"
+                            aria-label="Página <?= $numero ?>"><?= $numero ?></a>
                     <?php endif; ?>
                 </li>
                 <?php $anterior = $numero; ?>
