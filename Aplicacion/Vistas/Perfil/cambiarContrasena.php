@@ -1,9 +1,8 @@
 <?php
 /**
- * Cambio de contraseña del usuario conectado.
  *
- * @var array $errores ['campo' => 'mensaje'] Viene de PerfilControlador
- * @var string $urlBase Viene de encabezado.php
+ * @var array $errores 
+ * @var string $urlBase
  */
 
 use Aplicacion\Nucleo\Csrf;

@@ -1,13 +1,10 @@
 <?php
 /**
- * Mi perfil: el SuperAdmin cambia todos sus datos; el Vendedor solo su nombre y su foto.
- *
- * @var \Aplicacion\Modelos\Usuario $usuario Viene de PerfilControlador
- * @var string $rol 'SuperAdmin' o 'Vendedor'
- * @var bool $puedeEditarAcceso true para el SuperAdmin: puede cambiar su identificacion y su correo
- * @var array $datos Valores escritos (se conservan si hay errores)
- * @var array $errores ['campo' => 'mensaje']
- * @var string $urlBase Viene de encabezado.php
+ * @var \Aplicacion\Modelos\Usuario $usuario 
+ * @var bool $puedeEditarAcceso 
+ * @var array $datos 
+ * @var array $errores 
+ * @var string $urlBase 
  */
 
 use Aplicacion\Nucleo\Csrf;
@@ -16,22 +13,24 @@ $titulo = 'Mi perfil';
 $paginaActual = 'perfil';
 require __DIR__ . '/../Plantilla/encabezado.php';
 
+$editando = $errores !== [];
+
 $valor = fn(string $campo): string => htmlspecialchars((string) ($datos[$campo] ?? ''));
 $claseCampo = fn(string $campo): string => isset($errores[$campo]) ? 'campo campoConError' : 'campo';
-$mensajeError = fn(string $campo): string => isset($errores[$campo])
-    ? '<p class="errorCampo">' . htmlspecialchars($errores[$campo]) . '</p>'
-    : '';
+$mensajeError = fn(string $campo): string => isset($errores[$campo]) ? '<p class="errorCampo">' . htmlspecialchars($errores[$campo]) . '</p>' : '';
+$soloLectura = $editando ? '' : 'readonly';
 ?>
 
 <?php if ($errores !== []): ?>
-    <div class="alerta alertaError" role="alert">
+    <div class="alerta alertaError alertaFormulario" role="alert">
         <span class="alertaIcono" aria-hidden="true">✖</span>
         <p><strong>Error:</strong> Revise los campos marcados en rojo.</p>
     </div>
 <?php endif; ?>
 
 <form method="post" action="<?= $urlBase ?>/perfil/actualizar" enctype="multipart/form-data" novalidate
-    class="validarFormulario">
+    class="validarFormulario formularioEditable <?= $editando ? 'editando' : '' ?>"
+    data-confirmar="¿Desea guardar los cambios de su perfil?" data-titulo="Guardar cambios" data-boton="Guardar">
     <?= Csrf::campo() ?>
 
     <div class="disenoFormulario">
@@ -41,7 +40,9 @@ $mensajeError = fn(string $campo): string => isset($errores[$campo])
                 <div class="<?= $claseCampo('nombreCompleto') ?>">
                     <label for="nombreCompleto">Nombre completo <span class="obligatorio">*</span></label>
                     <input type="text" id="nombreCompleto" name="nombreCompleto" minlength="3" maxlength="100" required
-                        data-regla="soloLetras" data-contador data-mensaje-requerido="Ingrese su nombre completo"
+                        data-regla="soloLetras" data-contador <?= $soloLectura ?> data-editable
+                        data-original="<?= htmlspecialchars((string) $usuario->getNombreCompleto()) ?>"
+                        data-mensaje-requerido="Ingrese su nombre completo"
                         data-mensaje-regla="El nombre solo puede tener letras y espacios"
                         data-mensaje-largo="El nombre debe tener entre 3 y 100 caracteres"
                         value="<?= $valor('nombreCompleto') ?>">
@@ -52,7 +53,8 @@ $mensajeError = fn(string $campo): string => isset($errores[$campo])
                         <div class="<?= $claseCampo('numeroIdentificacion') ?>">
                             <label for="numeroIdentificacion">Identificación <span class="obligatorio">*</span></label>
                             <input type="text" id="numeroIdentificacion" name="numeroIdentificacion" minlength="6"
-                                maxlength="20" required data-regla="alfanumerico"
+                                maxlength="20" required data-regla="alfanumerico" <?= $soloLectura ?> data-editable
+                                data-original="<?= htmlspecialchars((string) $usuario->getNumeroIdentificacion()) ?>"
                                 data-mensaje-requerido="Ingrese la identificación"
                                 data-mensaje-largo="La identificación debe tener entre 6 y 20 caracteres"
                                 value="<?= $valor('numeroIdentificacion') ?>">
@@ -61,8 +63,9 @@ $mensajeError = fn(string $campo): string => isset($errores[$campo])
                         <div class="<?= $claseCampo('correoUsuario') ?>">
                             <label for="correoUsuario">Correo <span class="obligatorio">*</span></label>
                             <input type="email" id="correoUsuario" name="correoUsuario" maxlength="150" required
-                                data-regla="correo" data-mensaje-requerido="Ingrese el correo"
-                                value="<?= $valor('correoUsuario') ?>">
+                                data-regla="correo" <?= $soloLectura ?> data-editable
+                                data-original="<?= htmlspecialchars((string) $usuario->getCorreoUsuario()) ?>"
+                                data-mensaje-requerido="Ingrese el correo" value="<?= $valor('correoUsuario') ?>">
                             <p class="textoAyuda">Con este correo inicia sesión</p>
                             <?= $mensajeError('correoUsuario') ?>
                         </div>
@@ -110,7 +113,7 @@ $mensajeError = fn(string $campo): string => isset($errores[$campo])
                             <?= $usuario->getFotoPerfil() ? 'Cambiar foto' : 'Elegir foto' ?>
                         </label>
                         <input type="file" id="fotoPerfil" name="fotoPerfil" accept="image/jpeg,image/png"
-                            class="campoArchivo">
+                            class="campoArchivo" <?= $editando ? '' : 'disabled' ?>>
                         <span class="nombreArchivo">JPG o PNG, máximo 5 MB</span>
                     </div>
                     <?= $mensajeError('fotoPerfil') ?>
@@ -120,8 +123,9 @@ $mensajeError = fn(string $campo): string => isset($errores[$campo])
     </div>
 
     <div class="grupoBotones accionesFormulario">
-        <a href="<?= $urlBase ?>/perfil" class="boton botonSecundario">Cancelar</a>
-        <button type="submit" class="boton">Guardar cambios</button>
+        <button type="button" class="boton formularioEditar">Editar</button>
+        <button type="button" class="boton botonSecundario formularioCancelar">Cancelar</button>
+        <button type="submit" class="boton formularioGuardar">Guardar cambios</button>
     </div>
 </form>
 
