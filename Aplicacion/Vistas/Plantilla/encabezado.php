@@ -2,6 +2,7 @@
 
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\Permiso;
+use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\UsuarioActual;
 use Configuracion\Configuracion;
 
@@ -13,7 +14,7 @@ $mensajes = $mensajes ?? [];
 
 $opcionesMenu = [
     'inicio' => ['texto' => 'Inicio', 'ruta' => '/', 'permiso' => 'panel.ver'],
-    'vendedores' => ['texto' => 'Vendedores', 'ruta' => '/vendedores', 'permiso' => 'vendedores.gestionar'],
+    'usuarios' => ['texto' => 'Usuarios', 'ruta' => '/usuarios', 'permiso' => 'usuarios.gestionar'],
     'sesiones' => ['texto' => 'Historial de sesiones', 'ruta' => '/sesiones', 'permiso' => 'sesiones.ver'],
     'perfil' => ['texto' => 'Mi perfil', 'ruta' => '/perfil', 'permiso' => 'perfil.ver'],
     'ayuda' => ['texto' => 'Ayuda', 'ruta' => '/ayuda', 'permiso' => 'ayuda.ver'],
@@ -68,7 +69,7 @@ $proximasFases = ['Inventario', 'Proveedores', 'Compras', 'Producción', 'Pedido
                             alt="" class="fotoUsuario">
                         <a href="<?= $urlBase ?>/perfil"
                             class="nombreUsuario"><?= htmlspecialchars((string) UsuarioActual::nombre()) ?></a>
-                        <span class="etiqueta etiquetaRol"><?= htmlspecialchars((string) UsuarioActual::tipo()) ?></span>
+                        <span class="etiqueta etiquetaRol"><?= htmlspecialchars(Rol::nombre(UsuarioActual::rol())) ?></span>
                         <form method="post" action="<?= $urlBase ?>/salir" class="formularioSalir"
                             data-confirmar="¿Desea cerrar sesión?" data-titulo="Cerrar sesión" data-boton="Cerrar sesión">
                             <?= Csrf::campo() ?>

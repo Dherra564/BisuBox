@@ -16,15 +16,15 @@ $accesos = [
      'descripcion' => 'Edite sus datos y cambie su contraseña.'],
     ['texto' => 'Historial de sesiones', 'permiso' => 'sesiones.ver', 'ruta' => '/sesiones',
      'descripcion' => 'Consulte quién ha ingresado al sistema.'],
-    ['texto' => 'Vendedores', 'permiso' => 'vendedores.gestionar', 'ruta' => '/vendedores',
-     'descripcion' => 'Administre las cuentas de los vendedores.'],
+    ['texto' => 'Usuarios', 'permiso' => 'usuarios.gestionar', 'ruta' => '/usuarios',
+     'descripcion' => 'Administre las cuentas de administradores y vendedores.'],
 ];
 $accesos = array_filter($accesos, fn (array $acceso): bool => Permiso::puede($acceso['permiso']));
 ?>
 
 <p class="subtitulo">Hola, <?= htmlspecialchars((string) UsuarioActual::nombre()) ?>.</p>
 
-<?php if (UsuarioActual::esSuperAdmin()): ?>
+<?php if (UsuarioActual::esAdministrador()): ?>
     <div class="tarjetas">
         <section class="tarjeta tarjetaDato">
             <h2>Usuarios registrados</h2>

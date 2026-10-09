@@ -2,22 +2,12 @@
 
 namespace Aplicacion\Modelos;
 
+use Aplicacion\Nucleo\Rol;
 use DateTime;
 use InvalidArgumentException;
 
 class Sesion
 {
-    
-    public const TIPO_SUPERADMIN = 'SuperAdmin';
-    public const TIPO_VENDEDOR = 'Vendedor';
-    public const TIPO_CLIENTE = 'Cliente';   
-
-    
-    private const TIPOS_VALIDOS = [
-        self::TIPO_SUPERADMIN,
-        self::TIPO_VENDEDOR,
-    ];
-
     private ?int $idSesion;
     private ?int $idUsuario;
     private ?string $tipoUsuario;
@@ -35,13 +25,12 @@ class Sesion
     ) {
         $this->idSesion = $idSesion;
         $this->idUsuario = $idUsuario;
-        $this->setTipoUsuario($tipoUsuario);   
+        $this->setTipoUsuario($tipoUsuario);
         $this->fechaInicioSesion = $fechaInicioSesion ?? new DateTime();
         $this->fechaCierreSesion = $fechaCierreSesion;
         $this->estado = $estado;
     }
 
-    
     public function getIdSesion(): ?int
     {
         return $this->idSesion;
@@ -72,7 +61,6 @@ class Sesion
         return $this->estado;
     }
 
-    
     public function setIdSesion(?int $idSesion): void
     {
         $this->idSesion = $idSesion;
@@ -83,10 +71,9 @@ class Sesion
         $this->idUsuario = $idUsuario;
     }
 
-
     public function setTipoUsuario(?string $tipoUsuario): void
     {
-        if ($tipoUsuario !== null && !in_array($tipoUsuario, self::TIPOS_VALIDOS, true)) {
+        if ($tipoUsuario !== null && !Rol::existe($tipoUsuario)) {
             throw new InvalidArgumentException('Tipo de usuario no válido: ' . $tipoUsuario);
         }
         $this->tipoUsuario = $tipoUsuario;

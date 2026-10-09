@@ -6,7 +6,7 @@ use Aplicacion\Controladores\FotoControlador;
 use Aplicacion\Controladores\InicioControlador;
 use Aplicacion\Controladores\PerfilControlador;
 use Aplicacion\Controladores\SesionControlador;
-use Aplicacion\Controladores\VendedorControlador;
+use Aplicacion\Controladores\UsuarioControlador;
 use Aplicacion\Nucleo\Enrutador;
 
 return function (Enrutador $enrutador): void {
@@ -23,13 +23,13 @@ return function (Enrutador $enrutador): void {
     $enrutador->post('/perfil/contrasena', [PerfilControlador::class, 'cambiarContrasena']);
     $enrutador->get('/fotos/perfil', [FotoControlador::class, 'mostrarPerfil']);
 
-    $enrutador->get('/vendedores', [VendedorControlador::class, 'listar']);
-    $enrutador->get('/vendedores/detalle', [VendedorControlador::class, 'detalle']);
-    $enrutador->get('/vendedores/nuevo', [VendedorControlador::class, 'nuevo']);
-    $enrutador->post('/vendedores/crear', [VendedorControlador::class, 'crear']);
-    $enrutador->get('/vendedores/editar', [VendedorControlador::class, 'editar']);
-    $enrutador->post('/vendedores/actualizar', [VendedorControlador::class, 'actualizar']);
-    $enrutador->post('/vendedores/estado', [VendedorControlador::class, 'cambiarEstado']);
+    $enrutador->get('/usuarios', [UsuarioControlador::class, 'listar']);
+    $enrutador->get('/usuarios/detalle', [UsuarioControlador::class, 'detalle']);
+    $enrutador->get('/usuarios/nuevo', [UsuarioControlador::class, 'nuevo']);
+    $enrutador->post('/usuarios/crear', [UsuarioControlador::class, 'crear']);
+    $enrutador->get('/usuarios/editar', [UsuarioControlador::class, 'editar']);
+    $enrutador->post('/usuarios/actualizar', [UsuarioControlador::class, 'actualizar']);
+    $enrutador->post('/usuarios/estado', [UsuarioControlador::class, 'cambiarEstado']);
 
     $enrutador->get('/ayuda', [AyudaControlador::class, 'mostrar']);
 

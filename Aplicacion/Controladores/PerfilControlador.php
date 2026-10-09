@@ -6,6 +6,7 @@ use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\ManejadorSesion;
 use Aplicacion\Nucleo\Mensaje;
 use Aplicacion\Nucleo\Permiso;
+use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\SubidaArchivo;
 use Aplicacion\Nucleo\TipoIdentificacion;
 use Aplicacion\Nucleo\UsuarioActual;
@@ -44,7 +45,7 @@ class PerfilControlador
         $this->verificarCsrf('/perfil');
 
         $leer = fn(string $campo): string => is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
-        $puedeEditarAcceso = UsuarioActual::esSuperAdmin();
+            $puedeEditarAcceso = UsuarioActual::esAdministrador();
 
 
         $datos = [
@@ -230,8 +231,8 @@ class PerfilControlador
     {
         $this->mostrarVista('Perfil/miPerfil', [
             'usuario' => $this->usuario,
-            'rol' => (string) UsuarioActual::tipo(),
-            'puedeEditarAcceso' => UsuarioActual::esSuperAdmin(),
+            'rol' => Rol::nombre($this->usuario->getRol()),
+            'puedeEditarAcceso' => UsuarioActual::esAdministrador(),
             'datos' => $datos,
             'errores' => $errores,
         ]);
