@@ -3,13 +3,18 @@
 namespace Aplicacion\Repositorios;
 
 use Aplicacion\Modelos\Usuario;
+use Aplicacion\Nucleo\Rol;
+use Aplicacion\Nucleo\TipoIdentificacion;
 use Configuracion\BaseDatos;
 use DateTime;
 use PDO;
 use Throwable;
 
+
 class UsuarioRepositorio
 {
+    public const POR_PAGINA = 10;
+
     private PDO $conexion;
 
     public function __construct()
@@ -40,9 +45,57 @@ class UsuarioRepositorio
         return $fila ? $this->crearDesdeFila($fila) : null;
     }
 
-    public function contar(): int
+    /**
+     * @return Usuario[]
+     */
+    public function listar(string $busqueda, ?string $rol, ?bool $activo, int $pagina): array
     {
-        return (int) $this->conexion->query('SELECT COUNT(*) FROM tbusuario')->fetchColumn();
+        [$condiciones, $valores] = $this->construirFiltros($busqueda, $rol, $activo);
+
+        $desplazamiento = (max(1, $pagina) - 1) * self::POR_PAGINA;
+        $consulta = $this->conexion->prepare(
+            'SELECT * FROM tbusuario'
+            . $condiciones
+            . ' ORDER BY tbusuarionombrecompleto ASC, tbusuarioid ASC
+             LIMIT ' . self::POR_PAGINA . ' OFFSET ' . $desplazamiento
+        );
+        $consulta->execute($valores);
+
+        return array_map(fn(array $fila): Usuario => $this->crearDesdeFila($fila), $consulta->fetchAll());
+    }
+
+    
+    public function contar(string $busqueda = '', ?string $rol = null, ?bool $activo = null): int
+    {
+        [$condiciones, $valores] = $this->construirFiltros($busqueda, $rol, $activo);
+
+        $consulta = $this->conexion->prepare('SELECT COUNT(*) FROM tbusuario' . $condiciones);
+        $consulta->execute($valores);
+
+        return (int) $consulta->fetchColumn();
+    }
+
+    /**
+     * Administradores activos, para la pantalla de Ayuda.
+     * @return Usuario[]
+     */
+    public function listarAdministradoresActivos(): array
+    {
+        $consulta = $this->conexion->prepare(
+            'SELECT * FROM tbusuario
+             WHERE tbusuariorol = ? AND tbusuarioactivo = 1
+             ORDER BY tbusuarionombrecompleto ASC'
+        );
+        $consulta->execute([Rol::ADMINISTRADOR]);
+
+        return array_map(fn(array $fila): Usuario => $this->crearDesdeFila($fila), $consulta->fetchAll());
+    }
+
+    
+    public function contarAdministradoresActivos(?int $excluirIdUsuario = null): int
+    {
+        return $this->contar('', Rol::ADMINISTRADOR, true)
+            - ($excluirIdUsuario !== null && $this->esAdministradorActivo($excluirIdUsuario) ? 1 : 0);
     }
 
     public function existeCorreo(string $correo, ?int $excluirIdUsuario = null): bool
@@ -77,10 +130,7 @@ class UsuarioRepositorio
 
     public function insertar(Usuario $usuario): int
     {
-        $transaccionPropia = !$this->conexion->inTransaction();
-        if ($transaccionPropia) {
-            BaseDatos::iniciarTransaccion();
-        }
+        BaseDatos::iniciarTransaccion();
 
         try {
             $idUsuario = $this->generarId();
@@ -89,8 +139,8 @@ class UsuarioRepositorio
             $consulta = $this->conexion->prepare(
                 'INSERT INTO tbusuario (tbusuarioid, tbusuarioidentificaciontipo, tbusuarioidentificacionnumero,
                     tbusuarionombrecompleto, tbusuarioperfilimagen, tbusuariocorreo, tbusuariotelefono,
-                    tbusuariocontrasena, tbusuarioregistrofecha, tbusuarioactivo)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                    tbusuariocontrasena, tbusuariorol, tbusuarioregistrofecha, tbusuarioactivo)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
             );
             $consulta->execute([
                 $idUsuario,
@@ -101,17 +151,14 @@ class UsuarioRepositorio
                 $usuario->getCorreoUsuario() !== null ? self::normalizarCorreo($usuario->getCorreoUsuario()) : null,
                 $usuario->getNumeroTelefonico(),
                 $contrasena,
+                $usuario->getRol(),
                 $usuario->getFechaRegistro()->format('Y-m-d H:i:s'),
                 $usuario->getEstado() ? 1 : 0,
             ]);
 
-            if ($transaccionPropia) {
-                BaseDatos::confirmarTransaccion();
-            }
+            BaseDatos::confirmarTransaccion();
         } catch (Throwable $error) {
-            if ($transaccionPropia) {
-                BaseDatos::revertirTransaccion();
-            }
+            BaseDatos::revertirTransaccion();
             throw $error;
         }
 
@@ -121,24 +168,41 @@ class UsuarioRepositorio
         return $idUsuario;
     }
 
-    public function actualizar(Usuario $usuario): bool
+   
+    public function actualizar(Usuario $usuario, ?string $contrasenaNueva = null, bool $cerrarSesiones = false): void
     {
-        $consulta = $this->conexion->prepare(
-            'UPDATE tbusuario SET tbusuarioidentificaciontipo = ?, tbusuarioidentificacionnumero = ?,
-                tbusuarionombrecompleto = ?, tbusuariotelefono = ?,
-                tbusuarioperfilimagen = ?, tbusuariocorreo = ?
-             WHERE tbusuarioid = ?'
-        );
+        BaseDatos::iniciarTransaccion();
 
-        return $consulta->execute([
-            $usuario->getTipoIdentificacion(),
-            trim((string) $usuario->getNumeroIdentificacion()),
-            self::limpiarEspacios((string) $usuario->getNombreCompleto()),
-            $usuario->getNumeroTelefonico(),
-            $usuario->getFotoPerfil(),
-            $usuario->getCorreoUsuario() !== null ? self::normalizarCorreo($usuario->getCorreoUsuario()) : null,
-            $usuario->getIdUsuario(),
-        ]);
+        try {
+            $consulta = $this->conexion->prepare(
+                'UPDATE tbusuario SET tbusuarioidentificaciontipo = ?, tbusuarioidentificacionnumero = ?,
+                    tbusuarionombrecompleto = ?, tbusuariotelefono = ?,
+                    tbusuarioperfilimagen = ?, tbusuariocorreo = ?, tbusuariorol = ?
+                 WHERE tbusuarioid = ?'
+            );
+            $consulta->execute([
+                $usuario->getTipoIdentificacion(),
+                trim((string) $usuario->getNumeroIdentificacion()),
+                self::limpiarEspacios((string) $usuario->getNombreCompleto()),
+                $usuario->getNumeroTelefonico(),
+                $usuario->getFotoPerfil(),
+                $usuario->getCorreoUsuario() !== null ? self::normalizarCorreo($usuario->getCorreoUsuario()) : null,
+                $usuario->getRol(),
+                $usuario->getIdUsuario(),
+            ]);
+
+            if ($contrasenaNueva !== null) {
+                $this->cambiarContrasena((int) $usuario->getIdUsuario(), $contrasenaNueva);
+            }
+            if ($cerrarSesiones) {
+                $this->cerrarSesiones((int) $usuario->getIdUsuario());
+            }
+
+            BaseDatos::confirmarTransaccion();
+        } catch (Throwable $error) {
+            BaseDatos::revertirTransaccion();
+            throw $error;
+        }
     }
 
     public function cambiarContrasena(int $idUsuario, string $contrasenaNueva): bool
@@ -147,20 +211,26 @@ class UsuarioRepositorio
         return $consulta->execute([self::encriptar($contrasenaNueva), $idUsuario]);
     }
 
-    public function cambiarEstado(int $idUsuario, bool $activo): bool
+    // Al desactivar se cierran sus sesiones abiertas, asi sale del sistema de inmediato
+    public function cambiarEstado(Usuario $usuario, bool $activo): void
     {
-        $consulta = $this->conexion->prepare('UPDATE tbusuario SET tbusuarioactivo = ? WHERE tbusuarioid = ?');
-        $resultado = $consulta->execute([$activo ? 1 : 0, $idUsuario]);
+        BaseDatos::iniciarTransaccion();
 
-        if (!$activo) {
-            $cierre = $this->conexion->prepare(
-                'UPDATE tbsesion SET tbsesionactivo = 0, tbsesionfechacierre = NOW()
-                 WHERE tbsesionusuarioid = ? AND tbsesionactivo = 1'
-            );
-            $cierre->execute([$idUsuario]);
+        try {
+            $consulta = $this->conexion->prepare('UPDATE tbusuario SET tbusuarioactivo = ? WHERE tbusuarioid = ?');
+            $consulta->execute([$activo ? 1 : 0, $usuario->getIdUsuario()]);
+
+            if (!$activo) {
+                $this->cerrarSesiones((int) $usuario->getIdUsuario());
+            }
+
+            BaseDatos::confirmarTransaccion();
+        } catch (Throwable $error) {
+            BaseDatos::revertirTransaccion();
+            throw $error;
         }
 
-        return $resultado;
+        $usuario->setEstado($activo);
     }
 
     public function verificarCredenciales(string $correo, string $contrasena): ?Usuario
@@ -181,6 +251,49 @@ class UsuarioRepositorio
     public static function normalizarCorreo(string $correo): string
     {
         return mb_strtolower(trim($correo), 'UTF-8');
+    }
+
+    private function esAdministradorActivo(int $idUsuario): bool
+    {
+        $usuario = $this->buscarPorId($idUsuario);
+        return $usuario !== null && $usuario->getEstado() && $usuario->esAdministrador();
+    }
+
+    private function cerrarSesiones(int $idUsuario): void
+    {
+        $consulta = $this->conexion->prepare(
+            'UPDATE tbsesion SET tbsesionactivo = 0, tbsesionfechacierre = ?
+             WHERE tbsesionusuarioid = ? AND tbsesionactivo = 1'
+        );
+        $consulta->execute([(new DateTime())->format('Y-m-d H:i:s'), $idUsuario]);
+    }
+
+    private function construirFiltros(string $busqueda, ?string $rol, ?bool $activo): array
+    {
+        $condiciones = [];
+        $valores = [];
+
+        $busqueda = trim($busqueda);
+        if ($busqueda !== '') {
+            $patron = '%' . addcslashes($busqueda, '%_\\') . '%';
+            $patronIdentificacion = '%' . addcslashes(TipoIdentificacion::limpiar($busqueda), '%_\\') . '%';
+            $condiciones[] = '(tbusuarionombrecompleto LIKE ? OR tbusuariocorreo LIKE ? OR tbusuarioidentificacionnumero LIKE ?)';
+            array_push($valores, $patron, $patron, $patronIdentificacion);
+        }
+
+        if ($rol !== null) {
+            $condiciones[] = 'tbusuariorol = ?';
+            $valores[] = $rol;
+        }
+
+        if ($activo !== null) {
+            $condiciones[] = 'tbusuarioactivo = ?';
+            $valores[] = $activo ? 1 : 0;
+        }
+
+        $sql = $condiciones === [] ? '' : ' WHERE ' . implode(' AND ', $condiciones);
+
+        return [$sql, $valores];
     }
 
     private static function encriptar(?string $contrasena): ?string
@@ -206,7 +319,8 @@ class UsuarioRepositorio
             $fila['tbusuariotelefono'],
             $fila['tbusuariocontrasena'],
             $fila['tbusuarioregistrofecha'] !== null ? new DateTime($fila['tbusuarioregistrofecha']) : null,
-            (bool) $fila['tbusuarioactivo']
+            (bool) $fila['tbusuarioactivo'],
+            $fila['tbusuariorol']
         );
     }
 }

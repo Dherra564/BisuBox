@@ -1,18 +1,20 @@
 <?php
 /**
  *
- * @var \Aplicacion\Modelos\Vendedor|null $vendedor
+ * @var \Aplicacion\Modelos\Usuario|null $usuario
  * @var array $datos
  * @var array $errores
- * @var string $urlBase 
+ * @var bool $esUsuarioActual
+ * @var string $urlBase
  */
 
 use Aplicacion\Nucleo\Csrf;
+use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\TipoIdentificacion;
 
-$esNuevo = $vendedor === null;
-$titulo = $esNuevo ? 'Nuevo vendedor' : 'Editar vendedor';
-$paginaActual = 'vendedores';
+$esNuevo = $usuario === null;
+$titulo = $esNuevo ? 'Nuevo usuario' : 'Editar usuario';
+$paginaActual = 'usuarios';
 require __DIR__ . '/../Plantilla/encabezado.php';
 
 $valor = fn (string $campo): string => htmlspecialchars((string) ($datos[$campo] ?? ''));
@@ -20,10 +22,10 @@ $claseCampo = fn (string $campo): string => isset($errores[$campo]) ? 'campo cam
 $mensajeError = fn (string $campo): string => isset($errores[$campo])
     ? '<p class="errorCampo">' . htmlspecialchars($errores[$campo]) . '</p>'
     : '';
-$rutaCancelar = $esNuevo ? '/vendedores' : '/vendedores/detalle?id=' . (int) $vendedor->getIdVendedor();
+$rutaCancelar = $esNuevo ? '/usuarios' : '/usuarios/detalle?id=' . (int) $usuario->getIdUsuario();
 ?>
 
-<p><a href="<?= $urlBase ?>/vendedores">← Vendedores</a></p>
+<p><a href="<?= $urlBase ?>/usuarios">← Usuarios</a></p>
 
 <?php if ($errores !== []): ?>
     <div class="alerta alertaError" role="alert">
@@ -32,15 +34,43 @@ $rutaCancelar = $esNuevo ? '/vendedores' : '/vendedores/detalle?id=' . (int) $ve
     </div>
 <?php endif; ?>
 
-<form method="post" action="<?= $urlBase ?>/vendedores/<?= $esNuevo ? 'crear' : 'actualizar' ?>"
+<form method="post" action="<?= $urlBase ?>/usuarios/<?= $esNuevo ? 'crear' : 'actualizar' ?>"
       enctype="multipart/form-data" novalidate class="validarFormulario"
       <?php if (!$esNuevo): ?>
-          data-confirmar="¿Desea guardar los cambios de <?= htmlspecialchars((string) $vendedor->getNombreCompleto()) ?>?"
+          data-confirmar="¿Desea guardar los cambios de <?= htmlspecialchars((string) $usuario->getNombreCompleto()) ?>?"
           data-titulo="Guardar cambios" data-boton="Guardar"
       <?php endif; ?>>
+    <?= Csrf::campo() ?>
+    <?php if (!$esNuevo): ?>
+        <input type="hidden" name="id" value="<?= (int) $usuario->getIdUsuario() ?>">
+    <?php endif; ?>
 
     <div class="disenoFormulario">
         <div>
+            <section class="formularioSeccion">
+                <h2>Rol</h2>
+                <div class="<?= $claseCampo('rol') ?>">
+                    <label for="rol">Rol en el sistema <span class="obligatorio">*</span></label>
+                    <?php if ($esUsuarioActual): ?>
+                        <input type="text" id="rol" readonly value="<?= htmlspecialchars(Rol::nombre($datos['rol'] ?? null)) ?>">
+                        <p class="textoAyuda">No puede cambiar su propio rol.</p>
+                    <?php else: ?>
+                        <select id="rol" name="rol" required data-mensaje-requerido="Seleccione el rol">
+                            <option value="">Seleccione el rol</option>
+                            <?php foreach (Rol::todos() as $codigo => $datosRol): ?>
+                                <option value="<?= $codigo ?>" <?= ($datos['rol'] ?? '') === $codigo ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($datosRol['nombre']) ?> — <?= htmlspecialchars($datosRol['descripcion']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <?php if (!$esNuevo): ?>
+                            <p class="textoAyuda">Si cambia el rol, la persona tendrá que iniciar sesión de nuevo.</p>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                    <?= $mensajeError('rol') ?>
+                </div>
+            </section>
+
             <section class="formularioSeccion">
                 <h2>Datos personales</h2>
                 <div class="<?= $claseCampo('nombreCompleto') ?>">
@@ -141,10 +171,10 @@ $rutaCancelar = $esNuevo ? '/vendedores' : '/vendedores/detalle?id=' . (int) $ve
                 <h2>Foto de perfil</h2>
                 <div class="<?= $claseCampo('fotoPerfil') ?>">
                     <div class="zonaFoto">
-                        <img src="<?= $urlBase ?>/fotos/perfil?archivo=<?= urlencode((string) ($vendedor?->getFotoPerfil() ?? '')) ?>"
-                             alt="Foto de perfil del vendedor" class="fotoPerfilGrande">
+                        <img src="<?= $urlBase ?>/fotos/perfil?archivo=<?= urlencode((string) ($usuario?->getFotoPerfil() ?? '')) ?>"
+                             alt="Foto de perfil del usuario" class="fotoPerfilGrande">
                         <label for="fotoPerfil" class="boton botonSecundario">
-                            <?= $vendedor?->getFotoPerfil() ? 'Cambiar foto' : 'Elegir foto' ?>
+                            <?= $usuario?->getFotoPerfil() ? 'Cambiar foto' : 'Elegir foto' ?>
                         </label>
                         <input type="file" id="fotoPerfil" name="fotoPerfil" accept="image/jpeg,image/png" class="campoArchivo">
                         <span class="nombreArchivo">JPG o PNG, máximo 5 MB. Opcional</span>
@@ -157,7 +187,7 @@ $rutaCancelar = $esNuevo ? '/vendedores' : '/vendedores/detalle?id=' . (int) $ve
 
     <div class="grupoBotones accionesFormulario">
         <a href="<?= $urlBase . $rutaCancelar ?>" class="boton botonSecundario">Cancelar</a>
-        <button type="submit" class="boton"><?= $esNuevo ? 'Registrar vendedor' : 'Guardar cambios' ?></button>
+        <button type="submit" class="boton"><?= $esNuevo ? 'Registrar usuario' : 'Guardar cambios' ?></button>
     </div>
 </form>
 

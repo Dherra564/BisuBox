@@ -2,6 +2,7 @@
 
 namespace Aplicacion\Modelos;
 
+use Aplicacion\Nucleo\Rol;
 use DateTime;
 
 class Usuario
@@ -14,6 +15,7 @@ class Usuario
     protected ?string $correoUsuario;
     protected ?string $numeroTelefonico;
     protected ?string $contrasena;
+    protected ?string $rol;
     protected DateTime $fechaRegistro;
     protected bool $estado;
 
@@ -27,7 +29,8 @@ class Usuario
         ?string $numeroTelefonico = null,
         ?string $contrasena = null,
         ?DateTime $fechaRegistro = null,
-        bool $estado = true
+        bool $estado = true,
+        ?string $rol = null
     ) {
         $this->idUsuario = $idUsuario;
         $this->tipoIdentificacion = $tipoIdentificacion;
@@ -39,6 +42,7 @@ class Usuario
         $this->contrasena = $contrasena;
         $this->fechaRegistro = $fechaRegistro ?? new DateTime();
         $this->estado = $estado;
+        $this->rol = $rol;
     }
 
     public function getIdUsuario(): ?int
@@ -79,6 +83,16 @@ class Usuario
     public function getContrasena(): ?string
     {
         return $this->contrasena;
+    }
+
+    public function getRol(): ?string
+    {
+        return $this->rol;
+    }
+
+    public function esAdministrador(): bool
+    {
+        return $this->rol === Rol::ADMINISTRADOR;
     }
 
     public function getFechaRegistro(): DateTime
@@ -129,6 +143,11 @@ class Usuario
     public function setContrasena(?string $contrasena): void
     {
         $this->contrasena = $contrasena;
+    }
+
+    public function setRol(?string $rol): void
+    {
+        $this->rol = $rol;
     }
 
     public function setEstado(bool $estado): void

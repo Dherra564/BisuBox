@@ -2,62 +2,68 @@
 
 namespace Aplicacion\Controladores;
 
-use Aplicacion\Modelos\Vendedor;
+use Aplicacion\Modelos\Usuario;
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\Mensaje;
+use Aplicacion\Nucleo\Permiso;
+use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\SubidaArchivo;
 use Aplicacion\Nucleo\TipoIdentificacion;
-use Aplicacion\Nucleo\Permiso;
+use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Nucleo\Validador;
 use Aplicacion\Repositorios\UsuarioRepositorio;
-use Aplicacion\Repositorios\VendedorRepositorio;
 use Configuracion\Configuracion;
 use DateTime;
 use Throwable;
 
-class VendedorControlador
+
+class UsuarioControlador
 {
-    private VendedorRepositorio $vendedorRepositorio;
     private UsuarioRepositorio $usuarioRepositorio;
 
     public function __construct()
     {
-        Permiso::exigir('vendedores.gestionar');
-        $this->vendedorRepositorio = new VendedorRepositorio();
+        Permiso::exigir('usuarios.gestionar');
         $this->usuarioRepositorio = new UsuarioRepositorio();
     }
 
     public function listar(): void
     {
         $busqueda = is_string($_GET['busqueda'] ?? null) ? mb_substr(trim($_GET['busqueda']), 0, 100, 'UTF-8') : '';
+        $rol = Rol::existe($_GET['rol'] ?? null) ? $_GET['rol'] : '';
         $estado = in_array($_GET['estado'] ?? '', ['1', '0'], true) ? $_GET['estado'] : '';
         $activo = $estado === '' ? null : $estado === '1';
+        $filtroRol = $rol === '' ? null : $rol;
 
-        $total = $this->vendedorRepositorio->contar($busqueda, $activo);
-        $totalPaginas = max(1, (int) ceil($total / VendedorRepositorio::POR_PAGINA));
+        $total = $this->usuarioRepositorio->contar($busqueda, $filtroRol, $activo);
+        $totalPaginas = max(1, (int) ceil($total / UsuarioRepositorio::POR_PAGINA));
         $pagina = min(max(1, (int) ($_GET['pagina'] ?? 1)), $totalPaginas);
 
-        $this->mostrarVista('Vendedor/lista', [
-            'vendedores' => $this->vendedorRepositorio->listar($busqueda, $activo, $pagina),
+        $this->mostrarVista('Usuario/lista', [
+            'usuarios' => $this->usuarioRepositorio->listar($busqueda, $filtroRol, $activo, $pagina),
             'busqueda' => $busqueda,
+            'rol' => $rol,
             'estado' => $estado,
             'pagina' => $pagina,
             'totalPaginas' => $totalPaginas,
             'total' => $total,
-            'porPagina' => VendedorRepositorio::POR_PAGINA,
+            'porPagina' => UsuarioRepositorio::POR_PAGINA,
+            'idUsuarioActual' => UsuarioActual::id(),
         ]);
     }
 
     public function detalle(): void
     {
-        $this->mostrarVista('Vendedor/detalle', [
-            'vendedor' => $this->cargarVendedor($_GET['id'] ?? null),
+        $this->mostrarVista('Usuario/detalle', [
+            'usuario' => $this->cargarUsuario($_GET['id'] ?? null),
+            'idUsuarioActual' => UsuarioActual::id(),
         ]);
     }
 
     public function nuevo(): void
     {
         $this->mostrarFormulario(null, [
+            'rol' => Rol::VENDEDOR,
             'tipoIdentificacion' => TipoIdentificacion::CEDULA,
             'numeroIdentificacion' => '',
             'nombreCompleto' => '',
@@ -68,7 +74,7 @@ class VendedorControlador
 
     public function crear(): void
     {
-        $this->verificarCsrf('/vendedores/nuevo');
+        $this->verificarCsrf('/usuarios/nuevo');
 
         $datos = $this->leerDatos();
         $contrasena = $this->leerContrasena('contrasena');
@@ -87,56 +93,67 @@ class VendedorControlador
             return;
         }
 
-        $ahora = new DateTime();
-        $vendedor = new Vendedor(
+        $usuario = new Usuario(
             tipoIdentificacion: $datos['tipoIdentificacion'],
             numeroIdentificacion: $datos['numeroIdentificacion'],
             nombreCompleto: UsuarioRepositorio::limpiarEspacios($datos['nombreCompleto']),
             fotoPerfil: $nombreFoto,
             correoUsuario: $datos['correoUsuario'],
-            contrasena: $contrasena,
-            fechaRegistro: $ahora,
             numeroTelefonico: Validador::limpiarTelefono($datos['numeroTelefonico']),
-            registroFechaVendedor: clone $ahora
+            contrasena: $contrasena,
+            fechaRegistro: new DateTime(),
+            estado: true,
+            rol: $datos['rol']
         );
 
         try {
-            $this->vendedorRepositorio->insertar($vendedor);
+            $this->usuarioRepositorio->insertar($usuario);
         } catch (Throwable $error) {
-            error_log('Error al registrar vendedor: ' . $error->getMessage());
+            error_log('Error al registrar usuario: ' . $error->getMessage());
             SubidaArchivo::eliminarFotoPerfil($nombreFoto);
             Mensaje::error('No se pudo guardar. Intente de nuevo.');
             $this->mostrarFormulario(null, $datos, []);
             return;
         }
 
-        Mensaje::exito('Vendedor registrado correctamente');
-        $this->redirigir('/vendedores');
+        Mensaje::exito(Rol::nombre($usuario->getRol()) . ' registrado correctamente');
+        $this->redirigir('/usuarios');
     }
 
     public function editar(): void
     {
-        $vendedor = $this->cargarVendedor($_GET['id'] ?? null);
+        $usuario = $this->cargarUsuario($_GET['id'] ?? null);
 
-        $this->mostrarFormulario($vendedor, [
-            'tipoIdentificacion' => $vendedor->getTipoIdentificacion(),
-            'numeroIdentificacion' => $vendedor->getNumeroIdentificacion(),
-            'nombreCompleto' => $vendedor->getNombreCompleto(),
-            'correoUsuario' => $vendedor->getCorreoUsuario(),
-            'numeroTelefonico' => $vendedor->getNumeroTelefonico(),
+        $this->mostrarFormulario($usuario, [
+            'rol' => $usuario->getRol(),
+            'tipoIdentificacion' => $usuario->getTipoIdentificacion(),
+            'numeroIdentificacion' => $usuario->getNumeroIdentificacion(),
+            'nombreCompleto' => $usuario->getNombreCompleto(),
+            'correoUsuario' => $usuario->getCorreoUsuario(),
+            'numeroTelefonico' => $usuario->getNumeroTelefonico(),
         ], []);
     }
 
     public function actualizar(): void
     {
-        $this->verificarCsrf('/vendedores');
-        $vendedor = $this->cargarVendedor($_POST['id'] ?? null);
+        $this->verificarCsrf('/usuarios');
+        $usuario = $this->cargarUsuario($_POST['id'] ?? null);
 
         $datos = $this->leerDatos();
+        // Su propio rol no se puede cambiar: se toma el que ya tiene aunque el formulario mande otro
+        if ($this->esUsuarioActual($usuario)) {
+            $datos['rol'] = $usuario->getRol();
+        }
         $contrasena = $this->leerContrasena('contrasena');
         $confirmar = $this->leerContrasena('confirmarContrasena');
 
-        $validador = $this->validarDatos($datos, $vendedor->getIdUsuario());
+        $validador = $this->validarDatos($datos, $usuario->getIdUsuario());
+
+        $cambiaRol = $validador->error('rol') === null && $datos['rol'] !== $usuario->getRol();
+        if ($cambiaRol && $usuario->esAdministrador() && $usuario->getEstado()
+            && $this->usuarioRepositorio->contarAdministradoresActivos($usuario->getIdUsuario()) === 0) {
+            $validador->agregarError('rol', 'Es el único administrador activo; registre o active otro antes de cambiarle el rol');
+        }
 
         $restablecer = $contrasena !== '' || $confirmar !== '';
         if ($restablecer) {
@@ -149,73 +166,100 @@ class VendedorControlador
         $nombreFoto = $this->subirFoto($validador);
         if (!$validador->esValido()) {
             SubidaArchivo::eliminarFotoPerfil($nombreFoto);
-            $this->mostrarFormulario($vendedor, $datos, $validador->errores());
+            $this->mostrarFormulario($usuario, $datos, $validador->errores());
             return;
         }
 
-        $fotoAnterior = $vendedor->getFotoPerfil();
-        $vendedor->setTipoIdentificacion($datos['tipoIdentificacion']);
-        $vendedor->setNumeroIdentificacion($datos['numeroIdentificacion']);
-        $vendedor->setNombreCompleto(UsuarioRepositorio::limpiarEspacios($datos['nombreCompleto']));
-        $vendedor->setCorreoUsuario($datos['correoUsuario']);
-        $vendedor->setNumeroTelefonico(Validador::limpiarTelefono($datos['numeroTelefonico']));
+        $fotoAnterior = $usuario->getFotoPerfil();
+        $usuario->setRol($datos['rol']);
+        $usuario->setTipoIdentificacion($datos['tipoIdentificacion']);
+        $usuario->setNumeroIdentificacion($datos['numeroIdentificacion']);
+        $usuario->setNombreCompleto(UsuarioRepositorio::limpiarEspacios($datos['nombreCompleto']));
+        $usuario->setCorreoUsuario($datos['correoUsuario']);
+        $usuario->setNumeroTelefonico(Validador::limpiarTelefono($datos['numeroTelefonico']));
         if ($nombreFoto !== null) {
-            $vendedor->setFotoPerfil($nombreFoto);
+            $usuario->setFotoPerfil($nombreFoto);
         }
 
+        // Si cambia el rol o la contrasena, se cierran sus sesiones para que ingrese de nuevo
+        $cerrarSesiones = !$this->esUsuarioActual($usuario) && ($cambiaRol || $restablecer);
+
         try {
-            $this->vendedorRepositorio->actualizar($vendedor, $restablecer ? $contrasena : null);
+            $this->usuarioRepositorio->actualizar($usuario, $restablecer ? $contrasena : null, $cerrarSesiones);
         } catch (Throwable $error) {
-            error_log('Error al actualizar vendedor: ' . $error->getMessage());
+            error_log('Error al actualizar usuario: ' . $error->getMessage());
             SubidaArchivo::eliminarFotoPerfil($nombreFoto);
             Mensaje::error('No se pudo guardar. Intente de nuevo.');
-            $this->mostrarFormulario($vendedor, $datos, []);
+            $this->mostrarFormulario($usuario, $datos, []);
             return;
         }
 
         if ($nombreFoto !== null && $fotoAnterior !== null) {
             SubidaArchivo::eliminarFotoPerfil($fotoAnterior);
         }
+        if ($this->esUsuarioActual($usuario)) {
+            UsuarioActual::actualizarNombre((string) $usuario->getNombreCompleto());
+            UsuarioActual::actualizarFoto($usuario->getFotoPerfil());
+        }
 
-        Mensaje::exito('Cambios guardados correctamente');
-        $this->redirigir('/vendedores/detalle?id=' . $vendedor->getIdVendedor());
+        Mensaje::exito($cambiaRol
+            ? 'Cambios guardados. Ahora ' . $usuario->getNombreCompleto() . ' es ' . Rol::nombre($usuario->getRol())
+            : 'Cambios guardados correctamente');
+        $this->redirigir('/usuarios/detalle?id=' . $usuario->getIdUsuario());
     }
 
     public function cambiarEstado(): void
     {
-        $this->verificarCsrf('/vendedores');
-        $vendedor = $this->cargarVendedor($_POST['id'] ?? null);
+        $this->verificarCsrf('/usuarios');
+        $usuario = $this->cargarUsuario($_POST['id'] ?? null);
 
         $estado = $_POST['activo'] ?? null;
         if (!in_array($estado, ['1', '0'], true)) {
             Mensaje::error('Estado no válido');
-            $this->redirigir('/vendedores');
+            $this->redirigir('/usuarios');
         }
         $activo = $estado === '1';
 
-        try {
-            $this->vendedorRepositorio->cambiarEstado($vendedor, $activo);
-        } catch (Throwable $error) {
-            error_log('Error al cambiar estado de vendedor: ' . $error->getMessage());
-            Mensaje::error('No se pudo guardar. Intente de nuevo.');
-            $this->redirigir('/vendedores');
+        if (!$activo && $this->esUsuarioActual($usuario)) {
+            Mensaje::error('No puede desactivar su propia cuenta.');
+            $this->redirigir($this->rutaDeRegreso($usuario));
+        }
+        if (!$activo && $usuario->esAdministrador()
+            && $this->usuarioRepositorio->contarAdministradoresActivos($usuario->getIdUsuario()) === 0) {
+            Mensaje::error('No se puede desactivar al único administrador activo.');
+            $this->redirigir($this->rutaDeRegreso($usuario));
         }
 
-        Mensaje::exito($activo ? 'El vendedor fue activado' : 'El vendedor fue desactivado');
-        $this->redirigir($this->rutaDeRegreso($vendedor));
+        try {
+            $this->usuarioRepositorio->cambiarEstado($usuario, $activo);
+        } catch (Throwable $error) {
+            error_log('Error al cambiar estado de usuario: ' . $error->getMessage());
+            Mensaje::error('No se pudo guardar. Intente de nuevo.');
+            $this->redirigir('/usuarios');
+        }
+
+        Mensaje::exito($activo
+            ? $usuario->getNombreCompleto() . ' fue activado'
+            : $usuario->getNombreCompleto() . ' fue desactivado');
+        $this->redirigir($this->rutaDeRegreso($usuario));
     }
 
-    private function cargarVendedor(mixed $id): Vendedor
+    private function cargarUsuario(mixed $id): Usuario
     {
-        $idVendedor = is_string($id) && ctype_digit($id) ? (int) $id : 0;
-        $vendedor = $idVendedor > 0 ? $this->vendedorRepositorio->buscarPorId($idVendedor) : null;
+        $idUsuario = is_string($id) && ctype_digit($id) ? (int) $id : 0;
+        $usuario = $idUsuario > 0 ? $this->usuarioRepositorio->buscarPorId($idUsuario) : null;
 
-        if ($vendedor === null) {
-            Mensaje::error('El vendedor no existe.');
-            $this->redirigir('/vendedores');
+        if ($usuario === null) {
+            Mensaje::error('El usuario no existe.');
+            $this->redirigir('/usuarios');
         }
 
-        return $vendedor;
+        return $usuario;
+    }
+
+    private function esUsuarioActual(Usuario $usuario): bool
+    {
+        return $usuario->getIdUsuario() === UsuarioActual::id();
     }
 
     private function leerDatos(): array
@@ -223,6 +267,7 @@ class VendedorControlador
         $leer = fn(string $campo): string => is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
 
         return [
+            'rol' => $leer('rol'),
             'tipoIdentificacion' => $leer('tipoIdentificacion'),
             'numeroIdentificacion' => TipoIdentificacion::limpiar($leer('numeroIdentificacion')),
             'nombreCompleto' => $leer('nombreCompleto'),
@@ -240,8 +285,13 @@ class VendedorControlador
     {
         $validador = new Validador();
 
+        if (!Rol::existe($datos['rol'])) {
+            $validador->agregarError('rol', 'Seleccione el rol');
+        }
+
         $validador->tipoIdentificacion('tipoIdentificacion', $datos['tipoIdentificacion']);
-        $validador->requerido('numeroIdentificacion', $datos['numeroIdentificacion'], 'Ingrese la identificación')->identificacion('numeroIdentificacion', $datos['tipoIdentificacion'], $datos['numeroIdentificacion']);
+        $validador->requerido('numeroIdentificacion', $datos['numeroIdentificacion'], 'Ingrese la identificación')
+            ->identificacion('numeroIdentificacion', $datos['tipoIdentificacion'], $datos['numeroIdentificacion']);
 
         $validador->requerido('nombreCompleto', $datos['nombreCompleto'], 'Ingrese el nombre completo')
             ->longitud('nombreCompleto', $datos['nombreCompleto'], 3, 100, 'El nombre debe tener entre 3 y 100 caracteres')
@@ -288,19 +338,20 @@ class VendedorControlador
         return $nombre;
     }
 
-    private function rutaDeRegreso(Vendedor $vendedor): string
+    private function rutaDeRegreso(Usuario $usuario): string
     {
         return ($_POST['volver'] ?? '') === 'detalle'
-            ? '/vendedores/detalle?id=' . $vendedor->getIdVendedor()
-            : '/vendedores';
+            ? '/usuarios/detalle?id=' . $usuario->getIdUsuario()
+            : '/usuarios';
     }
 
-    private function mostrarFormulario(?Vendedor $vendedor, array $datos, array $errores): void
+    private function mostrarFormulario(?Usuario $usuario, array $datos, array $errores): void
     {
-        $this->mostrarVista('Vendedor/formulario', [
-            'vendedor' => $vendedor,
+        $this->mostrarVista('Usuario/formulario', [
+            'usuario' => $usuario,
             'datos' => $datos,
             'errores' => $errores,
+            'esUsuarioActual' => $usuario !== null && $this->esUsuarioActual($usuario),
         ]);
     }
 

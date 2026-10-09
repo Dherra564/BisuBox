@@ -1,6 +1,6 @@
 <?php
 /**
- * @var \Aplicacion\Modelos\SuperAdmin[] $administradores 
+  * @var \Aplicacion\Modelos\Usuario[] $administradores
  * @var string $urlBase 
  */
 

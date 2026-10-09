@@ -4,7 +4,7 @@ namespace Aplicacion\Controladores;
 
 use Aplicacion\Nucleo\Mensaje;
 use Aplicacion\Nucleo\Permiso;
-use Aplicacion\Repositorios\SuperAdminRepositorio;
+use Aplicacion\Repositorios\UsuarioRepositorio;
 use Configuracion\Configuracion;
 
 class AyudaControlador
@@ -14,7 +14,7 @@ class AyudaControlador
         Permiso::exigir('ayuda.ver');
 
         $this->mostrarVista('Ayuda/ayuda', [
-            'administradores' => (new SuperAdminRepositorio())->listarActivos(),
+            'administradores' => (new UsuarioRepositorio())->listarAdministradoresActivos(),
         ]);
     }
 
