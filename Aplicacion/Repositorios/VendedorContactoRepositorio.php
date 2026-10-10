@@ -3,6 +3,7 @@
 namespace Aplicacion\Repositorios;
 
 use Aplicacion\Modelos\VendedorContacto;
+use Aplicacion\Nucleo\TipoContacto;
 use Configuracion\BaseDatos;
 use PDO;
 use Throwable;
@@ -30,6 +31,18 @@ class VendedorContactoRepositorio
             (string) $fila['tbvendedorcontactotipo'],
             (string) $fila['tbvendedorcontactovalor']
         ), $consulta->fetchAll());
+    }
+
+    // true si otra tienda ya tiene este número de WhatsApp. Recibe el número limpio: 8 dígitos.
+    public function existeWhatsApp(string $numero, ?int $excluirIdVendedor = null): bool
+    {
+        $consulta = $this->conexion->prepare(
+            'SELECT COUNT(*) FROM tbvendedorcontacto
+             WHERE tbvendedorcontactotipo = ? AND tbvendedorcontactovalor = ? AND tbvendedorcontactovendedorid <> ?'
+        );
+        $consulta->execute([TipoContacto::WHATSAPP, $numero, $excluirIdVendedor ?? 0]);
+
+        return (int) $consulta->fetchColumn() > 0;
     }
 
     // Borra los contactos que tenía la tienda y guarda la lista nueva, en el orden recibido

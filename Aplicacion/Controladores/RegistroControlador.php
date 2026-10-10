@@ -4,12 +4,11 @@ namespace Aplicacion\Controladores;
 
 use Aplicacion\Modelos\Cliente;
 use Aplicacion\Modelos\Vendedor;
-use Aplicacion\Modelos\VendedorContacto;
 use Aplicacion\Nucleo\Acceso;
 use Aplicacion\Nucleo\Csrf;
+use Aplicacion\Nucleo\DatosTienda;
 use Aplicacion\Nucleo\Mensaje;
 use Aplicacion\Nucleo\SubidaArchivo;
-use Aplicacion\Nucleo\TipoContacto;
 use Aplicacion\Nucleo\TipoIdentificacion;
 use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Nucleo\Validador;
@@ -49,13 +48,9 @@ class RegistroControlador
     {
         $this->verificarCsrf('/registro/vendedor');
 
-        $datos = $this->leerDatosPersonales();
+        $datos = $this->leerDatosPersonales() + DatosTienda::leer();
         $datos['tipoIdentificacion'] = $this->leer('tipoIdentificacion');
         $datos['numeroIdentificacion'] = TipoIdentificacion::limpiar($this->leer('numeroIdentificacion'));
-        $datos['tiendaNombre'] = UsuarioRepositorio::limpiarEspacios($this->leer('tiendaNombre'));
-        $datos['tiendaEnlace'] = VendedorRepositorio::normalizarEnlace($this->leer('tiendaEnlace'));
-        $datos['tiendaDescripcion'] = $this->leer('tiendaDescripcion');
-        $datos['contactos'] = TipoContacto::desdeFormulario($_POST['contactoTipo'] ?? null, $_POST['contactoValor'] ?? null);
         $contrasena = $this->leerContrasena('contrasena');
         $confirmar = $this->leerContrasena('confirmarContrasena');
 
@@ -71,19 +66,7 @@ class RegistroControlador
             $validador->agregarError('numeroIdentificacion', 'Ya existe una cuenta con esta identificación');
         }
 
-        $validador->requerido('tiendaNombre', $datos['tiendaNombre'], 'Ingrese el nombre de la tienda')
-            ->longitud('tiendaNombre', $datos['tiendaNombre'], 3, 100, 'El nombre debe tener entre 3 y 100 caracteres')
-            ->nombreTienda('tiendaNombre', $datos['tiendaNombre']);
-
-        $validador->requerido('tiendaEnlace', $datos['tiendaEnlace'], 'Ingrese el enlace de la tienda')
-            ->longitud('tiendaEnlace', $datos['tiendaEnlace'], 3, 60, 'El enlace debe tener entre 3 y 60 caracteres')
-            ->enlaceTienda('tiendaEnlace', $datos['tiendaEnlace']);
-        if ($validador->error('tiendaEnlace') === null && (new VendedorRepositorio())->existeEnlace($datos['tiendaEnlace'])) {
-            $validador->agregarError('tiendaEnlace', 'Ese enlace ya lo usa otra tienda');
-        }
-
-        $validador->longitud('tiendaDescripcion', $datos['tiendaDescripcion'], 1, 300, 'La descripción puede tener como máximo 300 caracteres');
-        $validador->contactos($datos['contactos']);
+        DatosTienda::validar($validador, $datos);
         $this->validarContrasena($validador, $contrasena, $confirmar);
 
         $nombreLogo = $this->subirLogo($validador);
@@ -105,10 +88,7 @@ class RegistroControlador
             tiendaEnlace: $datos['tiendaEnlace'],
             tiendaDescripcion: $datos['tiendaDescripcion'],
             tiendaLogo: $nombreLogo,
-            contactos: array_map(
-                fn(array $contacto): VendedorContacto => new VendedorContacto(null, null, $contacto['tipo'], $contacto['valor']),
-                $datos['contactos']
-            )
+            contactos: DatosTienda::crearContactos($datos['contactos'])
         );
 
         try {

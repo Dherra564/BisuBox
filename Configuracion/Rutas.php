@@ -6,6 +6,7 @@ use Aplicacion\Controladores\InicioControlador;
 use Aplicacion\Controladores\PerfilControlador;
 use Aplicacion\Controladores\RegistroControlador;
 use Aplicacion\Controladores\SesionControlador;
+use Aplicacion\Controladores\TiendaControlador;
 use Aplicacion\Nucleo\Enrutador;
 
 return function (Enrutador $enrutador): void {
@@ -25,6 +26,10 @@ return function (Enrutador $enrutador): void {
     $enrutador->post('/perfil/actualizar', [PerfilControlador::class, 'actualizar']);
     $enrutador->get('/perfil/contrasena', [PerfilControlador::class, 'formularioContrasena']);
     $enrutador->post('/perfil/contrasena', [PerfilControlador::class, 'cambiarContrasena']);
+
+    $enrutador->get('/tienda', [TiendaControlador::class, 'mostrar']);
+    $enrutador->post('/tienda/actualizar', [TiendaControlador::class, 'actualizar']);
+
     $enrutador->get('/fotos/perfil', [FotoControlador::class, 'mostrarPerfil']);
     $enrutador->get('/fotos/logo', [FotoControlador::class, 'mostrarLogo']);
 

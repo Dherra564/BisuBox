@@ -12,6 +12,7 @@ class Permiso
         'panel.ver' => [Rol::VENDEDOR, Rol::CLIENTE],
         'perfil.ver' => [Rol::VENDEDOR, Rol::CLIENTE],
         'sesiones.ver' => [Rol::VENDEDOR, Rol::CLIENTE],
+        'tienda.gestionar' => [Rol::VENDEDOR],
     ];
 
     public static function puede(string $permiso): bool

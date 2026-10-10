@@ -794,6 +794,32 @@ h1, h2, h3 {
     outline: none;
 }
 
+/* Casilla con su texto al lado, por ejemplo "Mostrar mi tienda" */
+.campoCasilla {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.campo.campoCasilla label {
+    margin: 0;
+    font-weight: 600;
+}
+
+.campoCasilla input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin: 1px 0 0;
+    flex: none;
+    accent-color: var(--colorTitulo);
+}
+
+.campoCasilla .textoAyuda {
+    display: block;
+    margin-top: 2px;
+    font-weight: 400;
+}
+
 /* ---------- Contactos de la tienda ---------- */
 .listaContactos {
     margin-top: 14px;

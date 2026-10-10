@@ -15,12 +15,13 @@ $mensajes = $mensajes ?? [];
 $opcionesMenu = [
     'inicio' => ['texto' => 'Inicio', 'ruta' => '/', 'permiso' => 'panel.ver'],
     'perfil' => ['texto' => 'Mi perfil', 'ruta' => '/perfil', 'permiso' => 'perfil.ver'],
+    'tienda' => ['texto' => 'Mi tienda', 'ruta' => '/tienda', 'permiso' => 'tienda.gestionar'],
     'sesiones' => ['texto' => 'Historial de sesiones', 'ruta' => '/sesiones', 'permiso' => 'sesiones.ver'],
 ];
 $opcionesMenu = array_filter($opcionesMenu, fn(array $opcion): bool => Permiso::puede($opcion['permiso']));
 
 $proximasFases = UsuarioActual::esVendedor()
-    ? ['Mi tienda', 'Inventario', 'Proveedores', 'Compras', 'Productos', 'Producción', 'Pedidos']
+    ? ['Inventario', 'Proveedores', 'Compras', 'Productos', 'Producción', 'Pedidos']
     : ['Tiendas', 'Carrito', 'Mis pedidos'];
 ?>
 <!DOCTYPE html>
