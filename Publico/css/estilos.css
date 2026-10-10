@@ -457,6 +457,7 @@ h1, h2, h3 {
 }
 
 .campo input[readonly],
+.campo textarea[readonly],
 .campo select:disabled {
     background: var(--colorVerdeClaro);
     color: var(--colorTextoSuave);
@@ -1012,7 +1013,23 @@ h1, h2, h3 {
 .formularioEditable:not(.editando) .formularioCancelar,
 .formularioEditable:not(.editando) .formularioGuardar,
 .formularioEditable:not(.editando) .zonaFoto .boton,
+.formularioEditable:not(.editando) .zonaFoto .campoCasilla,
+.formularioEditable:not(.editando) [data-contacto-agregar],
+.formularioEditable:not(.editando) .botonQuitar,
 .formularioEditable.editando .formularioEditar {
+    display: none;
+}
+
+.formularioEditable:not(.editando) .filaContacto {
+    grid-template-columns: minmax(120px, 170px) minmax(0, 1fr);
+}
+
+.formularioEditable:not(.editando) .filaContacto select:disabled,
+.formularioEditable:not(.editando) .campoCasilla input:disabled {
+    opacity: 1;
+}
+
+.contactosVacio[hidden] {
     display: none;
 }
 
@@ -1152,5 +1169,9 @@ h1, h2, h3 {
 
     .filaContacto select {
         grid-column: 1 / -1;
+    }
+
+    .formularioEditable:not(.editando) .filaContacto {
+        grid-template-columns: minmax(0, 1fr);
     }
 }

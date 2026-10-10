@@ -5,14 +5,20 @@ document.addEventListener('DOMContentLoaded', function () {
         var seccion = lista.closest('section');
         var plantilla = seccion.querySelector('[data-contacto-plantilla]');
         var botonAgregar = seccion.querySelector('[data-contacto-agregar]');
-        var cuenta = seccion.querySelector('[data-contacto-cuenta]');
+                var cuenta = seccion.querySelector('[data-contacto-cuenta]');
+        var vacio = seccion.querySelector('[data-contactos-vacio]');
         var maximo = parseInt(lista.getAttribute('data-maximo'), 10) || 10;
 
         function actualizarCuenta() {
             var total = lista.querySelectorAll('.filaContacto').length;
             cuenta.textContent = total + ' de ' + maximo + ' contactos';
             botonAgregar.disabled = total >= maximo;
+            if (vacio) {
+                vacio.hidden = total > 0;
+            }
         }
+
+        lista.addEventListener('restaurada', actualizarCuenta);
 
         botonAgregar.addEventListener('click', function () {
             if (lista.querySelectorAll('.filaContacto').length >= maximo) {

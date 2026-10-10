@@ -1,8 +1,9 @@
 <?php
 /**
  * Lista de contactos de la tienda: la usan el registro de vendedor y Mi tienda.
- * @var array $contactos
+ * @var array $contactos  cada uno ['tipo' => ..., 'valor' => ...]
  * @var array $errores
+ * @var array|null $contactosOriginales  los guardados; si viene, "Cancelar" de Mi tienda vuelve a ellos
  */
 
 use Aplicacion\Nucleo\TipoContacto;
@@ -42,15 +43,25 @@ $filaContacto = function (string $tipoElegido, string $valor, ?string $error): s
         <p class="errorCampo"><?= htmlspecialchars($errores['contactos']) ?></p>
     <?php endif; ?>
 
-    <div class="listaContactos" data-contactos data-maximo="<?= TipoContacto::MAXIMO_POR_TIENDA ?>">
+    <div class="listaContactos" data-contactos data-maximo="<?= TipoContacto::MAXIMO_POR_TIENDA ?>"
+        <?= isset($contactosOriginales) ? 'data-restaurar-desde="contactosOriginales"' : '' ?>>
         <?php foreach ($contactos as $indice => $contacto): ?>
             <?= $filaContacto($contacto['tipo'], $contacto['valor'], $errores['contacto' . $indice] ?? null) ?>
         <?php endforeach; ?>
     </div>
+    <p class="textoAyuda contactosVacio" data-contactos-vacio <?= $contactos !== [] ? 'hidden' : '' ?>>Todavía no hay
+        contactos.</p>
 
     <template data-contacto-plantilla>
         <?= $filaContacto(TipoContacto::WHATSAPP, '', null) ?>
     </template>
+    <?php if (isset($contactosOriginales)): ?>
+        <template id="contactosOriginales">
+            <?php foreach ($contactosOriginales as $contacto): ?>
+                <?= $filaContacto($contacto['tipo'], $contacto['valor'], null) ?>
+            <?php endforeach; ?>
+        </template>
+    <?php endif; ?>
 
     <div class="contactosPie">
         <button type="button" class="boton botonSecundario botonPequeno" data-contacto-agregar>Agregar contacto</button>
