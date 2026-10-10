@@ -85,18 +85,21 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    document.querySelectorAll('.formularioEditable').forEach(function (formulario) {
-        var campos = formulario.querySelectorAll('[data-editable]');
+        document.querySelectorAll('.formularioEditable').forEach(function (formulario) {
         var archivo = formulario.querySelector('.campoArchivo');
         var imagen = formulario.querySelector('.fotoPerfilGrande');
         var nombreArchivo = formulario.querySelector('.nombreArchivo');
         var imagenOriginal = imagen ? imagen.src : '';
         var textoArchivoOriginal = nombreArchivo ? nombreArchivo.textContent : '';
 
+        function camposEditables() {
+            return formulario.querySelectorAll('[data-editable], [data-restaurar-desde] input, [data-restaurar-desde] select');
+        }
+
         function cambiarModo(editando) {
             formulario.classList.toggle('editando', editando);
-            campos.forEach(function (campo) {
-                if (campo.tagName === 'SELECT') {
+            camposEditables().forEach(function (campo) {
+                if (campo.tagName === 'SELECT' || campo.type === 'checkbox') {
                     campo.disabled = !editando;
                 } else {
                     campo.readOnly = !editando;
@@ -105,20 +108,38 @@ document.addEventListener('DOMContentLoaded', function () {
             if (archivo) {
                 archivo.disabled = !editando;
             }
+            
+            formulario.querySelectorAll('[data-solo-edicion]').forEach(function (elemento) {
+                elemento.hidden = !editando;
+            });
         }
 
         formulario.querySelector('.formularioEditar').addEventListener('click', function () {
             cambiarModo(true);
-            if (campos.length > 0) {
-                campos[0].focus();
+            var primero = formulario.querySelector('[data-editable]');
+            if (primero) {
+                primero.focus();
             }
         });
 
         formulario.querySelector('.formularioCancelar').addEventListener('click', function () {
-            campos.forEach(function (campo) {
+            formulario.querySelectorAll('[data-editable]').forEach(function (campo) {
+                if (campo.type === 'checkbox') {
+                    campo.checked = campo.getAttribute('data-original') === '1';
+                    return;
+                }
                 campo.value = campo.getAttribute('data-original');
                 campo.dispatchEvent(new Event(campo.tagName === 'SELECT' ? 'change' : 'input'));
             });
+
+            formulario.querySelectorAll('[data-restaurar-desde]').forEach(function (lista) {
+                var original = document.getElementById(lista.getAttribute('data-restaurar-desde'));
+                if (original) {
+                    lista.innerHTML = original.innerHTML;
+                    lista.dispatchEvent(new Event('restaurada'));
+                }
+            });
+
             if (archivo) {
                 archivo.value = '';
             }
@@ -147,5 +168,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 evento.preventDefault();
             }
         });
+
+        cambiarModo(formulario.classList.contains('editando'));
     });
 });

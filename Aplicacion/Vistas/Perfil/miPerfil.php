@@ -2,7 +2,7 @@
 /**
  * @var \Aplicacion\Modelos\Usuario $usuario
  * @var string $rol
- * @var bool $puedeEditarAcceso
+ * @var bool $tieneIdentificacion
  * @var array $datos
  * @var array $errores
  * @var string $urlBase
@@ -53,7 +53,7 @@ $soloLectura = $editando ? '' : 'readonly';
                            value="<?= $valor('nombreCompleto') ?>">
                     <?= $mensajeError('nombreCompleto') ?>
                 </div>
-                <?php if ($puedeEditarAcceso): ?>
+                <?php if ($tieneIdentificacion): ?>
                     <div class="filaCampos">
                         <div class="<?= $claseCampo('tipoIdentificacion') ?>">
                             <label for="tipoIdentificacion">Tipo de identificación <span class="obligatorio">*</span></label>
@@ -88,65 +88,31 @@ $soloLectura = $editando ? '' : 'readonly';
                             <?= $mensajeError('numeroIdentificacion') ?>
                         </div>
                     </div>
-                    <div class="filaCampos">
-                        <div class="<?= $claseCampo('correoUsuario') ?>">
-                            <label for="correoUsuario">Correo <span class="obligatorio">*</span></label>
-                            <input type="email" id="correoUsuario" name="correoUsuario" maxlength="150"
-                                   required data-regla="correo" <?= $soloLectura ?>
-                                   data-editable data-original="<?= htmlspecialchars((string) $usuario->getCorreoUsuario()) ?>"
-                                   data-mensaje-requerido="Ingrese el correo"
-                                   value="<?= $valor('correoUsuario') ?>">
-                            <p class="textoAyuda">Con este correo inicia sesión</p>
-                            <?= $mensajeError('correoUsuario') ?>
-                        </div>
-                        <div class="<?= $claseCampo('numeroTelefonico') ?>">
-                            <label for="numeroTelefonico">Teléfono <span class="obligatorio">*</span></label>
-                            <input type="tel" id="numeroTelefonico" name="numeroTelefonico" maxlength="15"
-                                   required data-regla="telefono" inputmode="tel" <?= $soloLectura ?>
-                                   data-editable data-original="<?= htmlspecialchars((string) $usuario->getNumeroTelefonico()) ?>"
-                                   data-mensaje-requerido="Ingrese su teléfono"
-                                   value="<?= $valor('numeroTelefonico') ?>">
-                            <p class="textoAyuda">8 dígitos, por ejemplo 88451290</p>
-                            <?= $mensajeError('numeroTelefonico') ?>
-                        </div>
-                    </div>
-                <?php else: ?>
-                    <div class="filaCampos">
-                        <div class="campo">
-                            <label for="tipoIdentificacion">Tipo de identificación</label>
-                            <input type="text" id="tipoIdentificacion" readonly
-                                   value="<?= htmlspecialchars(TipoIdentificacion::nombre($usuario->getTipoIdentificacion())) ?>">
-                        </div>
-                        <div class="campo">
-                            <label for="numeroIdentificacion">Identificación</label>
-                            <input type="text" id="numeroIdentificacion" readonly
-                                   value="<?= htmlspecialchars(TipoIdentificacion::formatear($usuario->getTipoIdentificacion(), $usuario->getNumeroIdentificacion())) ?>">
-                        </div>
-                    </div>
-                    <div class="filaCampos">
-                        <div class="campo">
-                            <label for="correoUsuario">Correo</label>
-                            <input type="email" id="correoUsuario" readonly
-                                   value="<?= htmlspecialchars((string) $usuario->getCorreoUsuario()) ?>">
-                        </div>
-                        <div class="<?= $claseCampo('numeroTelefonico') ?>">
-                            <label for="numeroTelefonico">Teléfono <span class="obligatorio">*</span></label>
-                            <input type="tel" id="numeroTelefonico" name="numeroTelefonico" maxlength="15"
-                                   required data-regla="telefono" inputmode="tel" <?= $soloLectura ?>
-                                   data-editable data-original="<?= htmlspecialchars((string) $usuario->getNumeroTelefonico()) ?>"
-                                   data-mensaje-requerido="Ingrese su teléfono"
-                                   value="<?= $valor('numeroTelefonico') ?>">
-                            <p class="textoAyuda">8 dígitos, por ejemplo 88451290</p>
-                            <?= $mensajeError('numeroTelefonico') ?>
-                        </div>
-                    </div>
                 <?php endif; ?>
-                <?php if (!$puedeEditarAcceso): ?>
-                    <p class="textoAyuda">
-                        Si desea cambiar su identificación o su correo, comuníquese con un administrador.
-                        Más información en la pestaña de <a href="<?= $urlBase ?>/ayuda">Ayuda</a>.
-                    </p>
-                <?php endif; ?>
+                <div class="filaCampos">
+                    <div class="<?= $claseCampo('correoUsuario') ?>">
+                        <label for="correoUsuario">Correo <span class="obligatorio">*</span></label>
+                        <input type="email" id="correoUsuario" name="correoUsuario" maxlength="150"
+                               required data-regla="correo" <?= $soloLectura ?>
+                               data-editable data-original="<?= htmlspecialchars((string) $usuario->getCorreoUsuario()) ?>"
+                               data-mensaje-requerido="Ingrese el correo"
+                               value="<?= $valor('correoUsuario') ?>">
+                        <p class="textoAyuda">Con este correo inicia sesión</p>
+                        <?= $mensajeError('correoUsuario') ?>
+                    </div>
+                    <div class="<?= $claseCampo('numeroTelefonico') ?>">
+                        <label for="numeroTelefonico">Teléfono <span class="obligatorio">*</span></label>
+                        <input type="tel" id="numeroTelefonico" name="numeroTelefonico" maxlength="15"
+                               required data-regla="telefono" inputmode="tel" <?= $soloLectura ?>
+                               data-editable data-original="<?= htmlspecialchars((string) $usuario->getNumeroTelefonico()) ?>"
+                               data-mensaje-requerido="Ingrese su teléfono"
+                               value="<?= $valor('numeroTelefonico') ?>">
+                        <p class="textoAyuda">
+                            8 dígitos, por ejemplo 88451290<?= $tieneIdentificacion ? '. No se muestra en la tienda' : '' ?>
+                        </p>
+                        <?= $mensajeError('numeroTelefonico') ?>
+                    </div>
+                </div>
             </section>
 
             <section class="formularioSeccion">

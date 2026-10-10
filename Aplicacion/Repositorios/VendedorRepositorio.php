@@ -3,7 +3,6 @@
 namespace Aplicacion\Repositorios;
 
 use Aplicacion\Modelos\Vendedor;
-use Aplicacion\Nucleo\TipoIdentificacion;
 use Configuracion\BaseDatos;
 use DateTime;
 use PDO;
@@ -11,43 +10,23 @@ use Throwable;
 
 class VendedorRepositorio
 {
-    public const POR_PAGINA = 10;
-
     private PDO $conexion;
     private UsuarioRepositorio $usuarioRepositorio;
+    private VendedorContactoRepositorio $contactoRepositorio;
 
     public function __construct()
     {
         $this->conexion = BaseDatos::obtenerConexion();
         $this->usuarioRepositorio = new UsuarioRepositorio();
-    }
-
-    private function generarId(): int
-    {
-        return BaseDatos::generarId('tbvendedor', 'tbvendedorid');
-    }
-
-    public function buscarPorId(int $idVendedor): ?Vendedor
-    {
-        $consulta = $this->conexion->prepare(
-            'SELECT u.*, v.tbvendedorid, v.tbvendedorregistrofecha, v.tbvendedoractivo
-             FROM tbvendedor v
-             INNER JOIN tbusuario u ON u.tbusuarioid = v.tbusuarioid
-             WHERE v.tbvendedorid = ?'
-        );
-        $consulta->execute([$idVendedor]);
-        $fila = $consulta->fetch();
-
-        return $fila ? $this->crearDesdeFila($fila) : null;
+        $this->contactoRepositorio = new VendedorContactoRepositorio();
     }
 
     public function buscarPorIdUsuario(int $idUsuario): ?Vendedor
     {
         $consulta = $this->conexion->prepare(
-            'SELECT u.*, v.tbvendedorid, v.tbvendedorregistrofecha, v.tbvendedoractivo
-             FROM tbvendedor v
-             INNER JOIN tbusuario u ON u.tbusuarioid = v.tbusuarioid
-             WHERE v.tbusuarioid = ?'
+            'SELECT u.*, v.* FROM tbvendedor v
+             INNER JOIN tbusuario u ON u.tbusuarioid = v.tbvendedorusuarioid
+             WHERE v.tbvendedorusuarioid = ?'
         );
         $consulta->execute([$idUsuario]);
         $fila = $consulta->fetch();
@@ -55,61 +34,63 @@ class VendedorRepositorio
         return $fila ? $this->crearDesdeFila($fila) : null;
     }
 
-    public function listar(string $busqueda, ?bool $activo, int $pagina): array
+    // Para la tienda pública: el enlace llega como "tienda-de-prueba"
+    public function buscarPorEnlace(string $enlace): ?Vendedor
     {
-        [$condiciones, $valores] = $this->construirFiltros($busqueda, $activo);
-
-        $desplazamiento = (max(1, $pagina) - 1) * self::POR_PAGINA;
         $consulta = $this->conexion->prepare(
-            'SELECT u.*, v.tbvendedorid, v.tbvendedorregistrofecha, v.tbvendedoractivo
-             FROM tbvendedor v
-             INNER JOIN tbusuario u ON u.tbusuarioid = v.tbusuarioid'
-            . $condiciones
-            . ' ORDER BY u.tbusuarionombrecompleto ASC, v.tbvendedorid ASC
-             LIMIT ' . self::POR_PAGINA . ' OFFSET ' . $desplazamiento
+            'SELECT u.*, v.* FROM tbvendedor v
+             INNER JOIN tbusuario u ON u.tbusuarioid = v.tbvendedorusuarioid
+             WHERE v.tbvendedortiendaenlace = ?'
         );
-        $consulta->execute($valores);
+        $consulta->execute([self::normalizarEnlace($enlace)]);
+        $fila = $consulta->fetch();
 
-        return array_map(fn(array $fila): Vendedor => $this->crearDesdeFila($fila), $consulta->fetchAll());
+        return $fila ? $this->crearDesdeFila($fila) : null;
     }
 
-    public function contar(string $busqueda, ?bool $activo): int
+    public function existeEnlace(string $enlace, ?int $excluirIdVendedor = null): bool
     {
-        [$condiciones, $valores] = $this->construirFiltros($busqueda, $activo);
-
         $consulta = $this->conexion->prepare(
-            'SELECT COUNT(*)
-             FROM tbvendedor v
-             INNER JOIN tbusuario u ON u.tbusuarioid = v.tbusuarioid'
-            . $condiciones
+            'SELECT COUNT(*) FROM tbvendedor WHERE tbvendedortiendaenlace = ? AND tbvendedorid <> ?'
         );
-        $consulta->execute($valores);
+        $consulta->execute([self::normalizarEnlace($enlace), $excluirIdVendedor ?? 0]);
 
-        return (int) $consulta->fetchColumn();
+        return (int) $consulta->fetchColumn() > 0;
     }
 
+    // Guarda el usuario, la tienda y sus contactos en una sola transacción
     public function insertar(Vendedor $vendedor): int
     {
-        BaseDatos::iniciarTransaccion();
+        $transaccionPropia = BaseDatos::iniciarTransaccion();
 
         try {
             $idUsuario = $this->usuarioRepositorio->insertar($vendedor);
-            $idVendedor = $this->generarId();
+            $idVendedor = BaseDatos::generarId('tbvendedor', 'tbvendedorid');
 
             $consulta = $this->conexion->prepare(
-                'INSERT INTO tbvendedor (tbvendedorid, tbusuarioid, tbvendedorregistrofecha, tbvendedoractivo)
-                 VALUES (?, ?, ?, ?)'
+                'INSERT INTO tbvendedor (tbvendedorid, tbvendedorusuarioid, tbvendedortiendanombre, tbvendedortiendaenlace,
+                    tbvendedortiendadescripcion, tbvendedortiendalogo, tbvendedoractivo)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)'
             );
             $consulta->execute([
                 $idVendedor,
                 $idUsuario,
-                $vendedor->getRegistroFechaVendedor()->format('Y-m-d H:i:s'),
-                $vendedor->getEstadoVendedor() ? 1 : 0,
+                UsuarioRepositorio::limpiarEspacios((string) $vendedor->getTiendaNombre()),
+                self::normalizarEnlace((string) $vendedor->getTiendaEnlace()),
+                self::descripcionOVacio($vendedor->getTiendaDescripcion()),
+                $vendedor->getTiendaLogo(),
+                $vendedor->getTiendaActiva() ? 1 : 0,
             ]);
 
-            BaseDatos::confirmarTransaccion();
+            $this->contactoRepositorio->reemplazar($idVendedor, $vendedor->getContactos());
+
+            if ($transaccionPropia) {
+                BaseDatos::confirmarTransaccion();
+            }
         } catch (Throwable $error) {
-            BaseDatos::revertirTransaccion();
+            if ($transaccionPropia) {
+                BaseDatos::revertirTransaccion();
+            }
             throw $error;
         }
 
@@ -118,71 +99,54 @@ class VendedorRepositorio
         return $idVendedor;
     }
 
-    public function actualizar(Vendedor $vendedor, ?string $contrasenaNueva = null): void
+    // Solo los datos de la tienda y sus contactos; los datos personales se guardan desde Mi perfil
+    public function actualizarTienda(Vendedor $vendedor): void
     {
-        BaseDatos::iniciarTransaccion();
+        $transaccionPropia = BaseDatos::iniciarTransaccion();
 
         try {
-            $this->usuarioRepositorio->actualizar($vendedor);
-
-            if ($contrasenaNueva !== null) {
-                $this->usuarioRepositorio->cambiarContrasena($vendedor->getIdUsuario(), $contrasenaNueva);
-            }
-
-            BaseDatos::confirmarTransaccion();
-        } catch (Throwable $error) {
-            BaseDatos::revertirTransaccion();
-            throw $error;
-        }
-    }
-
-    public function cambiarEstado(Vendedor $vendedor, bool $activo): void
-    {
-        BaseDatos::iniciarTransaccion();
-
-        try {
-            $this->usuarioRepositorio->cambiarEstado($vendedor->getIdUsuario(), $activo);
-
             $consulta = $this->conexion->prepare(
-                'UPDATE tbvendedor SET tbvendedoractivo = ? WHERE tbvendedorid = ?'
+                'UPDATE tbvendedor SET tbvendedortiendanombre = ?, tbvendedortiendaenlace = ?,
+                    tbvendedortiendadescripcion = ?, tbvendedortiendalogo = ?, tbvendedoractivo = ?
+                 WHERE tbvendedorid = ?'
             );
-            $consulta->execute([$activo ? 1 : 0, $vendedor->getIdVendedor()]);
+            $consulta->execute([
+                UsuarioRepositorio::limpiarEspacios((string) $vendedor->getTiendaNombre()),
+                self::normalizarEnlace((string) $vendedor->getTiendaEnlace()),
+                self::descripcionOVacio($vendedor->getTiendaDescripcion()),
+                $vendedor->getTiendaLogo(),
+                $vendedor->getTiendaActiva() ? 1 : 0,
+                $vendedor->getIdVendedor(),
+            ]);
 
-            BaseDatos::confirmarTransaccion();
+            $this->contactoRepositorio->reemplazar((int) $vendedor->getIdVendedor(), $vendedor->getContactos());
+
+            if ($transaccionPropia) {
+                BaseDatos::confirmarTransaccion();
+            }
         } catch (Throwable $error) {
-            BaseDatos::revertirTransaccion();
+            if ($transaccionPropia) {
+                BaseDatos::revertirTransaccion();
+            }
             throw $error;
         }
-
-        $vendedor->setEstado($activo);
-        $vendedor->setEstadoVendedor($activo);
     }
 
-    private function construirFiltros(string $busqueda, ?bool $activo): array
+    public static function normalizarEnlace(string $enlace): string
     {
-        $condiciones = [];
-        $valores = [];
+        return mb_strtolower(trim($enlace), 'UTF-8');
+    }
 
-        $busqueda = trim($busqueda);
-        if ($busqueda !== '') {
-            $patron = '%' . addcslashes($busqueda, '%_\\') . '%';
-            $patronIdentificacion = '%' . addcslashes(TipoIdentificacion::limpiar($busqueda), '%_\\') . '%';
-            $condiciones[] = '(u.tbusuarionombrecompleto LIKE ? OR u.tbusuariocorreo LIKE ? OR u.tbusuarioidentificacionnumero LIKE ?)';
-            array_push($valores, $patron, $patron, $patronIdentificacion);
-        }
-
-        if ($activo !== null) {
-            $condiciones[] = 'v.tbvendedoractivo = ?';
-            $valores[] = $activo ? 1 : 0;
-        }
-
-        $sql = $condiciones === [] ? '' : ' WHERE ' . implode(' AND ', $condiciones);
-
-        return [$sql, $valores];
+    private static function descripcionOVacio(?string $descripcion): ?string
+    {
+        $descripcion = trim((string) $descripcion);
+        return $descripcion === '' ? null : $descripcion;
     }
 
     private function crearDesdeFila(array $fila): Vendedor
     {
+        $idVendedor = (int) $fila['tbvendedorid'];
+
         return new Vendedor(
             (int) $fila['tbusuarioid'],
             $fila['tbusuarioidentificaciontipo'],
@@ -194,9 +158,13 @@ class VendedorRepositorio
             $fila['tbusuariocontrasena'],
             $fila['tbusuarioregistrofecha'] !== null ? new DateTime($fila['tbusuarioregistrofecha']) : null,
             (bool) $fila['tbusuarioactivo'],
-            (int) $fila['tbvendedorid'],
-            $fila['tbvendedorregistrofecha'] !== null ? new DateTime($fila['tbvendedorregistrofecha']) : null,
-            (bool) $fila['tbvendedoractivo']
+            $idVendedor,
+            $fila['tbvendedortiendanombre'],
+            $fila['tbvendedortiendaenlace'],
+            $fila['tbvendedortiendadescripcion'],
+            $fila['tbvendedortiendalogo'],
+            (bool) $fila['tbvendedoractivo'],
+            $this->contactoRepositorio->listarPorVendedor($idVendedor)
         );
     }
 }

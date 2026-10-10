@@ -53,6 +53,14 @@ class Configuracion
         return self::$valores[$clave] ?? $porDefecto;
     }
 
+    public static function recurso(string $ruta): string
+    {
+        $archivo = self::rutaBase() . '/Publico/' . $ruta;
+        $version = is_file($archivo) ? filemtime($archivo) : 0;
+
+        return rtrim((string) self::obtener('appUrl', ''), '/') . '/' . $ruta . '?v=' . $version;
+    }
+
     public static function esDesarrollo(): bool
     {
         return self::obtener('appEntorno', 'produccion') === 'desarrollo';

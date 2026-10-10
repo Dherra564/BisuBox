@@ -3,26 +3,24 @@
 namespace Aplicacion\Nucleo;
 
 use Aplicacion\Controladores\ErrorControlador;
-use Aplicacion\Modelos\Sesion;
 use Aplicacion\Repositorios\SesionRepositorio;
 use Configuracion\Configuracion;
 
 class Permiso
 {
     private const PERMISOS = [
-        'panel.ver' => [Sesion::TIPO_SUPERADMIN, Sesion::TIPO_VENDEDOR],
-        'perfil.ver' => [Sesion::TIPO_SUPERADMIN, Sesion::TIPO_VENDEDOR],
-        'vendedores.gestionar' => [Sesion::TIPO_SUPERADMIN],
-        'sesiones.ver' => [Sesion::TIPO_SUPERADMIN],
-        'ayuda.ver' => [Sesion::TIPO_SUPERADMIN, Sesion::TIPO_VENDEDOR],
+        'panel.ver' => [Rol::VENDEDOR, Rol::CLIENTE],
+        'perfil.ver' => [Rol::VENDEDOR, Rol::CLIENTE],
+        'sesiones.ver' => [Rol::VENDEDOR, Rol::CLIENTE],
+        'tienda.gestionar' => [Rol::VENDEDOR],
     ];
 
     public static function puede(string $permiso): bool
     {
-        $tipo = UsuarioActual::tipo();
+        $rol = UsuarioActual::rol();
 
-        return $tipo !== null
-            && in_array($tipo, self::PERMISOS[$permiso] ?? [], true);
+        return $rol !== null
+            && in_array($rol, self::PERMISOS[$permiso] ?? [], true);
     }
 
     public static function exigirSesion(): void

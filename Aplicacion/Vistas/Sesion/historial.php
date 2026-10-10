@@ -4,7 +4,6 @@
  * @var string $urlBase
  */
 
-
 $titulo = 'Historial de sesiones';
 $paginaActual = 'sesiones';
 require __DIR__ . '/../Plantilla/encabezado.php';
@@ -14,7 +13,7 @@ $formatearFecha = fn (?string $fecha): string => $fecha !== null
     : '—';
 ?>
 
-<p class="subtitulo">Se muestran las últimas 100 sesiones, de la más reciente a la más antigua.</p>
+<p class="subtitulo">Sus últimas 100 sesiones, de la más reciente a la más antigua.</p>
 
 <?php if ($sesiones === []): ?>
     <div class="cajaInformativa">Todavía no hay sesiones registradas.</div>
@@ -23,7 +22,6 @@ $formatearFecha = fn (?string $fecha): string => $fecha !== null
         <table class="tabla">
             <thead>
                 <tr>
-                    <th>Usuario</th>
                     <th>Rol</th>
                     <th>Inicio</th>
                     <th>Cierre</th>
@@ -33,12 +31,6 @@ $formatearFecha = fn (?string $fecha): string => $fecha !== null
             <tbody>
                 <?php foreach ($sesiones as $sesion): ?>
                     <tr>
-                        <td data-etiqueta="Usuario">
-                            <?= htmlspecialchars($sesion['nombre'] ?? 'Usuario eliminado') ?>
-                            <?php if ($sesion['correo'] !== null): ?>
-                                <br><span class="textoAyuda"><?= htmlspecialchars($sesion['correo']) ?></span>
-                            <?php endif; ?>
-                        </td>
                         <td data-etiqueta="Rol"><?= htmlspecialchars((string) $sesion['tipo']) ?></td>
                         <td data-etiqueta="Inicio"><?= $formatearFecha($sesion['inicio']) ?></td>
                         <td data-etiqueta="Cierre"><?= $formatearFecha($sesion['cierre']) ?></td>

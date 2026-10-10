@@ -8,8 +8,7 @@ use Configuracion\Configuracion;
 
 $scriptsExtra = $scriptsExtra ?? [];
 ?>
-            </main>
-        </div>
+        </main>
     </div>
 
     <?php require __DIR__ . '/modalConfirmacion.php'; ?>
@@ -20,4 +19,5 @@ $scriptsExtra = $scriptsExtra ?? [];
         <script src="<?= htmlspecialchars(Configuracion::recurso('js/' . $script)) ?>"></script>
     <?php endforeach; ?>
 </body>
+
 </html>

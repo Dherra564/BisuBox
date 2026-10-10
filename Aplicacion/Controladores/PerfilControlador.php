@@ -6,6 +6,7 @@ use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\ManejadorSesion;
 use Aplicacion\Nucleo\Mensaje;
 use Aplicacion\Nucleo\Permiso;
+use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\SubidaArchivo;
 use Aplicacion\Nucleo\TipoIdentificacion;
 use Aplicacion\Nucleo\UsuarioActual;
@@ -44,24 +45,18 @@ class PerfilControlador
         $this->verificarCsrf('/perfil');
 
         $leer = fn(string $campo): string => is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
-        $puedeEditarAcceso = UsuarioActual::esSuperAdmin();
-
+        // Solo el vendedor tiene identificación; el cliente no la ve ni la envía
+        $tieneIdentificacion = $this->usuario->esVendedor();
 
         $datos = [
-            'tipoIdentificacion' => $puedeEditarAcceso
-                ? $leer('tipoIdentificacion')
-                : $this->usuario->getTipoIdentificacion(),
-            'numeroIdentificacion' => $puedeEditarAcceso
-                ? TipoIdentificacion::limpiar($leer('numeroIdentificacion'))
-                : $this->usuario->getNumeroIdentificacion(),
+            'tipoIdentificacion' => $tieneIdentificacion ? $leer('tipoIdentificacion') : null,
+            'numeroIdentificacion' => $tieneIdentificacion ? TipoIdentificacion::limpiar($leer('numeroIdentificacion')) : null,
             'nombreCompleto' => $leer('nombreCompleto'),
-            'correoUsuario' => $puedeEditarAcceso
-                ? mb_strtolower($leer('correoUsuario'), 'UTF-8')
-                : $this->usuario->getCorreoUsuario(),
+            'correoUsuario' => mb_strtolower($leer('correoUsuario'), 'UTF-8'),
             'numeroTelefonico' => $leer('numeroTelefonico'),
         ];
 
-        $validador = $this->validarDatos($datos, $puedeEditarAcceso);
+        $validador = $this->validarDatos($datos, $tieneIdentificacion);
         $nombreFoto = $this->subirFoto($validador);
         if (!$validador->esValido()) {
             SubidaArchivo::eliminarFotoPerfil($nombreFoto);
@@ -161,14 +156,14 @@ class PerfilControlador
             }
 
             UsuarioActual::cerrar();
-            Mensaje::error('Su cuenta no está activa. Comuníquese con un administrador.');
+            Mensaje::error('Su cuenta no está activa.');
             $this->redirigir('/ingresar');
         }
 
         return $usuario;
     }
 
-    private function validarDatos(array $datos, bool $puedeEditarAcceso): Validador
+    private function validarDatos(array $datos, bool $tieneIdentificacion): Validador
     {
         $validador = new Validador();
         $idUsuario = $this->usuario->getIdUsuario();
@@ -176,6 +171,9 @@ class PerfilControlador
         $validador->requerido('nombreCompleto', $datos['nombreCompleto'], 'Ingrese su nombre completo')
             ->longitud('nombreCompleto', $datos['nombreCompleto'], 3, 100, 'El nombre debe tener entre 3 y 100 caracteres')
             ->soloLetras('nombreCompleto', $datos['nombreCompleto'], 'El nombre solo puede tener letras y espacios');
+
+        $validador->requerido('correoUsuario', $datos['correoUsuario'], 'Ingrese el correo')
+            ->correo('correoUsuario', $datos['correoUsuario']);
 
         $validador->requerido('numeroTelefonico', $datos['numeroTelefonico'], 'Ingrese su teléfono')
             ->telefono('numeroTelefonico', $datos['numeroTelefonico']);
@@ -186,16 +184,11 @@ class PerfilControlador
             $validador->agregarError('numeroTelefonico', 'Este teléfono ya lo usa otro usuario');
         }
 
-        if (!$puedeEditarAcceso) {
-            return $validador;
+        if ($tieneIdentificacion) {
+            $validador->tipoIdentificacion('tipoIdentificacion', $datos['tipoIdentificacion']);
+            $validador->requerido('numeroIdentificacion', $datos['numeroIdentificacion'], 'Ingrese la identificación')
+                ->identificacion('numeroIdentificacion', $datos['tipoIdentificacion'], $datos['numeroIdentificacion']);
         }
-
-        $validador->tipoIdentificacion('tipoIdentificacion', $datos['tipoIdentificacion']);
-        $validador->requerido('numeroIdentificacion', $datos['numeroIdentificacion'], 'Ingrese la identificación')
-            ->identificacion('numeroIdentificacion', $datos['tipoIdentificacion'], $datos['numeroIdentificacion']);
-
-        $validador->requerido('correoUsuario', $datos['correoUsuario'], 'Ingrese el correo')
-            ->correo('correoUsuario', $datos['correoUsuario']);
 
         if (
             $validador->error('correoUsuario') === null
@@ -204,7 +197,8 @@ class PerfilControlador
             $validador->agregarError('correoUsuario', 'Este correo ya lo usa otro usuario');
         }
         if (
-            $validador->error('numeroIdentificacion') === null
+            $tieneIdentificacion
+            && $validador->error('numeroIdentificacion') === null
             && $this->usuarioRepositorio->existeIdentificacion($datos['numeroIdentificacion'], $idUsuario)
         ) {
             $validador->agregarError('numeroIdentificacion', 'Ya existe otro usuario con esta identificación');
@@ -230,8 +224,8 @@ class PerfilControlador
     {
         $this->mostrarVista('Perfil/miPerfil', [
             'usuario' => $this->usuario,
-            'rol' => (string) UsuarioActual::tipo(),
-            'puedeEditarAcceso' => UsuarioActual::esSuperAdmin(),
+            'rol' => Rol::nombre($this->usuario->getRol()),
+            'tieneIdentificacion' => $this->usuario->esVendedor(),
             'datos' => $datos,
             'errores' => $errores,
         ]);

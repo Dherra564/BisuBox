@@ -2,6 +2,7 @@
 
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\Permiso;
+use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\UsuarioActual;
 use Configuracion\Configuracion;
 
@@ -13,14 +14,15 @@ $mensajes = $mensajes ?? [];
 
 $opcionesMenu = [
     'inicio' => ['texto' => 'Inicio', 'ruta' => '/', 'permiso' => 'panel.ver'],
-    'vendedores' => ['texto' => 'Vendedores', 'ruta' => '/vendedores', 'permiso' => 'vendedores.gestionar'],
-    'sesiones' => ['texto' => 'Historial de sesiones', 'ruta' => '/sesiones', 'permiso' => 'sesiones.ver'],
     'perfil' => ['texto' => 'Mi perfil', 'ruta' => '/perfil', 'permiso' => 'perfil.ver'],
-    'ayuda' => ['texto' => 'Ayuda', 'ruta' => '/ayuda', 'permiso' => 'ayuda.ver'],
+    'tienda' => ['texto' => 'Mi tienda', 'ruta' => '/tienda', 'permiso' => 'tienda.gestionar'],
+    'sesiones' => ['texto' => 'Historial de sesiones', 'ruta' => '/sesiones', 'permiso' => 'sesiones.ver'],
 ];
 $opcionesMenu = array_filter($opcionesMenu, fn(array $opcion): bool => Permiso::puede($opcion['permiso']));
 
-$proximasFases = ['Inventario', 'Proveedores', 'Compras', 'Producción', 'Pedidos', 'Ventas y caja', 'Gastos', 'Reportes'];
+$proximasFases = UsuarioActual::esVendedor()
+    ? ['Inventario', 'Proveedores', 'Compras', 'Productos', 'Producción', 'Pedidos']
+    : ['Tiendas', 'Carrito', 'Mis pedidos'];
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -30,7 +32,7 @@ $proximasFases = ['Inventario', 'Proveedores', 'Compras', 'Producción', 'Pedido
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= htmlspecialchars($titulo) ?> | BisuBox</title>
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="<?= $urlBase ?>/css/estilos.css">
+    <link rel="stylesheet" href="<?= Configuracion::recurso('css/estilos.css') ?>">
 </head>
 
 <body>
@@ -68,7 +70,7 @@ $proximasFases = ['Inventario', 'Proveedores', 'Compras', 'Producción', 'Pedido
                             alt="" class="fotoUsuario">
                         <a href="<?= $urlBase ?>/perfil"
                             class="nombreUsuario"><?= htmlspecialchars((string) UsuarioActual::nombre()) ?></a>
-                        <span class="etiqueta etiquetaRol"><?= htmlspecialchars((string) UsuarioActual::tipo()) ?></span>
+                        <span class="etiqueta etiquetaRol"><?= htmlspecialchars(Rol::nombre(UsuarioActual::rol())) ?></span>
                         <form method="post" action="<?= $urlBase ?>/salir" class="formularioSalir"
                             data-confirmar="¿Desea cerrar sesión?" data-titulo="Cerrar sesión" data-boton="Cerrar sesión">
                             <?= Csrf::campo() ?>

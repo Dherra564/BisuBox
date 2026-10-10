@@ -17,18 +17,13 @@ class UsuarioRepositorio
         $this->conexion = BaseDatos::obtenerConexion();
     }
 
-    private function generarId(): int
-    {
-        return BaseDatos::generarId('tbusuario', 'tbusuarioid');
-    }
-
     public function buscarPorId(int $idUsuario): ?Usuario
     {
         $consulta = $this->conexion->prepare('SELECT * FROM tbusuario WHERE tbusuarioid = ?');
         $consulta->execute([$idUsuario]);
         $fila = $consulta->fetch();
 
-        return $fila ? $this->crearDesdeFila($fila) : null;
+        return $fila ? self::crearDesdeFila($fila) : null;
     }
 
     public function buscarPorCorreo(string $correo): ?Usuario
@@ -37,12 +32,7 @@ class UsuarioRepositorio
         $consulta->execute([self::normalizarCorreo($correo)]);
         $fila = $consulta->fetch();
 
-        return $fila ? $this->crearDesdeFila($fila) : null;
-    }
-
-    public function contar(): int
-    {
-        return (int) $this->conexion->query('SELECT COUNT(*) FROM tbusuario')->fetchColumn();
+        return $fila ? self::crearDesdeFila($fila) : null;
     }
 
     public function existeCorreo(string $correo, ?int $excluirIdUsuario = null): bool
@@ -65,6 +55,7 @@ class UsuarioRepositorio
         return (int) $consulta->fetchColumn() > 0;
     }
 
+    // Recibe el teléfono limpio: 8 dígitos
     public function existeTelefono(string $telefono, ?int $excluirIdUsuario = null): bool
     {
         $consulta = $this->conexion->prepare(
@@ -75,32 +66,31 @@ class UsuarioRepositorio
         return (int) $consulta->fetchColumn() > 0;
     }
 
+    // Si ya hay una transacción abierta (registro de vendedor o cliente), la confirma quien la abrió
     public function insertar(Usuario $usuario): int
     {
-        $transaccionPropia = !$this->conexion->inTransaction();
-        if ($transaccionPropia) {
-            BaseDatos::iniciarTransaccion();
-        }
+        $transaccionPropia = BaseDatos::iniciarTransaccion();
 
         try {
-            $idUsuario = $this->generarId();
+            $idUsuario = BaseDatos::generarId('tbusuario', 'tbusuarioid');
             $contrasena = self::encriptar($usuario->getContrasena());
 
             $consulta = $this->conexion->prepare(
                 'INSERT INTO tbusuario (tbusuarioid, tbusuarioidentificaciontipo, tbusuarioidentificacionnumero,
                     tbusuarionombrecompleto, tbusuarioperfilimagen, tbusuariocorreo, tbusuariotelefono,
-                    tbusuariocontrasena, tbusuarioregistrofecha, tbusuarioactivo)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                    tbusuariocontrasena, tbusuariorol, tbusuarioregistrofecha, tbusuarioactivo)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
             );
             $consulta->execute([
                 $idUsuario,
                 $usuario->getTipoIdentificacion(),
-                trim((string) $usuario->getNumeroIdentificacion()),
+                $usuario->getNumeroIdentificacion() !== null ? trim($usuario->getNumeroIdentificacion()) : null,
                 self::limpiarEspacios((string) $usuario->getNombreCompleto()),
                 $usuario->getFotoPerfil(),
-                $usuario->getCorreoUsuario() !== null ? self::normalizarCorreo($usuario->getCorreoUsuario()) : null,
+                self::normalizarCorreo((string) $usuario->getCorreoUsuario()),
                 $usuario->getNumeroTelefonico(),
                 $contrasena,
+                $usuario->getRol(),
                 $usuario->getFechaRegistro()->format('Y-m-d H:i:s'),
                 $usuario->getEstado() ? 1 : 0,
             ]);
@@ -121,22 +111,20 @@ class UsuarioRepositorio
         return $idUsuario;
     }
 
-    public function actualizar(Usuario $usuario): bool
+    public function actualizar(Usuario $usuario): void
     {
         $consulta = $this->conexion->prepare(
             'UPDATE tbusuario SET tbusuarioidentificaciontipo = ?, tbusuarioidentificacionnumero = ?,
-                tbusuarionombrecompleto = ?, tbusuariotelefono = ?,
-                tbusuarioperfilimagen = ?, tbusuariocorreo = ?
+                tbusuarionombrecompleto = ?, tbusuarioperfilimagen = ?, tbusuariocorreo = ?, tbusuariotelefono = ?
              WHERE tbusuarioid = ?'
         );
-
-        return $consulta->execute([
+        $consulta->execute([
             $usuario->getTipoIdentificacion(),
-            trim((string) $usuario->getNumeroIdentificacion()),
+            $usuario->getNumeroIdentificacion() !== null ? trim($usuario->getNumeroIdentificacion()) : null,
             self::limpiarEspacios((string) $usuario->getNombreCompleto()),
-            $usuario->getNumeroTelefonico(),
             $usuario->getFotoPerfil(),
-            $usuario->getCorreoUsuario() !== null ? self::normalizarCorreo($usuario->getCorreoUsuario()) : null,
+            self::normalizarCorreo((string) $usuario->getCorreoUsuario()),
+            $usuario->getNumeroTelefonico(),
             $usuario->getIdUsuario(),
         ]);
     }
@@ -145,22 +133,6 @@ class UsuarioRepositorio
     {
         $consulta = $this->conexion->prepare('UPDATE tbusuario SET tbusuariocontrasena = ? WHERE tbusuarioid = ?');
         return $consulta->execute([self::encriptar($contrasenaNueva), $idUsuario]);
-    }
-
-    public function cambiarEstado(int $idUsuario, bool $activo): bool
-    {
-        $consulta = $this->conexion->prepare('UPDATE tbusuario SET tbusuarioactivo = ? WHERE tbusuarioid = ?');
-        $resultado = $consulta->execute([$activo ? 1 : 0, $idUsuario]);
-
-        if (!$activo) {
-            $cierre = $this->conexion->prepare(
-                'UPDATE tbsesion SET tbsesionactivo = 0, tbsesionfechacierre = NOW()
-                 WHERE tbsesionusuarioid = ? AND tbsesionactivo = 1'
-            );
-            $cierre->execute([$idUsuario]);
-        }
-
-        return $resultado;
     }
 
     public function verificarCredenciales(string $correo, string $contrasena): ?Usuario
@@ -175,7 +147,7 @@ class UsuarioRepositorio
 
     public static function limpiarEspacios(string $texto): string
     {
-        return trim(preg_replace('/\s+/u', ' ', $texto));
+        return trim((string) preg_replace('/\s+/u', ' ', $texto));
     }
 
     public static function normalizarCorreo(string $correo): string
@@ -183,18 +155,7 @@ class UsuarioRepositorio
         return mb_strtolower(trim($correo), 'UTF-8');
     }
 
-    private static function encriptar(?string $contrasena): ?string
-    {
-        if ($contrasena === null || $contrasena === '') {
-            return null;
-        }
-        if (password_get_info($contrasena)['algo'] !== null) {
-            return $contrasena;
-        }
-        return password_hash($contrasena, PASSWORD_DEFAULT);
-    }
-
-    private function crearDesdeFila(array $fila): Usuario
+    private static function crearDesdeFila(array $fila): Usuario
     {
         return new Usuario(
             (int) $fila['tbusuarioid'],
@@ -206,7 +167,20 @@ class UsuarioRepositorio
             $fila['tbusuariotelefono'],
             $fila['tbusuariocontrasena'],
             $fila['tbusuarioregistrofecha'] !== null ? new DateTime($fila['tbusuarioregistrofecha']) : null,
-            (bool) $fila['tbusuarioactivo']
+            (bool) $fila['tbusuarioactivo'],
+            $fila['tbusuariorol']
         );
+    }
+
+    // Si ya viene cifrada se guarda igual
+    private static function encriptar(?string $contrasena): ?string
+    {
+        if ($contrasena === null || $contrasena === '') {
+            return null;
+        }
+        if (password_get_info($contrasena)['algo'] !== null) {
+            return $contrasena;
+        }
+        return password_hash($contrasena, PASSWORD_DEFAULT);
     }
 }

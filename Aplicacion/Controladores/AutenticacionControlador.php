@@ -1,25 +1,23 @@
 <?php
 namespace Aplicacion\Controladores;
 
-use Aplicacion\Modelos\Sesion;
+use Aplicacion\Nucleo\Acceso;
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\ManejadorSesion;
 use Aplicacion\Nucleo\Mensaje;
+use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Repositorios\SesionRepositorio;
-use Aplicacion\Repositorios\SuperAdminRepositorio;
 use Aplicacion\Repositorios\UsuarioRepositorio;
-use Aplicacion\Repositorios\VendedorRepositorio;
 use Configuracion\Configuracion;
 
 class AutenticacionControlador
 {
     private const MENSAJE_FALLO = 'Correo o contraseña incorrectos';
-    private const MENSAJE_DESACTIVADA = 'Su cuenta está desactivada. Comuníquese con el administrador.';
+    private const MENSAJE_DESACTIVADA = 'Su cuenta está desactivada.';
 
     public function iniciarSesion(): void
     {
-
         if (!Csrf::esValido()) {
             Mensaje::error('La página expiró. Recargue e intente de nuevo.');
             $this->redirigir('/ingresar');
@@ -48,30 +46,13 @@ class AutenticacionControlador
             $this->redirigir('/ingresar');
         }
 
-        $rol = $this->descubrirRol($usuario->getIdUsuario());
-        if ($rol === null) {
-            Mensaje::error('Su cuenta no tiene un rol asignado. Comuníquese con el administrador.');
-            $this->redirigir('/ingresar');
-        }
-        if (!$rol['activo']) {
-            Mensaje::error(self::MENSAJE_DESACTIVADA);
+        // El rol se lee directo de tbusuario (Vendedor o Cliente)
+        if (!Rol::existe($usuario->getRol())) {
+            Mensaje::error('Su cuenta no tiene un rol asignado.');
             $this->redirigir('/ingresar');
         }
 
-        ManejadorSesion::regenerarId();
-
-        $repositorioSesion = new SesionRepositorio();
-        $repositorioSesion->cerrarTodasDeUsuario($usuario->getIdUsuario());
-
-        $sesion = new Sesion(
-            idUsuario: $usuario->getIdUsuario(),
-            tipoUsuario: $rol['tipo']
-        );
-        $repositorioSesion->registrarInicio($sesion);
-
-        ManejadorSesion::guardarIdSesionBd($sesion->getIdSesion());
-        ManejadorSesion::registrarActividad();
-        UsuarioActual::iniciar($usuario->getIdUsuario(), $rol['tipo'], $usuario->getNombreCompleto(), $usuario->getFotoPerfil());
+        Acceso::abrirSesion($usuario);
 
         $this->redirigir('/');
     }
@@ -96,21 +77,6 @@ class AutenticacionControlador
         $this->redirigir('/ingresar');
     }
 
-    private function descubrirRol(int $idUsuario): ?array
-    {
-        $superAdmin = (new SuperAdminRepositorio())->buscarPorIdUsuario($idUsuario);
-        if ($superAdmin !== null) {
-            return ['tipo' => Sesion::TIPO_SUPERADMIN, 'activo' => $superAdmin->getEstadoSuperAdmin()];
-        }
-
-        $vendedor = (new VendedorRepositorio())->buscarPorIdUsuario($idUsuario);
-        if ($vendedor !== null) {
-            return ['tipo' => Sesion::TIPO_VENDEDOR, 'activo' => $vendedor->getEstadoVendedor()];
-        }
-
-        return null;
-    }
-
     private function redirigir(string $ruta): never
     {
         header('Location: ' . rtrim((string) Configuracion::obtener('appUrl', ''), '/') . $ruta);
@@ -125,7 +91,6 @@ class AutenticacionControlador
 
     public function mostrarLogin(): void
     {
-
         if (UsuarioActual::haySesion()) {
             $this->redirigir('/');
         }

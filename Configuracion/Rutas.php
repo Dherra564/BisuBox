@@ -1,12 +1,12 @@
 <?php
 
 use Aplicacion\Controladores\AutenticacionControlador;
-use Aplicacion\Controladores\AyudaControlador;
 use Aplicacion\Controladores\FotoControlador;
 use Aplicacion\Controladores\InicioControlador;
 use Aplicacion\Controladores\PerfilControlador;
+use Aplicacion\Controladores\RegistroControlador;
 use Aplicacion\Controladores\SesionControlador;
-use Aplicacion\Controladores\VendedorControlador;
+use Aplicacion\Controladores\TiendaControlador;
 use Aplicacion\Nucleo\Enrutador;
 
 return function (Enrutador $enrutador): void {
@@ -17,21 +17,21 @@ return function (Enrutador $enrutador): void {
     $enrutador->post('/ingresar', [AutenticacionControlador::class, 'iniciarSesion']);
     $enrutador->post('/salir', [AutenticacionControlador::class, 'cerrarSesion']);
 
+    $enrutador->get('/registro/vendedor', [RegistroControlador::class, 'mostrarVendedor']);
+    $enrutador->post('/registro/vendedor', [RegistroControlador::class, 'registrarVendedor']);
+    $enrutador->get('/registro/cliente', [RegistroControlador::class, 'mostrarCliente']);
+    $enrutador->post('/registro/cliente', [RegistroControlador::class, 'registrarCliente']);
+
     $enrutador->get('/perfil', [PerfilControlador::class, 'mostrar']);
     $enrutador->post('/perfil/actualizar', [PerfilControlador::class, 'actualizar']);
     $enrutador->get('/perfil/contrasena', [PerfilControlador::class, 'formularioContrasena']);
     $enrutador->post('/perfil/contrasena', [PerfilControlador::class, 'cambiarContrasena']);
+
+    $enrutador->get('/tienda', [TiendaControlador::class, 'mostrar']);
+    $enrutador->post('/tienda/actualizar', [TiendaControlador::class, 'actualizar']);
+
     $enrutador->get('/fotos/perfil', [FotoControlador::class, 'mostrarPerfil']);
-
-    $enrutador->get('/vendedores', [VendedorControlador::class, 'listar']);
-    $enrutador->get('/vendedores/detalle', [VendedorControlador::class, 'detalle']);
-    $enrutador->get('/vendedores/nuevo', [VendedorControlador::class, 'nuevo']);
-    $enrutador->post('/vendedores/crear', [VendedorControlador::class, 'crear']);
-    $enrutador->get('/vendedores/editar', [VendedorControlador::class, 'editar']);
-    $enrutador->post('/vendedores/actualizar', [VendedorControlador::class, 'actualizar']);
-    $enrutador->post('/vendedores/estado', [VendedorControlador::class, 'cambiarEstado']);
-
-    $enrutador->get('/ayuda', [AyudaControlador::class, 'mostrar']);
+    $enrutador->get('/fotos/logo', [FotoControlador::class, 'mostrarLogo']);
 
     $enrutador->get('/sesiones', [SesionControlador::class, 'listar']);
 };

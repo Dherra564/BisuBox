@@ -30,6 +30,24 @@ class FotoControlador
         readfile($ruta);
     }
 
+    public function mostrarLogo(): void
+    {
+        $nombre = is_string($_GET['archivo'] ?? null) ? $_GET['archivo'] : '';
+        $ruta = SubidaArchivo::rutaLogo($nombre);
+
+        header('X-Content-Type-Options: nosniff');
+
+        if ($ruta === null) {
+            http_response_code(404);
+            return;
+        }
+
+        header('Cache-Control: public, max-age=86400');
+        header('Content-Type: ' . (new finfo(FILEINFO_MIME_TYPE))->file($ruta));
+        header('Content-Length: ' . filesize($ruta));
+        readfile($ruta);
+    }
+
     private function mostrarAvatarPorDefecto(): void
     {
         $ruta = Configuracion::rutaBase() . '/Publico/imagenes/avatarPorDefecto.jpg';

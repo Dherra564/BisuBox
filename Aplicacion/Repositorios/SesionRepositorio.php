@@ -9,28 +9,29 @@ class SesionRepositorio
 {
     public function registrarInicio(Sesion $sesion): int
     {
-        BaseDatos::iniciarTransaccion();
+        $transaccionPropia = BaseDatos::iniciarTransaccion();
         try {
             $id = BaseDatos::generarId('tbsesion', 'tbsesionid');
 
-            $sql = 'INSERT INTO tbsesion
-                        (tbsesionid, tbsesionusuarioid, tbsesionusuariotipo,
-                         tbsesionfechainicio, tbsesionactivo)
-                    VALUES
-                        (:id, :usuarioId, :tipo, :inicio, 1)';
+            $sql = 'INSERT INTO tbsesion (tbsesionid, tbsesionusuarioid, tbsesionusuariotipo, tbsesionfechainicio, tbsesionactivo)
+                    VALUES (:id, :usuarioId, :tipo, :inicio, 1)';
 
             BaseDatos::obtenerConexion()->prepare($sql)->execute([
-                ':id'        => $id,
+                ':id' => $id,
                 ':usuarioId' => $sesion->getIdUsuario(),
-                ':tipo'      => $sesion->getTipoUsuario(),
-                ':inicio'    => $sesion->getFechaInicioSesion()->format('Y-m-d H:i:s'),
+                ':tipo' => $sesion->getTipoUsuario(),
+                ':inicio' => $sesion->getFechaInicioSesion()->format('Y-m-d H:i:s'),
             ]);
 
-            BaseDatos::confirmarTransaccion();
+            if ($transaccionPropia) {
+                BaseDatos::confirmarTransaccion();
+            }
             $sesion->setIdSesion($id);
             return $id;
         } catch (\Throwable $error) {
-            BaseDatos::revertirTransaccion();
+            if ($transaccionPropia) {
+                BaseDatos::revertirTransaccion();
+            }
             throw $error;
         }
     }
@@ -49,7 +50,7 @@ class SesionRepositorio
 
         BaseDatos::obtenerConexion()->prepare($sql)->execute([
             ':cierre' => $sesion->getFechaCierreSesion()->format('Y-m-d H:i:s'),
-            ':id'     => $sesion->getIdSesion(),
+            ':id' => $sesion->getIdSesion(),
         ]);
     }
 
@@ -63,7 +64,7 @@ class SesionRepositorio
 
         BaseDatos::obtenerConexion()->prepare($sql)->execute([
             ':cierre' => (new DateTime())->format('Y-m-d H:i:s'),
-            ':id'     => $idSesion,
+            ':id' => $idSesion,
         ]);
     }
 
@@ -77,28 +78,29 @@ class SesionRepositorio
 
         $sentencia = BaseDatos::obtenerConexion()->prepare($sql);
         $sentencia->execute([
-            ':cierre'    => (new DateTime())->format('Y-m-d H:i:s'),
+            ':cierre' => (new DateTime())->format('Y-m-d H:i:s'),
             ':usuarioId' => $idUsuario,
         ]);
 
         return $sentencia->rowCount();
     }
 
-    public function listarConUsuario(int $limite = 100): array
+    public function listarPorUsuario(int $idUsuario, int $limite = 100): array
     {
-        $sql = 'SELECT s.tbsesionid            AS id,
-                   u.tbusuarionombrecompleto AS nombre,
-                   u.tbusuariocorreo         AS correo,
-                   s.tbsesionusuariotipo     AS tipo,
-                   s.tbsesionfechainicio     AS inicio,
-                   s.tbsesionfechacierre     AS cierre,
-                   s.tbsesionactivo          AS abierta
-            FROM tbsesion s
-            LEFT JOIN tbusuario u ON u.tbusuarioid = s.tbsesionusuarioid
-            ORDER BY s.tbsesionfechainicio DESC, s.tbsesionid DESC
-            LIMIT ' . max(1, $limite);
+        $sentencia = BaseDatos::obtenerConexion()->prepare(
+            'SELECT tbsesionid AS id,
+                    tbsesionusuariotipo AS tipo,
+                    tbsesionfechainicio AS inicio,
+                    tbsesionfechacierre AS cierre,
+                    tbsesionactivo AS abierta
+             FROM tbsesion
+             WHERE tbsesionusuarioid = :usuarioId
+             ORDER BY tbsesionfechainicio DESC, tbsesionid DESC
+             LIMIT ' . max(1, $limite)
+        );
+        $sentencia->execute([':usuarioId' => $idUsuario]);
 
-        return BaseDatos::obtenerConexion()->query($sql)->fetchAll();
+        return $sentencia->fetchAll();
     }
 
     public function estaAbierta(int $idSesion): bool

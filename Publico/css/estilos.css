@@ -81,6 +81,10 @@
     box-sizing: border-box;
 }
 
+[hidden] {
+    display: none !important;
+}
+
 body {
     margin: 0;
     font-family: var(--fuente);
@@ -319,6 +323,10 @@ h1, h2, h3 {
     margin: 0;
 }
 
+.tarjeta .tarjetaAccion {
+    margin-top: 14px;
+}
+
 .tarjetaDato h2 {
     margin: 0 0 4px;
     font-size: 0.95rem;
@@ -453,6 +461,7 @@ h1, h2, h3 {
 }
 
 .campo input[readonly],
+.campo textarea[readonly],
 .campo select:disabled {
     background: var(--colorVerdeClaro);
     color: var(--colorTextoSuave);
@@ -479,6 +488,7 @@ h1, h2, h3 {
 
 
 .zonaFoto {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -645,6 +655,8 @@ h1, h2, h3 {
 
 .campoArchivo {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 1px;
     height: 1px;
     opacity: 0;
@@ -713,6 +725,162 @@ h1, h2, h3 {
 .tarjetaAcceso .logo {
     margin: 0 0 20px;
     color: var(--colorTitulo);
+}
+
+.tarjetaAcceso > .subtitulo {
+    margin-bottom: 20px;
+}
+
+/* ---------- Registro de vendedores y clientes ---------- */
+.registroOpciones {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--colorBorde);
+}
+
+.registroOpciones p {
+    margin: 0 0 10px;
+    color: var(--colorTextoSuave);
+}
+
+.registroOpciones .boton {
+    flex: 1 1 140px;
+}
+
+.registroPie {
+    margin: 20px 0 0;
+    color: var(--colorTextoSuave);
+}
+
+/* El registro de vendedor es largo: la página es más ancha y cada sección es su propia tarjeta */
+.tarjetaRegistro {
+    max-width: 880px;
+    padding: 24px 0;
+    background: transparent;
+    border: none;
+}
+
+.encabezadoRegistro {
+    margin-bottom: 20px;
+}
+
+.campoConPrefijo {
+    display: flex;
+    border: 1px solid var(--colorBordeCampo);
+    border-radius: var(--radioCampo);
+    background: var(--colorSuperficie);
+    overflow: hidden;
+}
+
+.campoConPrefijo:focus-within {
+    outline: 2px solid var(--colorFoco);
+    outline-offset: 1px;
+}
+
+.campoConError .campoConPrefijo {
+    border-color: var(--colorError);
+}
+
+.prefijoCampo {
+    padding: 10px 12px;
+    background: var(--colorVerdeClaro);
+    color: var(--colorTextoSuave);
+    border-right: 1px solid var(--colorBordeCampo);
+    white-space: nowrap;
+}
+
+.campo .campoConPrefijo input {
+    border: none;
+    border-radius: 0;
+    min-width: 0;
+}
+
+.campo .campoConPrefijo input:focus {
+    outline: none;
+}
+
+/* Casilla con su texto al lado, por ejemplo "Mostrar mi tienda" */
+.campoCasilla {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.campo.campoCasilla label {
+    margin: 0;
+    font-weight: 600;
+}
+
+.campoCasilla input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin: 1px 0 0;
+    flex: none;
+    accent-color: var(--colorTitulo);
+}
+
+.campoCasilla .textoAyuda {
+    display: block;
+    margin-top: 2px;
+    font-weight: 400;
+}
+
+/* ---------- Contactos de la tienda ---------- */
+.listaContactos {
+    margin-top: 14px;
+}
+
+.filaContacto {
+    display: grid;
+    grid-template-columns: minmax(120px, 170px) minmax(0, 1fr) 44px;
+    gap: 10px;
+    align-items: center;
+}
+
+.filaContacto .errorCampo {
+    grid-column: 1 / -1;
+    margin: 0;
+}
+
+.botonQuitar {
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--colorErrorBorde);
+    border-radius: var(--radioCampo);
+    background: var(--colorSuperficie);
+    cursor: pointer;
+}
+
+.botonQuitar:hover {
+    background: var(--colorErrorFondo);
+}
+
+.botonQuitar svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: var(--colorError);
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.contactosPie {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.contactosPie .textoAyuda {
+    margin: 0;
+}
+
+.contactosPie .boton:disabled {
+    cursor: not-allowed;
 }
 
 /* ---------- Foto del usuario en la barra superior ---------- */
@@ -849,8 +1017,18 @@ h1, h2, h3 {
 .formularioEditable:not(.editando) .formularioCancelar,
 .formularioEditable:not(.editando) .formularioGuardar,
 .formularioEditable:not(.editando) .zonaFoto .boton,
+.formularioEditable:not(.editando) .zonaFoto .campoCasilla,
 .formularioEditable.editando .formularioEditar {
     display: none;
+}
+
+.formularioEditable:not(.editando) .filaContacto {
+    grid-template-columns: minmax(120px, 170px) minmax(0, 1fr);
+}
+
+.formularioEditable:not(.editando) .filaContacto select:disabled,
+.formularioEditable:not(.editando) .campoCasilla input:disabled {
+    opacity: 1;
 }
 
 /* ---------- Celular ---------- */
@@ -981,5 +1159,17 @@ h1, h2, h3 {
     .formularioSalir {
         display: inline;
         margin: 0;
+    }
+
+        .filaContacto {
+        grid-template-columns: minmax(0, 1fr) 44px;
+    }
+
+    .filaContacto select {
+        grid-column: 1 / -1;
+    }
+
+    .formularioEditable:not(.editando) .filaContacto {
+        grid-template-columns: minmax(0, 1fr);
     }
 }
