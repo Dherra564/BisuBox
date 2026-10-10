@@ -26,14 +26,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 return /^[0-9]{8}$/.test(numeros);
             },
             mensaje: 'El teléfono debe tener 8 dígitos, solo números'
-        },
-            entero: {
-            patron: /^[0-9]+$/,
-            mensaje: 'Ingrese un número entero'
-        },
-        monto: {
-            patron: /^\s*[0-9][0-9\s]*([.,][0-9]{1,2})?\s*$/,
-            mensaje: 'Ingrese un monto válido, con máximo 2 decimales'
         }
     };
 

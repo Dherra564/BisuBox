@@ -15,7 +15,6 @@ class Permiso
         'vendedores.gestionar' => [Sesion::TIPO_SUPERADMIN],
         'sesiones.ver' => [Sesion::TIPO_SUPERADMIN],
         'ayuda.ver' => [Sesion::TIPO_SUPERADMIN, Sesion::TIPO_VENDEDOR],
-        'procesos.gestionar' => [Sesion::TIPO_SUPERADMIN],
     ];
 
     public static function puede(string $permiso): bool

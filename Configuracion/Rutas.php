@@ -5,7 +5,6 @@ use Aplicacion\Controladores\AyudaControlador;
 use Aplicacion\Controladores\FotoControlador;
 use Aplicacion\Controladores\InicioControlador;
 use Aplicacion\Controladores\PerfilControlador;
-use Aplicacion\Controladores\ProcesoControlador;
 use Aplicacion\Controladores\SesionControlador;
 use Aplicacion\Controladores\VendedorControlador;
 use Aplicacion\Nucleo\Enrutador;
@@ -35,13 +34,4 @@ return function (Enrutador $enrutador): void {
     $enrutador->get('/ayuda', [AyudaControlador::class, 'mostrar']);
 
     $enrutador->get('/sesiones', [SesionControlador::class, 'listar']);
-
-        // Procesos de elaboración (Damian). Solo para el Administrador.
-    $enrutador->get('/procesos', [ProcesoControlador::class, 'listar']);
-    $enrutador->get('/procesos/detalle', [ProcesoControlador::class, 'detalle']);
-    $enrutador->get('/procesos/nuevo', [ProcesoControlador::class, 'nuevo']);
-    $enrutador->post('/procesos/crear', [ProcesoControlador::class, 'crear']);
-    $enrutador->get('/procesos/editar', [ProcesoControlador::class, 'editar']);
-    $enrutador->post('/procesos/actualizar', [ProcesoControlador::class, 'actualizar']);
-    $enrutador->post('/procesos/estado', [ProcesoControlador::class, 'cambiarEstado']);
 };

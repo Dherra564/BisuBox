@@ -17,7 +17,6 @@ $opcionesMenu = [
     'sesiones' => ['texto' => 'Historial de sesiones', 'ruta' => '/sesiones', 'permiso' => 'sesiones.ver'],
     'perfil' => ['texto' => 'Mi perfil', 'ruta' => '/perfil', 'permiso' => 'perfil.ver'],
     'ayuda' => ['texto' => 'Ayuda', 'ruta' => '/ayuda', 'permiso' => 'ayuda.ver'],
-    'procesos' => ['texto' => 'Procesos', 'ruta' => '/procesos', 'permiso' => 'procesos.gestionar'],
 ];
 $opcionesMenu = array_filter($opcionesMenu, fn(array $opcion): bool => Permiso::puede($opcion['permiso']));
 
