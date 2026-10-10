@@ -14,7 +14,7 @@ use Configuracion\Configuracion;
 class AutenticacionControlador
 {
     private const MENSAJE_FALLO = 'Correo o contraseña incorrectos';
-    private const MENSAJE_DESACTIVADA = 'Su cuenta está desactivada. Comuníquese con el administrador.';
+    private const MENSAJE_DESACTIVADA = 'Su cuenta está desactivada.';
 
     public function iniciarSesion(): void
     {
@@ -46,10 +46,10 @@ class AutenticacionControlador
             $this->redirigir('/ingresar');
         }
 
-        // El rol se lee directo de tbusuario (Administrador o Vendedor)
+        // El rol se lee directo de tbusuario (Cliente o Vendedor)
         $rol = $usuario->getRol();
         if (!Rol::existe($rol)) {
-            Mensaje::error('Su cuenta no tiene un rol asignado. Comuníquese con el administrador.');
+            Mensaje::error('Su cuenta no tiene un rol asignado.');
             $this->redirigir('/ingresar');
         }
 

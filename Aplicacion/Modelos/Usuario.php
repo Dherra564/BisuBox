@@ -90,9 +90,14 @@ class Usuario
         return $this->rol;
     }
 
-    public function esAdministrador(): bool
+    public function esVendedor(): bool
     {
-        return $this->rol === Rol::ADMINISTRADOR;
+        return $this->rol === Rol::VENDEDOR;
+    }
+
+    public function esCliente(): bool
+    {
+        return $this->rol === Rol::CLIENTE;
     }
 
     public function getFechaRegistro(): DateTime

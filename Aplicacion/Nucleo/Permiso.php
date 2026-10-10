@@ -9,11 +9,9 @@ use Configuracion\Configuracion;
 class Permiso
 {
     private const PERMISOS = [
-        'panel.ver' => [Rol::ADMINISTRADOR, Rol::VENDEDOR],
-        'perfil.ver' => [Rol::ADMINISTRADOR, Rol::VENDEDOR],
-        'usuarios.gestionar' => [Rol::ADMINISTRADOR],
-        'sesiones.ver' => [Rol::ADMINISTRADOR],
-        'ayuda.ver' => [Rol::ADMINISTRADOR, Rol::VENDEDOR],
+        'panel.ver' => [Rol::VENDEDOR, Rol::CLIENTE],
+        'perfil.ver' => [Rol::VENDEDOR, Rol::CLIENTE],
+        'sesiones.ver' => [Rol::VENDEDOR, Rol::CLIENTE],
     ];
 
     public static function puede(string $permiso): bool

@@ -14,14 +14,14 @@ $mensajes = $mensajes ?? [];
 
 $opcionesMenu = [
     'inicio' => ['texto' => 'Inicio', 'ruta' => '/', 'permiso' => 'panel.ver'],
-    'usuarios' => ['texto' => 'Usuarios', 'ruta' => '/usuarios', 'permiso' => 'usuarios.gestionar'],
-    'sesiones' => ['texto' => 'Historial de sesiones', 'ruta' => '/sesiones', 'permiso' => 'sesiones.ver'],
     'perfil' => ['texto' => 'Mi perfil', 'ruta' => '/perfil', 'permiso' => 'perfil.ver'],
-    'ayuda' => ['texto' => 'Ayuda', 'ruta' => '/ayuda', 'permiso' => 'ayuda.ver'],
+    'sesiones' => ['texto' => 'Historial de sesiones', 'ruta' => '/sesiones', 'permiso' => 'sesiones.ver'],
 ];
 $opcionesMenu = array_filter($opcionesMenu, fn(array $opcion): bool => Permiso::puede($opcion['permiso']));
 
-$proximasFases = ['Inventario', 'Proveedores', 'Compras', 'Producción', 'Pedidos', 'Ventas y caja', 'Gastos', 'Reportes'];
+$proximasFases = UsuarioActual::esVendedor()
+    ? ['Mi tienda', 'Inventario', 'Proveedores', 'Compras', 'Productos', 'Producción', 'Pedidos']
+    : ['Tiendas', 'Carrito', 'Mis pedidos'];
 ?>
 <!DOCTYPE html>
 <html lang="es">

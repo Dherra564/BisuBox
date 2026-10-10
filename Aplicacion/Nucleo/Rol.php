@@ -2,20 +2,19 @@
 
 namespace Aplicacion\Nucleo;
 
-
 class Rol
 {
-    public const ADMINISTRADOR = 'Administrador';
     public const VENDEDOR = 'Vendedor';
+    public const CLIENTE = 'Cliente';
 
     private const ROLES = [
-        self::ADMINISTRADOR => [
-            'nombre' => 'Administrador',
-            'descripcion' => 'Administra usuarios, catálogos y todo el inventario',
-        ],
         self::VENDEDOR => [
             'nombre' => 'Vendedor',
-            'descripcion' => 'Trabaja con el inventario y las ventas',
+            'descripcion' => 'Administra su negocio y vende en su propia tienda',
+        ],
+        self::CLIENTE => [
+            'nombre' => 'Cliente',
+            'descripcion' => 'Compra en las tiendas de los vendedores',
         ],
     ];
 

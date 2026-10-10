@@ -63,8 +63,13 @@ class UsuarioActual
         }
     }
 
-    public static function esAdministrador(): bool
+    public static function esVendedor(): bool
     {
-        return self::rol() === Rol::ADMINISTRADOR;
+        return self::rol() === Rol::VENDEDOR;
+    }
+
+    public static function esCliente(): bool
+    {
+        return self::rol() === Rol::CLIENTE;
     }
 }

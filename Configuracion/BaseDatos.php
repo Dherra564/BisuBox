@@ -29,17 +29,17 @@ class BaseDatos
                     Configuracion::obtener('bdUsuario'),
                     Configuracion::obtener('bdContrasena', ''),
                     [
-                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,       
-                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,  
-                        PDO::ATTR_EMULATE_PREPARES => false,               
+                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                        PDO::ATTR_EMULATE_PREPARES => false,
                     ]
                 );
 
-                
+
                 $diferenciaHoraria = (new DateTime())->format('P');
                 self::$conexion->exec("SET time_zone = '{$diferenciaHoraria}'");
             } catch (PDOException $error) {
-                
+
                 error_log('Error de conexion: ' . $error->getMessage());
                 throw new RuntimeException('No se pudo conectar a la base de datos.');
             }
@@ -48,12 +48,14 @@ class BaseDatos
         return self::$conexion;
     }
 
-    public static function iniciarTransaccion(): void
+    public static function iniciarTransaccion(): bool
     {
         $conexion = self::obtenerConexion();
-        if (!$conexion->inTransaction()) {
-            $conexion->beginTransaction();
+        if ($conexion->inTransaction()) {
+            return false;
         }
+        $conexion->beginTransaction();
+        return true;
     }
 
     public static function confirmarTransaccion(): void
@@ -72,10 +74,10 @@ class BaseDatos
         }
     }
 
-   
+
     public static function generarId(string $tabla, string $columna): int
     {
-        
+
         if (!preg_match('/^[a-z]+$/', $tabla) || !preg_match('/^[a-z]+$/', $columna)) {
             throw new InvalidArgumentException('Nombre de tabla o columna no válido.');
         }

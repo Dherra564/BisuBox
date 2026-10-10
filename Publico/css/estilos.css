@@ -319,6 +319,10 @@ h1, h2, h3 {
     margin: 0;
 }
 
+.tarjeta .tarjetaAccion {
+    margin-top: 14px;
+}
+
 .tarjetaDato h2 {
     margin: 0 0 4px;
     font-size: 0.95rem;
