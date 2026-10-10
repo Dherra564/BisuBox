@@ -18,7 +18,7 @@ $claseTarjeta = $claseTarjeta ?? '';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= htmlspecialchars($titulo) ?> | BisuBox</title>
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="<?= $urlBase ?>/css/estilos.css">
+    <link rel="stylesheet" href="<?= Configuracion::recurso('css/estilos.css') ?>">
 </head>
 
 <body>

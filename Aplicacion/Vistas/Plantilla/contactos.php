@@ -4,12 +4,14 @@
  * @var array $contactos  cada uno ['tipo' => ..., 'valor' => ...]
  * @var array $errores
  * @var array|null $contactosOriginales  los guardados; si viene, "Cancelar" de Mi tienda vuelve a ellos
+ * @var bool|null $contactosSoloLectura  true en Mi tienda mientras no se presiona Editar
  */
 
 use Aplicacion\Nucleo\TipoContacto;
 
-// Una fila de la lista; la misma función arma la plantilla vacía que usa "Agregar contacto"
-$filaContacto = function (string $tipoElegido, string $valor, ?string $error): string {
+$contactosSoloLectura = $contactosSoloLectura ?? false;
+
+$filaContacto = function (string $tipoElegido, string $valor, ?string $error, bool $soloLectura = false): string {
     $opciones = '';
     foreach (TipoContacto::todos() as $codigo => $tipo) {
         $opciones .= '<option value="' . htmlspecialchars($codigo) . '"'
@@ -24,10 +26,13 @@ $filaContacto = function (string $tipoElegido, string $valor, ?string $error): s
     $ejemplo = TipoContacto::existe($tipoElegido) ? TipoContacto::todos()[$tipoElegido]['ejemplo'] : '';
 
     return '<div class="campo filaContacto' . ($error !== null ? ' campoConError' : '') . '">'
-        . '<select name="contactoTipo[]" aria-label="Tipo de contacto" data-contacto-tipo>' . $opciones . '</select>'
+        . '<select name="contactoTipo[]" aria-label="Tipo de contacto" data-contacto-tipo'
+        . ($soloLectura ? ' disabled' : '') . '>' . $opciones . '</select>'
         . '<input type="text" name="contactoValor[]" aria-label="Contacto" maxlength="300" data-regla="contacto"'
-        . ' placeholder="' . htmlspecialchars($ejemplo) . '" value="' . htmlspecialchars($valor) . '">'
-        . '<button type="button" class="botonQuitar" aria-label="Quitar contacto" data-contacto-quitar>'
+        . ' placeholder="' . htmlspecialchars($ejemplo) . '" value="' . htmlspecialchars($valor) . '"'
+        . ($soloLectura ? ' readonly' : '') . '>'
+        . '<button type="button" class="botonQuitar" aria-label="Quitar contacto" data-contacto-quitar data-solo-edicion'
+        . ($soloLectura ? ' hidden' : '') . '>'
         . '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>'
         . ($error !== null ? '<p class="errorCampo">' . htmlspecialchars($error) . '</p>' : '')
         . '</div>';
@@ -44,13 +49,12 @@ $filaContacto = function (string $tipoElegido, string $valor, ?string $error): s
     <?php endif; ?>
 
     <div class="listaContactos" data-contactos data-maximo="<?= TipoContacto::MAXIMO_POR_TIENDA ?>"
-        <?= isset($contactosOriginales) ? 'data-restaurar-desde="contactosOriginales"' : '' ?>>
+         <?= isset($contactosOriginales) ? 'data-restaurar-desde="contactosOriginales"' : '' ?>>
         <?php foreach ($contactos as $indice => $contacto): ?>
-            <?= $filaContacto($contacto['tipo'], $contacto['valor'], $errores['contacto' . $indice] ?? null) ?>
+            <?= $filaContacto($contacto['tipo'], $contacto['valor'], $errores['contacto' . $indice] ?? null, $contactosSoloLectura) ?>
         <?php endforeach; ?>
     </div>
-    <p class="textoAyuda contactosVacio" data-contactos-vacio <?= $contactos !== [] ? 'hidden' : '' ?>>Todavía no hay
-        contactos.</p>
+    <p class="textoAyuda contactosVacio" data-contactos-vacio <?= $contactos !== [] ? 'hidden' : '' ?>>Todavía no hay contactos.</p>
 
     <template data-contacto-plantilla>
         <?= $filaContacto(TipoContacto::WHATSAPP, '', null) ?>
@@ -58,13 +62,14 @@ $filaContacto = function (string $tipoElegido, string $valor, ?string $error): s
     <?php if (isset($contactosOriginales)): ?>
         <template id="contactosOriginales">
             <?php foreach ($contactosOriginales as $contacto): ?>
-                <?= $filaContacto($contacto['tipo'], $contacto['valor'], null) ?>
+                <?= $filaContacto($contacto['tipo'], $contacto['valor'], null, true) ?>
             <?php endforeach; ?>
         </template>
     <?php endif; ?>
 
     <div class="contactosPie">
-        <button type="button" class="boton botonSecundario botonPequeno" data-contacto-agregar>Agregar contacto</button>
+        <button type="button" class="boton botonSecundario botonPequeno" data-contacto-agregar data-solo-edicion
+                <?= $contactosSoloLectura ? 'hidden' : '' ?>>Agregar contacto</button>
         <span class="textoAyuda" data-contacto-cuenta>
             <?= count($contactos) ?> de <?= TipoContacto::MAXIMO_POR_TIENDA ?> contactos
         </span>

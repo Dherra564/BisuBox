@@ -108,6 +108,10 @@ document.addEventListener('DOMContentLoaded', function () {
             if (archivo) {
                 archivo.disabled = !editando;
             }
+            
+            formulario.querySelectorAll('[data-solo-edicion]').forEach(function (elemento) {
+                elemento.hidden = !editando;
+            });
         }
 
         formulario.querySelector('.formularioEditar').addEventListener('click', function () {

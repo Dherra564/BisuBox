@@ -4,6 +4,8 @@
  * @var string[]|null $scriptsExtra  nombres de archivos de Publico/js que necesita la página
  */
 
+use Configuracion\Configuracion;
+
 $scriptsExtra = $scriptsExtra ?? [];
 ?>
             </main>
@@ -12,10 +14,10 @@ $scriptsExtra = $scriptsExtra ?? [];
 
     <?php require __DIR__ . '/modalConfirmacion.php'; ?>
 
-    <script src="<?= $urlBase ?>/js/alertas.js"></script>
-    <script src="<?= $urlBase ?>/js/validaciones.js"></script>
+    <script src="<?= Configuracion::recurso('js/alertas.js') ?>"></script>
+    <script src="<?= Configuracion::recurso('js/validaciones.js') ?>"></script>
     <?php foreach ($scriptsExtra as $script): ?>
-        <script src="<?= $urlBase ?>/js/<?= htmlspecialchars($script) ?>"></script>
+        <script src="<?= htmlspecialchars(Configuracion::recurso('js/' . $script)) ?>"></script>
     <?php endforeach; ?>
 </body>
 </html>

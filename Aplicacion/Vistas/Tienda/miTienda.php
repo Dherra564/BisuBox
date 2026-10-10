@@ -24,6 +24,7 @@ $mensajeError = fn (string $campo): string => isset($errores[$campo])
 $soloLectura = $editando ? '' : 'readonly';
 $contactos = $datos['contactos'] ?? [];
 $contactosOriginales = DatosTienda::contactosParaFormulario($vendedor);
+$contactosSoloLectura = !$editando;
 $logo = $vendedor->getTiendaLogo();
 $urlLogo = $logo !== null
     ? $urlBase . '/fotos/logo?archivo=' . urlencode($logo)

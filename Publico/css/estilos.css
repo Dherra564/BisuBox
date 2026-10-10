@@ -81,6 +81,10 @@
     box-sizing: border-box;
 }
 
+[hidden] {
+    display: none !important;
+}
+
 body {
     margin: 0;
     font-family: var(--fuente);
@@ -1014,8 +1018,6 @@ h1, h2, h3 {
 .formularioEditable:not(.editando) .formularioGuardar,
 .formularioEditable:not(.editando) .zonaFoto .boton,
 .formularioEditable:not(.editando) .zonaFoto .campoCasilla,
-.formularioEditable:not(.editando) [data-contacto-agregar],
-.formularioEditable:not(.editando) .botonQuitar,
 .formularioEditable.editando .formularioEditar {
     display: none;
 }
@@ -1027,10 +1029,6 @@ h1, h2, h3 {
 .formularioEditable:not(.editando) .filaContacto select:disabled,
 .formularioEditable:not(.editando) .campoCasilla input:disabled {
     opacity: 1;
-}
-
-.contactosVacio[hidden] {
-    display: none;
 }
 
 /* ---------- Celular ---------- */

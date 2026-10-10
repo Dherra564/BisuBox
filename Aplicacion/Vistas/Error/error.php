@@ -7,6 +7,7 @@
  * @var bool $haySesion
  * @var ?string $detalle
  */
+use Configuracion\Configuracion;
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -15,7 +16,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= (int) $codigo ?> <?= htmlspecialchars($titulo) ?> | BisuBox</title>
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="<?= htmlspecialchars($urlBase) ?>/css/estilos.css">
+    <link rel="stylesheet" href="<?= htmlspecialchars(Configuracion::recurso('css/estilos.css')) ?>">
 </head>
 <body>
     <div class="paginaAcceso">
