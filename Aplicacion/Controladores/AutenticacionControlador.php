@@ -1,7 +1,7 @@
 <?php
 namespace Aplicacion\Controladores;
 
-use Aplicacion\Modelos\Sesion;
+use Aplicacion\Nucleo\Acceso;
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\ManejadorSesion;
 use Aplicacion\Nucleo\Mensaje;
@@ -46,27 +46,13 @@ class AutenticacionControlador
             $this->redirigir('/ingresar');
         }
 
-        // El rol se lee directo de tbusuario (Cliente o Vendedor)
-        $rol = $usuario->getRol();
-        if (!Rol::existe($rol)) {
+        // El rol se lee directo de tbusuario (Vendedor o Cliente)
+        if (!Rol::existe($usuario->getRol())) {
             Mensaje::error('Su cuenta no tiene un rol asignado.');
             $this->redirigir('/ingresar');
         }
 
-        ManejadorSesion::regenerarId();
-
-        $repositorioSesion = new SesionRepositorio();
-        $repositorioSesion->cerrarTodasDeUsuario($usuario->getIdUsuario());
-
-        $sesion = new Sesion(
-            idUsuario: $usuario->getIdUsuario(),
-            tipoUsuario: $rol
-        );
-        $repositorioSesion->registrarInicio($sesion);
-
-        ManejadorSesion::guardarIdSesionBd($sesion->getIdSesion());
-        ManejadorSesion::registrarActividad();
-        UsuarioActual::iniciar($usuario->getIdUsuario(), $rol, $usuario->getNombreCompleto(), $usuario->getFotoPerfil());
+        Acceso::abrirSesion($usuario);
 
         $this->redirigir('/');
     }

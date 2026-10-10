@@ -21,6 +21,7 @@ class TipoContacto
             'dominios' => [],
             'mensaje' => 'El WhatsApp debe tener 8 dígitos, solo números',
             'ayuda' => '8 dígitos, por ejemplo 88451290',
+            'ejemplo' => '88451290',
         ],
         self::INSTAGRAM => [
             'nombre' => 'Instagram',
@@ -28,6 +29,7 @@ class TipoContacto
             'dominios' => ['instagram.com'],
             'mensaje' => 'Escriba el usuario de Instagram o un enlace de instagram.com',
             'ayuda' => 'Usuario o enlace del perfil',
+            'ejemplo' => 'mitienda o instagram.com/mitienda',
         ],
         self::TIKTOK => [
             'nombre' => 'TikTok',
@@ -35,6 +37,7 @@ class TipoContacto
             'dominios' => ['tiktok.com'],
             'mensaje' => 'Escriba el usuario de TikTok o un enlace de tiktok.com',
             'ayuda' => 'Usuario o enlace del perfil',
+            'ejemplo' => 'mitienda o tiktok.com/@mitienda',
         ],
         self::FACEBOOK => [
             'nombre' => 'Facebook',
@@ -42,6 +45,7 @@ class TipoContacto
             'dominios' => ['facebook.com', 'fb.com'],
             'mensaje' => 'Escriba el usuario de Facebook o un enlace de facebook.com',
             'ayuda' => 'Usuario o enlace del perfil',
+            'ejemplo' => 'mitienda o facebook.com/mitienda',
         ],
         self::OTRO => [
             'nombre' => 'Otro',
@@ -49,10 +53,11 @@ class TipoContacto
             'dominios' => [],
             'mensaje' => 'Escriba un enlace completo, por ejemplo https://mitienda.com',
             'ayuda' => 'Enlace completo, con https://',
+            'ejemplo' => 'https://mitienda.com',
         ],
     ];
 
-    /** @return array<string, array{nombre: string, usuario: ?string, dominios: string[], mensaje: string, ayuda: string}> */
+    /** @return array<string, array{nombre: string, usuario: ?string, dominios: string[], mensaje: string, ayuda: string, ejemplo: string}> */
     public static function todos(): array
     {
         return self::TIPOS;
@@ -71,6 +76,24 @@ class TipoContacto
     public static function mensaje(string $tipo): string
     {
         return self::TIPOS[$tipo]['mensaje'];
+    }
+
+    /** @return array<int, array{tipo: string, valor: string}> */
+    public static function desdeFormulario(mixed $tipos, mixed $valores): array
+    {
+        $tipos = is_array($tipos) ? array_values($tipos) : [];
+        $valores = is_array($valores) ? array_values($valores) : [];
+
+        $contactos = [];
+        foreach ($valores as $indice => $valor) {
+            $tipo = is_string($tipos[$indice] ?? null) ? $tipos[$indice] : '';
+            $valor = is_string($valor) ? trim($valor) : '';
+            if ($valor === '') {
+                continue;
+            }
+            $contactos[] = ['tipo' => $tipo, 'valor' => self::limpiar($tipo, $valor)];
+        }
+        return $contactos;
     }
 
     public static function limpiar(?string $tipo, string $valor): string

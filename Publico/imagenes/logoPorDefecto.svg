@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140" role="img" aria-label="Tienda sin logo">
+  <rect width="140" height="140" fill="#e6f4ed"/>
+  <g fill="none" stroke="#2b7358" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M46 58 L58 44 H82 L94 58 L70 96 Z"/>
+    <path d="M46 58 H94"/>
+    <path d="M58 44 L66 58 L70 96 L74 58 L82 44"/>
+  </g>
+</svg>

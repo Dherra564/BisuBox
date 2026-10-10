@@ -88,6 +88,43 @@ class Validador
         return $this;
     }
 
+    public function nombreTienda(string $campo, ?string $valor, string $mensaje = 'El nombre solo puede tener letras, números, espacios y los signos . & \' -'): self
+    {
+        if ($this->debeRevisar($campo, $valor) && !preg_match('/^[\p{L}0-9][\p{L}0-9 .&\'-]*$/u', trim($valor))) {
+            $this->agregarError($campo, $mensaje);
+        }
+        return $this;
+    }
+
+    public function enlaceTienda(string $campo, ?string $valor, string $mensaje = 'Use solo minúsculas, números y guiones, por ejemplo mi-tienda'): self
+    {
+        if ($this->debeRevisar($campo, $valor) && !preg_match('/^[a-z0-9]+(-[a-z0-9]+)*$/', $valor)) {
+            $this->agregarError($campo, $mensaje);
+        }
+        return $this;
+    }
+
+    public function contactos(array $contactos): self
+    {
+        if (count($contactos) > TipoContacto::MAXIMO_POR_TIENDA) {
+            $this->agregarError('contactos', 'La tienda puede tener como máximo ' . TipoContacto::MAXIMO_POR_TIENDA . ' contactos');
+        }
+
+        $vistos = [];
+        foreach ($contactos as $indice => $contacto) {
+            $campo = 'contacto' . $indice;
+            if (!TipoContacto::existe($contacto['tipo'])) {
+                $this->agregarError($campo, 'Seleccione el tipo de contacto');
+            } elseif (!TipoContacto::esValido($contacto['tipo'], $contacto['valor'])) {
+                $this->agregarError($campo, TipoContacto::mensaje($contacto['tipo']));
+            } elseif (isset($vistos[$contacto['tipo'] . '|' . mb_strtolower($contacto['valor'], 'UTF-8')])) {
+                $this->agregarError($campo, 'Este contacto ya está en la lista');
+            }
+            $vistos[$contacto['tipo'] . '|' . mb_strtolower($contacto['valor'], 'UTF-8')] = true;
+        }
+        return $this;
+    }
+
     public function contrasenaSegura(string $campo, ?string $valor, string $mensaje = 'La contraseña debe tener entre 8 y 20 caracteres, una mayúscula, una minúscula y un número, sin espacios'): self
     {
         if ($this->debeRevisar($campo, $valor)) {

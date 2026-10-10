@@ -19,15 +19,63 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         telefono: {
             prueba: function (valor) {
-                var numeros = valor.replace(/\D/g, '');
-                if (numeros.length === 11 && numeros.indexOf('506') === 0) {
-                    numeros = numeros.slice(3);
-                }
-                return /^[0-9]{8}$/.test(numeros);
+                return /^[0-9]{8}$/.test(limpiarTelefono(valor));
             },
             mensaje: 'El teléfono debe tener 8 dígitos, solo números'
+        },
+        nombreTienda: {
+            patron: /^[\p{L}0-9][\p{L}0-9 .&'-]*$/u,
+            mensaje: 'El nombre solo puede tener letras, números, espacios y los signos . & \' -'
+        },
+        enlaceTienda: {
+            patron: /^[a-z0-9]+(-[a-z0-9]+)*$/,
+            mensaje: 'Use solo minúsculas, números y guiones, por ejemplo mi-tienda'
         }
     };
+
+    // Igual que Validador::limpiarTelefono en PHP
+    function limpiarTelefono(valor) {
+        var numeros = valor.replace(/\D/g, '');
+        if (numeros.length === 11 && numeros.indexOf('506') === 0) {
+            numeros = numeros.slice(3);
+        }
+        return numeros;
+    }
+
+    // Igual que TipoContacto::esValido en PHP; las reglas de cada tipo vienen en la opción elegida
+    function esContactoValido(campo, valor) {
+        var fila = campo.closest('.filaContacto');
+        var tipo = fila ? fila.querySelector('[data-contacto-tipo]') : null;
+        if (!tipo || tipo.selectedIndex < 0) {
+            return false;
+        }
+        var opcion = tipo.options[tipo.selectedIndex];
+
+        if (opcion.hasAttribute('data-telefono')) {
+            return /^[0-9]{8}$/.test(limpiarTelefono(valor));
+        }
+
+        var esEnlace = /^https?:\/\//i.test(valor) || /^(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)+\//i.test(valor);
+        if (!esEnlace) {
+            var patronUsuario = opcion.getAttribute('data-usuario');
+            return patronUsuario !== '' && new RegExp(patronUsuario).test(valor.replace(/^@+/, ''));
+        }
+
+        var direccion;
+        try {
+            direccion = new URL(/^https?:\/\//i.test(valor) ? valor : 'https://' + valor);
+        } catch (error) {
+            return false;
+        }
+        var dominios = (opcion.getAttribute('data-dominios') || '').split(',').filter(Boolean);
+        if (dominios.length === 0) {
+            return opcion.value === 'Otro';
+        }
+        var servidor = direccion.hostname.toLowerCase();
+        return dominios.some(function (dominio) {
+            return servidor === dominio || servidor.slice(-(dominio.length + 1)) === '.' + dominio;
+        });
+    }
 
     function cumpleRegla(regla, valor) {
         return regla.prueba ? regla.prueba(valor) : regla.patron.test(valor);
@@ -77,6 +125,14 @@ document.addEventListener('DOMContentLoaded', function () {
             return campo.required ? (campo.getAttribute('data-mensaje-requerido') || 'Este campo es obligatorio') : '';
         }
 
+        if (campo.getAttribute('data-regla') === 'contacto') {
+            if (!esContactoValido(campo, valor)) {
+                var tipoContacto = campo.closest('.filaContacto').querySelector('[data-contacto-tipo]');
+                return tipoContacto.options[tipoContacto.selectedIndex].getAttribute('data-mensaje');
+            }
+            return '';
+        }
+
         if (campo.getAttribute('data-regla') === 'identificacion') {
             var opcion = opcionTipoIdentificacion(campo);
             if (opcion && opcion.getAttribute('data-patron')
@@ -116,12 +172,13 @@ document.addEventListener('DOMContentLoaded', function () {
         return '';
     }
 
-    document.querySelectorAll('form.validarFormulario').forEach(function (formulario) {
-        var campos = formulario.querySelectorAll(
-            'input[required], input[data-regla], input[minlength], input[data-igual-a], input[data-distinto-de], select[required], textarea[required]'
-        );
+    var selectorCampos = 'input[required], input[data-regla], input[minlength], input[data-igual-a], '
+        + 'input[data-distinto-de], select[required], textarea[required]';
 
+    document.querySelectorAll('form.validarFormulario').forEach(function (formulario) {
+        // Se buscan al enviar, así también se revisan las filas que se agregaron después (contactos)
         function camposPorRevisar() {
+            var campos = formulario.querySelectorAll(selectorCampos);
             return Array.prototype.filter.call(campos, function (campo) {
                 var idOtro = campo.getAttribute('data-igual-a');
                 if (idOtro && campo.value === '' && !campo.required) {
@@ -154,12 +211,11 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        campos.forEach(function (campo) {
-            campo.addEventListener('input', function () {
-                if (campo.closest('.campoConError') && revisarCampo(campo, formulario) === '') {
-                    quitarError(campo);
-                }
-            });
+        formulario.addEventListener('input', function (evento) {
+            var campo = evento.target;
+            if (campo.matches(selectorCampos) && campo.closest('.campoConError') && revisarCampo(campo, formulario) === '') {
+                quitarError(campo);
+            }
         });
     });
 
