@@ -76,6 +76,7 @@ class RegistroControlador
             return;
         }
 
+         $vendedorRepositorio = new VendedorRepositorio();
         $vendedor = new Vendedor(
             tipoIdentificacion: $datos['tipoIdentificacion'],
             numeroIdentificacion: $datos['numeroIdentificacion'],
@@ -85,14 +86,14 @@ class RegistroControlador
             contrasena: $contrasena,
             fechaRegistro: new DateTime(),
             tiendaNombre: $datos['tiendaNombre'],
-            tiendaEnlace: $datos['tiendaEnlace'],
+            tiendaEnlace: $vendedorRepositorio->generarEnlace($datos['tiendaNombre']),
             tiendaDescripcion: $datos['tiendaDescripcion'],
             tiendaLogo: $nombreLogo,
             contactos: DatosTienda::crearContactos($datos['contactos'])
         );
 
         try {
-            (new VendedorRepositorio())->insertar($vendedor);
+            $vendedorRepositorio->insertar($vendedor);
         } catch (Throwable $error) {
             error_log('Error al registrar vendedor: ' . $error->getMessage());
             SubidaArchivo::eliminarLogo($nombreLogo);

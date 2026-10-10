@@ -96,14 +96,6 @@ class Validador
         return $this;
     }
 
-    public function enlaceTienda(string $campo, ?string $valor, string $mensaje = 'Use solo minúsculas, números y guiones, por ejemplo mi-tienda'): self
-    {
-        if ($this->debeRevisar($campo, $valor) && !preg_match('/^[a-z0-9]+(-[a-z0-9]+)*$/', $valor)) {
-            $this->agregarError($campo, $mensaje);
-        }
-        return $this;
-    }
-
     public function contactos(array $contactos): self
     {
         if (count($contactos) > TipoContacto::MAXIMO_POR_TIENDA) {

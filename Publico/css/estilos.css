@@ -764,39 +764,15 @@ h1, h2, h3 {
     margin-bottom: 20px;
 }
 
-.campoConPrefijo {
+/* Campo de solo lectura con un botón al lado (dirección de la tienda) */
+.campoConBoton {
     display: flex;
-    border: 1px solid var(--colorBordeCampo);
-    border-radius: var(--radioCampo);
-    background: var(--colorSuperficie);
-    overflow: hidden;
+    gap: 10px;
 }
 
-.campoConPrefijo:focus-within {
-    outline: 2px solid var(--colorFoco);
-    outline-offset: 1px;
-}
-
-.campoConError .campoConPrefijo {
-    border-color: var(--colorError);
-}
-
-.prefijoCampo {
-    padding: 10px 12px;
-    background: var(--colorVerdeClaro);
-    color: var(--colorTextoSuave);
-    border-right: 1px solid var(--colorBordeCampo);
-    white-space: nowrap;
-}
-
-.campo .campoConPrefijo input {
-    border: none;
-    border-radius: 0;
+.campoConBoton input {
+    flex: 1;
     min-width: 0;
-}
-
-.campo .campoConPrefijo input:focus {
-    outline: none;
 }
 
 /* Casilla con su texto al lado, por ejemplo "Mostrar mi tienda" */

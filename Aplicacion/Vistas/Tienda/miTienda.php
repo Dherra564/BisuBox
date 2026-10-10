@@ -28,9 +28,10 @@ $contactosSoloLectura = !$editando;
 $logo = $vendedor->getTiendaLogo();
 $urlLogo = $logo !== null
     ? $urlBase . '/fotos/logo?archivo=' . urlencode($logo)
-    : $urlBase . '/imagenes/logoPorDefecto.svg';
-?>
+        : $urlBase . '/imagenes/logoPorDefecto.svg';
 
+$direccionTienda = preg_replace('#^https?://#', '', $urlBase) . '/tienda/' . $vendedor->getTiendaEnlace();
+?>
 <?php if ($errores !== []): ?>
     <div class="alerta alertaError alertaFormulario" role="alert">
         <span class="alertaIcono" aria-hidden="true">✖</span>
@@ -57,21 +58,13 @@ $urlLogo = $logo !== null
                            value="<?= $valor('tiendaNombre') ?>">
                     <?= $mensajeError('tiendaNombre') ?>
                 </div>
-                <div class="<?= $claseCampo('tiendaEnlace') ?>">
-                    <label for="tiendaEnlace">Enlace de la tienda <span class="obligatorio">*</span></label>
-                    <div class="campoConPrefijo">
-                        <span class="prefijoCampo" aria-hidden="true">bisubox/tienda/</span>
-                        <input type="text" id="tiendaEnlace" name="tiendaEnlace" minlength="3" maxlength="60"
-                               required data-regla="enlaceTienda" aria-describedby="ayudaEnlace" <?= $soloLectura ?>
-                               data-editable data-original="<?= htmlspecialchars((string) $vendedor->getTiendaEnlace()) ?>"
-                               data-mensaje-requerido="Ingrese el enlace de la tienda"
-                               data-mensaje-largo="El enlace debe tener entre 3 y 60 caracteres"
-                               value="<?= $valor('tiendaEnlace') ?>">
+                               <div class="campo">
+                    <label for="direccionTienda">Dirección de su tienda</label>
+                    <div class="campoConBoton">
+                        <input type="text" id="direccionTienda" readonly value="<?= htmlspecialchars($direccionTienda) ?>">
+                        <button type="button" class="boton botonSecundario" data-copiar="direccionTienda">Copiar</button>
                     </div>
-                    <p class="textoAyuda" id="ayudaEnlace">
-                        Minúsculas, números y guiones. Si lo cambia, la dirección anterior deja de funcionar.
-                    </p>
-                    <?= $mensajeError('tiendaEnlace') ?>
+                    <p class="textoAyuda">Se creó sola con el nombre de su tienda. Compártala con sus clientes para que vean sus productos.</p>
                 </div>
                 <div class="<?= $claseCampo('tiendaDescripcion') ?>">
                     <label for="tiendaDescripcion">Descripción</label>
