@@ -26,9 +26,18 @@ document.addEventListener('DOMContentLoaded', function () {
         nombreTienda: {
             patron: /^[\p{L}0-9][\p{L}0-9 .&'-]*$/u,
             mensaje: 'El nombre solo puede tener letras, números, espacios y los signos . & \' -'
-            }
+        },
+        nombreComercial: {
+            patron: /^[\p{L}0-9][\p{L}0-9 .,&'-]*$/u,
+            mensaje: 'El nombre solo puede tener letras, números, espacios y los signos . , & \' -'
+        },
+        correoGeneral: {
+            patron: /^[a-z0-9._%+-]+@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/i,
+            mensaje: 'Ingrese un correo válido, por ejemplo ventas@proveedor.com'
+        }
     };
-    
+
+    // Igual que Validador::limpiarTelefono en PHP
     function limpiarTelefono(valor) {
         var numeros = valor.replace(/\D/g, '');
         if (numeros.length === 11 && numeros.indexOf('506') === 0) {
@@ -37,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return numeros;
     }
 
-    
+    // Igual que TipoContacto::esValido en PHP; las reglas de cada tipo vienen en la opción elegida
     function esContactoValido(campo, valor) {
         var fila = campo.closest('.filaContacto');
         var tipo = fila ? fila.querySelector('[data-contacto-tipo]') : null;
@@ -171,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function () {
         + 'input[data-distinto-de], select[required], textarea[required]';
 
     document.querySelectorAll('form.validarFormulario').forEach(function (formulario) {
-        
+        // Se buscan al enviar, así también se revisan las filas que se agregaron después (contactos)
         function camposPorRevisar() {
             var campos = formulario.querySelectorAll(selectorCampos);
             return Array.prototype.filter.call(campos, function (campo) {

@@ -117,6 +117,26 @@ class Validador
         return $this;
     }
 
+        public function nombreComercial(string $campo, ?string $valor, string $mensaje = 'El nombre solo puede tener letras, números, espacios y los signos . , & \' -'): self
+    {
+        if ($this->debeRevisar($campo, $valor) && !preg_match('/^[\p{L}0-9][\p{L}0-9 .,&\'-]*$/u', trim($valor))) {
+            $this->agregarError($campo, $mensaje);
+        }
+        return $this;
+    }
+
+    
+    public function correoGeneral(string $campo, ?string $valor, string $mensaje = 'Ingrese un correo válido, por ejemplo ventas@proveedor.com'): self
+    {
+        if (
+            $this->debeRevisar($campo, $valor)
+            && (!preg_match('/^[a-z0-9._%+-]+@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/i', $valor) || mb_strlen($valor, 'UTF-8') > 150)
+        ) {
+            $this->agregarError($campo, $mensaje);
+        }
+        return $this;
+    }
+
     public function contrasenaSegura(string $campo, ?string $valor, string $mensaje = 'La contraseña debe tener entre 8 y 20 caracteres, una mayúscula, una minúscula y un número, sin espacios'): self
     {
         if ($this->debeRevisar($campo, $valor)) {

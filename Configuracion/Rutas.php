@@ -7,7 +7,9 @@ use Aplicacion\Controladores\PerfilControlador;
 use Aplicacion\Controladores\RegistroControlador;
 use Aplicacion\Controladores\SesionControlador;
 use Aplicacion\Controladores\TiendaControlador;
+use Aplicacion\Controladores\ProveedorControlador;
 use Aplicacion\Nucleo\Enrutador;
+
 
 return function (Enrutador $enrutador): void {
 
@@ -32,6 +34,14 @@ return function (Enrutador $enrutador): void {
 
     $enrutador->get('/fotos/perfil', [FotoControlador::class, 'mostrarPerfil']);
     $enrutador->get('/fotos/logo', [FotoControlador::class, 'mostrarLogo']);
+
+    $enrutador->get('/proveedores', [ProveedorControlador::class, 'listar']);
+    $enrutador->get('/proveedores/detalle', [ProveedorControlador::class, 'detalle']);
+    $enrutador->get('/proveedores/nuevo', [ProveedorControlador::class, 'nuevo']);
+    $enrutador->post('/proveedores/crear', [ProveedorControlador::class, 'crear']);
+    $enrutador->get('/proveedores/editar', [ProveedorControlador::class, 'editar']);
+    $enrutador->post('/proveedores/actualizar', [ProveedorControlador::class, 'actualizar']);
+    $enrutador->post('/proveedores/estado', [ProveedorControlador::class, 'cambiarEstado']);
 
     $enrutador->get('/sesiones', [SesionControlador::class, 'listar']);
 };
