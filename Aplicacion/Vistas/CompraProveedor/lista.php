@@ -27,7 +27,8 @@ $botonesAccion = [
 ];
 require __DIR__ . '/../Plantilla/encabezado.php';
 
-$filtrosFijos = array_filter(['proveedor' => $proveedor, 'estado' => $estado !== 'registradas' ? $estado : null]);
+// Los filtros que no son de fechas se conservan al tocar un período
+$filtrosFijos = array_filter(['proveedor' => $proveedor, 'estado' => $estado !== 'todas' ? $estado : null]);
 $enlacePeriodo = fn(string $codigo): string => $urlBase . '/compras-proveedor?' . http_build_query($filtrosFijos + ['periodo' => $codigo]);
 $cantidadTexto = fn(int $cantidad, string $uno, string $varios): string => $cantidad === 1 ? "1 {$uno}" : "{$cantidad} {$varios}";
 ?>
@@ -85,8 +86,7 @@ $cantidadTexto = fn(int $cantidad, string $uno, string $varios): string => $cant
 
     <?php if ($compras === []): ?>
         <div class="estadoVacio">
-            <p>No hay compras con esos filtros. Pruebe con otro período.</p>
-            <a href="<?= htmlspecialchars($enlacePeriodo(PeriodoFechas::TODO)) ?>" class="boton botonSecundario">Ver todas las fechas</a>
+            <p>No hay compras con esos filtros.</p>
         </div>
     <?php else: ?>
         <div class="tablaContenedor">

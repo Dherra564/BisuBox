@@ -107,7 +107,7 @@ $enlacePeriodo = fn(string $codigo): string => $urlBase . '/proveedores/detalle?
     </div>
 
     <?php if ($compras === []): ?>
-        <p class="estadoVacio estadoVacioPequeno">No hay compras a este proveedor en este período.</p>
+        <p class="estadoVacio estadoVacioPequeno"><?= $periodo['periodo'] === PeriodoFechas::TODO ? 'Todavía no hay compras a este proveedor.' : 'No hay compras a este proveedor en este período.' ?></p>
     <?php else: ?>
         <div class="tablaContenedor">
             <table class="tabla tablaCompras">

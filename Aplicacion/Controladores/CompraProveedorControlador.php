@@ -21,7 +21,7 @@ use Throwable;
 
 class CompraProveedorControlador
 {
-    private const ESTADOS = ['registradas' => 'Registradas', 'anuladas' => 'Anuladas', 'todas' => 'Todas'];
+    private const ESTADOS = ['todas' => 'Todas', 'registradas' => 'Registradas', 'anuladas' => 'Anuladas'];
 
     private CompraProveedorRepositorio $compraRepositorio;
     private int $idVendedor;
@@ -47,7 +47,7 @@ class CompraProveedorControlador
         $proveedor = is_string($_GET['proveedor'] ?? null) && in_array((int) $_GET['proveedor'], $idsProveedores, true)
             ? (int) $_GET['proveedor']
             : null;
-        $estado = is_string($_GET['estado'] ?? null) && isset(self::ESTADOS[$_GET['estado']]) ? $_GET['estado'] : 'registradas';
+        $estado = is_string($_GET['estado'] ?? null) && isset(self::ESTADOS[$_GET['estado']]) ? $_GET['estado'] : 'todas';
         $periodo = PeriodoFechas::leer($_GET);
 
         $filtros = ['proveedor' => $proveedor, 'estado' => $estado, 'desde' => $periodo['desde'], 'hasta' => $periodo['hasta']];
@@ -172,7 +172,6 @@ class CompraProveedorControlador
         return ['proveedores' => $proveedores, 'tipos' => $tipos, 'componentes' => $componentes];
     }
 
-    // Si el id no existe o es de otra tienda, se vuelve a la lista de compras
     private function buscarCompra(mixed $id): CompraProveedor
     {
         $compra = is_string($id) && ctype_digit($id) ? $this->compraRepositorio->buscarPorId((int) $id, $this->idVendedor) : null;

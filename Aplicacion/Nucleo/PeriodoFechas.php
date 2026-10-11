@@ -22,7 +22,7 @@ class PeriodoFechas
     ];
 
     /** @return array{periodo: string, desde: ?DateTime, hasta: ?DateTime} */
-    public static function leer(array $consulta, string $porDefecto = self::MES): array
+    public static function leer(array $consulta, string $porDefecto = self::TODO): array
     {
         $desde = self::leerFecha($consulta['desde'] ?? null);
         $hasta = self::leerFecha($consulta['hasta'] ?? null);
