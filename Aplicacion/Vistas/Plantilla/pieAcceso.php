@@ -1,7 +1,7 @@
 <?php
 /**
  * @var string $urlBase
- * @var string[]|null $scriptsExtra  nombres de archivos de Publico/js que necesita la página
+ * @var string[]|null $scriptsExtra
  */
 
 use Configuracion\Configuracion;

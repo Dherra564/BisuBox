@@ -42,7 +42,14 @@ class Configuracion
         $esDesarrollo = self::esDesarrollo();
         ini_set('display_errors', $esDesarrollo ? '1' : '0');
         ini_set('log_errors', '1');
-        ini_set('error_log', self::rutaBase() . '/Almacenamiento/Registros/errores.log');
+        
+        $carpetaRegistros = self::rutaBase() . '/Almacenamiento/Registros';
+        if (!is_dir($carpetaRegistros)) {
+            @mkdir($carpetaRegistros, 0775, true);
+        }
+        if (is_writable($carpetaRegistros)) {
+            ini_set('error_log', $carpetaRegistros . '/errores.log');
+        }
         error_reporting(E_ALL);
 
         self::$cargada = true;

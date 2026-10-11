@@ -34,7 +34,6 @@ class VendedorRepositorio
         return $fila ? $this->crearDesdeFila($fila) : null;
     }
 
-    // Para la tienda pública: el enlace llega como "tienda-de-prueba"
     public function buscarPorEnlace(string $enlace): ?Vendedor
     {
         $consulta = $this->conexion->prepare(
@@ -58,7 +57,6 @@ class VendedorRepositorio
         return (int) $consulta->fetchColumn() > 0;
     }
 
-    // Guarda el usuario, la tienda y sus contactos en una sola transacción
     public function insertar(Vendedor $vendedor): int
     {
         $transaccionPropia = BaseDatos::iniciarTransaccion();
@@ -99,7 +97,6 @@ class VendedorRepositorio
         return $idVendedor;
     }
 
-    // Solo los datos de la tienda y sus contactos; los datos personales se guardan desde Mi perfil
     public function actualizarTienda(Vendedor $vendedor): void
     {
         $transaccionPropia = BaseDatos::iniciarTransaccion();
@@ -137,6 +134,32 @@ class VendedorRepositorio
         return mb_strtolower(trim($enlace), 'UTF-8');
     }
 
+    public function generarEnlace(string $nombreTienda): string
+    {
+        $base = self::convertirEnEnlace($nombreTienda);
+        $enlace = $base;
+        $numero = 2;
+        while ($this->existeEnlace($enlace)) {
+            $enlace = $base . '-' . $numero;
+            $numero++;
+        }
+        return $enlace;
+    }
+
+    
+    public static function convertirEnEnlace(string $nombreTienda): string
+    {
+        $texto = strtr(mb_strtolower(trim($nombreTienda), 'UTF-8'), [
+            'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u', 'ñ' => 'n',
+            'à' => 'a', 'è' => 'e', 'ì' => 'i', 'ò' => 'o', 'ù' => 'u', 'ç' => 'c',
+            '&' => ' y ', "'" => '',
+        ]);
+        $texto = trim((string) preg_replace('/[^a-z0-9]+/', '-', $texto), '-');
+        $texto = rtrim(substr($texto, 0, 50), '-');
+
+        return strlen($texto) >= 3 ? $texto : trim('tienda-' . $texto, '-');
+    }
+    
     private static function descripcionOVacio(?string $descripcion): ?string
     {
         $descripcion = trim((string) $descripcion);

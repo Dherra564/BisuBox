@@ -7,7 +7,12 @@ use Aplicacion\Controladores\PerfilControlador;
 use Aplicacion\Controladores\RegistroControlador;
 use Aplicacion\Controladores\SesionControlador;
 use Aplicacion\Controladores\TiendaControlador;
+use Aplicacion\Controladores\TipoComponenteControlador;
+use Aplicacion\Controladores\ComponenteControlador;
+use Aplicacion\Controladores\InventarioControlador;
+use Aplicacion\Controladores\ProveedorControlador;
 use Aplicacion\Nucleo\Enrutador;
+
 
 return function (Enrutador $enrutador): void {
 
@@ -30,8 +35,31 @@ return function (Enrutador $enrutador): void {
     $enrutador->get('/tienda', [TiendaControlador::class, 'mostrar']);
     $enrutador->post('/tienda/actualizar', [TiendaControlador::class, 'actualizar']);
 
+    $enrutador->get('/inventario', [InventarioControlador::class, 'mostrar']);
+    $enrutador->get('/componentes/nuevo', [ComponenteControlador::class, 'nuevo']);
+    $enrutador->post('/componentes/nuevo', [ComponenteControlador::class, 'insertar']);
+    $enrutador->get('/componentes/editar', [ComponenteControlador::class, 'editar']);
+    $enrutador->post('/componentes/editar', [ComponenteControlador::class, 'actualizar']);
+    $enrutador->post('/componentes/estado', [ComponenteControlador::class, 'cambiarEstado']);
+
+    $enrutador->get('/tipos-componente', [TipoComponenteControlador::class, 'listar']);
+    $enrutador->post('/tipos-componente/sugeridos', [TipoComponenteControlador::class, 'agregarSugeridos']);
+    $enrutador->get('/tipos-componente/nuevo', [TipoComponenteControlador::class, 'nuevo']);
+    $enrutador->post('/tipos-componente/nuevo', [TipoComponenteControlador::class, 'insertar']);
+    $enrutador->get('/tipos-componente/editar', [TipoComponenteControlador::class, 'editar']);
+    $enrutador->post('/tipos-componente/editar', [TipoComponenteControlador::class, 'actualizar']);
+    $enrutador->post('/tipos-componente/estado', [TipoComponenteControlador::class, 'cambiarEstado']);
+
     $enrutador->get('/fotos/perfil', [FotoControlador::class, 'mostrarPerfil']);
     $enrutador->get('/fotos/logo', [FotoControlador::class, 'mostrarLogo']);
+
+    $enrutador->get('/proveedores', [ProveedorControlador::class, 'listar']);
+    $enrutador->get('/proveedores/detalle', [ProveedorControlador::class, 'detalle']);
+    $enrutador->get('/proveedores/nuevo', [ProveedorControlador::class, 'nuevo']);
+    $enrutador->post('/proveedores/crear', [ProveedorControlador::class, 'crear']);
+    $enrutador->get('/proveedores/editar', [ProveedorControlador::class, 'editar']);
+    $enrutador->post('/proveedores/actualizar', [ProveedorControlador::class, 'actualizar']);
+    $enrutador->post('/proveedores/estado', [ProveedorControlador::class, 'cambiarEstado']);
 
     $enrutador->get('/sesiones', [SesionControlador::class, 'listar']);
 };

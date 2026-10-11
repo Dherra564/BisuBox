@@ -55,7 +55,6 @@ class UsuarioRepositorio
         return (int) $consulta->fetchColumn() > 0;
     }
 
-    // Recibe el teléfono limpio: 8 dígitos
     public function existeTelefono(string $telefono, ?int $excluirIdUsuario = null): bool
     {
         $consulta = $this->conexion->prepare(
@@ -66,7 +65,6 @@ class UsuarioRepositorio
         return (int) $consulta->fetchColumn() > 0;
     }
 
-    // Si ya hay una transacción abierta (registro de vendedor o cliente), la confirma quien la abrió
     public function insertar(Usuario $usuario): int
     {
         $transaccionPropia = BaseDatos::iniciarTransaccion();
@@ -172,7 +170,6 @@ class UsuarioRepositorio
         );
     }
 
-    // Si ya viene cifrada se guarda igual
     private static function encriptar(?string $contrasena): ?string
     {
         if ($contrasena === null || $contrasena === '') {

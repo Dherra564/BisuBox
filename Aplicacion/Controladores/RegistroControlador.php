@@ -19,14 +19,12 @@ use Configuracion\Configuracion;
 use DateTime;
 use Throwable;
 
-// Registro público de vendedores y clientes
 class RegistroControlador
 {
     private UsuarioRepositorio $usuarioRepositorio;
 
     public function __construct()
     {
-        // Quien ya inició sesión no necesita registrarse
         if (UsuarioActual::haySesion()) {
             $this->redirigir('/');
         }
@@ -76,6 +74,7 @@ class RegistroControlador
             return;
         }
 
+         $vendedorRepositorio = new VendedorRepositorio();
         $vendedor = new Vendedor(
             tipoIdentificacion: $datos['tipoIdentificacion'],
             numeroIdentificacion: $datos['numeroIdentificacion'],
@@ -85,14 +84,14 @@ class RegistroControlador
             contrasena: $contrasena,
             fechaRegistro: new DateTime(),
             tiendaNombre: $datos['tiendaNombre'],
-            tiendaEnlace: $datos['tiendaEnlace'],
+            tiendaEnlace: $vendedorRepositorio->generarEnlace($datos['tiendaNombre']),
             tiendaDescripcion: $datos['tiendaDescripcion'],
             tiendaLogo: $nombreLogo,
             contactos: DatosTienda::crearContactos($datos['contactos'])
         );
 
         try {
-            (new VendedorRepositorio())->insertar($vendedor);
+            $vendedorRepositorio->insertar($vendedor);
         } catch (Throwable $error) {
             error_log('Error al registrar vendedor: ' . $error->getMessage());
             SubidaArchivo::eliminarLogo($nombreLogo);
@@ -149,7 +148,6 @@ class RegistroControlador
         $this->redirigir('/');
     }
 
-    // Nombre, correo y teléfono: los piden los dos registros
     private function leerDatosPersonales(): array
     {
         return [

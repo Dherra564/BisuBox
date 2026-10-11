@@ -151,3 +151,21 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+CREATE TABLE `tbproveedor` (
+    `tbproveedorid` int(11) NOT NULL,
+    `tbproveedorvendedorid` int(11) DEFAULT NULL,
+    `tbproveedoridentificaciontipo` varchar(20) DEFAULT NULL,
+    `tbproveedoridentificacionnumero` varchar(20) DEFAULT NULL,
+    `tbproveedornombre` varchar(50) DEFAULT NULL,
+    `tbproveedortelefono` varchar(8) DEFAULT NULL,
+    `tbproveedorcorreo` varchar(150) DEFAULT NULL,
+    `tbproveedorregistrofecha` datetime DEFAULT NULL,
+    `tbproveedoractivo` tinyint(4) DEFAULT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+INSERT INTO `tbproveedor` VALUES
+(1, 1, 'CedulaJuridica', '3101123456', 'Perlas del Valle S.A.', '22345678', 'ventas@perlasdelvalle.com', NOW(), 1),
+(2, 1, 'Cedula', '112340567', 'Ana Rojas Mora', '87654321', 'anarojas@gmail.com', NOW(), 1);
+
+ALTER TABLE `tbproveedor` ADD PRIMARY KEY (`tbproveedorid`);
