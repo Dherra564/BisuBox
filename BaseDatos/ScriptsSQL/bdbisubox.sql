@@ -3,13 +3,19 @@
 -- Las contraseñas de los usuarios por defecto están en el README
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+
 START TRANSACTION;
+
 SET time_zone = "+00:00";
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */
+;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */
+;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */
+;
+/*!40101 SET NAMES utf8mb4 */
+;
 
 --
 -- Base de datos: `bdbisubox`
@@ -101,34 +107,148 @@ CREATE TABLE `tbsesion` (
 
 -- --------------------------------------------------------
 
+-- --------------------------------------------------------
+
+CREATE TABLE `tbtipocomponente` (
+    `tbtipocomponenteid` int(11) NOT NULL,
+    `tbtipocomponentevendedorid` int(11) DEFAULT NULL,
+    `tbtipocomponentenombre` varchar(60) DEFAULT NULL,
+    `tbtipocomponenteactivo` tinyint(4) DEFAULT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE `tbtipocomponenteatributo` (
+    `tbtipocomponenteatributoid` int(11) NOT NULL,
+    `tbtipocomponenteatributotipocomponenteid` int(11) DEFAULT NULL,
+    `tbtipocomponenteatributonombre` varchar(60) DEFAULT NULL,
+    `tbtipocomponenteatributoclase` varchar(20) DEFAULT NULL,
+    `tbtipocomponenteatributounidad` varchar(20) DEFAULT NULL,
+    `tbtipocomponenteatributoobligatorio` tinyint(4) DEFAULT NULL,
+    `tbtipocomponenteatributoorden` int(11) DEFAULT NULL,
+    `tbtipocomponenteatributoactivo` tinyint(4) DEFAULT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE `tbtipocomponenteatributoopcion` (
+    `tbtipocomponenteatributoopcionid` int(11) NOT NULL,
+    `tbtipocomponenteatributoopciontipocomponenteatributoid` int(11) DEFAULT NULL,
+    `tbtipocomponenteatributoopcionvalor` varchar(60) DEFAULT NULL,
+    `tbtipocomponenteatributoopcionactivo` tinyint(4) DEFAULT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE `tbcomponente` (
+    `tbcomponenteid` int(11) NOT NULL,
+    `tbcomponentevendedorid` int(11) DEFAULT NULL,
+    `tbcomponentetipocomponenteid` int(11) DEFAULT NULL,
+    `tbcomponentenombre` varchar(100) DEFAULT NULL,
+    `tbcomponenteunidad` varchar(20) DEFAULT NULL,
+    `tbcomponenteexistencia` decimal(12, 2) DEFAULT NULL,
+    `tbcomponentecostounitario` decimal(12, 2) DEFAULT NULL,
+    `tbcomponenteexistenciaminima` decimal(12, 2) DEFAULT NULL,
+    `tbcomponenteactivo` tinyint(4) DEFAULT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE `tbcomponentevalor` (
+    `tbcomponentevalorid` int(11) NOT NULL,
+    `tbcomponentevalorcomponenteid` int(11) DEFAULT NULL,
+    `tbcomponentevalortipocomponenteatributoid` int(11) DEFAULT NULL,
+    `tbcomponentevalorvalor` varchar(300) DEFAULT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE `tbproceso` (
+    `tbprocesoid` int(11) NOT NULL,
+    `tbprocesovendedorid` int(11) DEFAULT NULL,
+    `tbprocesonombre` varchar(60) DEFAULT NULL,
+    `tbprocesodescripcion` varchar(200) DEFAULT NULL,
+    `tbprocesotiempoestimado` int(11) DEFAULT NULL,
+    `tbprocesocostomanoobra` decimal(12, 2) DEFAULT NULL,
+    `tbprocesoactivo` tinyint(4) DEFAULT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
 --
 -- Datos iniciales: un vendedor con su tienda y un cliente
 --
 
-INSERT INTO `tbusuario` (
-    `tbusuarioid`, `tbusuarioidentificaciontipo`, `tbusuarioidentificacionnumero`,
-    `tbusuarionombrecompleto`, `tbusuarioperfilimagen`, `tbusuariocorreo`, `tbusuariotelefono`,
-    `tbusuariocontrasena`, `tbusuariorol`, `tbusuarioregistrofecha`, `tbusuarioactivo`
-) VALUES
-(1, 'Cedula', '200000002', 'Vendedor de Prueba', NULL, 'vendedor.bisubox@gmail.com', '77777777',
-    '$2y$12$cy7xzNTAn0Gl/Ymia8TU1evpuuyjzp4UfwlBRIY0ocJvWYYVhAdzm', 'Vendedor', '2026-10-01 00:00:00', 1),
-(2, NULL, NULL, 'Cliente de Prueba', NULL, 'cliente.bisubox@gmail.com', '66666666',
-    '$2y$12$Kag4xPDKWvZgDtsJ8uYUqu71BQoosc2NilsEK4OWX/rr7K0vpYkdK', 'Cliente', '2026-10-01 00:00:00', 1);
+INSERT INTO
+    `tbusuario` (
+        `tbusuarioid`,
+        `tbusuarioidentificaciontipo`,
+        `tbusuarioidentificacionnumero`,
+        `tbusuarionombrecompleto`,
+        `tbusuarioperfilimagen`,
+        `tbusuariocorreo`,
+        `tbusuariotelefono`,
+        `tbusuariocontrasena`,
+        `tbusuariorol`,
+        `tbusuarioregistrofecha`,
+        `tbusuarioactivo`
+    )
+VALUES (
+        1,
+        'Cedula',
+        '200000002',
+        'Vendedor de Prueba',
+        NULL,
+        'vendedor.bisubox@gmail.com',
+        '77777777',
+        '$2y$12$cy7xzNTAn0Gl/Ymia8TU1evpuuyjzp4UfwlBRIY0ocJvWYYVhAdzm',
+        'Vendedor',
+        '2026-10-01 00:00:00',
+        1
+    ),
+    (
+        2,
+        NULL,
+        NULL,
+        'Cliente de Prueba',
+        NULL,
+        'cliente.bisubox@gmail.com',
+        '66666666',
+        '$2y$12$Kag4xPDKWvZgDtsJ8uYUqu71BQoosc2NilsEK4OWX/rr7K0vpYkdK',
+        'Cliente',
+        '2026-10-01 00:00:00',
+        1
+    );
 
-INSERT INTO `tbvendedor` (
-    `tbvendedorid`, `tbvendedorusuarioid`, `tbvendedortiendanombre`, `tbvendedortiendaenlace`,
-    `tbvendedortiendadescripcion`, `tbvendedortiendalogo`, `tbvendedoractivo`
-) VALUES
-(1, 1, 'Tienda de Prueba', 'tienda-de-prueba', 'Bisutería hecha a mano para probar el sistema', NULL, 1);
+INSERT INTO
+    `tbvendedor` (
+        `tbvendedorid`,
+        `tbvendedorusuarioid`,
+        `tbvendedortiendanombre`,
+        `tbvendedortiendaenlace`,
+        `tbvendedortiendadescripcion`,
+        `tbvendedortiendalogo`,
+        `tbvendedoractivo`
+    )
+VALUES (
+        1,
+        1,
+        'Tienda de Prueba',
+        'tienda-de-prueba',
+        'Bisutería hecha a mano para probar el sistema',
+        NULL,
+        1
+    );
 
-INSERT INTO `tbvendedorcontacto` (
-    `tbvendedorcontactoid`, `tbvendedorcontactovendedorid`, `tbvendedorcontactotipo`, `tbvendedorcontactovalor`
-) VALUES
-(1, 1, 'WhatsApp', '88451290'),
-(2, 1, 'Instagram', 'tiendadeprueba');
+INSERT INTO
+    `tbvendedorcontacto` (
+        `tbvendedorcontactoid`,
+        `tbvendedorcontactovendedorid`,
+        `tbvendedorcontactotipo`,
+        `tbvendedorcontactovalor`
+    )
+VALUES (1, 1, 'WhatsApp', '88451290'),
+    (
+        2,
+        1,
+        'Instagram',
+        'tiendadeprueba'
+    );
 
-INSERT INTO `tbcliente` (`tbclienteid`, `tbclienteusuarioid`) VALUES
-(1, 2);
+INSERT INTO
+    `tbcliente` (
+        `tbclienteid`,
+        `tbclienteusuarioid`
+    )
+VALUES (1, 2);
 
 -- --------------------------------------------------------
 
@@ -140,17 +260,39 @@ ALTER TABLE `tbusuario` ADD PRIMARY KEY (`tbusuarioid`);
 
 ALTER TABLE `tbvendedor` ADD PRIMARY KEY (`tbvendedorid`);
 
-ALTER TABLE `tbvendedorcontacto` ADD PRIMARY KEY (`tbvendedorcontactoid`);
+ALTER TABLE `tbvendedorcontacto`
+ADD PRIMARY KEY (`tbvendedorcontactoid`);
 
 ALTER TABLE `tbcliente` ADD PRIMARY KEY (`tbclienteid`);
 
 ALTER TABLE `tbsesion` ADD PRIMARY KEY (`tbsesionid`);
 
+ALTER TABLE `tbtipocomponente`
+ADD PRIMARY KEY (`tbtipocomponenteid`);
+
+ALTER TABLE `tbtipocomponenteatributo`
+ADD PRIMARY KEY (`tbtipocomponenteatributoid`);
+
+ALTER TABLE `tbtipocomponenteatributoopcion`
+ADD PRIMARY KEY (
+    `tbtipocomponenteatributoopcionid`
+);
+
+ALTER TABLE `tbcomponente` ADD PRIMARY KEY (`tbcomponenteid`);
+
+ALTER TABLE `tbcomponentevalor`
+ADD PRIMARY KEY (`tbcomponentevalorid`);
+
+ALTER TABLE `tbproceso` ADD PRIMARY KEY (`tbprocesoid`);
+
 COMMIT;
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */
+;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */
+;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */
+;
 
 CREATE TABLE `tbproveedor` (
     `tbproveedorid` int(11) NOT NULL,
@@ -164,8 +306,29 @@ CREATE TABLE `tbproveedor` (
     `tbproveedoractivo` tinyint(4) DEFAULT NULL
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
-INSERT INTO `tbproveedor` VALUES
-(1, 1, 'CedulaJuridica', '3101123456', 'Perlas del Valle S.A.', '22345678', 'ventas@perlasdelvalle.com', NOW(), 1),
-(2, 1, 'Cedula', '112340567', 'Ana Rojas Mora', '87654321', 'anarojas@gmail.com', NOW(), 1);
+INSERT INTO
+    `tbproveedor`
+VALUES (
+        1,
+        1,
+        'CedulaJuridica',
+        '3101123456',
+        'Perlas del Valle S.A.',
+        '22345678',
+        'ventas@perlasdelvalle.com',
+        NOW(),
+        1
+    ),
+    (
+        2,
+        1,
+        'Cedula',
+        '112340567',
+        'Ana Rojas Mora',
+        '87654321',
+        'anarojas@gmail.com',
+        NOW(),
+        1
+    );
 
 ALTER TABLE `tbproveedor` ADD PRIMARY KEY (`tbproveedorid`);
