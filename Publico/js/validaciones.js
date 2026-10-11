@@ -27,9 +27,13 @@ document.addEventListener('DOMContentLoaded', function () {
             patron: /^[\p{L}0-9][\p{L}0-9 .&'-]*$/u,
             mensaje: 'El nombre solo puede tener letras, números, espacios y los signos . & \' -'
         },
-        enlaceTienda: {
-            patron: /^[a-z0-9]+(-[a-z0-9]+)*$/,
-            mensaje: 'Use solo minúsculas, números y guiones, por ejemplo mi-tienda'
+        nombreComercial: {
+            patron: /^[\p{L}0-9][\p{L}0-9 .,&'-]*$/u,
+            mensaje: 'El nombre solo puede tener letras, números, espacios y los signos . , & \' -'
+        },
+        correoGeneral: {
+            patron: /^[a-z0-9._%+-]+@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/i,
+            mensaje: 'Ingrese un correo válido, por ejemplo ventas@proveedor.com'
         }
     };
 

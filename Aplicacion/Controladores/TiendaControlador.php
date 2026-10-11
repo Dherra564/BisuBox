@@ -38,7 +38,6 @@ class TiendaControlador
     {
         $this->mostrarTienda([
             'tiendaNombre' => $this->vendedor->getTiendaNombre(),
-            'tiendaEnlace' => $this->vendedor->getTiendaEnlace(),
             'tiendaDescripcion' => $this->vendedor->getTiendaDescripcion(),
             'tiendaActiva' => $this->vendedor->getTiendaActiva(),
             'contactos' => DatosTienda::contactosParaFormulario($this->vendedor),
@@ -65,7 +64,6 @@ class TiendaControlador
 
         $logoAnterior = $this->vendedor->getTiendaLogo();
         $this->vendedor->setTiendaNombre($datos['tiendaNombre']);
-        $this->vendedor->setTiendaEnlace($datos['tiendaEnlace']);
         $this->vendedor->setTiendaDescripcion($datos['tiendaDescripcion']);
         $this->vendedor->setTiendaActiva($datos['tiendaActiva']);
         $this->vendedor->setContactos(DatosTienda::crearContactos($datos['contactos']));

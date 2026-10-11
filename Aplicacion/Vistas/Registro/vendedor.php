@@ -115,21 +115,7 @@ $contactos = $datos['contactos'] ?? [];
                         value="<?= $valor('tiendaNombre') ?>">
                     <?= $mensajeError('tiendaNombre') ?>
                 </div>
-                <div class="<?= $claseCampo('tiendaEnlace') ?>">
-                    <label for="tiendaEnlace">Enlace de la tienda <span class="obligatorio">*</span></label>
-                    <div class="campoConPrefijo">
-                        <span class="prefijoCampo" aria-hidden="true">bisubox/tienda/</span>
-                        <input type="text" id="tiendaEnlace" name="tiendaEnlace" minlength="3" maxlength="60" required
-                            data-regla="enlaceTienda" data-sugerir-desde="tiendaNombre" aria-describedby="ayudaEnlace"
-                            data-mensaje-requerido="Ingrese el enlace de la tienda"
-                            data-mensaje-largo="El enlace debe tener entre 3 y 60 caracteres"
-                            value="<?= $valor('tiendaEnlace') ?>">
-                    </div>
-                    <p class="textoAyuda" id="ayudaEnlace">
-                        Minúsculas, números y guiones. Es la dirección que comparte con sus clientes.
-                    </p>
-                    <?= $mensajeError('tiendaEnlace') ?>
-                </div>
+              
                 <div class="<?= $claseCampo('tiendaDescripcion') ?>">
                     <label for="tiendaDescripcion">Descripción</label>
                     <textarea id="tiendaDescripcion" name="tiendaDescripcion" rows="3" maxlength="300"

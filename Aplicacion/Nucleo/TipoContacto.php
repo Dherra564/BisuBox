@@ -13,7 +13,7 @@ class TipoContacto
 
     public const MAXIMO_POR_TIENDA = 10;
 
-    // usuario: patrón del nombre de usuario (sin @); dominios: de dónde puede ser un enlace
+   
     private const TIPOS = [
         self::WHATSAPP => [
             'nombre' => 'WhatsApp',
@@ -25,25 +25,25 @@ class TipoContacto
         ],
         self::INSTAGRAM => [
             'nombre' => 'Instagram',
-            'usuario' => '^[A-Za-z0-9._]{1,30}$',
+            'usuario' => '^(?=.*[A-Za-z])[A-Za-z0-9._]{1,30}$',
             'dominios' => ['instagram.com'],
-            'mensaje' => 'Escriba el usuario de Instagram o un enlace de instagram.com',
+            'mensaje' => 'Escriba el usuario de Instagram (con al menos una letra) o un enlace de instagram.com. Si es un número de teléfono, elija WhatsApp',
             'ayuda' => 'Usuario o enlace del perfil',
             'ejemplo' => 'mitienda o instagram.com/mitienda',
         ],
         self::TIKTOK => [
             'nombre' => 'TikTok',
-            'usuario' => '^[A-Za-z0-9._]{2,24}$',
+            'usuario' => '^(?=.*[A-Za-z])[A-Za-z0-9._]{2,24}$',
             'dominios' => ['tiktok.com'],
-            'mensaje' => 'Escriba el usuario de TikTok o un enlace de tiktok.com',
+            'mensaje' => 'Escriba el usuario de TikTok (con al menos una letra) o un enlace de tiktok.com. Si es un número de teléfono, elija WhatsApp',
             'ayuda' => 'Usuario o enlace del perfil',
             'ejemplo' => 'mitienda o tiktok.com/@mitienda',
         ],
         self::FACEBOOK => [
             'nombre' => 'Facebook',
-            'usuario' => '^[A-Za-z0-9.]{5,50}$',
+            'usuario' => '^(?=.*[A-Za-z])[A-Za-z0-9.]{5,50}$',
             'dominios' => ['facebook.com', 'fb.com'],
-            'mensaje' => 'Escriba el usuario de Facebook o un enlace de facebook.com',
+            'mensaje' => 'Escriba el usuario de Facebook (con al menos una letra) o un enlace de facebook.com. Si es un número de teléfono, elija WhatsApp',
             'ayuda' => 'Usuario o enlace del perfil',
             'ejemplo' => 'mitienda o facebook.com/mitienda',
         ],
@@ -56,6 +56,7 @@ class TipoContacto
             'ejemplo' => 'https://mitienda.com',
         ],
     ];
+    
 
     /** @return array<string, array{nombre: string, usuario: ?string, dominios: string[], mensaje: string, ayuda: string, ejemplo: string}> */
     public static function todos(): array

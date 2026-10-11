@@ -137,6 +137,34 @@ class VendedorRepositorio
         return mb_strtolower(trim($enlace), 'UTF-8');
     }
 
+    
+    // El vendedor no escribe el enlace: se arma con el nombre de la tienda y, si ya existe, se le agrega un número
+    public function generarEnlace(string $nombreTienda): string
+    {
+        $base = self::convertirEnEnlace($nombreTienda);
+        $enlace = $base;
+        $numero = 2;
+        while ($this->existeEnlace($enlace)) {
+            $enlace = $base . '-' . $numero;
+            $numero++;
+        }
+        return $enlace;
+    }
+
+    
+    public static function convertirEnEnlace(string $nombreTienda): string
+    {
+        $texto = strtr(mb_strtolower(trim($nombreTienda), 'UTF-8'), [
+            'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u', 'ñ' => 'n',
+            'à' => 'a', 'è' => 'e', 'ì' => 'i', 'ò' => 'o', 'ù' => 'u', 'ç' => 'c',
+            '&' => ' y ', "'" => '',
+        ]);
+        $texto = trim((string) preg_replace('/[^a-z0-9]+/', '-', $texto), '-');
+        $texto = rtrim(substr($texto, 0, 50), '-');
+
+        return strlen($texto) >= 3 ? $texto : trim('tienda-' . $texto, '-');
+    }
+    
     private static function descripcionOVacio(?string $descripcion): ?string
     {
         $descripcion = trim((string) $descripcion);

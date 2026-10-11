@@ -1,11 +1,10 @@
-// Formulario de la tienda: lista de contactos y enlace sugerido a partir del nombre
 document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('[data-contactos]').forEach(function (lista) {
         var seccion = lista.closest('section');
         var plantilla = seccion.querySelector('[data-contacto-plantilla]');
         var botonAgregar = seccion.querySelector('[data-contacto-agregar]');
-                var cuenta = seccion.querySelector('[data-contacto-cuenta]');
+        var cuenta = seccion.querySelector('[data-contacto-cuenta]');
         var vacio = seccion.querySelector('[data-contactos-vacio]');
         var maximo = parseInt(lista.getAttribute('data-maximo'), 10) || 10;
 
@@ -57,30 +56,21 @@ document.addEventListener('DOMContentLoaded', function () {
         actualizarCuenta();
     });
 
-    // El enlace se llena solo mientras la persona no lo haya escrito a mano
-    document.querySelectorAll('[data-sugerir-desde]').forEach(function (enlace) {
-        var origen = document.getElementById(enlace.getAttribute('data-sugerir-desde'));
-        if (!origen) {
-            return;
-        }
-        var escritoAMano = enlace.value !== '';
-
-        function convertirEnEnlace(texto) {
-            return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-                .toLowerCase()
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/^-+|-+$/g, '')
-                .slice(0, 60)
-                .replace(/-+$/g, '');
-        }
-
-        enlace.addEventListener('input', function () {
-            escritoAMano = enlace.value !== '';
-        });
-
-        origen.addEventListener('input', function () {
-            if (!escritoAMano) {
-                enlace.value = convertirEnEnlace(origen.value);
+    
+    document.querySelectorAll('[data-copiar]').forEach(function (boton) {
+        var campo = document.getElementById(boton.getAttribute('data-copiar'));
+        var textoOriginal = boton.textContent;
+        boton.addEventListener('click', function () {
+            campo.select();
+            var listo = function () {
+                boton.textContent = '¡Copiada!';
+                setTimeout(function () { boton.textContent = textoOriginal; }, 2000);
+            };
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(campo.value).then(listo, function () { document.execCommand('copy'); listo(); });
+            } else {
+                document.execCommand('copy');
+                listo();
             }
         });
     });
