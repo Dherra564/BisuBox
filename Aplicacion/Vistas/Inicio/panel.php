@@ -30,6 +30,12 @@ $accesos = [
         'descripcion' => 'Vea qué componentes tiene, cuánto le queda de cada uno y cuánto vale su inventario.'
     ],
     [
+        'texto' => 'Proveedores',
+        'permiso' => 'proveedores.gestionar',
+        'ruta' => '/proveedores',
+        'descripcion' => 'Registre a quién le compra sus materiales.'
+    ],
+    [
         'texto' => 'Historial de sesiones',
         'permiso' => 'sesiones.ver',
         'ruta' => '/sesiones',

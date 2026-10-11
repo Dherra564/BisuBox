@@ -19,12 +19,13 @@ $opcionesMenu = [
     'perfil' => ['texto' => 'Mi perfil', 'ruta' => '/perfil', 'permiso' => 'perfil.ver'],
     'tienda' => ['texto' => 'Mi tienda', 'ruta' => '/tienda', 'permiso' => 'tienda.gestionar'],
     'inventario' => ['texto' => 'Inventario', 'ruta' => '/inventario', 'permiso' => 'inventario.gestionar'],
+    'proveedores' => ['texto' => 'Proveedores', 'ruta' => '/proveedores', 'permiso' => 'proveedores.gestionar'],
     'sesiones' => ['texto' => 'Historial de sesiones', 'ruta' => '/sesiones', 'permiso' => 'sesiones.ver'],
 ];
 $opcionesMenu = array_filter($opcionesMenu, fn(array $opcion): bool => Permiso::puede($opcion['permiso']));
 
 $proximasFases = UsuarioActual::esVendedor()
-    ? ['Proveedores', 'Compras', 'Productos', 'Producción', 'Pedidos']
+    ? ['Proveedores','Inventario', 'Compras', 'Productos', 'Producción', 'Pedidos']
     : ['Tiendas', 'Carrito', 'Mis pedidos'];
 ?>
 <!DOCTYPE html>
