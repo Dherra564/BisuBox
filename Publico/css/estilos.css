@@ -1692,6 +1692,268 @@ h1, h2, h3 {
     flex-basis: 100%;
 }
 
+/* ---------- Compras a proveedores ---------- */
+.filtroFechas {
+    flex-basis: 100%;
+}
+
+.filtroFechasTitulo {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.chipsPeriodo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chipPeriodo {
+    padding: 8px 14px;
+    border: 1px solid var(--colorBordeCampo);
+    border-radius: 999px;
+    background: var(--colorSuperficie);
+    color: var(--colorTexto);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.chipPeriodo:hover {
+    border-color: var(--colorTitulo);
+}
+
+.chipPeriodo:focus-visible {
+    outline: 2px solid var(--colorFoco);
+    outline-offset: 2px;
+}
+
+.chipElegido {
+    border-color: var(--colorTitulo);
+    background: var(--colorTitulo);
+    color: var(--colorTextoClaro);
+}
+
+.periodoActual {
+    margin: 10px 0 14px;
+}
+
+.filtros .campoFecha {
+    flex: 0 1 170px;
+}
+
+.filtrosCompras .campo {
+    flex: 0 1 200px;
+}
+
+.resumenCompras {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.resumenCompras .tarjetaResumen:hover {
+    border-color: var(--colorBorde);
+    box-shadow: none;
+}
+
+.listaLineasCompra {
+    display: grid;
+    gap: 12px;
+    margin: 14px 0;
+}
+
+.lineaCompra {
+    padding: 14px 16px 2px;
+    border: 1px solid var(--colorBorde);
+    border-left: 4px solid var(--colorBordeFoto);
+    border-radius: var(--radioCampo);
+    background: var(--colorSuperficie);
+}
+
+.lineaCompraCampos {
+    display: grid;
+    grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(90px, 0.8fr) 44px;
+    gap: 0 12px;
+    align-items: start;
+}
+
+.lineaCompraCampos .botonQuitar {
+    margin-top: 27px;
+}
+
+.campoSubtotal {
+    display: flex;
+    flex-direction: column;
+}
+
+.campoSubtotal .etiquetaCampo {
+    margin-bottom: 12px;
+}
+
+.subtotalLinea {
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.avisoExistencia {
+    color: var(--colorTitulo);
+    font-weight: 600;
+}
+
+.componenteNuevo {
+    margin: 0 0 14px;
+    padding: 12px 14px 4px;
+    border-radius: var(--radioCampo);
+    background: var(--colorVerdeClaro);
+}
+
+.componenteNuevoTitulo {
+    margin: 0 0 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--colorTitulo);
+}
+
+.componenteNuevo .textoAyuda {
+    margin: 0 0 10px;
+}
+
+.totalesCompra {
+    display: grid;
+    gap: 6px;
+    max-width: 380px;
+    margin: 16px 0 0 auto;
+    padding: 14px 18px;
+    border-radius: var(--radioCampo);
+    background: var(--colorFondo);
+}
+
+.totalesCompra > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.totalCompra {
+    padding-top: 8px;
+    border-top: 1px solid var(--colorBorde);
+    font-size: 1.15rem;
+}
+
+.totalCompra strong {
+    color: var(--colorTitulo);
+}
+
+.totalesCompra .textoAyuda {
+    margin: 4px 0 0;
+}
+
+.factura {
+    margin-bottom: 16px;
+    padding: 20px 22px;
+    border: 1px solid var(--colorBorde);
+    border-radius: var(--radio);
+    background: var(--colorSuperficie);
+}
+
+.facturaAnulada {
+    background: var(--colorFondo);
+}
+
+.facturaAnulada .tablaFactura,
+.facturaAnulada .totalesCompra {
+    opacity: 0.65;
+}
+
+.facturaEncabezado {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 40px;
+    margin-bottom: 16px;
+}
+
+.facturaEncabezado > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.facturaEncabezado .textoAyuda {
+    margin: 0;
+}
+
+.facturaEncabezado .etiqueta {
+    align-self: flex-start;
+}
+
+.facturaProveedor {
+    font-weight: 700;
+    color: var(--colorTitulo);
+}
+
+.factura > .textoAyuda {
+    margin-top: 14px;
+}
+
+.cajaAnular {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 20px;
+    border: 1px solid var(--colorErrorBorde);
+    border-radius: var(--radio);
+    background: var(--colorSuperficie);
+}
+
+.cajaAnular p {
+    margin: 0;
+    max-width: 640px;
+}
+
+.encabezadoSeccion {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.encabezadoSeccion h2 {
+    margin: 0;
+}
+
+.filtrosFechasProveedor {
+    padding: 0;
+    border: none;
+}
+
+.resumenProveedor {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 32px;
+    margin-bottom: 14px;
+    padding: 12px 18px;
+    border-radius: var(--radioCampo);
+    background: var(--colorFondo);
+}
+
+.resumenProveedor > div {
+    display: flex;
+    flex-direction: column;
+}
+
+.resumenProveedor .textoAyuda {
+    margin: 0;
+}
+
+.resumenProveedor strong {
+    font-size: 1.15rem;
+}
+
 /* ---------- Celular ---------- */
 @media (max-width: 768px) {
     .menuLateral {
@@ -1940,5 +2202,64 @@ h1, h2, h3 {
 
     .encabezadoPagina .grupoBotones .boton {
         flex: 1;
+    }
+
+    .resumenCompras {
+        grid-template-columns: 1fr;
+    }
+
+    .resumenCompras .tarjetaResumen {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+    }
+
+    .resumenCompras .tarjetaResumen .textoAyuda {
+        flex-basis: 100%;
+    }
+
+    .filtros .campoFecha,
+    .filtrosCompras .campo {
+        flex: 1 1 calc(50% - 7px);
+        min-width: 0;
+    }
+
+    .lineaCompraCampos {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .lineaCompraCampos > .campo:not(.campoSubtotal) {
+        grid-column: 1 / -1;
+    }
+
+    .campoSubtotal {
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .campoSubtotal .etiquetaCampo {
+        margin: 0;
+    }
+
+    .lineaCompraCampos .botonQuitar {
+        justify-self: end;
+        margin-top: 0;
+    }
+
+    .totalesCompra {
+        max-width: none;
+    }
+
+    .factura {
+        padding: 16px;
+    }
+
+    .tablaFactura tr {
+        border: none;
+        border-bottom: 1px solid var(--colorBorde);
+        border-radius: 0;
+        padding: 10px 0;
     }
 }

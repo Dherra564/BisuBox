@@ -48,6 +48,20 @@ class ProveedorRepositorio
         return array_map(fn(array $fila): Proveedor => $this->crearDesdeFila($fila), $consulta->fetchAll());
     }
 
+    // Todos los proveedores del vendedor por nombre, sin páginas; para escogerlos en las compras
+    /** @return Proveedor[] */
+    public function listarTodos(int $idVendedor, bool $soloActivos = false): array
+    {
+        $consulta = $this->conexion->prepare(
+            'SELECT * FROM tbproveedor WHERE tbproveedorvendedorid = ?'
+            . ($soloActivos ? ' AND tbproveedoractivo = 1' : '')
+            . ' ORDER BY tbproveedornombre ASC, tbproveedorid ASC'
+        );
+        $consulta->execute([$idVendedor]);
+
+        return array_map(fn(array $fila): Proveedor => $this->crearDesdeFila($fila), $consulta->fetchAll());
+    }
+
     public function contar(int $idVendedor, string $busqueda = '', ?bool $activo = null): int
     {
         [$condiciones, $valores] = $this->construirFiltros($idVendedor, $busqueda, $activo);
@@ -58,7 +72,7 @@ class ProveedorRepositorio
         return (int) $consulta->fetchColumn();
     }
 
-    
+
     public function existeIdentificacion(int $idVendedor, string $numero, ?int $excluirIdProveedor = null): bool
     {
         return $this->existe($idVendedor, 'tbproveedoridentificacionnumero', $numero, $excluirIdProveedor);

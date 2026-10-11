@@ -8,6 +8,7 @@ use Aplicacion\Controladores\RegistroControlador;
 use Aplicacion\Controladores\SesionControlador;
 use Aplicacion\Controladores\TiendaControlador;
 use Aplicacion\Controladores\TipoComponenteControlador;
+use Aplicacion\Controladores\CompraProveedorControlador;
 use Aplicacion\Controladores\ComponenteControlador;
 use Aplicacion\Controladores\InventarioControlador;
 use Aplicacion\Controladores\ProveedorControlador;
@@ -60,6 +61,12 @@ return function (Enrutador $enrutador): void {
     $enrutador->get('/proveedores/editar', [ProveedorControlador::class, 'editar']);
     $enrutador->post('/proveedores/actualizar', [ProveedorControlador::class, 'actualizar']);
     $enrutador->post('/proveedores/estado', [ProveedorControlador::class, 'cambiarEstado']);
+
+    $enrutador->get('/compras-proveedor', [CompraProveedorControlador::class, 'listar']);
+    $enrutador->get('/compras-proveedor/nueva', [CompraProveedorControlador::class, 'nueva']);
+    $enrutador->post('/compras-proveedor/nueva', [CompraProveedorControlador::class, 'registrar']);
+    $enrutador->get('/compras-proveedor/detalle', [CompraProveedorControlador::class, 'detalle']);
+    $enrutador->post('/compras-proveedor/anular', [CompraProveedorControlador::class, 'anular']);
 
     $enrutador->get('/sesiones', [SesionControlador::class, 'listar']);
 };

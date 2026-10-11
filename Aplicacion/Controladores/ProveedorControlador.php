@@ -5,10 +5,12 @@ namespace Aplicacion\Controladores;
 use Aplicacion\Modelos\Proveedor;
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\Mensaje;
+use Aplicacion\Nucleo\PeriodoFechas;
 use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\TipoIdentificacion;
 use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Nucleo\Validador;
+use Aplicacion\Repositorios\CompraProveedorRepositorio;
 use Aplicacion\Repositorios\ProveedorRepositorio;
 use Aplicacion\Repositorios\UsuarioRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
@@ -60,8 +62,24 @@ class ProveedorControlador
 
     public function detalle(): void
     {
+        $proveedor = $this->cargarProveedor($_GET['id'] ?? null);
+
+        // Las compras a este proveedor en el período escogido; al entrar, las de este mes
+        $periodo = PeriodoFechas::leer($_GET);
+        $filtros = [
+            'proveedor' => (int) $proveedor->getIdProveedor(),
+            'estado' => 'todas',
+            'desde' => $periodo['desde'],
+            'hasta' => $periodo['hasta'],
+        ];
+        $compraRepositorio = new CompraProveedorRepositorio();
+
         $this->mostrarVista('Proveedor/detalle', [
-            'proveedor' => $this->cargarProveedor($_GET['id'] ?? null),
+            'proveedor' => $proveedor,
+            'periodo' => $periodo,
+            'compras' => $compraRepositorio->listar($this->idVendedor, $filtros),
+            'totalCompras' => $compraRepositorio->contar($this->idVendedor, $filtros),
+            'resumen' => $compraRepositorio->resumen($this->idVendedor, $filtros),
         ]);
     }
 
@@ -127,11 +145,11 @@ class ProveedorControlador
     public function actualizar(): void
     {
         $this->verificarCsrf('/proveedores');
-        
+
         $proveedor = $this->cargarProveedor($_POST['id'] ?? null);
 
         $datos = $this->leerDatos();
-        
+
         $validador = $this->validarDatos($datos, $proveedor->getIdProveedor());
         if (!$validador->esValido()) {
             $this->mostrarFormulario($proveedor, $datos, $validador->errores());
@@ -185,7 +203,7 @@ class ProveedorControlador
             : '/proveedores');
     }
 
-    
+
     private function cargarProveedor(mixed $id): Proveedor
     {
         $idProveedor = is_string($id) && ctype_digit($id) ? (int) $id : 0;
@@ -212,12 +230,12 @@ class ProveedorControlador
         ];
     }
 
-    
+
     private function validarDatos(array $datos, ?int $idProveedor): Validador
     {
         $validador = new Validador();
 
-        
+
         if (!TipoIdentificacion::existeParaProveedor($datos['tipoIdentificacion'])) {
             $validador->agregarError('tipoIdentificacion', 'Seleccione el tipo de identificación');
         }
@@ -240,7 +258,7 @@ class ProveedorControlador
         $validador->requerido('correo', $datos['correo'], 'Ingrese el correo')
             ->correoGeneral('correo', $datos['correo']);
 
-        
+
         if (
             $validador->error('numeroIdentificacion') === null
             && $this->proveedorRepositorio->existeIdentificacion($this->idVendedor, $datos['numeroIdentificacion'], $idProveedor)

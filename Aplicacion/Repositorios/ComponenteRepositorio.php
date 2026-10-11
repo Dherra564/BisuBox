@@ -229,7 +229,48 @@ class ComponenteRepositorio
         $consulta->execute([$activo ? 1 : 0, $idComponente, $idVendedor]);
     }
 
-    // Reemplaza los valores de esos datos; los vacíos no se guardan
+    // Los componentes activos ordenados por tipo y nombre; para escogerlos en una compra
+    /** @return Componente[] */
+    public function listarActivos(int $idVendedor): array
+    {
+        $consulta = $this->conexion->prepare(
+            'SELECT c.*, t.tbtipocomponentenombre
+             FROM tbcomponente c
+             INNER JOIN tbtipocomponente t ON t.tbtipocomponenteid = c.tbcomponentetipocomponenteid
+             WHERE c.tbcomponentevendedorid = ? AND c.tbcomponenteactivo = 1
+             ORDER BY t.tbtipocomponentenombre ASC, c.tbcomponentenombre ASC'
+        );
+        $consulta->execute([$idVendedor]);
+
+        return array_map(fn(array $fila): Componente => $this->crearDesdeFila($fila, []), $consulta->fetchAll());
+    }
+
+    /** @return array{existencia: float, costo: float, nombre: string}|null */
+    public function bloquearExistencia(int $idComponente, int $idVendedor): ?array
+    {
+        $consulta = $this->conexion->prepare(
+            'SELECT tbcomponenteexistencia, tbcomponentecostounitario, tbcomponentenombre FROM tbcomponente
+             WHERE tbcomponenteid = ? AND tbcomponentevendedorid = ? FOR UPDATE'
+        );
+        $consulta->execute([$idComponente, $idVendedor]);
+        $fila = $consulta->fetch();
+
+        return $fila ? [
+            'existencia' => (float) $fila['tbcomponenteexistencia'],
+            'costo' => (float) $fila['tbcomponentecostounitario'],
+            'nombre' => (string) $fila['tbcomponentenombre'],
+        ] : null;
+    }
+
+    public function actualizarExistencia(int $idComponente, int $idVendedor, float $existencia, float $costoUnitario): void
+    {
+        $consulta = $this->conexion->prepare(
+            'UPDATE tbcomponente SET tbcomponenteexistencia = ?, tbcomponentecostounitario = ?
+             WHERE tbcomponenteid = ? AND tbcomponentevendedorid = ?'
+        );
+        $consulta->execute([$existencia, $costoUnitario, $idComponente, $idVendedor]);
+    }
+
     /** @param array<int, string> $valores  @param int[] $idsAtributos */
     private function guardarValores(int $idComponente, array $valores, array $idsAtributos): void
     {

@@ -11,6 +11,7 @@ use Aplicacion\Nucleo\Mensaje;
 use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Nucleo\Validador;
+use Aplicacion\Repositorios\CompraProveedorRepositorio;
 use Aplicacion\Repositorios\ComponenteRepositorio;
 use Aplicacion\Repositorios\TipoComponenteRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
@@ -183,6 +184,10 @@ class ComponenteControlador
             'componente' => $componente,
             'datos' => $datos,
             'errores' => $errores,
+            // Al editar se muestra la última compra del componente, para saber dónde y a cuánto se compró
+            'ultimaCompra' => $componente !== null
+                ? (new CompraProveedorRepositorio())->ultimaCompraDe((int) $componente->getIdComponente(), $this->idVendedor())
+                : null,
         ]);
     }
 

@@ -16,7 +16,10 @@ use Aplicacion\Nucleo\TipoIdentificacion;
 
 $titulo = 'Proveedores';
 $paginaActual = 'proveedores';
-$botonAccion = ['texto' => 'Nuevo proveedor', 'ruta' => '/proveedores/nuevo'];
+$botonesAccion = [
+    ['texto' => 'Compras a proveedores', 'ruta' => '/compras-proveedor', 'secundario' => true],
+    ['texto' => 'Nuevo proveedor', 'ruta' => '/proveedores/nuevo'],
+];
 require __DIR__ . '/../Plantilla/encabezado.php';
 
 $hayFiltros = $busqueda !== '' || $estado !== '';
