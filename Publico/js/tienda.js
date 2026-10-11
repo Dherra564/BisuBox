@@ -38,7 +38,6 @@ document.addEventListener('DOMContentLoaded', function () {
             botonAgregar.focus();
         });
 
-        // Al cambiar el tipo, el ejemplo del campo cambia y se quita el error viejo
         lista.addEventListener('change', function (evento) {
             if (!evento.target.matches('[data-contacto-tipo]')) {
                 return;

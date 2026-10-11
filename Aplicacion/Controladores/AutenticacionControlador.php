@@ -46,7 +46,6 @@ class AutenticacionControlador
             $this->redirigir('/ingresar');
         }
 
-        // El rol se lee directo de tbusuario (Vendedor o Cliente)
         if (!Rol::existe($usuario->getRol())) {
             Mensaje::error('Su cuenta no tiene un rol asignado.');
             $this->redirigir('/ingresar');

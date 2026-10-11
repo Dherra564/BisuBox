@@ -19,14 +19,12 @@ use Configuracion\Configuracion;
 use DateTime;
 use Throwable;
 
-// Registro público de vendedores y clientes
 class RegistroControlador
 {
     private UsuarioRepositorio $usuarioRepositorio;
 
     public function __construct()
     {
-        // Quien ya inició sesión no necesita registrarse
         if (UsuarioActual::haySesion()) {
             $this->redirigir('/');
         }
@@ -150,7 +148,6 @@ class RegistroControlador
         $this->redirigir('/');
     }
 
-    // Nombre, correo y teléfono: los piden los dos registros
     private function leerDatosPersonales(): array
     {
         return [

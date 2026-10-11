@@ -1,10 +1,9 @@
 <?php
 /**
- * Lista de contactos de la tienda: la usan el registro de vendedor y Mi tienda.
- * @var array $contactos  cada uno ['tipo' => ..., 'valor' => ...]
+ * @var array $contactos
  * @var array $errores
- * @var array|null $contactosOriginales  los guardados; si viene, "Cancelar" de Mi tienda vuelve a ellos
- * @var bool|null $contactosSoloLectura  true en Mi tienda mientras no se presiona Editar
+ * @var array|null $contactosOriginales
+ * @var bool|null $contactosSoloLectura
  */
 
 use Aplicacion\Nucleo\TipoContacto;
@@ -49,12 +48,13 @@ $filaContacto = function (string $tipoElegido, string $valor, ?string $error, bo
     <?php endif; ?>
 
     <div class="listaContactos" data-contactos data-maximo="<?= TipoContacto::MAXIMO_POR_TIENDA ?>"
-         <?= isset($contactosOriginales) ? 'data-restaurar-desde="contactosOriginales"' : '' ?>>
+        <?= isset($contactosOriginales) ? 'data-restaurar-desde="contactosOriginales"' : '' ?>>
         <?php foreach ($contactos as $indice => $contacto): ?>
             <?= $filaContacto($contacto['tipo'], $contacto['valor'], $errores['contacto' . $indice] ?? null, $contactosSoloLectura) ?>
         <?php endforeach; ?>
     </div>
-    <p class="textoAyuda contactosVacio" data-contactos-vacio <?= $contactos !== [] ? 'hidden' : '' ?>>Todavía no hay contactos.</p>
+    <p class="textoAyuda contactosVacio" data-contactos-vacio <?= $contactos !== [] ? 'hidden' : '' ?>>Todavía no hay
+        contactos.</p>
 
     <template data-contacto-plantilla>
         <?= $filaContacto(TipoContacto::WHATSAPP, '', null) ?>
@@ -69,7 +69,7 @@ $filaContacto = function (string $tipoElegido, string $valor, ?string $error, bo
 
     <div class="contactosPie">
         <button type="button" class="boton botonSecundario botonPequeno" data-contacto-agregar data-solo-edicion
-                <?= $contactosSoloLectura ? 'hidden' : '' ?>>Agregar contacto</button>
+            <?= $contactosSoloLectura ? 'hidden' : '' ?>>Agregar contacto</button>
         <span class="textoAyuda" data-contacto-cuenta>
             <?= count($contactos) ?> de <?= TipoContacto::MAXIMO_POR_TIENDA ?> contactos
         </span>

@@ -2,7 +2,6 @@
 
 namespace Aplicacion\Modelos;
 
-// Un contacto de la tienda: un WhatsApp, una red social u otro enlace
 class VendedorContacto
 {
     private ?int $idContacto;

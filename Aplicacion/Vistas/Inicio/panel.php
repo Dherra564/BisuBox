@@ -13,11 +13,21 @@ require __DIR__ . '/../Plantilla/encabezado.php';
 $accesos = [
     [
         'texto' => 'Mi perfil',
-        ['texto' => 'Mi tienda', 'permiso' => 'tienda.gestionar', 'ruta' => '/tienda',
-        'descripcion' => 'Cambie el nombre, el logo y los contactos de su tienda.'],
         'permiso' => 'perfil.ver',
         'ruta' => '/perfil',
         'descripcion' => 'Edite sus datos y cambie su contraseña.'
+    ],
+    [
+        'texto' => 'Mi tienda',
+        'permiso' => 'tienda.gestionar',
+        'ruta' => '/tienda',
+        'descripcion' => 'Cambie el nombre, el logo y los contactos de su tienda.'
+    ],
+    [
+        'texto' => 'Inventario',
+        'permiso' => 'inventario.gestionar',
+        'ruta' => '/inventario',
+        'descripcion' => 'Vea qué componentes tiene, cuánto le queda de cada uno y cuánto vale su inventario.'
     ],
     [
         'texto' => 'Historial de sesiones',

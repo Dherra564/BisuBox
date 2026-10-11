@@ -33,7 +33,6 @@ class VendedorContactoRepositorio
         ), $consulta->fetchAll());
     }
 
-    // true si otra tienda ya tiene este número de WhatsApp. Recibe el número limpio: 8 dígitos.
     public function existeWhatsApp(string $numero, ?int $excluirIdVendedor = null): bool
     {
         $consulta = $this->conexion->prepare(
@@ -45,7 +44,6 @@ class VendedorContactoRepositorio
         return (int) $consulta->fetchColumn() > 0;
     }
 
-    // Borra los contactos que tenía la tienda y guarda la lista nueva, en el orden recibido
     /** @param VendedorContacto[] $contactos */
     public function reemplazar(int $idVendedor, array $contactos): void
     {

@@ -2,7 +2,6 @@
 
 namespace Aplicacion\Nucleo;
 
-// Tipos de contacto de una tienda y cómo se valida cada uno
 class TipoContacto
 {
     public const WHATSAPP = 'WhatsApp';

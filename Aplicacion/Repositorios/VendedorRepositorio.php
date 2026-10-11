@@ -34,7 +34,6 @@ class VendedorRepositorio
         return $fila ? $this->crearDesdeFila($fila) : null;
     }
 
-    // Para la tienda pública: el enlace llega como "tienda-de-prueba"
     public function buscarPorEnlace(string $enlace): ?Vendedor
     {
         $consulta = $this->conexion->prepare(
@@ -58,7 +57,6 @@ class VendedorRepositorio
         return (int) $consulta->fetchColumn() > 0;
     }
 
-    // Guarda el usuario, la tienda y sus contactos en una sola transacción
     public function insertar(Vendedor $vendedor): int
     {
         $transaccionPropia = BaseDatos::iniciarTransaccion();
@@ -99,7 +97,6 @@ class VendedorRepositorio
         return $idVendedor;
     }
 
-    // Solo los datos de la tienda y sus contactos; los datos personales se guardan desde Mi perfil
     public function actualizarTienda(Vendedor $vendedor): void
     {
         $transaccionPropia = BaseDatos::iniciarTransaccion();
@@ -137,8 +134,6 @@ class VendedorRepositorio
         return mb_strtolower(trim($enlace), 'UTF-8');
     }
 
-    
-    // El vendedor no escribe el enlace: se arma con el nombre de la tienda y, si ya existe, se le agrega un número
     public function generarEnlace(string $nombreTienda): string
     {
         $base = self::convertirEnEnlace($nombreTienda);

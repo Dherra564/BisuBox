@@ -1,8 +1,7 @@
 <?php
 /**
- * Plantilla de las páginas sin sesión: inicio de sesión y registro.
  * @var string $titulo
- * @var string|null $claseTarjeta  'tarjetaRegistro' para los formularios largos
+ * @var string|null $claseTarjeta
  */
 
 use Configuracion\Configuracion;

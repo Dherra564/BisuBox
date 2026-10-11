@@ -26,7 +26,11 @@ document.addEventListener('DOMContentLoaded', function () {
         nombreTienda: {
             patron: /^[\p{L}0-9][\p{L}0-9 .&'-]*$/u,
             mensaje: 'El nombre solo puede tener letras, números, espacios y los signos . & \' -'
-            }
+        },
+        cantidad: {
+            patron: /^[0-9]{1,10}([.,][0-9]{1,2})?$/,
+            mensaje: 'Escriba un número, por ejemplo 12 o 12,50'
+        }
     };
     
     function limpiarTelefono(valor) {
@@ -266,6 +270,14 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         formulario.setAttribute('data-enviando', 'si');
+        var boton = evento.submitter;
+        if (boton && boton.name) {
+            var copia = document.createElement('input');
+            copia.type = 'hidden';
+            copia.name = boton.name;
+            copia.value = boton.value;
+            formulario.appendChild(copia);
+        }
         formulario.querySelectorAll('button[type="submit"]').forEach(function (boton) {
             boton.disabled = true;
         });

@@ -1007,6 +1007,691 @@ h1, h2, h3 {
     opacity: 1;
 }
 
+/* ---------- Tipos de componente ---------- */
+.iconoClase {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 22px;
+    padding: 0 5px;
+    border-radius: 6px;
+    background: var(--colorVerdeClaro);
+    color: var(--colorTitulo);
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.iconoClaseTexto::before {
+    content: "Aa";
+}
+
+.iconoClaseNumero::before {
+    content: "123";
+}
+
+.iconoClaseLista::before {
+    content: "☰";
+    font-size: 0.85rem;
+}
+
+.iconoClaseSiNo::before {
+    content: "✓";
+    font-size: 0.85rem;
+}
+
+.listaChips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.chipDato {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px 3px 3px;
+    border: 1px solid var(--colorBorde);
+    border-radius: 999px;
+    background: var(--colorSuperficie);
+    font-size: 0.85rem;
+}
+
+.chipDato .iconoClase {
+    border-radius: 999px;
+}
+
+.chipUnidad {
+    color: var(--colorTextoSuave);
+}
+
+.tarjetasTipo {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.tarjetaTipo {
+    display: flex;
+    flex-direction: column;
+}
+
+.tarjetaTipo .tarjetaAccion {
+    margin-top: auto;
+    padding-top: 16px;
+}
+
+.tarjetaTipoEncabezado {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.tarjetaTipoEncabezado h2 {
+    margin: 0 0 4px;
+}
+
+.tarjetaInactiva {
+    background: var(--colorFondo);
+}
+
+.tarjetaInactiva h2,
+.tarjetaInactiva .listaChips {
+    opacity: 0.7;
+}
+
+.bienvenidaTipos .subtitulo {
+    max-width: 680px;
+    margin-bottom: 16px;
+}
+
+.tarjetasSugeridas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 12px;
+    margin: 16px 0 6px;
+}
+
+.tarjetaSugerida {
+    position: relative;
+    display: block;
+    padding: 16px 18px;
+    border: 2px solid var(--colorBorde);
+    border-radius: var(--radio);
+    background: var(--colorSuperficie);
+    cursor: pointer;
+}
+
+.tarjetaSugerida:has(input:checked) {
+    border-color: var(--colorTitulo);
+    background: var(--colorVerdeClaro);
+}
+
+.tarjetaSugerida:has(input:focus-visible) {
+    outline: 2px solid var(--colorFoco);
+    outline-offset: 2px;
+}
+
+.tarjetaSugerida input {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 20px;
+    height: 20px;
+    accent-color: var(--colorTitulo);
+}
+
+.tarjetaSugeridaNombre {
+    display: block;
+    padding-right: 30px;
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.disenoTipo {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(260px, 2fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.vistaPrevia {
+    position: sticky;
+    top: 16px;
+    padding: 20px 22px;
+    border: 2px dashed var(--colorBordeFoto);
+    border-radius: var(--radio);
+    background: var(--colorFondo);
+}
+
+.vistaPrevia h2 {
+    margin: 0 0 14px;
+    font-size: 1.05rem;
+}
+
+.vistaPreviaGrupo {
+    margin: 0 0 10px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--colorBorde);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--colorTextoSuave);
+}
+
+.vistaPreviaFormulario .campo input,
+.vistaPreviaFormulario .campo select {
+    background: var(--colorSuperficie);
+}
+
+.vistaPreviaFormulario > .campo:first-of-type,
+.vistaPreviaFormulario > .filaCampos {
+    opacity: 0.6;
+}
+
+.campoConUnidad {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.campoConUnidad input {
+    flex: 1;
+    min-width: 0;
+}
+
+.unidadCampo {
+    color: var(--colorTextoSuave);
+    font-weight: 600;
+}
+
+.listaDatosTipo {
+    display: grid;
+    gap: 12px;
+    margin: 14px 0;
+}
+
+.listaDatosTipo:empty {
+    margin: 0;
+}
+
+.filaDato {
+    padding: 14px 16px 2px;
+    border: 1px solid var(--colorBorde);
+    border-left: 4px solid var(--colorBordeFoto);
+    border-radius: var(--radioCampo);
+    background: var(--colorSuperficie);
+}
+
+[data-datos-ocultos] .filaDato {
+    border-left-color: var(--colorBorde);
+    background: var(--colorFondo);
+}
+
+[data-datos-ocultos] .filaDato input:disabled {
+    background: var(--colorVerdeClaro);
+    color: var(--colorTextoSuave);
+}
+
+[data-datos-ocultos] .filaOpcion {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+[data-datos-ocultos] .filaOpcion .botonQuitar {
+    display: none;
+}
+
+.filaDatoEncabezado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.filaDatoTitulo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.filaDatoBotones {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.botonIcono {
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--colorBordeCampo);
+    border-radius: var(--radioCampo);
+    background: var(--colorSuperficie);
+    color: var(--colorTitulo);
+    font: inherit;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.botonIcono:hover:not(:disabled) {
+    background: var(--colorVerdeClaro);
+}
+
+.botonIcono:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.etiquetaCampo {
+    margin: 0 0 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.listaOpciones {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.listaOpciones:empty {
+    display: none;
+}
+
+.filaOpcion {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    gap: 8px;
+    align-items: center;
+}
+
+.estadoVacioPequeno {
+    margin: 14px 0;
+    padding: 18px 16px;
+}
+
+/* ---------- Inventario ---------- */
+.enlaceVolver {
+    display: inline-block;
+    margin-bottom: 6px;
+    color: var(--colorTitulo);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.enlaceVolver:hover {
+    text-decoration: underline;
+}
+
+.soloLectores {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.pasosInventario {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.pasoInventario {
+    display: flex;
+    gap: 16px;
+    padding: 22px;
+    border: 1px solid var(--colorBorde);
+    border-radius: var(--radio);
+    background: var(--colorSuperficie);
+}
+
+.pasoInventario h2 {
+    margin: 4px 0 0;
+    font-size: 1.1rem;
+}
+
+.pasoInventario .boton {
+    margin-top: 16px;
+}
+
+.pasoNumero {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--colorVerdeClaro);
+    color: var(--colorTitulo);
+    font-family: var(--fuenteTitulos);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.pasoActual {
+    border: 2px solid var(--colorTitulo);
+}
+
+.pasoActual .pasoNumero {
+    background: var(--colorTitulo);
+    color: var(--colorTextoClaro);
+}
+
+.pasoListo .pasoNumero {
+    background: var(--colorExitoFondo);
+    color: var(--colorExito);
+}
+
+.pasoPendiente {
+    background: var(--colorFondo);
+    opacity: 0.75;
+}
+
+.cajaPaso {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 14px 20px;
+    border: 2px solid var(--colorTitulo);
+    border-radius: var(--radio);
+    background: var(--colorSuperficie);
+}
+
+.cajaPaso p {
+    margin: 0;
+}
+
+.resumenInventario {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.tarjetaResumen {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 16px 18px;
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.tarjetaResumen:hover {
+    border-color: var(--colorBordeFoto);
+    box-shadow: 0 2px 10px rgba(38, 64, 54, 0.08);
+}
+
+.tarjetaResumen:focus-visible {
+    outline: 2px solid var(--colorFoco);
+    outline-offset: 2px;
+}
+
+.tarjetaResumen .tarjetaNumero {
+    font-size: 1.9rem;
+    overflow-wrap: anywhere;
+}
+
+.tarjetaResumen .textoAyuda {
+    margin: 0;
+}
+
+.tarjetaResumenTitulo {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--colorTextoSuave);
+}
+
+.tarjetaElegida {
+    box-shadow: inset 0 0 0 2px currentColor;
+}
+
+.tarjetaAdvertencia.tarjetaElegida {
+    box-shadow: inset 0 0 0 2px var(--colorAdvertenciaBorde);
+    background: var(--colorAdvertenciaFondo);
+}
+
+.tarjetaError.tarjetaElegida {
+    box-shadow: inset 0 0 0 2px var(--colorErrorBorde);
+    background: var(--colorErrorFondo);
+}
+
+.filtrosInventario .campo:first-child {
+    flex: 1 1 220px;
+}
+
+.filtrosInventario .campo {
+    flex: 0 1 170px;
+}
+
+.filtrosDatos {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0 14px;
+    flex-basis: 100%;
+    margin-bottom: 4px;
+    padding: 12px 14px 0;
+    border-radius: var(--radioCampo);
+    background: var(--colorVerdeClaro);
+}
+
+.filtrosDatosTitulo {
+    flex-basis: 100%;
+    margin: 0 0 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--colorTitulo);
+}
+
+.filtrosDatos .campo {
+    flex: 0 1 170px;
+}
+
+.barraResultados {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-bottom: 10px;
+}
+
+.resultadoFiltros {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--colorTextoSuave);
+}
+
+.campoOrden {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.campoOrden label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.campoOrden select {
+    width: auto;
+    padding: 8px 10px;
+    border: 1px solid var(--colorBordeCampo);
+    border-radius: var(--radioCampo);
+    background: var(--colorSuperficie);
+    font: inherit;
+    font-size: 0.9rem;
+    color: var(--colorTexto);
+}
+
+.tablaInventario td {
+    vertical-align: middle;
+}
+
+.celdaComponente .etiqueta {
+    margin-left: 6px;
+}
+
+.nombreComponente {
+    font-weight: 700;
+}
+
+.detalleComponente {
+    display: block;
+    margin-top: 3px;
+    font-size: 0.85rem;
+    color: var(--colorTextoSuave);
+}
+
+.celdaExistencia {
+    white-space: nowrap;
+}
+
+.cantidadExistencia {
+    display: block;
+    font-weight: 600;
+}
+
+.celdaExistencia .etiqueta {
+    margin-top: 4px;
+}
+
+.celdaExistencia .textoAyuda {
+    display: block;
+    margin-top: 4px;
+}
+
+.filaInactiva td {
+    background: var(--colorFondo);
+    color: var(--colorTextoSuave);
+}
+
+.tablaInventario .acciones {
+    text-align: right;
+}
+
+.tablaInventario .acciones .boton {
+    margin-right: 6px;
+}
+
+.tarjetasEleccion {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+    margin: 20px 0 16px;
+}
+
+.tarjetaEleccion {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 18px 20px;
+    border: 2px solid var(--colorBorde);
+    border-radius: var(--radio);
+    background: var(--colorSuperficie);
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.tarjetaEleccion:hover,
+.tarjetaEleccion:focus-visible {
+    border-color: var(--colorTitulo);
+    background: var(--colorVerdeClaro);
+    outline: none;
+}
+
+.tarjetaEleccionNombre {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.tarjetaEleccionAccion {
+    margin-top: auto;
+    padding-top: 10px;
+    font-weight: 700;
+    color: var(--colorTitulo);
+}
+
+.tipoElegido {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.tipoElegido span {
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--colorVerdeClaro);
+    color: var(--colorTitulo);
+}
+
+.tipoElegido a {
+    color: var(--colorTitulo);
+    font-weight: 600;
+}
+
+.campoConMoneda .unidadCampo {
+    font-size: 1.05rem;
+}
+
+.datosDelTipo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0 14px;
+    align-items: start;
+}
+
+.datosDelTipo .campoCasilla {
+    align-self: center;
+}
+
+.resumenComponente {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 32px;
+    padding: 14px 18px;
+    border-radius: var(--radioCampo);
+    background: var(--colorFondo);
+}
+
+.resumenComponente > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.resumenComponente .textoAyuda {
+    margin: 0;
+}
+
+.resumenComponente .etiqueta {
+    align-self: flex-start;
+}
+
+.resumenComponenteNota {
+    flex-basis: 100%;
+}
+
 /* ---------- Celular ---------- */
 @media (max-width: 768px) {
     .menuLateral {
@@ -1147,5 +1832,113 @@ h1, h2, h3 {
 
     .formularioEditable:not(.editando) .filaContacto {
         grid-template-columns: minmax(0, 1fr);
+    }
+
+        .disenoTipo {
+        grid-template-columns: 1fr;
+    }
+
+    .vistaPrevia {
+        position: static;
+    }
+
+    .filaDatoEncabezado {
+        flex-wrap: wrap;
+    }
+
+        .resumenInventario {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .tarjetaResumen .tarjetaNumero {
+        font-size: 1.5rem;
+    }
+
+    .filtrosInventario .campo,
+    .filtrosDatos .campo {
+        flex: 1 1 calc(50% - 7px);
+        min-width: 0;
+    }
+
+    .filtrosInventario .campo:first-child {
+        flex-basis: 100%;
+    }
+
+    .filtrosInventario .filtrosBotones {
+        flex: 1 1 calc(50% - 7px);
+        align-self: flex-end;
+    }
+
+    .filtrosInventario .filtrosBotones .boton {
+        flex: 1;
+    }
+
+    .campoOrden {
+        width: 100%;
+    }
+
+    .campoOrden select {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .tablaInventario td.celdaComponente {
+        display: block;
+        text-align: left;
+    }
+
+    .tablaInventario td.celdaComponente::before {
+        display: none;
+    }
+
+    .nombreComponente {
+        font-size: 1.05rem;
+    }
+
+    .tablaInventario td.celdaExistencia {
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 4px 8px;
+        white-space: normal;
+    }
+
+    .tablaInventario td.celdaExistencia::before {
+        margin-right: auto;
+    }
+
+    .celdaExistencia .etiqueta,
+    .celdaExistencia .textoAyuda {
+        display: inline-block;
+        margin: 0;
+    }
+
+    .cantidadExistencia {
+        display: inline;
+        white-space: nowrap;
+    }
+
+    .tablaInventario td.acciones {
+        align-items: center;
+        justify-content: flex-end;
+        gap: 14px;
+        padding-top: 10px;
+    }
+
+    .tablaInventario .acciones .boton,
+    .tablaInventario .acciones .botonEnlace {
+        margin: 0;
+    }
+
+    .tablaInventario td.acciones::before {
+        display: none;
+    }
+
+    .encabezadoPagina .grupoBotones {
+        width: 100%;
+    }
+
+    .encabezadoPagina .grupoBotones .boton {
+        flex: 1;
     }
 }

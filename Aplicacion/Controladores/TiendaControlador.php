@@ -14,7 +14,6 @@ use Aplicacion\Repositorios\VendedorRepositorio;
 use Configuracion\Configuracion;
 use Throwable;
 
-// Mi tienda: el vendedor edita los datos de su tienda y sus contactos
 class TiendaControlador
 {
     private VendedorRepositorio $vendedorRepositorio;
@@ -67,7 +66,6 @@ class TiendaControlador
         $this->vendedor->setTiendaDescripcion($datos['tiendaDescripcion']);
         $this->vendedor->setTiendaActiva($datos['tiendaActiva']);
         $this->vendedor->setContactos(DatosTienda::crearContactos($datos['contactos']));
-        // Un logo nuevo reemplaza al anterior; "Quitar logo" solo cuenta si no se subió otro
         if ($nombreLogo !== null) {
             $this->vendedor->setTiendaLogo($nombreLogo);
         } elseif ($quitarLogo) {

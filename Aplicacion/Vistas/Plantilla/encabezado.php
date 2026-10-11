@@ -10,18 +10,21 @@ $urlBase = rtrim((string) Configuracion::obtener('appUrl', ''), '/');
 $titulo = $titulo ?? 'BisuBox';
 $paginaActual = $paginaActual ?? '';
 $botonAccion = $botonAccion ?? null;
+$botonesAccion = $botonesAccion ?? ($botonAccion !== null ? [$botonAccion] : []);
+$volverA = $volverA ?? null;
 $mensajes = $mensajes ?? [];
 
 $opcionesMenu = [
     'inicio' => ['texto' => 'Inicio', 'ruta' => '/', 'permiso' => 'panel.ver'],
     'perfil' => ['texto' => 'Mi perfil', 'ruta' => '/perfil', 'permiso' => 'perfil.ver'],
     'tienda' => ['texto' => 'Mi tienda', 'ruta' => '/tienda', 'permiso' => 'tienda.gestionar'],
+    'inventario' => ['texto' => 'Inventario', 'ruta' => '/inventario', 'permiso' => 'inventario.gestionar'],
     'sesiones' => ['texto' => 'Historial de sesiones', 'ruta' => '/sesiones', 'permiso' => 'sesiones.ver'],
 ];
 $opcionesMenu = array_filter($opcionesMenu, fn(array $opcion): bool => Permiso::puede($opcion['permiso']));
 
 $proximasFases = UsuarioActual::esVendedor()
-    ? ['Inventario', 'Proveedores', 'Compras', 'Productos', 'Producción', 'Pedidos']
+    ? ['Proveedores', 'Compras', 'Productos', 'Producción', 'Pedidos']
     : ['Tiendas', 'Carrito', 'Mis pedidos'];
 ?>
 <!DOCTYPE html>
@@ -83,11 +86,18 @@ $proximasFases = UsuarioActual::esVendedor()
             </header>
 
             <main class="contenido">
+                <?php if ($volverA !== null): ?>
+                    <a href="<?= $urlBase . $volverA['ruta'] ?>" class="enlaceVolver">← <?= htmlspecialchars($volverA['texto']) ?></a>
+                <?php endif; ?>
                 <div class="encabezadoPagina">
                     <h1 class="tituloPagina"><?= htmlspecialchars($titulo) ?></h1>
-                    <?php if ($botonAccion !== null): ?>
-                        <a href="<?= $urlBase . $botonAccion['ruta'] ?>"
-                            class="boton"><?= htmlspecialchars($botonAccion['texto']) ?></a>
+                    <?php if ($botonesAccion !== []): ?>
+                        <div class="grupoBotones">
+                            <?php foreach ($botonesAccion as $boton): ?>
+                                <a href="<?= $urlBase . $boton['ruta'] ?>"
+                                    class="boton <?= !empty($boton['secundario']) ? 'botonSecundario' : '' ?>"><?= htmlspecialchars($boton['texto']) ?></a>
+                            <?php endforeach; ?>
+                        </div>
                     <?php endif; ?>
                 </div>
                 <?php require __DIR__ . '/mensajes.php'; ?>

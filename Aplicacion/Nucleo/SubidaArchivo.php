@@ -5,7 +5,6 @@ namespace Aplicacion\Nucleo;
 use Configuracion\Configuracion;
 use finfo;
 
-// Guarda las imágenes subidas: fotos de perfil y logos de tienda
 class SubidaArchivo
 {
     public const TAMANO_MAXIMO = 5 * 1024 * 1024;
@@ -60,7 +59,6 @@ class SubidaArchivo
         return self::ruta($nombre, self::CARPETA_LOGOS);
     }
 
-    // $queEs: "La foto" o "El logo", para que los mensajes digan de qué imagen se habla
     private function guardarImagen(array $archivo, string $carpetaRelativa, string $queEs): ?string
     {
         $this->error = '';
@@ -123,7 +121,6 @@ class SubidaArchivo
         }
     }
 
-    // Solo acepta nombres generados por esta clase, así nadie puede pedir otro archivo del servidor
     private static function ruta(string $nombre, string $carpetaRelativa): ?string
     {
         if (!preg_match('/^[a-f0-9]{32}\.(jpg|png)$/', $nombre)) {
