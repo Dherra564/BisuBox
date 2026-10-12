@@ -125,6 +125,7 @@ class DatosCompraProveedor
             self::validarCantidad($validador, $campo . 'cantidad', $linea['cantidad'], $unidad, $linea['medida']);
             self::validarTotal($validador, $campo . 'total', $linea['total']);
 
+            $cantidad = self::cantidadEnUnidad($linea, $unidad);
             if (
                 $cantidad !== null && $validador->error($campo . 'cantidad') === null
                 && isset($componentes[(int) $linea['componente']])
