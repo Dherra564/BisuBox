@@ -150,7 +150,6 @@ class ProveedorControlador
         $this->redirigir('/proveedores/detalle?id=' . $proveedor->getIdProveedor());
     }
 
-    // Se activa o desactiva desde la lista; nunca se borra
     public function cambiarEstado(): void
     {
         $this->verificarCsrf('/proveedores');
@@ -201,7 +200,6 @@ class ProveedorControlador
         ];
     }
 
-    // Formato de cada campo y que no se repitan nombre, teléfono ni correo entre los proveedores del vendedor
     private function validarDatos(array $datos, ?int $idProveedor): Validador
     {
         $validador = new Validador();
@@ -214,7 +212,7 @@ class ProveedorControlador
             ->telefono('telefono', $datos['telefono']);
 
         $validador->requerido('correo', $datos['correo'], 'Ingrese el correo')
-            ->correoGeneral('correo', $datos['correo']);
+            ->correo('correo', $datos['correo']);
 
         if (
             $validador->error('nombre') === null

@@ -67,10 +67,10 @@ $rutaCancelar = $esNuevo ? '/proveedores' : '/proveedores/detalle?id=' . (int) $
                 <p class="textoAyuda">8 dígitos, por ejemplo 88451290</p>
                 <?= $mensajeError('telefono') ?>
             </div>
-            <div class="<?= $claseCampo('correo') ?>">
+             <div class="<?= $claseCampo('correo') ?>">
                 <label for="correo">Correo <span class="obligatorio">*</span></label>
                 <input type="email" id="correo" name="correo" maxlength="150" required autocomplete="off"
-                       data-regla="correoGeneral" data-mensaje-requerido="Ingrese el correo"
+                       data-regla="correo" data-mensaje-requerido="Ingrese el correo"
                        value="<?= $valor('correo') ?>">
                 <p class="textoAyuda">Por ejemplo ventas@proveedor.com</p>
                 <?= $mensajeError('correo') ?>

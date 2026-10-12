@@ -10,8 +10,14 @@ document.addEventListener('DOMContentLoaded', function () {
             mensaje: 'Solo se permiten letras y espacios'
         },
         correo: {
-            patron: /^[a-z0-9](\.?[a-z0-9])*@gmail\.com$/i,
-            mensaje: 'Ingrese un correo de Gmail válido, por ejemplo nombre@gmail.com'
+            prueba: function (valor) {
+                var partes = valor.split('@');
+                return partes.length === 2
+                    && partes[0].length <= 64
+                    && valor.length <= 150
+                    && /^[a-z0-9_%+-]+(\.[a-z0-9_%+-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,24}$/i.test(valor);
+            },
+            mensaje: 'Revise el correo: debe ser como nombre@gmail.com, sin espacios ni puntos seguidos'
         },
         contrasena: {
             patron: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)\S{8,20}$/,
@@ -34,10 +40,6 @@ document.addEventListener('DOMContentLoaded', function () {
         nombreComercial: {
             patron: /^[\p{L}0-9][\p{L}0-9 .,&'-]*$/u,
             mensaje: 'El nombre solo puede tener letras, números, espacios y los signos . , & \' -'
-        },
-        correoGeneral: {
-            patron: /^[a-z0-9._%+-]+@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/i,
-            mensaje: 'Ingrese un correo válido, por ejemplo ventas@proveedor.com'
         }
     };
 
