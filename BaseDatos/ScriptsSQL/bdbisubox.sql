@@ -23,6 +23,8 @@ USE `bdbisubox`;
 
 --
 -- Estructura de tabla para la tabla `tbusuario`
+-- Datos comunes de vendedores y clientes; el rol es Vendedor o Cliente
+-- La identificación solo la tienen los vendedores (en clientes queda vacía)
 --
 
 CREATE TABLE `tbusuario` (
@@ -43,6 +45,7 @@ CREATE TABLE `tbusuario` (
 
 --
 -- Estructura de tabla para la tabla `tbvendedor`
+-- Los datos de la tienda de cada vendedor
 --
 
 CREATE TABLE `tbvendedor` (
@@ -59,6 +62,7 @@ CREATE TABLE `tbvendedor` (
 
 --
 -- Estructura de tabla para la tabla `tbvendedorcontacto`
+-- Contactos de la tienda, uno por fila: WhatsApp, Instagram, TikTok, Facebook u Otro
 --
 
 CREATE TABLE `tbvendedorcontacto` (
@@ -72,6 +76,7 @@ CREATE TABLE `tbvendedorcontacto` (
 
 --
 -- Estructura de tabla para la tabla `tbcliente`
+-- Identifica al cliente; la ubicación de entrega se pide en cada pedido
 --
 
 CREATE TABLE `tbcliente` (
@@ -83,6 +88,7 @@ CREATE TABLE `tbcliente` (
 
 --
 -- Estructura de tabla para la tabla `tbsesion`
+-- tbsesionusuariotipo guarda el rol que tenía el usuario al iniciar sesión
 --
 
 CREATE TABLE `tbsesion` (
@@ -186,8 +192,6 @@ CREATE TABLE `tbcomponentevalor` (
 CREATE TABLE `tbproveedor` (
     `tbproveedorid` int(11) NOT NULL,
     `tbproveedorvendedorid` int(11) DEFAULT NULL,
-    `tbproveedoridentificaciontipo` varchar(20) DEFAULT NULL,
-    `tbproveedoridentificacionnumero` varchar(20) DEFAULT NULL,
     `tbproveedornombre` varchar(50) DEFAULT NULL,
     `tbproveedortelefono` varchar(8) DEFAULT NULL,
     `tbproveedorcorreo` varchar(150) DEFAULT NULL,
@@ -265,11 +269,11 @@ INSERT INTO `tbcliente` (`tbclienteid`, `tbclienteusuarioid`) VALUES
 (1, 2);
 
 INSERT INTO `tbproveedor` (
-    `tbproveedorid`, `tbproveedorvendedorid`, `tbproveedoridentificaciontipo`, `tbproveedoridentificacionnumero`,
-    `tbproveedornombre`, `tbproveedortelefono`, `tbproveedorcorreo`, `tbproveedorregistrofecha`, `tbproveedoractivo`
+    `tbproveedorid`, `tbproveedorvendedorid`, `tbproveedornombre`, `tbproveedortelefono`, `tbproveedorcorreo`,
+    `tbproveedorregistrofecha`, `tbproveedoractivo`
 ) VALUES
-(1, 1, 'CedulaJuridica', '3101123456', 'Perlas del Valle S.A.', '22345678', 'ventas@perlasdelvalle.com', '2026-10-01 00:00:00', 1),
-(2, 1, 'Cedula', '112340567', 'Ana Rojas Mora', '87654321', 'anarojas@gmail.com', '2026-10-01 00:00:00', 1);
+(1, 1, 'Perlas del Valle S.A.', '22345678', 'ventas@perlasdelvalle.com', '2026-10-01 00:00:00', 1),
+(2, 1, 'Ana Rojas Mora', '87654321', 'anarojas@gmail.com', '2026-10-01 00:00:00', 1);
 
 -- --------------------------------------------------------
 

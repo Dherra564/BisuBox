@@ -3,12 +3,10 @@
 namespace Aplicacion\Repositorios;
 
 use Aplicacion\Modelos\Proveedor;
-use Aplicacion\Nucleo\TipoIdentificacion;
 use Configuracion\BaseDatos;
 use DateTime;
 use PDO;
 use Throwable;
-
 
 class ProveedorRepositorio
 {
@@ -48,7 +46,6 @@ class ProveedorRepositorio
         return array_map(fn(array $fila): Proveedor => $this->crearDesdeFila($fila), $consulta->fetchAll());
     }
 
-    // Todos los proveedores del vendedor por nombre, sin páginas; para escogerlos en las compras
     /** @return Proveedor[] */
     public function listarTodos(int $idVendedor, bool $soloActivos = false): array
     {
@@ -70,12 +67,6 @@ class ProveedorRepositorio
         $consulta->execute($valores);
 
         return (int) $consulta->fetchColumn();
-    }
-
-
-    public function existeIdentificacion(int $idVendedor, string $numero, ?int $excluirIdProveedor = null): bool
-    {
-        return $this->existe($idVendedor, 'tbproveedoridentificacionnumero', $numero, $excluirIdProveedor);
     }
 
     public function existeNombre(int $idVendedor, string $nombre, ?int $excluirIdProveedor = null): bool
@@ -101,16 +92,13 @@ class ProveedorRepositorio
             $idProveedor = BaseDatos::generarId('tbproveedor', 'tbproveedorid');
 
             $consulta = $this->conexion->prepare(
-                'INSERT INTO tbproveedor (tbproveedorid, tbproveedorvendedorid, tbproveedoridentificaciontipo,
-                    tbproveedoridentificacionnumero, tbproveedornombre, tbproveedortelefono, tbproveedorcorreo,
-                    tbproveedorregistrofecha, tbproveedoractivo)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                'INSERT INTO tbproveedor (tbproveedorid, tbproveedorvendedorid, tbproveedornombre, tbproveedortelefono,
+                    tbproveedorcorreo, tbproveedorregistrofecha, tbproveedoractivo)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)'
             );
             $consulta->execute([
                 $idProveedor,
                 $proveedor->getIdVendedor(),
-                $proveedor->getTipoIdentificacion(),
-                $proveedor->getNumeroIdentificacion(),
                 UsuarioRepositorio::limpiarEspacios((string) $proveedor->getNombre()),
                 $proveedor->getTelefono(),
                 $proveedor->getCorreo(),
@@ -136,13 +124,10 @@ class ProveedorRepositorio
     public function actualizar(Proveedor $proveedor): void
     {
         $consulta = $this->conexion->prepare(
-            'UPDATE tbproveedor SET tbproveedoridentificaciontipo = ?, tbproveedoridentificacionnumero = ?,
-                tbproveedornombre = ?, tbproveedortelefono = ?, tbproveedorcorreo = ?
+            'UPDATE tbproveedor SET tbproveedornombre = ?, tbproveedortelefono = ?, tbproveedorcorreo = ?
              WHERE tbproveedorid = ? AND tbproveedorvendedorid = ?'
         );
         $consulta->execute([
-            $proveedor->getTipoIdentificacion(),
-            $proveedor->getNumeroIdentificacion(),
             UsuarioRepositorio::limpiarEspacios((string) $proveedor->getNombre()),
             $proveedor->getTelefono(),
             $proveedor->getCorreo(),
@@ -180,10 +165,9 @@ class ProveedorRepositorio
         $busqueda = trim($busqueda);
         if ($busqueda !== '') {
             $patron = '%' . addcslashes($busqueda, '%_\\') . '%';
-            $patronNumeros = '%' . addcslashes(TipoIdentificacion::limpiar($busqueda), '%_\\') . '%';
-            $condiciones[] = '(tbproveedornombre LIKE ? OR tbproveedorcorreo LIKE ?
-                OR tbproveedoridentificacionnumero LIKE ? OR tbproveedortelefono LIKE ?)';
-            array_push($valores, $patron, $patron, $patronNumeros, $patronNumeros);
+            $patronTelefono = '%' . addcslashes((string) preg_replace('/[\s-]+/', '', $busqueda), '%_\\') . '%';
+            $condiciones[] = '(tbproveedornombre LIKE ? OR tbproveedorcorreo LIKE ? OR tbproveedortelefono LIKE ?)';
+            array_push($valores, $patron, $patron, $patronTelefono);
         }
 
         if ($activo !== null) {
@@ -199,8 +183,6 @@ class ProveedorRepositorio
         return new Proveedor(
             (int) $fila['tbproveedorid'],
             (int) $fila['tbproveedorvendedorid'],
-            $fila['tbproveedoridentificaciontipo'],
-            $fila['tbproveedoridentificacionnumero'],
             $fila['tbproveedornombre'],
             $fila['tbproveedortelefono'],
             $fila['tbproveedorcorreo'],
