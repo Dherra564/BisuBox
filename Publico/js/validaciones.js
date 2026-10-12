@@ -41,10 +41,6 @@ document.addEventListener('DOMContentLoaded', function () {
             patron: /^[\p{L}0-9][\p{L}0-9 .,&'-]*$/u,
             mensaje: 'El nombre solo puede tener letras, números, espacios y los signos . , & \' -'
         },
-        correoGeneral: {
-            patron: /^[a-z0-9._%+-]+@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/i,
-            mensaje: 'Ingrese un correo válido, por ejemplo ventas@proveedor.com'
-        },
         minutos: {
             prueba: function (valor) {
                 return /^[0-9]{1,4}$/.test(valor) && parseInt(valor, 10) >= 1;

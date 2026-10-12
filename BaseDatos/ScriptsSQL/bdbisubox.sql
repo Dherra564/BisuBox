@@ -1,6 +1,6 @@
 -- Base de datos de BisuBox
 -- Módulo 1: usuarios (vendedores y clientes), tiendas, contactos y sesiones
--- Módulo 2: tipos de componente con sus datos, componentes (inventario), proveedores y compras a proveedores
+-- Módulo 2: tipos de componente con sus datos, componentes (inventario), procesos, proveedores y compras a proveedores
 -- Las contraseñas de los usuarios por defecto están en el README
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -108,62 +108,6 @@ CREATE TABLE `tbsesion` (
 
 -- --------------------------------------------------------
 
--- --------------------------------------------------------
-
-CREATE TABLE `tbtipocomponente` (
-    `tbtipocomponenteid` int(11) NOT NULL,
-    `tbtipocomponentevendedorid` int(11) DEFAULT NULL,
-    `tbtipocomponentenombre` varchar(60) DEFAULT NULL,
-    `tbtipocomponenteactivo` tinyint(4) DEFAULT NULL
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
-
-CREATE TABLE `tbtipocomponenteatributo` (
-    `tbtipocomponenteatributoid` int(11) NOT NULL,
-    `tbtipocomponenteatributotipocomponenteid` int(11) DEFAULT NULL,
-    `tbtipocomponenteatributonombre` varchar(60) DEFAULT NULL,
-    `tbtipocomponenteatributoclase` varchar(20) DEFAULT NULL,
-    `tbtipocomponenteatributounidad` varchar(20) DEFAULT NULL,
-    `tbtipocomponenteatributoobligatorio` tinyint(4) DEFAULT NULL,
-    `tbtipocomponenteatributoorden` int(11) DEFAULT NULL,
-    `tbtipocomponenteatributoactivo` tinyint(4) DEFAULT NULL
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
-
-CREATE TABLE `tbtipocomponenteatributoopcion` (
-    `tbtipocomponenteatributoopcionid` int(11) NOT NULL,
-    `tbtipocomponenteatributoopciontipocomponenteatributoid` int(11) DEFAULT NULL,
-    `tbtipocomponenteatributoopcionvalor` varchar(60) DEFAULT NULL,
-    `tbtipocomponenteatributoopcionactivo` tinyint(4) DEFAULT NULL
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
-
-CREATE TABLE `tbcomponente` (
-    `tbcomponenteid` int(11) NOT NULL,
-    `tbcomponentevendedorid` int(11) DEFAULT NULL,
-    `tbcomponentetipocomponenteid` int(11) DEFAULT NULL,
-    `tbcomponentenombre` varchar(100) DEFAULT NULL,
-    `tbcomponenteunidad` varchar(20) DEFAULT NULL,
-    `tbcomponenteexistencia` decimal(12, 2) DEFAULT NULL,
-    `tbcomponentecostounitario` decimal(12, 2) DEFAULT NULL,
-    `tbcomponenteexistenciaminima` decimal(12, 2) DEFAULT NULL,
-    `tbcomponenteactivo` tinyint(4) DEFAULT NULL
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
-
-CREATE TABLE `tbcomponentevalor` (
-    `tbcomponentevalorid` int(11) NOT NULL,
-    `tbcomponentevalorcomponenteid` int(11) DEFAULT NULL,
-    `tbcomponentevalortipocomponenteatributoid` int(11) DEFAULT NULL,
-    `tbcomponentevalorvalor` varchar(300) DEFAULT NULL
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
-
-CREATE TABLE `tbproceso` (
-    `tbprocesoid` int(11) NOT NULL,
-    `tbprocesovendedorid` int(11) DEFAULT NULL,
-    `tbprocesonombre` varchar(60) DEFAULT NULL,
-    `tbprocesodescripcion` varchar(200) DEFAULT NULL,
-    `tbprocesotiempoestimado` int(11) DEFAULT NULL,
-    `tbprocesocostomanoobra` decimal(12, 2) DEFAULT NULL,
-    `tbprocesoactivo` tinyint(4) DEFAULT NULL
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
-
 --
 -- Estructura de tabla para la tabla `tbtipocomponente`
 -- Tipos de componente que crea cada vendedor (Perlas, Dijes, Hilos...)
@@ -223,9 +167,9 @@ CREATE TABLE `tbcomponente` (
     `tbcomponentetipocomponenteid` int(11) DEFAULT NULL,
     `tbcomponentenombre` varchar(100) DEFAULT NULL,
     `tbcomponenteunidad` varchar(20) DEFAULT NULL,
-    `tbcomponenteexistencia` decimal(12,2) DEFAULT NULL,
-    `tbcomponentecostounitario` decimal(14,4) DEFAULT NULL,
-    `tbcomponenteexistenciaminima` decimal(12,2) DEFAULT NULL,
+    `tbcomponenteexistencia` decimal(12, 2) DEFAULT NULL,
+    `tbcomponentecostounitario` decimal(14, 4) DEFAULT NULL,
+    `tbcomponenteexistenciaminima` decimal(12, 2) DEFAULT NULL,
     `tbcomponenteactivo` tinyint(4) DEFAULT NULL
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
@@ -247,8 +191,25 @@ CREATE TABLE `tbcomponentevalor` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `tbproceso`
+-- Pasos con que el vendedor hace sus productos; el tiempo estimado va en minutos
+--
+
+CREATE TABLE `tbproceso` (
+    `tbprocesoid` int(11) NOT NULL,
+    `tbprocesovendedorid` int(11) DEFAULT NULL,
+    `tbprocesonombre` varchar(60) DEFAULT NULL,
+    `tbprocesodescripcion` varchar(200) DEFAULT NULL,
+    `tbprocesotiempoestimado` int(11) DEFAULT NULL,
+    `tbprocesocostomanoobra` decimal(12, 2) DEFAULT NULL,
+    `tbprocesoactivo` tinyint(4) DEFAULT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `tbproveedor`
--- Proveedores de cada vendedor
+-- Proveedores de cada vendedor: nombre y contacto
 --
 
 CREATE TABLE `tbproveedor` (
@@ -274,9 +235,9 @@ CREATE TABLE `tbcompraproveedor` (
     `tbcompraproveedorvendedorid` int(11) DEFAULT NULL,
     `tbcompraproveedorproveedorid` int(11) DEFAULT NULL,
     `tbcompraproveedorfecha` date DEFAULT NULL,
-    `tbcompraproveedorsubtotal` decimal(12,2) DEFAULT NULL,
-    `tbcompraproveedorcostoenvio` decimal(12,2) DEFAULT NULL,
-    `tbcompraproveedortotal` decimal(12,2) DEFAULT NULL,
+    `tbcompraproveedorsubtotal` decimal(12, 2) DEFAULT NULL,
+    `tbcompraproveedorcostoenvio` decimal(12, 2) DEFAULT NULL,
+    `tbcompraproveedortotal` decimal(12, 2) DEFAULT NULL,
     `tbcompraproveedorestado` varchar(20) DEFAULT NULL,
     `tbcompraproveedorregistrofecha` datetime DEFAULT NULL
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
@@ -293,10 +254,10 @@ CREATE TABLE `tbcompraproveedordetalle` (
     `tbcompraproveedordetalleid` int(11) NOT NULL,
     `tbcompraproveedordetallecompraproveedorid` int(11) DEFAULT NULL,
     `tbcompraproveedordetallecomponenteid` int(11) DEFAULT NULL,
-    `tbcompraproveedordetallecantidad` decimal(12,2) DEFAULT NULL,
-    `tbcompraproveedordetallecostounitario` decimal(12,2) DEFAULT NULL,
-    `tbcompraproveedordetallesubtotal` decimal(12,2) DEFAULT NULL,
-    `tbcompraproveedordetallecostofinal` decimal(14,4) DEFAULT NULL
+    `tbcompraproveedordetallecantidad` decimal(12, 2) DEFAULT NULL,
+    `tbcompraproveedordetallecostounitario` decimal(12, 2) DEFAULT NULL,
+    `tbcompraproveedordetallesubtotal` decimal(12, 2) DEFAULT NULL,
+    `tbcompraproveedordetallecostofinal` decimal(14, 4) DEFAULT NULL
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -388,12 +349,34 @@ INSERT INTO
     )
 VALUES (1, 2);
 
-INSERT INTO `tbproveedor` (
-    `tbproveedorid`, `tbproveedorvendedorid`, `tbproveedornombre`, `tbproveedortelefono`, `tbproveedorcorreo`,
-    `tbproveedorregistrofecha`, `tbproveedoractivo`
-) VALUES
-(1, 1, 'Perlas del Valle S.A.', '22345678', 'ventas@perlasdelvalle.com', '2026-10-01 00:00:00', 1),
-(2, 1, 'Ana Rojas Mora', '87654321', 'anarojas@gmail.com', '2026-10-01 00:00:00', 1);
+INSERT INTO
+    `tbproveedor` (
+        `tbproveedorid`,
+        `tbproveedorvendedorid`,
+        `tbproveedornombre`,
+        `tbproveedortelefono`,
+        `tbproveedorcorreo`,
+        `tbproveedorregistrofecha`,
+        `tbproveedoractivo`
+    )
+VALUES (
+        1,
+        1,
+        'Perlas del Valle S.A.',
+        '22345678',
+        'ventas@perlasdelvalle.com',
+        '2026-10-01 00:00:00',
+        1
+    ),
+    (
+        2,
+        1,
+        'Ana Rojas Mora',
+        '87654321',
+        'anarojas@gmail.com',
+        '2026-10-01 00:00:00',
+        1
+    );
 
 -- --------------------------------------------------------
 
@@ -412,26 +395,37 @@ ALTER TABLE `tbcliente` ADD PRIMARY KEY (`tbclienteid`);
 
 ALTER TABLE `tbsesion` ADD PRIMARY KEY (`tbsesionid`);
 
-ALTER TABLE `tbtipocomponente` ADD PRIMARY KEY (`tbtipocomponenteid`);
+ALTER TABLE `tbtipocomponente`
+ADD PRIMARY KEY (`tbtipocomponenteid`);
 
-ALTER TABLE `tbtipocomponenteatributo` ADD PRIMARY KEY (`tbtipocomponenteatributoid`);
+ALTER TABLE `tbtipocomponenteatributo`
+ADD PRIMARY KEY (`tbtipocomponenteatributoid`);
 
-ALTER TABLE `tbtipocomponenteatributoopcion` ADD PRIMARY KEY (`tbtipocomponenteatributoopcionid`);
+ALTER TABLE `tbtipocomponenteatributoopcion`
+ADD PRIMARY KEY (
+    `tbtipocomponenteatributoopcionid`
+);
 
 ALTER TABLE `tbcomponente` ADD PRIMARY KEY (`tbcomponenteid`);
 
-ALTER TABLE `tbcomponentevalor` ADD PRIMARY KEY (`tbcomponentevalorid`);
+ALTER TABLE `tbcomponentevalor`
+ADD PRIMARY KEY (`tbcomponentevalorid`);
 
 ALTER TABLE `tbproceso` ADD PRIMARY KEY (`tbprocesoid`);
 
 ALTER TABLE `tbproveedor` ADD PRIMARY KEY (`tbproveedorid`);
 
-ALTER TABLE `tbcompraproveedor` ADD PRIMARY KEY (`tbcompraproveedorid`);
+ALTER TABLE `tbcompraproveedor`
+ADD PRIMARY KEY (`tbcompraproveedorid`);
 
-ALTER TABLE `tbcompraproveedordetalle` ADD PRIMARY KEY (`tbcompraproveedordetalleid`);
+ALTER TABLE `tbcompraproveedordetalle`
+ADD PRIMARY KEY (`tbcompraproveedordetalleid`);
 
 COMMIT;
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */
+;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */
+;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */
+;

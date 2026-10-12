@@ -2,6 +2,7 @@
 
 use Aplicacion\Controladores\AutenticacionControlador;
 use Aplicacion\Controladores\ComponenteControlador;
+use Aplicacion\Controladores\CompraProveedorControlador;
 use Aplicacion\Controladores\FotoControlador;
 use Aplicacion\Controladores\InicioControlador;
 use Aplicacion\Controladores\InventarioControlador;
@@ -12,11 +13,8 @@ use Aplicacion\Controladores\RegistroControlador;
 use Aplicacion\Controladores\SesionControlador;
 use Aplicacion\Controladores\TiendaControlador;
 use Aplicacion\Controladores\TipoComponenteControlador;
-use Aplicacion\Controladores\CompraProveedorControlador;
-use Aplicacion\Controladores\ComponenteControlador;
-use Aplicacion\Controladores\InventarioControlador;
-use Aplicacion\Controladores\ProveedorControlador;
 use Aplicacion\Nucleo\Enrutador;
+
 
 return function (Enrutador $enrutador): void {
 
@@ -72,6 +70,7 @@ return function (Enrutador $enrutador): void {
     $enrutador->get('/procesos/editar', [ProcesoControlador::class, 'editar']);
     $enrutador->post('/procesos/actualizar', [ProcesoControlador::class, 'actualizar']);
     $enrutador->post('/procesos/estado', [ProcesoControlador::class, 'cambiarEstado']);
+
     $enrutador->get('/compras-proveedor', [CompraProveedorControlador::class, 'listar']);
     $enrutador->get('/compras-proveedor/nueva', [CompraProveedorControlador::class, 'nueva']);
     $enrutador->post('/compras-proveedor/nueva', [CompraProveedorControlador::class, 'registrar']);
