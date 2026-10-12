@@ -1,18 +1,18 @@
 <?php
 
 use Aplicacion\Controladores\AutenticacionControlador;
+use Aplicacion\Controladores\ComponenteControlador;
 use Aplicacion\Controladores\FotoControlador;
 use Aplicacion\Controladores\InicioControlador;
+use Aplicacion\Controladores\InventarioControlador;
 use Aplicacion\Controladores\PerfilControlador;
+use Aplicacion\Controladores\ProcesoControlador;
+use Aplicacion\Controladores\ProveedorControlador;
 use Aplicacion\Controladores\RegistroControlador;
 use Aplicacion\Controladores\SesionControlador;
 use Aplicacion\Controladores\TiendaControlador;
 use Aplicacion\Controladores\TipoComponenteControlador;
-use Aplicacion\Controladores\ComponenteControlador;
-use Aplicacion\Controladores\InventarioControlador;
-use Aplicacion\Controladores\ProveedorControlador;
 use Aplicacion\Nucleo\Enrutador;
-
 
 return function (Enrutador $enrutador): void {
 
@@ -60,6 +60,14 @@ return function (Enrutador $enrutador): void {
     $enrutador->get('/proveedores/editar', [ProveedorControlador::class, 'editar']);
     $enrutador->post('/proveedores/actualizar', [ProveedorControlador::class, 'actualizar']);
     $enrutador->post('/proveedores/estado', [ProveedorControlador::class, 'cambiarEstado']);
+
+    $enrutador->get('/procesos', [ProcesoControlador::class, 'listar']);
+    $enrutador->get('/procesos/detalle', [ProcesoControlador::class, 'detalle']);
+    $enrutador->get('/procesos/nuevo', [ProcesoControlador::class, 'nuevo']);
+    $enrutador->post('/procesos/crear', [ProcesoControlador::class, 'crear']);
+    $enrutador->get('/procesos/editar', [ProcesoControlador::class, 'editar']);
+    $enrutador->post('/procesos/actualizar', [ProcesoControlador::class, 'actualizar']);
+    $enrutador->post('/procesos/estado', [ProcesoControlador::class, 'cambiarEstado']);
 
     $enrutador->get('/sesiones', [SesionControlador::class, 'listar']);
 };

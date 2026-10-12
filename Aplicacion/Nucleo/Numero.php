@@ -33,4 +33,15 @@ class Numero
         }
         return floor($numero) == $numero ? (string) (int) $numero : str_replace('.', ',', (string) round($numero, 2));
     }
+
+        public static function duracion(int $minutos): string
+    {
+        $horas = intdiv($minutos, 60);
+        $resto = $minutos % 60;
+
+        if ($horas === 0) {
+            return $resto . ' min';
+        }
+        return $resto === 0 ? $horas . ' h' : $horas . ' h ' . $resto . ' min';
+    }
 }

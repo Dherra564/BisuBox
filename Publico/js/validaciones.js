@@ -38,7 +38,13 @@ document.addEventListener('DOMContentLoaded', function () {
         correoGeneral: {
             patron: /^[a-z0-9._%+-]+@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/i,
             mensaje: 'Ingrese un correo válido, por ejemplo ventas@proveedor.com'
-        }
+        },
+        minutos: {
+            prueba: function (valor) {
+                return /^[0-9]{1,4}$/.test(valor) && parseInt(valor, 10) >= 1;
+            },
+            mensaje: 'Escriba los minutos como número entero, por ejemplo 45'
+        },
     };
 
     // Igual que Validador::limpiarTelefono en PHP

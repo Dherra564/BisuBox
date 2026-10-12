@@ -21,6 +21,7 @@ $opcionesMenu = [
     'inventario' => ['texto' => 'Inventario', 'ruta' => '/inventario', 'permiso' => 'inventario.gestionar'],
     'proveedores' => ['texto' => 'Proveedores', 'ruta' => '/proveedores', 'permiso' => 'proveedores.gestionar'],
     'sesiones' => ['texto' => 'Historial de sesiones', 'ruta' => '/sesiones', 'permiso' => 'sesiones.ver'],
+    'procesos' => ['texto' => 'Procesos', 'ruta' => '/procesos', 'permiso' => 'procesos.gestionar'],
 ];
 $opcionesMenu = array_filter($opcionesMenu, fn(array $opcion): bool => Permiso::puede($opcion['permiso']));
 
