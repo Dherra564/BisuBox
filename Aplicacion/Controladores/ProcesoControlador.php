@@ -4,22 +4,22 @@ namespace Aplicacion\Controladores;
 
 use Aplicacion\Modelos\Proceso;
 use Aplicacion\Nucleo\Csrf;
+use Aplicacion\Nucleo\DatosProceso;
 use Aplicacion\Nucleo\Mensaje;
-use Aplicacion\Nucleo\Numero;
+use Aplicacion\Nucleo\OperacionNoPermitida;
+use Aplicacion\Nucleo\PeriodoFechas;
 use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Nucleo\Validador;
+use Aplicacion\Repositorios\ComponenteRepositorio;
 use Aplicacion\Repositorios\ProcesoRepositorio;
-use Aplicacion\Repositorios\UsuarioRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
 use Configuracion\Configuracion;
 use Throwable;
 
-
 class ProcesoControlador
 {
-    private const MENSAJE_MINUTOS = 'Escriba los minutos como número entero, por ejemplo 45';
-    private const MENSAJE_COSTO = 'Escriba un monto válido, por ejemplo 1500 o 1500,50';
+    private const ESTADOS = ['todos' => 'Todos', 'registrados' => 'Registrados', 'anulados' => 'Anulados'];
 
     private ProcesoRepositorio $procesoRepositorio;
     private int $idVendedor;
@@ -41,213 +41,129 @@ class ProcesoControlador
     public function listar(): void
     {
         $busqueda = is_string($_GET['busqueda'] ?? null) ? mb_substr(trim($_GET['busqueda']), 0, 100, 'UTF-8') : '';
-        $estado = in_array($_GET['estado'] ?? '', ['1', '0'], true) ? $_GET['estado'] : '';
-        $activo = $estado === '' ? null : $estado === '1';
+        $estado = is_string($_GET['estado'] ?? null) && isset(self::ESTADOS[$_GET['estado']]) ? $_GET['estado'] : 'todos';
+        $periodo = PeriodoFechas::leer($_GET);
 
-        $total = $this->procesoRepositorio->contar($this->idVendedor, $busqueda, $activo);
+        $filtros = ['busqueda' => $busqueda, 'estado' => $estado, 'desde' => $periodo['desde'], 'hasta' => $periodo['hasta']];
+        $total = $this->procesoRepositorio->contar($this->idVendedor, $filtros);
         $totalPaginas = max(1, (int) ceil($total / ProcesoRepositorio::POR_PAGINA));
         $pagina = min(max(1, (int) ($_GET['pagina'] ?? 1)), $totalPaginas);
 
         $this->mostrarVista('Proceso/lista', [
-            'procesos' => $this->procesoRepositorio->listar($this->idVendedor, $busqueda, $activo, $pagina),
+            'procesos' => $this->procesoRepositorio->listar($this->idVendedor, $filtros, $pagina),
+            'resumen' => $this->procesoRepositorio->resumen($this->idVendedor, $filtros),
             'busqueda' => $busqueda,
             'estado' => $estado,
+            'estados' => self::ESTADOS,
+            'periodo' => $periodo,
             'pagina' => $pagina,
             'totalPaginas' => $totalPaginas,
             'total' => $total,
             'porPagina' => ProcesoRepositorio::POR_PAGINA,
-            'hayProcesos' => $total > 0 || $this->procesoRepositorio->contar($this->idVendedor) > 0,
-        ]);
-    }
-
-    public function detalle(): void
-    {
-        $this->mostrarVista('Proceso/detalle', [
-            'proceso' => $this->cargarProceso($_GET['id'] ?? null),
+            'hayProcesos' => $this->procesoRepositorio->contarPorVendedor($this->idVendedor) > 0,
         ]);
     }
 
     public function nuevo(): void
     {
-        $this->mostrarFormulario(null, [
-            'nombre' => '',
-            'descripcion' => '',
-            'tiempoEstimado' => '',
-            'costoManoObra' => '',
-        ], []);
+        $opciones = $this->opcionesFormulario();
+
+        $this->mostrarFormulario(
+            DatosProceso::vacio($this->procesoRepositorio->ultimaTarifaHora($this->idVendedor)),
+            [],
+            $opciones
+        );
     }
 
-    public function crear(): void
+    public function registrar(): void
     {
         $this->verificarCsrf('/procesos/nuevo');
+        $opciones = $this->opcionesFormulario();
 
-        $datos = $this->leerDatos();
-        $validador = $this->validarDatos($datos, null);
+        $datos = DatosProceso::leer();
+        $validador = new Validador();
+        DatosProceso::validar($validador, $datos, $opciones['componentes']);
         if (!$validador->esValido()) {
-            $this->mostrarFormulario(null, $datos, $validador->errores());
+            $this->mostrarFormulario($datos, $validador->errores(), $opciones);
             return;
         }
 
-        $proceso = new Proceso(
-            idVendedor: $this->idVendedor,
-            nombre: $datos['nombre'],
-            descripcion: $datos['descripcion'] !== '' ? $datos['descripcion'] : null,
-            tiempoEstimado: (int) $datos['tiempoEstimado'],
-            costoManoObra: Numero::leer($datos['costoManoObra']),
-            estado: true
-        );
+        $proceso = DatosProceso::crearProceso($datos, $this->idVendedor, $opciones['componentes']);
+        try {
+            $idProceso = $this->procesoRepositorio->registrar($proceso);
+        } catch (OperacionNoPermitida $error) {
+            Mensaje::error($error->getMessage());
+            $this->mostrarFormulario($datos, [], $this->opcionesFormulario());
+            return;
+        } catch (Throwable $error) {
+            error_log('Error al registrar el proceso: ' . $error->getMessage());
+            Mensaje::error('No se pudo registrar el proceso. No se cambió nada en el inventario; intente de nuevo.');
+            $this->mostrarFormulario($datos, [], $opciones);
+            return;
+        }
+
+        $cantidad = count($proceso->getComponentes());
+        Mensaje::exito('Proceso registrado. Se descontó del inventario lo que usó de ' . ($cantidad === 1 ? '1 componente' : $cantidad . ' componentes') . '.');
+        $this->redirigir('/procesos/detalle?id=' . $idProceso);
+    }
+
+    public function detalle(): void
+    {
+        $this->mostrarVista('Proceso/detalle', [
+            'proceso' => $this->buscarProceso($_GET['id'] ?? null),
+        ]);
+    }
+
+    public function anular(): void
+    {
+        $this->verificarCsrf('/procesos');
+        $proceso = $this->buscarProceso($_POST['id'] ?? null);
 
         try {
-            $this->procesoRepositorio->insertar($proceso);
+            $this->procesoRepositorio->anular($proceso);
+        } catch (OperacionNoPermitida $error) {
+            Mensaje::error($error->getMessage());
+            $this->redirigir('/procesos/detalle?id=' . $proceso->getIdProceso());
         } catch (Throwable $error) {
-            error_log('Error al registrar proceso: ' . $error->getMessage());
-            Mensaje::error('No se pudo guardar. Intente de nuevo.');
-            $this->mostrarFormulario(null, $datos, []);
-            return;
+            error_log('Error al anular el proceso: ' . $error->getMessage());
+            Mensaje::error('No se pudo anular el proceso. Intente de nuevo.');
+            $this->redirigir('/procesos/detalle?id=' . $proceso->getIdProceso());
         }
 
-        Mensaje::exito('Proceso registrado correctamente');
+        Mensaje::exito('Proceso anulado. Los componentes que usó volvieron al inventario.');
         $this->redirigir('/procesos/detalle?id=' . $proceso->getIdProceso());
     }
 
-    public function editar(): void
+    private function opcionesFormulario(): array
     {
-        $proceso = $this->cargarProceso($_GET['id'] ?? null);
+        $componentes = [];
+        foreach ((new ComponenteRepositorio())->listarActivos($this->idVendedor) as $componente) {
+            $componentes[(int) $componente->getIdComponente()] = $componente;
+        }
 
-        $this->mostrarFormulario($proceso, [
-            'nombre' => $proceso->getNombre(),
-            'descripcion' => $proceso->getDescripcion() ?? '',
-            'tiempoEstimado' => (string) $proceso->getTiempoEstimado(),
-            'costoManoObra' => Numero::paraCampo($proceso->getCostoManoObra()),
-        ], []);
+        $hayExistencia = array_filter($componentes, fn($componente): bool => $componente->getExistencia() > 0) !== [];
+        if (!$hayExistencia) {
+            Mensaje::advertencia('Para registrar un proceso necesita componentes con existencia. Regístrelos con una compra a proveedores.');
+            $this->redirigir('/compras-proveedor/nueva');
+        }
+
+        return ['componentes' => $componentes];
     }
 
-    public function actualizar(): void
+    private function buscarProceso(mixed $id): Proceso
     {
-        $this->verificarCsrf('/procesos');
-
-        $proceso = $this->cargarProceso($_POST['id'] ?? null);
-
-        $datos = $this->leerDatos();
-        $validador = $this->validarDatos($datos, $proceso->getIdProceso());
-        if (!$validador->esValido()) {
-            $this->mostrarFormulario($proceso, $datos, $validador->errores());
-            return;
-        }
-
-        $proceso->setNombre($datos['nombre']);
-        $proceso->setDescripcion($datos['descripcion'] !== '' ? $datos['descripcion'] : null);
-        $proceso->setTiempoEstimado((int) $datos['tiempoEstimado']);
-        $proceso->setCostoManoObra(Numero::leer($datos['costoManoObra']));
-
-        try {
-            $this->procesoRepositorio->actualizar($proceso);
-        } catch (Throwable $error) {
-            error_log('Error al actualizar proceso: ' . $error->getMessage());
-            Mensaje::error('No se pudo guardar. Intente de nuevo.');
-            $this->mostrarFormulario($proceso, $datos, []);
-            return;
-        }
-
-        Mensaje::exito('Cambios guardados correctamente');
-        $this->redirigir('/procesos/detalle?id=' . $proceso->getIdProceso());
-    }
-
-    public function cambiarEstado(): void
-    {
-        $this->verificarCsrf('/procesos');
-        $proceso = $this->cargarProceso($_POST['id'] ?? null);
-
-        $estado = $_POST['activo'] ?? null;
-        if (!in_array($estado, ['1', '0'], true)) {
-            Mensaje::error('Estado no válido');
-            $this->redirigir('/procesos');
-        }
-        $activo = $estado === '1';
-
-        try {
-            $this->procesoRepositorio->cambiarEstado($proceso, $activo);
-        } catch (Throwable $error) {
-            error_log('Error al cambiar estado de proceso: ' . $error->getMessage());
-            Mensaje::error('No se pudo guardar. Intente de nuevo.');
-            $this->redirigir('/procesos');
-        }
-
-        Mensaje::exito($activo
-            ? $proceso->getNombre() . ' fue activado'
-            : $proceso->getNombre() . ' fue desactivado');
-        $this->redirigir(($_POST['volver'] ?? '') === 'detalle'
-            ? '/procesos/detalle?id=' . $proceso->getIdProceso()
-            : '/procesos');
-    }
-
-
-    private function cargarProceso(mixed $id): Proceso
-    {
-        $idProceso = is_string($id) && ctype_digit($id) ? (int) $id : 0;
-        $proceso = $idProceso > 0 ? $this->procesoRepositorio->buscarPorId($idProceso, $this->idVendedor) : null;
-
+        $proceso = is_string($id) && ctype_digit($id) ? $this->procesoRepositorio->buscarPorId((int) $id, $this->idVendedor) : null;
         if ($proceso === null) {
-            Mensaje::error('El proceso no existe.');
+            Mensaje::error('No se encontró ese proceso.');
             $this->redirigir('/procesos');
         }
 
         return $proceso;
     }
 
-    private function leerDatos(): array
+    private function mostrarFormulario(array $datos, array $errores, array $opciones): void
     {
-        $leer = fn(string $campo): string => is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
-
-        return [
-            'nombre' => UsuarioRepositorio::limpiarEspacios($leer('nombre')),
-            'descripcion' => (string) preg_replace('/\s+/u', ' ', $leer('descripcion')),
-            'tiempoEstimado' => $leer('tiempoEstimado'),
-            'costoManoObra' => $leer('costoManoObra'),
-        ];
-    }
-
-    private function validarDatos(array $datos, ?int $idProceso): Validador
-    {
-        $validador = new Validador();
-
-        $validador->requerido('nombre', $datos['nombre'], 'Ingrese el nombre del proceso')
-            ->longitud('nombre', $datos['nombre'], 3, 60, 'El nombre debe tener entre 3 y 60 caracteres')
-            ->nombreComercial('nombre', $datos['nombre']);
-
-        $validador->longitud('descripcion', $datos['descripcion'], 1, 200, 'La descripción puede tener hasta 200 caracteres');
-
-        $validador->requerido('tiempoEstimado', $datos['tiempoEstimado'], 'Ingrese el tiempo estimado en minutos')
-            ->soloNumeros('tiempoEstimado', $datos['tiempoEstimado'], self::MENSAJE_MINUTOS);
-        if (
-            $validador->error('tiempoEstimado') === null
-            && ((int) $datos['tiempoEstimado'] < 1 || (int) $datos['tiempoEstimado'] > 9999)
-        ) {
-            $validador->agregarError('tiempoEstimado', self::MENSAJE_MINUTOS);
-        }
-
-        $validador->requerido('costoManoObra', $datos['costoManoObra'], 'Ingrese el costo de mano de obra');
-        if ($validador->error('costoManoObra') === null && Numero::leer($datos['costoManoObra']) === null) {
-            $validador->agregarError('costoManoObra', self::MENSAJE_COSTO);
-        }
-
-        if (
-            $validador->error('nombre') === null
-            && $this->procesoRepositorio->existeNombre($this->idVendedor, $datos['nombre'], $idProceso)
-        ) {
-            $validador->agregarError('nombre', 'Ya tiene un proceso con este nombre');
-        }
-
-        return $validador;
-    }
-
-    private function mostrarFormulario(?Proceso $proceso, array $datos, array $errores): void
-    {
-        $this->mostrarVista('Proceso/formulario', [
-            'proceso' => $proceso,
-            'datos' => $datos,
-            'errores' => $errores,
-        ]);
+        $this->mostrarVista('Proceso/formulario', ['datos' => $datos, 'errores' => $errores] + $opciones);
     }
 
     private function verificarCsrf(string $rutaSiFalla): void

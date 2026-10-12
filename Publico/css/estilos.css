@@ -2796,3 +2796,43 @@ h1, h2, h3 {
         padding: 10px 0;
     }
 }
+.lineaExtraCampos {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) 44px;
+    gap: 0 12px;
+    align-items: start;
+}
+
+.lineaExtraCampos .botonQuitar {
+    margin-top: 27px;
+}
+
+.filaTiempo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.filaTiempo .campoConUnidad {
+    flex: 1 1 120px;
+}
+
+.detalleManoObra {
+    margin: 4px 0 14px;
+    font-weight: 600;
+}
+
+@media (max-width: 720px) {
+    .lineaExtraCampos {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .lineaExtraCampos > .campo {
+        grid-column: 1 / -1;
+    }
+
+    .lineaExtraCampos .botonQuitar {
+        justify-self: end;
+        margin-top: 0;
+    }
+}

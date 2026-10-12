@@ -1,6 +1,8 @@
 -- Base de datos de BisuBox
 -- Módulo 1: usuarios (vendedores y clientes), tiendas, contactos y sesiones
 -- Módulo 2: tipos de componente con sus datos, componentes (inventario), procesos, proveedores y compras a proveedores
+-- Módulo 2: tipos de componente con sus datos, componentes (inventario), proveedores y compras a proveedores
+-- Módulo 3: procesos (pasos con que el vendedor hace sus productos)
 -- Las contraseñas de los usuarios por defecto están en el README
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -193,6 +195,9 @@ CREATE TABLE `tbcomponentevalor` (
 --
 -- Estructura de tabla para la tabla `tbproceso`
 -- Pasos con que el vendedor hace sus productos; el tiempo estimado va en minutos
+-- Cada vez que el vendedor elabora un producto (collar, aretes...); el precio se calcula solo
+-- precio = costo de componentes + mano de obra (minutos / 60 * tarifa por hora) + costos extra
+-- El estado es Registrado o Anulado
 --
 
 CREATE TABLE `tbproceso` (
@@ -203,6 +208,45 @@ CREATE TABLE `tbproceso` (
     `tbprocesotiempoestimado` int(11) DEFAULT NULL,
     `tbprocesocostomanoobra` decimal(12, 2) DEFAULT NULL,
     `tbprocesoactivo` tinyint(4) DEFAULT NULL
+    `tbprocesofecha` date DEFAULT NULL,
+    `tbprocesominutos` int(11) DEFAULT NULL,
+    `tbprocesotarifahora` decimal(12, 2) DEFAULT NULL,
+    `tbprocesocostocomponentes` decimal(12, 2) DEFAULT NULL,
+    `tbprocesocostomanoobra` decimal(12, 2) DEFAULT NULL,
+    `tbprocesocostoextras` decimal(12, 2) DEFAULT NULL,
+    `tbprocesoprecio` decimal(12, 2) DEFAULT NULL,
+    `tbprocesoestado` varchar(20) DEFAULT NULL,
+    `tbprocesoregistrofecha` datetime DEFAULT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tbprocesocomponente`
+-- Componentes que se usaron en el proceso; el costo es el del inventario al momento de registrar
+--
+
+CREATE TABLE `tbprocesocomponente` (
+    `tbprocesocomponenteid` int(11) NOT NULL,
+    `tbprocesocomponenteprocesoid` int(11) DEFAULT NULL,
+    `tbprocesocomponentecomponenteid` int(11) DEFAULT NULL,
+    `tbprocesocomponentecantidad` decimal(12, 2) DEFAULT NULL,
+    `tbprocesocomponentecostounitario` decimal(14, 4) DEFAULT NULL,
+    `tbprocesocomponentesubtotal` decimal(12, 2) DEFAULT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tbprocesoextra`
+-- Costos extra del proceso: luz, transporte, empaque...
+--
+
+CREATE TABLE `tbprocesoextra` (
+    `tbprocesoextraid` int(11) NOT NULL,
+    `tbprocesoextraprocesoid` int(11) DEFAULT NULL,
+    `tbprocesoextraconcepto` varchar(60) DEFAULT NULL,
+    `tbprocesoextramonto` decimal(12, 2) DEFAULT NULL
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -215,6 +259,8 @@ CREATE TABLE `tbproceso` (
 CREATE TABLE `tbproveedor` (
     `tbproveedorid` int(11) NOT NULL,
     `tbproveedorvendedorid` int(11) DEFAULT NULL,
+    `tbproveedoridentificaciontipo` varchar(20) DEFAULT NULL,
+    `tbproveedoridentificacionnumero` varchar(20) DEFAULT NULL,
     `tbproveedornombre` varchar(50) DEFAULT NULL,
     `tbproveedortelefono` varchar(8) DEFAULT NULL,
     `tbproveedorcorreo` varchar(150) DEFAULT NULL,
@@ -412,6 +458,9 @@ ALTER TABLE `tbcomponentevalor`
 ADD PRIMARY KEY (`tbcomponentevalorid`);
 
 ALTER TABLE `tbproceso` ADD PRIMARY KEY (`tbprocesoid`);
+ALTER TABLE `tbprocesocomponente` ADD PRIMARY KEY (`tbprocesocomponenteid`);
+
+ALTER TABLE `tbprocesoextra` ADD PRIMARY KEY (`tbprocesoextraid`);
 
 ALTER TABLE `tbproveedor` ADD PRIMARY KEY (`tbproveedorid`);
 

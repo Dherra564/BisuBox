@@ -64,13 +64,15 @@ return function (Enrutador $enrutador): void {
     $enrutador->post('/proveedores/estado', [ProveedorControlador::class, 'cambiarEstado']);
 
     $enrutador->get('/procesos', [ProcesoControlador::class, 'listar']);
-    $enrutador->get('/procesos/detalle', [ProcesoControlador::class, 'detalle']);
     $enrutador->get('/procesos/nuevo', [ProcesoControlador::class, 'nuevo']);
     $enrutador->post('/procesos/crear', [ProcesoControlador::class, 'crear']);
     $enrutador->get('/procesos/editar', [ProcesoControlador::class, 'editar']);
     $enrutador->post('/procesos/actualizar', [ProcesoControlador::class, 'actualizar']);
     $enrutador->post('/procesos/estado', [ProcesoControlador::class, 'cambiarEstado']);
-
+    $enrutador->post('/procesos/nuevo', [ProcesoControlador::class, 'registrar']);
+    $enrutador->get('/procesos/detalle', [ProcesoControlador::class, 'detalle']);
+    $enrutador->post('/procesos/anular', [ProcesoControlador::class, 'anular']);
+    
     $enrutador->get('/compras-proveedor', [CompraProveedorControlador::class, 'listar']);
     $enrutador->get('/compras-proveedor/nueva', [CompraProveedorControlador::class, 'nueva']);
     $enrutador->post('/compras-proveedor/nueva', [CompraProveedorControlador::class, 'registrar']);
