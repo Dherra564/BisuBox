@@ -116,28 +116,6 @@ class CompraProveedorRepositorio
         return $this->crearDesdeFila($fila, $detalles);
     }
 
-    /** @return array{fecha: DateTime, proveedor: string, costo: float}|null */
-    public function ultimaCompraDe(int $idComponente, int $idVendedor): ?array
-    {
-        $consulta = $this->conexion->prepare(
-            "SELECT c.tbcompraproveedorfecha, p.tbproveedornombre, d.tbcompraproveedordetallecostounitario
-             FROM tbcompraproveedordetalle d
-             INNER JOIN tbcompraproveedor c ON c.tbcompraproveedorid = d.tbcompraproveedordetallecompraproveedorid
-             INNER JOIN tbproveedor p ON p.tbproveedorid = c.tbcompraproveedorproveedorid
-             WHERE d.tbcompraproveedordetallecomponenteid = ? AND c.tbcompraproveedorvendedorid = ? AND c.tbcompraproveedorestado = ?
-             ORDER BY c.tbcompraproveedorfecha DESC, c.tbcompraproveedorid DESC
-             LIMIT 1"
-        );
-        $consulta->execute([$idComponente, $idVendedor, CompraProveedor::ACTIVA]);
-        $fila = $consulta->fetch();
-
-        return $fila ? [
-            'fecha' => new DateTime($fila['tbcompraproveedorfecha']),
-            'proveedor' => (string) $fila['tbproveedornombre'],
-            'costo' => (float) $fila['tbcompraproveedordetallecostounitario'],
-        ] : null;
-    }
-
     /** @param array<int, Componente> $componentesNuevos */
     public function registrar(CompraProveedor $compra, array $componentesNuevos): int
     {

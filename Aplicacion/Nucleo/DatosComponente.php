@@ -10,6 +10,8 @@ use Aplicacion\Repositorios\UsuarioRepositorio;
 
 class DatosComponente
 {
+    public const CENTIMETROS = 'cm';
+
     public static function leer(TipoComponente $tipo): array
     {
         $texto = fn(mixed $valor): string => is_string($valor) ? trim($valor) : '';
@@ -18,6 +20,7 @@ class DatosComponente
             'nombre' => UsuarioRepositorio::limpiarEspacios($texto($_POST['nombre'] ?? null)),
             'unidad' => $texto($_POST['unidad'] ?? null),
             'existencia' => $texto($_POST['existencia'] ?? null),
+            'medida' => ($_POST['medida'] ?? null) === self::CENTIMETROS ? self::CENTIMETROS : 'm',
             'costoTotal' => $texto($_POST['costoTotal'] ?? null),
             'existenciaMinima' => $texto($_POST['existenciaMinima'] ?? null),
             'valores' => self::leerValores($tipo, $_POST['valor'] ?? null),
@@ -89,7 +92,11 @@ class DatosComponente
         // Al crearlo a mano: lo que tiene ahora y lo que pagó en total por eso; el costo de cada uno se calcula
         if ($original === null) {
             self::validarCantidad($validador, 'existencia', $datos['existencia'], $enUnidades, false);
+            $enCentimetros = $datos['unidad'] === UnidadMedida::METRO && $datos['medida'] === self::CENTIMETROS;
             $existencia = Numero::leer($datos['existencia']) ?? 0;
+            if ($validador->error('existencia') === null && $enCentimetros && floor($existencia) != $existencia) {
+                $validador->agregarError('existencia', 'Los centímetros van sin decimales');
+            }
             if ($validador->error('existencia') === null && $existencia > 0) {
                 self::validarCantidad($validador, 'costoTotal', $datos['costoTotal'], false, true);
             }
@@ -107,8 +114,8 @@ class DatosComponente
             (int) $tipo->getIdTipoComponente(),
             $datos['nombre'],
             $datos['unidad'],
-            $original?->getExistencia() ?? (Numero::leer($datos['existencia']) ?? 0),
-            $original?->getCostoUnitario() ?? self::costoUnitario($datos['existencia'], $datos['costoTotal']),
+            $original?->getExistencia() ?? self::existencia($datos),
+            $original?->getCostoUnitario() ?? self::costoUnitario(self::existencia($datos), $datos['costoTotal']),
             Numero::leer($datos['existenciaMinima']) ?? 0,
             $original?->getActivo() ?? true,
             self::valoresParaGuardar($tipo, $datos['valores'])
@@ -130,6 +137,7 @@ class DatosComponente
             'nombre' => $componente->getNombre(),
             'unidad' => $componente->getUnidad(),
             'existencia' => Numero::paraCampo($componente->getExistencia()),
+            'medida' => 'm',
             'costoTotal' => '',
             'existenciaMinima' => $componente->getExistenciaMinima() > 0 ? Numero::paraCampo($componente->getExistenciaMinima()) : '',
             'valores' => $valores,
@@ -147,6 +155,7 @@ class DatosComponente
             'nombre' => '',
             'unidad' => UnidadMedida::UNIDAD,
             'existencia' => '',
+            'medida' => 'm',
             'costoTotal' => '',
             'existenciaMinima' => '',
             'valores' => $valores,
@@ -178,10 +187,16 @@ class DatosComponente
     }
 
     // El costo de cada uno: lo que pagó en total entre lo que tiene (4 decimales); sin existencia el costo es 0
-    private static function costoUnitario(string $existencia, string $costoTotal): float
+    private static function costoUnitario(float $cantidad, string $costoTotal): float
     {
-        $cantidad = Numero::leer($existencia) ?? 0;
         return $cantidad > 0 ? round((Numero::leer($costoTotal) ?? 0) / $cantidad, 4) : 0.0;
+    }
+
+    // Lo que tiene ahora en la unidad del componente: los centímetros pasan a metros (75 cm = 0,75 m)
+    private static function existencia(array $datos): float
+    {
+        $cantidad = Numero::leer($datos['existencia']) ?? 0;
+        return $datos['unidad'] === UnidadMedida::METRO && $datos['medida'] === self::CENTIMETROS ? round($cantidad / 100, 2) : $cantidad;
     }
 
     private static function validarCantidad(Validador $validador, string $campo, string $valor, bool $entera, bool $obligatoria): void

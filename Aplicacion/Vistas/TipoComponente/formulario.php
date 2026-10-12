@@ -143,90 +143,61 @@ $cantidadComponentes = $tipoComponente?->getCantidadComponentes() ?? 0;
         <input type="hidden" name="id" value="<?= $tipoComponente->getIdTipoComponente() ?>">
     <?php endif; ?>
 
-    <div class="disenoTipo">
-        <div>
-            <section class="formularioSeccion">
-                <h2>Nombre del tipo</h2>
-                <div class="<?= $claseCampo('nombre') ?>">
-                    <label for="nombre">Nombre <span class="obligatorio">*</span></label>
-                    <input type="text" id="nombre" name="nombre" minlength="2" maxlength="60" required
-                        data-regla="nombreTienda" data-tipo-nombre placeholder="Por ejemplo: Perlas"
-                        data-mensaje-requerido="Escriba el nombre del tipo, por ejemplo Perlas"
-                        data-mensaje-largo="El nombre debe tener entre 2 y 60 caracteres"
-                        value="<?= htmlspecialchars($datos['nombre']) ?>">
-                    <?= $mensajeError('nombre') ?>
-                </div>
-            </section>
-
-            <section class="formularioSeccion">
-                <h2>Datos que pide este tipo</h2>
-                <p class="textoAyuda">
-                    Agregue lo que quiere anotar de cada componente de este tipo. Por ejemplo, de las perlas: color,
-                    diámetro y material.
-                </p>
-                <?= $mensajeError('datos') ?>
-
-                <div class="listaDatosTipo" data-datos>
-                    <?php foreach ($datos['datos'] as $clave => $dato): ?>
-                        <?= $filaDato($clave, $dato, DatosTipoComponente::tieneValores($tipoComponente, $dato['id'])) ?>
-                    <?php endforeach; ?>
-                </div>
-                <p class="estadoVacio estadoVacioPequeno" data-datos-vacio <?= $datos['datos'] !== [] ? 'hidden' : '' ?>>
-                    Todavía no pide datos extra. Si no agrega ninguno, este tipo solo pedirá los datos comunes.
-                </p>
-
-                <div class="contactosPie">
-                    <button type="button" class="boton botonSecundario botonPequeno" data-dato-agregar>Agregar
-                        dato</button>
-                    <span class="textoAyuda" data-datos-cuenta>
-                        <?= count($datos['datos']) ?> de <?= DatosTipoComponente::MAXIMO_DATOS ?> datos
-                    </span>
-                </div>
-            </section>
-
-            <section class="formularioSeccion" data-seccion-ocultos <?= $ocultos === [] ? 'hidden' : '' ?>>
-                <h2>Datos que ya no se piden</h2>
-                <p class="textoAyuda">
-                    Algunos componentes ya tienen estos datos, por eso se guardan. Puede volver a pedirlos cuando
-                    quiera.
-                </p>
-                <div class="listaDatosTipo" data-datos-ocultos>
-                    <?php foreach ($ocultos as $clave => $dato): ?>
-                        <?= $filaDato($clave, $dato, DatosTipoComponente::tieneValores($tipoComponente, $dato['id']), true) ?>
-                    <?php endforeach; ?>
-                </div>
-            </section>
+    <section class="formularioSeccion">
+        <h2>Nombre del tipo</h2>
+        <div class="<?= $claseCampo('nombre') ?>">
+            <label for="nombre">Nombre <span class="obligatorio">*</span></label>
+            <input type="text" id="nombre" name="nombre" minlength="2" maxlength="60" required data-regla="nombreTienda"
+                data-tipo-nombre placeholder="Por ejemplo: Perlas"
+                data-mensaje-requerido="Escriba el nombre del tipo, por ejemplo Perlas"
+                data-mensaje-largo="El nombre debe tener entre 2 y 60 caracteres"
+                value="<?= htmlspecialchars($datos['nombre']) ?>">
+            <?= $mensajeError('nombre') ?>
         </div>
+    </section>
 
-        <aside class="vistaPrevia" aria-label="Vista previa">
-            <h2>Así se verá al registrar un componente</h2>
-            <div class="vistaPreviaFormulario" inert>
-                <p class="vistaPreviaGrupo">Datos comunes</p>
-                <div class="campo">
-                    <label>Nombre del componente</label>
-                    <input type="text" placeholder="Por ejemplo: Perla rosada 8 mm">
-                </div>
-                <div class="filaCampos">
-                    <div class="campo">
-                        <label>Unidad de medida</label>
-                        <select>
-                            <option>Unidad</option>
-                        </select>
-                    </div>
-                    <div class="campo">
-                        <label>Existencia mínima</label>
-                        <input type="text">
-                    </div>
-                </div>
-                <p class="vistaPreviaGrupo" data-vista-previa-titulo>Datos del tipo</p>
-                <div data-vista-previa></div>
-            </div>
-        </aside>
-    </div>
+    <section class="formularioSeccion">
+        <h2>Datos que pide este tipo</h2>
+        <p class="textoAyuda">
+            Agregue lo que quiere anotar de cada componente de este tipo. Por ejemplo, de las perlas: color,
+            diámetro y material.
+        </p>
+        <?= $mensajeError('datos') ?>
 
-    <div class="grupoBotones accionesFormulario">
-        <a href="<?= $urlBase ?>/tipos-componente" class="boton botonSecundario">Cancelar</a>
+        <div class="listaDatosTipo" data-datos>
+            <?php foreach ($datos['datos'] as $clave => $dato): ?>
+                <?= $filaDato($clave, $dato, DatosTipoComponente::tieneValores($tipoComponente, $dato['id'])) ?>
+            <?php endforeach; ?>
+        </div>
+        <p class="estadoVacio estadoVacioPequeno" data-datos-vacio <?= $datos['datos'] !== [] ? 'hidden' : '' ?>>
+            Todavía no pide datos extra. Si no agrega ninguno, este tipo solo pedirá los datos comunes.
+        </p>
+
+        <div class="contactosPie">
+            <button type="button" class="boton botonSecundario botonPequeno" data-dato-agregar>Agregar
+                dato</button>
+            <span class="textoAyuda" data-datos-cuenta>
+                <?= count($datos['datos']) ?> de <?= DatosTipoComponente::MAXIMO_DATOS ?> datos
+            </span>
+        </div>
+    </section>
+
+    <section class="formularioSeccion" data-seccion-ocultos <?= $ocultos === [] ? 'hidden' : '' ?>>
+        <h2>Datos que ya no se piden</h2>
+        <p class="textoAyuda">
+            Algunos componentes ya tienen estos datos, por eso se guardan. Puede volver a pedirlos cuando
+            quiera.
+        </p>
+        <div class="listaDatosTipo" data-datos-ocultos>
+            <?php foreach ($ocultos as $clave => $dato): ?>
+                <?= $filaDato($clave, $dato, DatosTipoComponente::tieneValores($tipoComponente, $dato['id']), true) ?>
+            <?php endforeach; ?>
+        </div>
+    </section>
+
+    <div class="grupoBotones accionesFormulario accionesIzquierda">
         <button type="submit" class="boton"><?= $editando ? 'Guardar cambios' : 'Crear tipo' ?></button>
+        <a href="<?= $urlBase ?>/tipos-componente" class="boton botonSecundario">Cancelar</a>
     </div>
 </form>
 

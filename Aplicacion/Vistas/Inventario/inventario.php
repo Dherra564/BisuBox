@@ -19,13 +19,6 @@ use Aplicacion\Nucleo\UnidadMedida;
 $titulo = 'Inventario';
 $paginaActual = 'inventario';
 $scriptsExtra = ['inventario.js'];
-$botonesAccion = $hayComponentes
-    ? [
-        ['texto' => 'Tipos de componente', 'ruta' => '/tipos-componente', 'secundario' => true],
-        ['texto' => 'Registrar compra', 'ruta' => '/compras-proveedor/nueva', 'secundario' => true],
-        ['texto' => 'Agregar componente', 'ruta' => '/componentes/nuevo'],
-    ]
-    : [];
 require __DIR__ . '/../Plantilla/encabezado.php';
 
 $tiposPorId = [];
@@ -206,7 +199,6 @@ $detalle = function ($componente) use ($tiposPorId): string {
                         <th>Tipo</th>
                         <th>Existencia</th>
                         <th class="numero">Costo unitario</th>
-                        <th class="numero">Valor</th>
                         <th><span class="soloLectores">Acciones</span></th>
                     </tr>
                 </thead>
@@ -235,7 +227,6 @@ $detalle = function ($componente) use ($tiposPorId): string {
                                 <?php endif; ?>
                             </td>
                             <td data-etiqueta="Costo unitario" class="numero"><?= Numero::moneda($componente->getCostoUnitario()) ?></td>
-                            <td data-etiqueta="Valor" class="numero"><strong><?= Numero::moneda($componente->getValorTotal()) ?></strong></td>
                             <td class="acciones">
                                 <a href="<?= $urlBase ?>/componentes/editar?id=<?= $componente->getIdComponente() ?>"
                                    class="boton botonSecundario botonPequeno">Editar</a>
@@ -256,6 +247,12 @@ $detalle = function ($componente) use ($tiposPorId): string {
             </table>
         </div>
     <?php endif; ?>
+
+    <div class="grupoBotones accionesLista">
+        <a href="<?= $urlBase ?>/tipos-componente" class="boton">Tipos de componente</a>
+        <a href="<?= $urlBase ?>/compras-proveedor/nueva" class="boton">Registrar compra</a>
+        <a href="<?= $urlBase ?>/componentes/nuevo" class="boton">Agregar componente</a>
+    </div>
 <?php endif; ?>
 
 <?php require __DIR__ . '/../Plantilla/pie.php'; ?>

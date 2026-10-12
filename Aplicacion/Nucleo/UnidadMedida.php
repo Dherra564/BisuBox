@@ -15,7 +15,7 @@ class UnidadMedida
         ],
         self::METRO => [
             'nombre' => 'Metro', 'plural' => 'metros', 'abreviatura' => 'm', 'costo' => 'Costo por metro',
-            'ejemplo' => 'hilos, cadenas', 'ayuda' => 'En metros. Para centímetros use decimales: 20 cm = 0,20',
+            'ejemplo' => 'hilos, cadenas', 'ayuda' => 'Puede escribirlo en metros o en centímetros',
         ],
         self::GRAMO => [
             'nombre' => 'Gramo', 'plural' => 'gramos', 'abreviatura' => 'g', 'costo' => 'Costo por gramo',

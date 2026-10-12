@@ -10,9 +10,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var botonAgregar = formulario.querySelector('[data-dato-agregar]');
     var cuenta = formulario.querySelector('[data-datos-cuenta]');
     var vacio = formulario.querySelector('[data-datos-vacio]');
-    var vistaPrevia = formulario.querySelector('[data-vista-previa]');
-    var tituloVistaPrevia = formulario.querySelector('[data-vista-previa-titulo]');
-    var campoNombreTipo = formulario.querySelector('[data-tipo-nombre]');
     var plantillaDato = document.querySelector('[data-dato-plantilla]');
     var plantillaOpcion = document.querySelector('[data-opcion-plantilla]');
     var maximoDatos = parseInt(formulario.getAttribute('data-maximo-datos'), 10) || 20;
@@ -113,75 +110,6 @@ document.addEventListener('DOMContentLoaded', function () {
             fila.querySelector('[data-dato-subir]').disabled = indice === 0;
             fila.querySelector('[data-dato-bajar]').disabled = indice === total - 1;
         });
-        dibujarVistaPrevia();
-    }
-
-    function crear(etiqueta, clase, texto) {
-        var elemento = document.createElement(etiqueta);
-        if (clase) {
-            elemento.className = clase;
-        }
-        if (texto) {
-            elemento.textContent = texto;
-        }
-        return elemento;
-    }
-
-    function dibujarVistaPrevia() {
-        var nombreTipo = campoNombreTipo.value.trim();
-        tituloVistaPrevia.textContent = nombreTipo !== '' ? 'Datos de ' + nombreTipo : 'Datos del tipo';
-        vistaPrevia.textContent = '';
-
-        if (filas().length === 0) {
-            vistaPrevia.appendChild(crear('p', 'textoAyuda', 'Este tipo no pide datos extra.'));
-            return;
-        }
-
-        filas().forEach(function (fila) {
-            var nombre = fila.querySelector('[data-dato-nombre]').value.trim() || 'Dato sin nombre';
-            var obligatorio = fila.querySelector('[data-dato-obligatorio]').checked;
-            var clase = claseDe(fila);
-            var campo = crear('div', 'campo');
-            var control;
-
-            if (clase === 'SiNo') {
-                campo.className = 'campo campoCasilla';
-                campo.appendChild(crear('input')).type = 'checkbox';
-                campo.appendChild(crear('label', '', nombre));
-                vistaPrevia.appendChild(campo);
-                return;
-            }
-
-            var etiqueta = crear('label', '', nombre + ' ');
-            if (obligatorio) {
-                etiqueta.appendChild(crear('span', 'obligatorio', '*'));
-            }
-            campo.appendChild(etiqueta);
-
-            if (clase === 'Lista') {
-                control = crear('select');
-                control.appendChild(crear('option', '', 'Escoja una opción'));
-                fila.querySelectorAll('.filaOpcion input[type="text"]').forEach(function (opcion) {
-                    if (opcion.value.trim() !== '') {
-                        control.appendChild(crear('option', '', opcion.value.trim()));
-                    }
-                });
-                campo.appendChild(control);
-            } else if (clase === 'Numero') {
-                var unidad = fila.querySelector('[data-dato-unidad]').value.trim();
-                var grupo = crear('div', 'campoConUnidad');
-                grupo.appendChild(crear('input')).type = 'text';
-                if (unidad !== '') {
-                    grupo.appendChild(crear('span', 'unidadCampo', unidad));
-                }
-                campo.appendChild(grupo);
-            } else {
-                control = crear('input');
-                control.type = 'text';
-                campo.appendChild(control);
-            }
-            vistaPrevia.appendChild(campo);
-        });
     }
 
     botonAgregar.addEventListener('click', function () {
@@ -229,10 +157,8 @@ document.addEventListener('DOMContentLoaded', function () {
             boton.disabled ? fila.querySelector('[data-dato-subir]').focus() : boton.focus();
         } else if (boton.hasAttribute('data-opcion-agregar')) {
             agregarOpcion(fila, true);
-            dibujarVistaPrevia();
         } else if (boton.hasAttribute('data-opcion-quitar')) {
             boton.closest('.filaOpcion').remove();
-            dibujarVistaPrevia();
         }
     });
 
@@ -242,7 +168,6 @@ document.addEventListener('DOMContentLoaded', function () {
             quitarErrores(fila.querySelector('[data-solo-clase="Lista"]'));
             aplicarClase(fila);
         }
-        dibujarVistaPrevia();
     });
 
     formulario.addEventListener('input', function (evento) {
@@ -254,7 +179,6 @@ document.addEventListener('DOMContentLoaded', function () {
             var titulo = evento.target.closest('[data-dato]').querySelector('[data-dato-titulo]');
             titulo.textContent = evento.target.value.trim() || 'Dato nuevo';
         }
-        dibujarVistaPrevia();
     });
 
     formulario.addEventListener('submit', function (evento) {

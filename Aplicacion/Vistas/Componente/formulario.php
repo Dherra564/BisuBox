@@ -4,14 +4,12 @@
  * @var \Aplicacion\Modelos\Componente|null $componente
  * @var array $datos
  * @var array $errores
- * @var array|null $ultimaCompra
  * @var string $urlBase
  */
 
 use Aplicacion\Nucleo\ClaseDato;
 use Aplicacion\Nucleo\Csrf;
-use Aplicacion\Nucleo\EstadoExistencia;
-use Aplicacion\Nucleo\Numero;
+use Aplicacion\Nucleo\DatosComponente;
 use Aplicacion\Nucleo\UnidadMedida;
 
 $editando = $componente !== null;
@@ -29,7 +27,8 @@ $mensajeError = fn(string $campo): string => isset($errores[$campo])
 $valor = fn(string $campo): string => htmlspecialchars((string) ($datos[$campo] ?? ''));
 $unidades = UnidadMedida::todas();
 $plural = $unidades[$datos['unidad']]['plural'] ?? 'unidades';
-$singular = mb_strtolower($unidades[$datos['unidad']]['nombre'] ?? 'unidad', 'UTF-8');
+$esMetro = $datos['unidad'] === UnidadMedida::METRO;
+$enCentimetros = ($datos['medida'] ?? '') === DatosComponente::CENTIMETROS;
 $atributos = $tipoComponente->getAtributosActivos();
 ?>
 
@@ -64,28 +63,27 @@ $atributos = $tipoComponente->getAtributosActivos();
                 placeholder="Por ejemplo: Perla de vidrio rosada 8 mm"
                 data-mensaje-requerido="Escriba el nombre del componente, por ejemplo Perla rosada 8 mm"
                 data-mensaje-largo="El nombre debe tener entre 2 y 100 caracteres" value="<?= $valor('nombre') ?>">
-            <p class="textoAyuda">Un nombre que lo distinga de los demás: así lo encontrará en el inventario.</p>
             <?= $mensajeError('nombre') ?>
         </div>
 
         <div class="filaCampos">
-            <div class="<?= $claseCampo('unidad') ?>">
-                <label for="unidad">¿Cómo lo cuenta? <span class="obligatorio">*</span></label>
-                <select id="unidad" name="unidad" required data-unidad>
+            <fieldset class="<?= $claseCampo('unidad', 'opcionesUnidad') ?>">
+                <legend class="etiquetaCampo">¿Cómo se calcula el precio? <span class="obligatorio">*</span></legend>
+                <div class="opcionesUnidadLista">
                     <?php foreach ($unidades as $codigo => $unidad): ?>
-                        <option value="<?= $codigo ?>" data-plural="<?= $unidad['plural'] ?>"
-                            data-singular="<?= mb_strtolower($unidad['nombre'], 'UTF-8') ?>"
-                            data-ayuda="<?= htmlspecialchars($unidad['ayuda']) ?>"
-                            data-costo="<?= htmlspecialchars($unidad['costo']) ?>" <?= $datos['unidad'] === $codigo ? 'selected' : '' ?>>
+                        <label class="opcionUnidad">
+                            <input type="radio" name="unidad" value="<?= $codigo ?>" data-unidad
+                                data-plural="<?= $unidad['plural'] ?>"
+                                data-ayuda="<?= htmlspecialchars($unidad['ayuda']) ?>"
+                                data-costo="<?= htmlspecialchars($unidad['costo']) ?>" <?= $datos['unidad'] === $codigo ? 'checked' : '' ?>>
                             Por <?= mb_strtolower($unidad['nombre'], 'UTF-8') ?>
-                        </option>
+                        </label>
                     <?php endforeach; ?>
-                </select>
-                <p class="textoAyuda">Las perlas se cuentan por unidad; los hilos, por metro.</p>
+                </div>
                 <?= $mensajeError('unidad') ?>
-            </div>
+            </fieldset>
             <div class="<?= $claseCampo('existenciaMinima') ?>">
-                <label for="existenciaMinima">Avisarme cuando queden</label>
+                <label for="existenciaMinima">Avisarme cuando solo queden</label>
                 <div class="campoConUnidad">
                     <input type="text" id="existenciaMinima" name="existenciaMinima" maxlength="13" inputmode="decimal"
                         data-regla="cantidad" placeholder="0" value="<?= $valor('existenciaMinima') ?>">
@@ -103,11 +101,17 @@ $atributos = $tipoComponente->getAtributosActivos();
                     <div class="campoConUnidad">
                         <input type="text" id="existencia" name="existencia" maxlength="13" inputmode="decimal"
                             data-regla="cantidad" placeholder="0" value="<?= $valor('existencia') ?>">
-                        <span class="unidadCampo" data-unidad-plural><?= $plural ?></span>
+                        <select name="medida" class="selectorMedida" aria-label="Metros o centímetros" data-medida
+                            <?= $esMetro ? '' : 'hidden' ?>>
+                            <option value="m" <?= $enCentimetros ? '' : 'selected' ?>>m</option>
+                            <option value="cm" <?= $enCentimetros ? 'selected' : '' ?>>cm</option>
+                        </select>
+                        <span class="unidadCampo" data-unidad-plural data-unidad-existencia <?= $esMetro ? 'hidden' : '' ?>><?= $plural ?></span>
                     </div>
                     <p class="textoAyuda" data-unidad-ayuda>
-                        <?= htmlspecialchars($unidades[$datos['unidad']]['ayuda'] ?? '') ?></p>
-                    <p class="textoAyuda">Si todavía no tiene, déjelo vacío. Después sube con las compras.</p>
+                        <?= htmlspecialchars($unidades[$datos['unidad']]['ayuda'] ?? '') ?>
+                    </p>
+                    <p class="textoAyuda">Si todavía no tiene, déjelo vacío.</p>
                     <?= $mensajeError('existencia') ?>
                 </div>
                 <div class="<?= $claseCampo('costoTotal') ?>">
@@ -117,38 +121,9 @@ $atributos = $tipoComponente->getAtributosActivos();
                         <input type="text" id="costoTotal" name="costoTotal" maxlength="13" inputmode="decimal"
                             data-regla="cantidad" placeholder="0" data-costo-total value="<?= $valor('costoTotal') ?>">
                     </div>
-                    <p class="textoAyuda">Lo que pagó por todo lo que tiene ahora. Si no lo sabe, ponga 0.</p>
                     <p class="costoCalculadoComponente" data-costo-calculado aria-live="polite"></p>
                     <?= $mensajeError('costoTotal') ?>
                 </div>
-            </div>
-        <?php else: ?>
-            <?php $estado = $componente->getEstadoExistencia(); ?>
-            <div class="resumenComponente">
-                <div>
-                    <span class="textoAyuda">Existencia</span>
-                    <strong><?= UnidadMedida::cantidad($componente->getExistencia(), $componente->getUnidad()) ?></strong>
-                    <span
-                        class="etiqueta <?= EstadoExistencia::clase($estado) ?>"><?= EstadoExistencia::nombre($estado) ?></span>
-                </div>
-                <div>
-                    <span class="textoAyuda">Costo unitario</span>
-                    <strong><?= Numero::moneda($componente->getCostoUnitario()) ?></strong>
-                </div>
-                <div>
-                    <span class="textoAyuda">Valor en existencia</span>
-                    <strong><?= Numero::moneda($componente->getValorTotal()) ?></strong>
-                </div>
-                <?php if ($ultimaCompra !== null): ?>
-                    <div>
-                        <span class="textoAyuda">Última compra</span>
-                        <strong><?= $ultimaCompra['fecha']->format('d/m/Y') ?>,
-                            <?= htmlspecialchars($ultimaCompra['proveedor']) ?></strong>
-                        <span class="textoAyuda"><?= Numero::moneda($ultimaCompra['costo']) ?> cada uno</span>
-                    </div>
-                <?php endif; ?>
-                <p class="textoAyuda resumenComponenteNota">La existencia y el costo cambian solos con las compras y la
-                    producción. <a href="<?= $urlBase ?>/compras-proveedor/nueva">Registrar una compra</a></p>
             </div>
         <?php endif; ?>
     </section>
@@ -220,13 +195,13 @@ $atributos = $tipoComponente->getAtributosActivos();
         <?php endif; ?>
     </section>
 
-    <div class="grupoBotones accionesFormulario">
-        <a href="<?= $urlBase ?>/inventario" class="boton botonSecundario">Cancelar</a>
+    <div class="grupoBotones accionesFormulario accionesIzquierda">
+        <button type="submit" class="boton"><?= $editando ? 'Guardar cambios' : 'Agregar al inventario' ?></button>
         <?php if (!$editando): ?>
             <button type="submit" name="siguiente" value="otro" class="boton botonSecundario">Guardar y agregar
                 otro</button>
         <?php endif; ?>
-        <button type="submit" class="boton"><?= $editando ? 'Guardar cambios' : 'Agregar al inventario' ?></button>
+        <a href="<?= $urlBase ?>/inventario" class="boton botonSecundario">Cancelar</a>
     </div>
 </form>
 

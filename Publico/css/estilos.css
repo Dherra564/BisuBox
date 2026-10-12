@@ -688,6 +688,10 @@ h1, h2, h3 {
     justify-content: flex-end;
 }
 
+.accionesIzquierda {
+    justify-content: flex-start;
+}
+
 .listaDatos {
     display: grid;
     grid-template-columns: max-content 1fr;
@@ -1161,48 +1165,6 @@ h1, h2, h3 {
     font-size: 1.05rem;
 }
 
-.disenoTipo {
-    display: grid;
-    grid-template-columns: minmax(0, 3fr) minmax(260px, 2fr);
-    gap: 16px;
-    align-items: start;
-}
-
-.vistaPrevia {
-    position: sticky;
-    top: 16px;
-    padding: 20px 22px;
-    border: 2px dashed var(--colorBordeFoto);
-    border-radius: var(--radio);
-    background: var(--colorFondo);
-}
-
-.vistaPrevia h2 {
-    margin: 0 0 14px;
-    font-size: 1.05rem;
-}
-
-.vistaPreviaGrupo {
-    margin: 0 0 10px;
-    padding-bottom: 4px;
-    border-bottom: 1px solid var(--colorBorde);
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--colorTextoSuave);
-}
-
-.vistaPreviaFormulario .campo input,
-.vistaPreviaFormulario .campo select {
-    background: var(--colorSuperficie);
-}
-
-.vistaPreviaFormulario > .campo:first-of-type,
-.vistaPreviaFormulario > .filaCampos {
-    opacity: 0.6;
-}
-
 .campoConUnidad {
     display: flex;
     align-items: center;
@@ -1673,33 +1635,6 @@ h1, h2, h3 {
 
 .datosDelTipo .campoCasilla {
     align-self: center;
-}
-
-.resumenComponente {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px 32px;
-    padding: 14px 18px;
-    border-radius: var(--radioCampo);
-    background: var(--colorFondo);
-}
-
-.resumenComponente > div {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.resumenComponente .textoAyuda {
-    margin: 0;
-}
-
-.resumenComponente .etiqueta {
-    align-self: flex-start;
-}
-
-.resumenComponenteNota {
-    flex-basis: 100%;
 }
 
 /* ---------- Compras a proveedores ---------- */
@@ -2634,14 +2569,6 @@ h1, h2, h3 {
 
     .formularioEditable:not(.editando) .filaContacto {
         grid-template-columns: minmax(0, 1fr);
-    }
-
-        .disenoTipo {
-        grid-template-columns: 1fr;
-    }
-
-    .vistaPrevia {
-        position: static;
     }
 
     .filaDatoEncabezado {
