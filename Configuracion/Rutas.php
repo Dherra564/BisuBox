@@ -13,9 +13,6 @@ use Aplicacion\Controladores\SesionControlador;
 use Aplicacion\Controladores\TiendaControlador;
 use Aplicacion\Controladores\TipoComponenteControlador;
 use Aplicacion\Controladores\CompraProveedorControlador;
-use Aplicacion\Controladores\ComponenteControlador;
-use Aplicacion\Controladores\InventarioControlador;
-use Aplicacion\Controladores\ProveedorControlador;
 use Aplicacion\Nucleo\Enrutador;
 
 return function (Enrutador $enrutador): void {
