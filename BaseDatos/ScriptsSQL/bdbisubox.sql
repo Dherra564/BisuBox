@@ -168,54 +168,91 @@ CREATE TABLE `tbcomponentevalor` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `tbproceso`
+-- Estructura de tabla para la tabla `tbproducto`
+-- Productos que hace y vende cada vendedor; al crearlo se registra también su primera producción
+-- Los costos son de un solo producto: componentes + mano de obra (minutos / 60 * tarifa por hora) + extras
+-- El precio de venta es el costo total más la ganancia que escoge el vendedor (puede cambiarlo)
 --
 
-CREATE TABLE `tbproceso` (
-    `tbprocesoid` int(11) NOT NULL,
-    `tbprocesovendedorid` int(11) DEFAULT NULL,
-    `tbprocesonombre` varchar(60) DEFAULT NULL,
-    `tbprocesodescripcion` varchar(200) DEFAULT NULL,
-    `tbprocesofecha` date DEFAULT NULL,
-    `tbprocesominutos` int(11) DEFAULT NULL,
-    `tbprocesotarifahora` decimal(12, 2) DEFAULT NULL,
-    `tbprocesocostocomponentes` decimal(12, 2) DEFAULT NULL,
-    `tbprocesocostomanoobra` decimal(12, 2) DEFAULT NULL,
-    `tbprocesocostoextras` decimal(12, 2) DEFAULT NULL,
-    `tbprocesoprecio` decimal(12, 2) DEFAULT NULL,
-    `tbprocesoestado` varchar(20) DEFAULT NULL,
-    `tbprocesoregistrofecha` datetime DEFAULT NULL,
-    PRIMARY KEY (`tbprocesoid`)
+CREATE TABLE `tbproducto` (
+    `tbproductoid` int(11) NOT NULL,
+    `tbproductovendedorid` int(11) DEFAULT NULL,
+    `tbproductonombre` varchar(60) DEFAULT NULL,
+    `tbproductodescripcion` varchar(300) DEFAULT NULL,
+    `tbproductofoto` varchar(500) DEFAULT NULL,
+    `tbproductominutos` int(11) DEFAULT NULL,
+    `tbproductotarifahora` decimal(12, 2) DEFAULT NULL,
+    `tbproductocostocomponentes` decimal(12, 2) DEFAULT NULL,
+    `tbproductocostomanoobra` decimal(12, 2) DEFAULT NULL,
+    `tbproductocostoextras` decimal(12, 2) DEFAULT NULL,
+    `tbproductocostototal` decimal(12, 2) DEFAULT NULL,
+    `tbproductoprecioventa` decimal(12, 2) DEFAULT NULL,
+    `tbproductoexistencia` int(11) DEFAULT NULL,
+    `tbproductoregistrofecha` datetime DEFAULT NULL,
+    `tbproductoactivo` tinyint(4) DEFAULT NULL
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `tbprocesocomponente`
+-- Estructura de tabla para la tabla `tbproductocomponente`
+-- Lo que lleva un solo producto; el costo es el del inventario al momento de crearlo
 --
 
-CREATE TABLE `tbprocesocomponente` (
-    `tbprocesocomponenteid` int(11) NOT NULL,
-    `tbprocesocomponenteprocesoid` int(11) DEFAULT NULL,
-    `tbprocesocomponentecomponenteid` int(11) DEFAULT NULL,
-    `tbprocesocomponentecantidad` decimal(12, 2) DEFAULT NULL,
-    `tbprocesocomponentecostounitario` decimal(14, 4) DEFAULT NULL,
-    `tbprocesocomponentesubtotal` decimal(12, 2) DEFAULT NULL,
-    PRIMARY KEY (`tbprocesocomponenteid`)
+CREATE TABLE `tbproductocomponente` (
+    `tbproductocomponenteid` int(11) NOT NULL,
+    `tbproductocomponenteproductoid` int(11) DEFAULT NULL,
+    `tbproductocomponentecomponenteid` int(11) DEFAULT NULL,
+    `tbproductocomponentecantidad` decimal(12, 2) DEFAULT NULL,
+    `tbproductocomponentecostounitario` decimal(14, 4) DEFAULT NULL,
+    `tbproductocomponentesubtotal` decimal(12, 2) DEFAULT NULL
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `tbprocesoextra`
+-- Estructura de tabla para la tabla `tbproductoextra`
+-- Otros gastos de un solo producto: empaque, luz, transporte...
 --
 
-CREATE TABLE `tbprocesoextra` (
-    `tbprocesoextraid` int(11) NOT NULL,
-    `tbprocesoextraprocesoid` int(11) DEFAULT NULL,
-    `tbprocesoextraconcepto` varchar(60) DEFAULT NULL,
-    `tbprocesoextramonto` decimal(12, 2) DEFAULT NULL,
-    PRIMARY KEY (`tbprocesoextraid`)
+CREATE TABLE `tbproductoextra` (
+    `tbproductoextraid` int(11) NOT NULL,
+    `tbproductoextraproductoid` int(11) DEFAULT NULL,
+    `tbproductoextraconcepto` varchar(60) DEFAULT NULL,
+    `tbproductoextramonto` decimal(12, 2) DEFAULT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tbproduccion`
+-- Cada vez que el vendedor hace productos: resta los componentes y suma la cantidad al producto
+-- El estado es Activa o Anulada
+--
+
+CREATE TABLE `tbproduccion` (
+    `tbproduccionid` int(11) NOT NULL,
+    `tbproduccionvendedorid` int(11) DEFAULT NULL,
+    `tbproduccionproductoid` int(11) DEFAULT NULL,
+    `tbproduccioncantidad` int(11) DEFAULT NULL,
+    `tbproduccionfecha` date DEFAULT NULL,
+    `tbproduccionestado` varchar(20) DEFAULT NULL,
+    `tbproduccionregistrofecha` datetime DEFAULT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tbproduccioncomponente`
+-- Lo que se descontó del inventario en esa producción, para devolverlo si se anula
+--
+
+CREATE TABLE `tbproduccioncomponente` (
+    `tbproduccioncomponenteid` int(11) NOT NULL,
+    `tbproduccioncomponenteproduccionid` int(11) DEFAULT NULL,
+    `tbproduccioncomponentecomponenteid` int(11) DEFAULT NULL,
+    `tbproduccioncomponentecantidad` decimal(12, 2) DEFAULT NULL,
+    `tbproduccioncomponentecostounitario` decimal(14, 4) DEFAULT NULL
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
