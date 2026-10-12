@@ -7,7 +7,7 @@ use Aplicacion\Controladores\FotoControlador;
 use Aplicacion\Controladores\InicioControlador;
 use Aplicacion\Controladores\InventarioControlador;
 use Aplicacion\Controladores\PerfilControlador;
-use Aplicacion\Controladores\ProcesoControlador;
+use Aplicacion\Controladores\ProductoControlador;
 use Aplicacion\Controladores\ProveedorControlador;
 use Aplicacion\Controladores\RegistroControlador;
 use Aplicacion\Controladores\SesionControlador;
@@ -54,6 +54,7 @@ return function (Enrutador $enrutador): void {
 
     $enrutador->get('/fotos/perfil', [FotoControlador::class, 'mostrarPerfil']);
     $enrutador->get('/fotos/logo', [FotoControlador::class, 'mostrarLogo']);
+    $enrutador->get('/fotos/producto', [FotoControlador::class, 'mostrarProducto']);
 
     $enrutador->get('/proveedores', [ProveedorControlador::class, 'listar']);
     $enrutador->get('/proveedores/detalle', [ProveedorControlador::class, 'detalle']);
@@ -72,6 +73,12 @@ return function (Enrutador $enrutador): void {
     $enrutador->post('/productos/estado', [ProductoControlador::class, 'cambiarEstado']);
     $enrutador->post('/productos/producir', [ProductoControlador::class, 'producir']);
     $enrutador->post('/productos/anular-produccion', [ProductoControlador::class, 'anularProduccion']);
+
+    $enrutador->get('/compras-proveedor', [CompraProveedorControlador::class, 'listar']);
+    $enrutador->get('/compras-proveedor/nueva', [CompraProveedorControlador::class, 'nueva']);
+    $enrutador->post('/compras-proveedor/nueva', [CompraProveedorControlador::class, 'registrar']);
+    $enrutador->get('/compras-proveedor/detalle', [CompraProveedorControlador::class, 'detalle']);
+    $enrutador->post('/compras-proveedor/anular', [CompraProveedorControlador::class, 'anular']);
 
     $enrutador->get('/sesiones', [SesionControlador::class, 'listar']);
 };

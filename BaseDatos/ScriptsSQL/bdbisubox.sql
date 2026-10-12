@@ -189,7 +189,8 @@ CREATE TABLE `tbproducto` (
     `tbproductoprecioventa` decimal(12, 2) DEFAULT NULL,
     `tbproductoexistencia` int(11) DEFAULT NULL,
     `tbproductoregistrofecha` datetime DEFAULT NULL,
-    `tbproductoactivo` tinyint(4) DEFAULT NULL
+    `tbproductoactivo` tinyint(4) DEFAULT NULL,
+    PRIMARY KEY (`tbproductoid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -205,7 +206,8 @@ CREATE TABLE `tbproductocomponente` (
     `tbproductocomponentecomponenteid` int(11) DEFAULT NULL,
     `tbproductocomponentecantidad` decimal(12, 2) DEFAULT NULL,
     `tbproductocomponentecostounitario` decimal(14, 4) DEFAULT NULL,
-    `tbproductocomponentesubtotal` decimal(12, 2) DEFAULT NULL
+    `tbproductocomponentesubtotal` decimal(12, 2) DEFAULT NULL,
+    PRIMARY KEY (`tbproductocomponenteid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -219,7 +221,8 @@ CREATE TABLE `tbproductoextra` (
     `tbproductoextraid` int(11) NOT NULL,
     `tbproductoextraproductoid` int(11) DEFAULT NULL,
     `tbproductoextraconcepto` varchar(60) DEFAULT NULL,
-    `tbproductoextramonto` decimal(12, 2) DEFAULT NULL
+    `tbproductoextramonto` decimal(12, 2) DEFAULT NULL,
+    PRIMARY KEY (`tbproductoextraid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -237,7 +240,8 @@ CREATE TABLE `tbproduccion` (
     `tbproduccioncantidad` int(11) DEFAULT NULL,
     `tbproduccionfecha` date DEFAULT NULL,
     `tbproduccionestado` varchar(20) DEFAULT NULL,
-    `tbproduccionregistrofecha` datetime DEFAULT NULL
+    `tbproduccionregistrofecha` datetime DEFAULT NULL,
+    PRIMARY KEY (`tbproduccionid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -252,7 +256,8 @@ CREATE TABLE `tbproduccioncomponente` (
     `tbproduccioncomponenteproduccionid` int(11) DEFAULT NULL,
     `tbproduccioncomponentecomponenteid` int(11) DEFAULT NULL,
     `tbproduccioncomponentecantidad` decimal(12, 2) DEFAULT NULL,
-    `tbproduccioncomponentecostounitario` decimal(14, 4) DEFAULT NULL
+    `tbproduccioncomponentecostounitario` decimal(14, 4) DEFAULT NULL,
+    PRIMARY KEY (`tbproduccioncomponenteid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------

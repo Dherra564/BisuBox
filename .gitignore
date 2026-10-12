@@ -4,6 +4,8 @@ vendor/
 
 Almacenamiento/Fotos/Perfiles/*
 !Almacenamiento/Fotos/Perfiles/.gitkeep
+Almacenamiento/Fotos/Productos/*
+!Almacenamiento/Fotos/Productos/.gitkeep
 Almacenamiento/Registros/*
 !Almacenamiento/Registros/.gitkeep
 
