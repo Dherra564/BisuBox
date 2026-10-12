@@ -28,7 +28,7 @@ class DatosComponente
             'nombre' => UsuarioRepositorio::limpiarEspacios($texto($_POST['nombre'] ?? null)),
             'unidad' => $texto($_POST['unidad'] ?? null),
             'existencia' => $texto($_POST['existencia'] ?? null),
-            'costoUnitario' => $texto($_POST['costoUnitario'] ?? null),
+            'costoTotal' => $texto($_POST['costoTotal'] ?? null),
             'existenciaMinima' => $texto($_POST['existenciaMinima'] ?? null),
             'valores' => $valores,
         ];
@@ -57,7 +57,10 @@ class DatosComponente
 
         if ($original === null) {
             self::validarCantidad($validador, 'existencia', $datos['existencia'], $enUnidades, false);
-            self::validarCantidad($validador, 'costoUnitario', $datos['costoUnitario'], false, true);
+            $existencia = Numero::leer($datos['existencia']) ?? 0;
+            if ($validador->error('existencia') === null && $existencia > 0) {
+                self::validarCantidad($validador, 'costoTotal', $datos['costoTotal'], false, true);
+            }
         }
         self::validarCantidad($validador, 'existenciaMinima', $datos['existenciaMinima'], $enUnidades, false);
 
@@ -84,7 +87,7 @@ class DatosComponente
             $datos['nombre'],
             $datos['unidad'],
             $original?->getExistencia() ?? (Numero::leer($datos['existencia']) ?? 0),
-            $original?->getCostoUnitario() ?? (Numero::leer($datos['costoUnitario']) ?? 0),
+            $original?->getCostoUnitario() ?? self::costoUnitario($datos['existencia'], $datos['costoTotal']),
             Numero::leer($datos['existenciaMinima']) ?? 0,
             $original?->getActivo() ?? true,
             $valores
@@ -106,7 +109,7 @@ class DatosComponente
             'nombre' => $componente->getNombre(),
             'unidad' => $componente->getUnidad(),
             'existencia' => Numero::paraCampo($componente->getExistencia()),
-            'costoUnitario' => Numero::paraCampo($componente->getCostoUnitario()),
+            'costoTotal' => '',
             'existenciaMinima' => $componente->getExistenciaMinima() > 0 ? Numero::paraCampo($componente->getExistenciaMinima()) : '',
             'valores' => $valores,
         ];
@@ -123,7 +126,7 @@ class DatosComponente
             'nombre' => '',
             'unidad' => UnidadMedida::UNIDAD,
             'existencia' => '',
-            'costoUnitario' => '',
+            'costoTotal' => '',
             'existenciaMinima' => '',
             'valores' => $valores,
         ];
@@ -153,18 +156,24 @@ class DatosComponente
         return '';
     }
 
+    private static function costoUnitario(string $existencia, string $costoTotal): float
+    {
+        $cantidad = Numero::leer($existencia) ?? 0;
+        return $cantidad > 0 ? round((Numero::leer($costoTotal) ?? 0) / $cantidad, 4) : 0.0;
+    }
+
     private static function validarCantidad(Validador $validador, string $campo, string $valor, bool $entera, bool $obligatoria): void
     {
         if ($valor === '') {
             if ($obligatoria) {
-                $validador->agregarError($campo, 'Escriba cuánto le costó cada unidad. Si no lo sabe, ponga 0');
+                $validador->agregarError($campo, 'Escriba cuánto pagó en total por lo que tiene. Si no lo sabe, ponga 0');
             }
             return;
         }
 
         $numero = Numero::leer($valor);
         if ($numero === null || $numero > Numero::MAXIMO) {
-            $validador->agregarError($campo, 'Escriba un número, por ejemplo 12 o 12,50');
+            $validador->agregarError($campo, 'Escriba un número con hasta 2 decimales, por ejemplo 12 o 12,50');
         } elseif ($entera && floor($numero) != $numero) {
             $validador->agregarError($campo, 'Si se mide por unidades, use números enteros');
         }

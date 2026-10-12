@@ -1703,59 +1703,9 @@ h1, h2, h3 {
 }
 
 /* ---------- Compras a proveedores ---------- */
-.filtroFechas {
-    flex-basis: 100%;
-}
-
-.filtroFechasTitulo {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 0.9rem;
-    font-weight: 600;
-}
-
-.chipsPeriodo {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.chipPeriodo {
-    padding: 8px 14px;
-    border: 1px solid var(--colorBordeCampo);
-    border-radius: 999px;
-    background: var(--colorSuperficie);
-    color: var(--colorTexto);
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-decoration: none;
-}
-
-.chipPeriodo:hover {
-    border-color: var(--colorTitulo);
-}
-
-.chipPeriodo:focus-visible {
-    outline: 2px solid var(--colorFoco);
-    outline-offset: 2px;
-}
-
-.chipElegido {
-    border-color: var(--colorTitulo);
-    background: var(--colorTitulo);
-    color: var(--colorTextoClaro);
-}
-
-.periodoActual {
-    margin: 10px 0 14px;
-}
-
-.filtros .campoFecha {
-    flex: 0 1 170px;
-}
-
-.filtrosCompras .campo {
-    flex: 0 1 200px;
+.introPagina {
+    margin: -8px 0 18px;
+    color: var(--colorTextoSuave);
 }
 
 .resumenCompras {
@@ -1767,66 +1717,567 @@ h1, h2, h3 {
     box-shadow: none;
 }
 
-.listaLineasCompra {
-    display: grid;
-    gap: 12px;
-    margin: 14px 0;
+.pestanas {
+    display: flex;
+    gap: 4px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--colorBorde);
+    overflow-x: auto;
 }
 
-.lineaCompra {
-    padding: 14px 16px 2px;
+.pestana {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 15px 12px 12px;
+    border: none;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: var(--colorTextoSuave);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.pestana:hover {
+    color: var(--colorTitulo);
+}
+
+.pestana:focus-visible {
+    outline: 2px solid var(--colorFoco);
+    outline-offset: -2px;
+}
+
+.pestanaActiva {
+    border-bottom-color: var(--colorTitulo);
+    color: var(--colorTitulo);
+}
+
+.pestana svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+}
+
+.pestanaCantidad {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--colorFondo);
+    color: var(--colorTextoSuave);
+    font-size: 0.78rem;
+}
+
+.pestanaActiva .pestanaCantidad {
+    background: var(--colorTitulo);
+    color: var(--colorTextoClaro);
+}
+
+.panelCompras {
+    margin-bottom: 16px;
     border: 1px solid var(--colorBorde);
-    border-left: 4px solid var(--colorBordeFoto);
+    border-radius: var(--radio);
+    background: var(--colorSuperficie);
+    overflow: hidden;
+}
+
+.filtrosCompras {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--colorBorde);
+    background: #fbfdfc;
+}
+
+.filaFiltros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0 20px;
+}
+
+.campoProveedor {
+    flex: 0 1 260px;
+}
+
+.campoFechas {
+    flex: 1 1 420px;
+}
+
+.campoFechas .etiquetaCampo {
+    display: block;
+}
+
+.botonesFecha {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.botonFecha {
+    padding: 9px 14px;
+    border: 1px solid var(--colorBordeCampo);
+    border-radius: var(--radioCampo);
+    background: var(--colorSuperficie);
+    color: var(--colorTexto);
+    font: inherit;
+    font-size: 0.92rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.botonFecha:hover {
+    border-color: var(--colorTitulo);
+}
+
+.botonFecha:focus-visible {
+    outline: 2px solid var(--colorFoco);
+    outline-offset: 2px;
+}
+
+.botonFechaActivo,
+.botonFechaActivo:hover {
+    border-color: var(--colorTitulo);
+    background: var(--colorTitulo);
+    color: var(--colorTextoClaro);
+}
+
+.rangoFechas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0 12px;
+    margin-bottom: 14px;
+    padding: 14px 16px 0;
+    border: 1px dashed var(--colorBordeFoto);
     border-radius: var(--radioCampo);
     background: var(--colorSuperficie);
 }
 
+.rangoFechas .campo {
+    flex: 0 1 180px;
+}
+
+.rangoFechas .boton {
+    margin-bottom: 14px;
+}
+
+.fraseFiltros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.chipFiltro {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border: 1px solid var(--colorBordeFoto);
+    border-radius: 999px;
+    background: var(--colorVerdeClaro);
+    color: var(--colorTitulo);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.chipFiltro:hover {
+    background: var(--colorPrincipal);
+}
+
+.enlaceQuitarFiltros {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.sinResultados {
+    margin: 0;
+    padding: 36px 20px;
+    text-align: center;
+    color: var(--colorTextoSuave);
+}
+
+.panelCompras .tablaContenedor {
+    margin: 0;
+    border: none;
+    border-radius: 0;
+}
+
+.registroCompra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.registroCompraPasos {
+    flex: 999 1 540px;
+    min-width: 0;
+}
+
+.pasoEncabezado {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.pasoEncabezado h2 {
+    margin: 0;
+}
+
+.pasoEncabezado .textoAyuda {
+    margin: 2px 0 0;
+}
+
+.pasoNumero {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--colorTitulo);
+    color: var(--colorTextoClaro);
+    font-weight: 700;
+}
+
+.filaTres {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.textoOpcional {
+    font-weight: 400;
+    color: var(--colorTextoSuave);
+}
+
+.pasoEscoger {
+    padding-bottom: 0;
+    overflow: hidden;
+}
+
+.pasoEscoger .pestanas {
+    margin: 0 -22px;
+    padding: 0 22px;
+}
+
+.panelEscoger {
+    margin: 0 -22px;
+    padding: 18px 22px 22px;
+    background: #fbfdfc;
+}
+
+.panelEscoger .etiquetaCampo {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.botonesTipo {
+    margin-bottom: 14px;
+}
+
+.buscadorComponentes {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding: 0 12px;
+    border: 1px solid var(--colorBordeCampo);
+    border-radius: var(--radioCampo);
+    background: var(--colorSuperficie);
+}
+
+.buscadorComponentes:focus-within {
+    outline: 2px solid var(--colorFoco);
+    outline-offset: 1px;
+}
+
+.buscadorComponentes svg {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: var(--colorTextoSuave);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+}
+
+.buscadorComponentes input {
+    flex: 1;
+    min-width: 0;
+    padding: 11px 0;
+    border: none;
+    background: none;
+    font: inherit;
+    color: var(--colorTexto);
+    outline: none;
+}
+
+.tarjetasComponentes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.tarjetaComponente {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--colorBorde);
+    border-radius: var(--radioCampo);
+    background: var(--colorSuperficie);
+}
+
+.tarjetaComponente[hidden] {
+    display: none;
+}
+
+.tarjetaComponenteTexto {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.tarjetaComponenteTexto .textoAyuda {
+    margin: 0;
+}
+
+.tarjetaComponente .boton {
+    flex: none;
+}
+
+.enLaCompra {
+    flex: none;
+    color: var(--colorTitulo);
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.sinCoincidencias {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 14px 16px;
+    border: 1px dashed var(--colorBordeFoto);
+    border-radius: var(--radioCampo);
+    background: var(--colorSuperficie);
+}
+
+.sinCoincidencias[hidden] {
+    display: none;
+}
+
+.panelEscoger .sinResultados {
+    padding: 20px 0;
+}
+
+.opcionesUnidad {
+    padding: 0;
+    border: none;
+}
+
+.opcionesUnidad legend {
+    padding: 0;
+}
+
+.opcionesUnidadLista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.opcionUnidad {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 150px;
+    padding: 10px 14px;
+    border: 2px solid var(--colorBorde);
+    border-radius: var(--radioCampo);
+    background: var(--colorSuperficie);
+    cursor: pointer;
+}
+
+.opcionUnidad input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.opcionUnidad span {
+    font-size: 0.8rem;
+    color: var(--colorTextoSuave);
+}
+
+.opcionUnidad:has(input:checked) {
+    border-color: var(--colorTitulo);
+    background: var(--colorVerdeClaro);
+    color: var(--colorTitulo);
+}
+
+.opcionUnidad:has(input:focus-visible) {
+    outline: 2px solid var(--colorFoco);
+    outline-offset: 2px;
+}
+
+.pieNuevo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.pieNuevo .textoAyuda {
+    margin: 0;
+}
+
+.listaLineasCompra {
+    display: grid;
+    gap: 12px;
+}
+
+.lineasVacias {
+    margin: 0;
+    padding: 26px 16px;
+    border: 1px dashed var(--colorBordeCampo);
+    border-radius: var(--radioCampo);
+    text-align: center;
+    color: var(--colorTextoSuave);
+}
+
+.lineaCompra {
+    padding: 14px 16px 4px;
+    border: 1px solid var(--colorBorde);
+    border-radius: var(--radioCampo);
+    background: var(--colorSuperficie);
+}
+
+.lineaCompraEncabezado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.lineaCompraNombre {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.etiquetaTipo {
+    background: var(--colorFondo);
+    color: var(--colorTextoSuave);
+}
+
+.etiquetaNuevo {
+    background: var(--colorAdvertenciaFondo);
+    color: var(--colorAdvertencia);
+}
+
+.lineaCompraEncabezado .botonQuitar {
+    width: 38px;
+    height: 38px;
+}
+
 .lineaCompraCampos {
     display: grid;
-    grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(90px, 0.8fr) 44px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0 12px;
     align-items: start;
 }
 
-.lineaCompraCampos .botonQuitar {
-    margin-top: 27px;
+.campoCostoCalculado .etiquetaCampo {
+    display: block;
+    margin-bottom: 6px;
 }
 
-.campoSubtotal {
-    display: flex;
-    flex-direction: column;
-}
-
-.campoSubtotal .etiquetaCampo {
-    margin-bottom: 12px;
-}
-
-.subtotalLinea {
+.costoCalculado {
+    display: block;
+    padding: 9px 0;
+    font-size: 1.15rem;
     font-weight: 700;
-    font-size: 1.05rem;
 }
 
 .avisoExistencia {
+    margin: 0 0 10px;
+    color: var(--colorTitulo);
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.resumenCompra {
+    flex: 1 1 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px 22px;
+    border: 1px solid var(--colorBorde);
+    border-radius: var(--radio);
+    background: var(--colorSuperficie);
+}
+
+.resumenCompra h2 {
+    margin: 0;
+}
+
+.resumenCompraDatos {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+}
+
+.resumenCompraDatos dt {
+    font-size: 0.85rem;
+    color: var(--colorTextoSuave);
+}
+
+.resumenCompraDatos dd {
+    margin: 0 0 8px;
+    font-weight: 600;
+}
+
+.resumenCompra .totalesCompra {
+    max-width: none;
+    margin: 0;
+}
+
+.resumenCompra .textoAyuda {
+    margin: 0;
+}
+
+.botonRegistrar {
+    min-height: 48px;
+}
+
+.enlaceCancelar {
+    text-align: center;
+    font-weight: 600;
+}
+
+.costoCalculadoComponente {
+    margin: 6px 0 0;
     color: var(--colorTitulo);
     font-weight: 600;
 }
 
-.componenteNuevo {
-    margin: 0 0 14px;
-    padding: 12px 14px 4px;
-    border-radius: var(--radioCampo);
-    background: var(--colorVerdeClaro);
-}
-
-.componenteNuevoTitulo {
-    margin: 0 0 10px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--colorTitulo);
-}
-
-.componenteNuevo .textoAyuda {
-    margin: 0 0 10px;
+.costoCalculadoComponente:empty {
+    display: none;
 }
 
 .totalesCompra {
@@ -2245,33 +2696,47 @@ h1, h2, h3 {
         flex-basis: 100%;
     }
 
-    .filtros .campoFecha,
-    .filtrosCompras .campo {
-        flex: 1 1 calc(50% - 7px);
+    .campoProveedor,
+    .campoFechas {
+        flex-basis: 100%;
+    }
+
+    .rangoFechas .campo {
+        flex: 1 1 calc(50% - 6px);
         min-width: 0;
     }
 
+    .filaTres,
+    .tarjetasComponentes,
     .lineaCompraCampos {
-        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-columns: 1fr;
     }
 
-    .lineaCompraCampos > .campo:not(.campoSubtotal) {
-        grid-column: 1 / -1;
+    .tarjetaComponente {
+        align-items: flex-start;
+        flex-direction: column;
     }
 
-    .campoSubtotal {
-        flex-direction: row;
-        align-items: center;
-        gap: 10px;
+    .tarjetaComponente .boton {
+        align-self: stretch;
     }
 
-    .campoSubtotal .etiquetaCampo {
-        margin: 0;
+    .opcionUnidad {
+        flex: 1 1 100%;
     }
 
-    .lineaCompraCampos .botonQuitar {
-        justify-self: end;
-        margin-top: 0;
+    .pasoEscoger .pestana {
+        flex: 1 1 0;
+        justify-content: center;
+        padding: 13px 4px 10px;
+        font-size: 0.9rem;
+    }
+
+    .pasoEscoger .pestanas,
+    .panelEscoger {
+        margin: 0 -16px;
+        padding-left: 16px;
+        padding-right: 16px;
     }
 
     .totalesCompra {

@@ -50,8 +50,15 @@ class CompraProveedorControlador
         $estado = is_string($_GET['estado'] ?? null) && isset(self::ESTADOS[$_GET['estado']]) ? $_GET['estado'] : 'todas';
         $periodo = PeriodoFechas::leer($_GET);
 
-        $filtros = ['proveedor' => $proveedor, 'estado' => $estado, 'desde' => $periodo['desde'], 'hasta' => $periodo['hasta']];
-        $total = $this->compraRepositorio->contar($this->idVendedor, $filtros);
+        // Cuántas hay en cada pestaña con el proveedor y las fechas escogidos
+        $base = ['proveedor' => $proveedor, 'desde' => $periodo['desde'], 'hasta' => $periodo['hasta']];
+        $conteos = [];
+        foreach (array_keys(self::ESTADOS) as $codigo) {
+            $conteos[$codigo] = $this->compraRepositorio->contar($this->idVendedor, ['estado' => $codigo] + $base);
+        }
+
+        $filtros = ['estado' => $estado] + $base;
+        $total = $conteos[$estado];
         $totalPaginas = max(1, (int) ceil($total / CompraProveedorRepositorio::POR_PAGINA));
         $pagina = min(max(1, (int) ($_GET['pagina'] ?? 1)), $totalPaginas);
 
@@ -62,6 +69,7 @@ class CompraProveedorControlador
             'proveedor' => $proveedor,
             'estado' => $estado,
             'estados' => self::ESTADOS,
+            'conteos' => $conteos,
             'periodo' => $periodo,
             'pagina' => $pagina,
             'totalPaginas' => $totalPaginas,

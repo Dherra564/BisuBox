@@ -6,7 +6,6 @@ use DateTime;
 
 class PeriodoFechas
 {
-    public const SEMANA = 'semana';
     public const MES = 'mes';
     public const MES_PASADO = 'mesPasado';
     public const ANIO = 'anio';
@@ -14,11 +13,10 @@ class PeriodoFechas
     public const RANGO = 'rango';
 
     public const PERIODOS = [
-        self::SEMANA => 'Esta semana',
+        self::TODO => 'Todo',
         self::MES => 'Este mes',
         self::MES_PASADO => 'Mes pasado',
         self::ANIO => 'Este año',
-        self::TODO => 'Todo',
     ];
 
     /** @return array{periodo: string, desde: ?DateTime, hasta: ?DateTime} */
@@ -33,6 +31,10 @@ class PeriodoFechas
             if ($desde?->format('Y-m-d') === $limites['desde']?->format('Y-m-d') && $hasta?->format('Y-m-d') === $limites['hasta']?->format('Y-m-d')) {
                 return ['periodo' => $elegido] + $limites;
             }
+        }
+
+        if ($desde === null && $hasta === null && ($consulta['periodo'] ?? null) === self::RANGO) {
+            return ['periodo' => self::RANGO, 'desde' => null, 'hasta' => null];
         }
 
         if ($desde !== null || $hasta !== null) {
@@ -53,7 +55,6 @@ class PeriodoFechas
         $hoy = new DateTime('today');
 
         return match ($periodo) {
-            self::SEMANA => ['desde' => (clone $hoy)->modify('monday this week'), 'hasta' => (clone $hoy)->modify('sunday this week')],
             self::MES => ['desde' => (clone $hoy)->modify('first day of this month'), 'hasta' => (clone $hoy)->modify('last day of this month')],
             self::MES_PASADO => ['desde' => (clone $hoy)->modify('first day of last month'), 'hasta' => (clone $hoy)->modify('last day of last month')],
             self::ANIO => ['desde' => new DateTime($hoy->format('Y') . '-01-01'), 'hasta' => new DateTime($hoy->format('Y') . '-12-31')],
@@ -61,19 +62,29 @@ class PeriodoFechas
         };
     }
 
-    public static function describir(array $periodo): string
+    public static function enFrase(array $periodo): string
     {
         $formato = fn(DateTime $fecha): string => $fecha->format('d/m/Y');
-        $rango = match (true) {
+
+        return match (true) {
+            $periodo['periodo'] === self::MES => 'de este mes',
+            $periodo['periodo'] === self::MES_PASADO => 'del mes pasado',
+            $periodo['periodo'] === self::ANIO => 'de este año',
             $periodo['desde'] !== null && $periodo['hasta'] !== null => 'del ' . $formato($periodo['desde']) . ' al ' . $formato($periodo['hasta']),
             $periodo['desde'] !== null => 'desde el ' . $formato($periodo['desde']),
             $periodo['hasta'] !== null => 'hasta el ' . $formato($periodo['hasta']),
-            default => 'todas las fechas',
+            default => '',
         };
+    }
 
-        return $periodo['periodo'] === self::RANGO || $periodo['periodo'] === self::TODO
-            ? ucfirst($rango)
-            : self::PERIODOS[$periodo['periodo']] . ' (' . $rango . ')';
+    public static function etiqueta(array $periodo): string
+    {
+        if (isset(self::PERIODOS[$periodo['periodo']])) {
+            return $periodo['periodo'] === self::TODO ? '' : self::PERIODOS[$periodo['periodo']];
+        }
+        $formato = fn(?DateTime $fecha): string => $fecha?->format('d/m/Y') ?? '…';
+
+        return $periodo['desde'] === null && $periodo['hasta'] === null ? '' : $formato($periodo['desde']) . ' – ' . $formato($periodo['hasta']);
     }
 
     public static function parametros(array $periodo): array
@@ -81,10 +92,12 @@ class PeriodoFechas
         if ($periodo['periodo'] !== self::RANGO) {
             return ['periodo' => $periodo['periodo']];
         }
-        return array_filter([
+        $fechas = array_filter([
             'desde' => $periodo['desde']?->format('Y-m-d'),
             'hasta' => $periodo['hasta']?->format('Y-m-d'),
         ]);
+
+        return $fechas !== [] ? $fechas : ['periodo' => self::RANGO];
     }
 
     public static function leerFecha(mixed $texto): ?DateTime

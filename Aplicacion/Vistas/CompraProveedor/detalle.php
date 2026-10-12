@@ -45,11 +45,11 @@ $hayEnvio = $compra->getCostoEnvio() > 0;
                 <tr>
                     <th>Componente</th>
                     <th class="numero">Cantidad</th>
+                    <th class="numero">Precio total</th>
                     <th class="numero">Costo de cada uno</th>
                     <?php if ($hayEnvio): ?>
                         <th class="numero">Con envío</th>
                     <?php endif; ?>
-                    <th class="numero">Subtotal</th>
                 </tr>
             </thead>
             <tbody>
@@ -60,11 +60,14 @@ $hayEnvio = $compra->getCostoEnvio() > 0;
                             <span class="detalleComponente"><?= htmlspecialchars($detalle->getNombreTipo()) ?></span>
                         </td>
                         <td data-etiqueta="Cantidad" class="numero"><?= UnidadMedida::cantidad($detalle->getCantidad(), $detalle->getUnidad()) ?></td>
-                        <td data-etiqueta="Costo de cada uno" class="numero"><?= Numero::moneda($detalle->getCostoUnitario()) ?></td>
+                        <td data-etiqueta="Precio total" class="numero"><strong><?= Numero::moneda($detalle->getSubtotal()) ?></strong></td>
+                        <td data-etiqueta="<?= UnidadMedida::etiquetaCosto($detalle->getUnidad()) ?>" class="numero">
+                            <?= Numero::moneda($detalle->getCostoUnitario()) ?>
+                            <span class="detalleComponente"><?= ['Metro' => 'el metro', 'Gramo' => 'el gramo'][$detalle->getUnidad()] ?? 'cada uno' ?></span>
+                        </td>
                         <?php if ($hayEnvio): ?>
                             <td data-etiqueta="Con envío" class="numero"><?= Numero::moneda($detalle->getCostoFinal()) ?></td>
                         <?php endif; ?>
-                        <td data-etiqueta="Subtotal" class="numero"><?= Numero::moneda($detalle->getSubtotal()) ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -76,7 +79,7 @@ $hayEnvio = $compra->getCostoEnvio() > 0;
         <div><span>Envío</span><strong><?= $hayEnvio ? Numero::moneda($compra->getCostoEnvio()) : 'Sin envío' ?></strong></div>
         <div class="totalCompra"><span>Total</span><strong><?= Numero::moneda($compra->getTotal()) ?></strong></div>
         <?php if ($hayEnvio): ?>
-            <p class="textoAyuda">"Con envío" es el costo de cada uno sumándole su parte del envío; ese es el que entró al costo promedio del inventario.</p>
+            <p class="textoAyuda">El costo de cada uno es el precio total entre la cantidad. "Con envío" le suma su parte del envío; ese es el que entró al costo promedio del inventario.</p>
         <?php endif; ?>
     </div>
 

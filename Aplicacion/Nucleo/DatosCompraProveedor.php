@@ -31,9 +31,9 @@ class DatosCompraProveedor
                 'nombre' => UsuarioRepositorio::limpiarEspacios($texto($linea['nombre'] ?? null)),
                 'unidad' => $texto($linea['unidad'] ?? null),
                 'cantidad' => $texto($linea['cantidad'] ?? null),
-                'costo' => $texto($linea['costo'] ?? null),
+                'total' => $texto($linea['total'] ?? null),
             ];
-            $vacia = $leida['componente'] === '' && $leida['nombre'] === '' && $leida['cantidad'] === '' && $leida['costo'] === '';
+            $vacia = $leida['componente'] === '' && $leida['nombre'] === '' && $leida['cantidad'] === '' && $leida['total'] === '';
             if (!$vacia) {
                 $lineas[(int) $clave] = $leida;
             }
@@ -53,14 +53,14 @@ class DatosCompraProveedor
             'proveedor' => $proveedor,
             'fecha' => '',
             'costoEnvio' => '',
-            'lineas' => [0 => ['componente' => '', 'tipo' => '', 'nombre' => '', 'unidad' => UnidadMedida::UNIDAD, 'cantidad' => '', 'costo' => '']],
+            'lineas' => [],
         ];
     }
 
     /**
-     * @param array<int, Proveedor> $proveedores los activos del vendedor, por id
-     * @param array<int, Componente> $componentes los activos del vendedor, por id
-     * @param array<int, TipoComponente> $tipos los activos del vendedor, por id
+     * @param array<int, Proveedor> $proveedores
+     * @param array<int, Componente> $componentes
+     * @param array<int, TipoComponente> $tipos
      */
     public static function validar(
         Validador $validador,
@@ -115,7 +115,7 @@ class DatosCompraProveedor
             }
 
             self::validarCantidad($validador, $campo . 'cantidad', $linea['cantidad'], $unidad);
-            self::validarCosto($validador, $campo . 'costo', $linea['costo']);
+            self::validarTotal($validador, $campo . 'total', $linea['total']);
 
             $cantidad = Numero::leer($linea['cantidad']);
             if (
@@ -137,8 +137,8 @@ class DatosCompraProveedor
         $lineas = [];
         foreach (array_values($datos['lineas']) as $indice => $linea) {
             $cantidad = (float) Numero::leer($linea['cantidad']);
-            $costo = (float) Numero::leer($linea['costo']);
-            $lineas[$indice] = $linea + ['cantidadNumero' => $cantidad, 'costoNumero' => $costo, 'subtotal' => round($cantidad * $costo, 2)];
+            $total = round((float) Numero::leer($linea['total']), 2);
+            $lineas[$indice] = $linea + ['cantidadNumero' => $cantidad, 'costoNumero' => round($total / $cantidad, 4), 'subtotal' => $total];
         }
 
         $costoEnvio = $datos['costoEnvio'] !== '' ? (float) Numero::leer($datos['costoEnvio']) : 0.0;
@@ -240,23 +240,24 @@ class DatosCompraProveedor
         }
         $cantidad = Numero::leer($valor);
         if ($cantidad === null || $cantidad > Numero::MAXIMO) {
-            $validador->agregarError($campo, 'Escriba un número, por ejemplo 200 o 1,5');
+            $validador->agregarError($campo, $unidad === UnidadMedida::METRO
+                ? 'Escriba los metros con hasta 2 decimales; para centímetros: 20 cm = 0,20'
+                : 'Escriba un número con hasta 2 decimales, por ejemplo 200 o 1,5');
         } elseif ($cantidad <= 0) {
             $validador->agregarError($campo, 'La cantidad debe ser mayor que 0');
         } elseif ($unidad === UnidadMedida::UNIDAD && floor($cantidad) != $cantidad) {
             $validador->agregarError($campo, 'Se cuenta por unidades: use números enteros');
         }
     }
-
-    private static function validarCosto(Validador $validador, string $campo, string $valor): void
+    private static function validarTotal(Validador $validador, string $campo, string $valor): void
     {
         if ($valor === '') {
-            $validador->agregarError($campo, 'Escriba cuánto costó cada uno');
+            $validador->agregarError($campo, 'Escriba cuánto pagó en total por este componente');
             return;
         }
-        $costo = Numero::leer($valor);
-        if ($costo === null || $costo > Numero::MAXIMO) {
-            $validador->agregarError($campo, 'Escriba un monto, por ejemplo 12 o 12,50');
+        $total = Numero::leer($valor);
+        if ($total === null || $total > Numero::MAXIMO) {
+            $validador->agregarError($campo, 'Escriba un monto, por ejemplo 2400 o 2400,50');
         }
     }
 }

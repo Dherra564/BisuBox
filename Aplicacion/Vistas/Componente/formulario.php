@@ -74,7 +74,9 @@ $atributos = $tipoComponente->getAtributosActivos();
                 <select id="unidad" name="unidad" required data-unidad>
                     <?php foreach ($unidades as $codigo => $unidad): ?>
                         <option value="<?= $codigo ?>" data-plural="<?= $unidad['plural'] ?>"
-                            data-singular="<?= mb_strtolower($unidad['nombre'], 'UTF-8') ?>" <?= $datos['unidad'] === $codigo ? 'selected' : '' ?>>
+                            data-singular="<?= mb_strtolower($unidad['nombre'], 'UTF-8') ?>"
+                            data-ayuda="<?= htmlspecialchars($unidad['ayuda']) ?>"
+                            data-costo="<?= htmlspecialchars($unidad['costo']) ?>" <?= $datos['unidad'] === $codigo ? 'selected' : '' ?>>
                             Por <?= mb_strtolower($unidad['nombre'], 'UTF-8') ?>
                         </option>
                     <?php endforeach; ?>
@@ -103,21 +105,21 @@ $atributos = $tipoComponente->getAtributosActivos();
                             data-regla="cantidad" placeholder="0" value="<?= $valor('existencia') ?>">
                         <span class="unidadCampo" data-unidad-plural><?= $plural ?></span>
                     </div>
+                    <p class="textoAyuda" data-unidad-ayuda>
+                        <?= htmlspecialchars($unidades[$datos['unidad']]['ayuda'] ?? '') ?></p>
                     <p class="textoAyuda">Si todavía no tiene, déjelo vacío. Después sube con las compras.</p>
                     <?= $mensajeError('existencia') ?>
                 </div>
-                <div class="<?= $claseCampo('costoUnitario') ?>">
-                    <label for="costoUnitario">Costo de cada <span data-unidad-singular><?= $singular ?></span> <span
-                            class="obligatorio">*</span></label>
+                <div class="<?= $claseCampo('costoTotal') ?>">
+                    <label for="costoTotal">¿Cuánto pagó en total por eso?</label>
                     <div class="campoConUnidad campoConMoneda">
                         <span class="unidadCampo">₡</span>
-                        <input type="text" id="costoUnitario" name="costoUnitario" maxlength="13" inputmode="decimal"
-                            required data-regla="cantidad" placeholder="0"
-                            data-mensaje-requerido="Escriba cuánto le costó cada unidad. Si no lo sabe, ponga 0"
-                            value="<?= $valor('costoUnitario') ?>">
+                        <input type="text" id="costoTotal" name="costoTotal" maxlength="13" inputmode="decimal"
+                            data-regla="cantidad" placeholder="0" data-costo-total value="<?= $valor('costoTotal') ?>">
                     </div>
-                    <p class="textoAyuda">Lo que pagó por cada una. Sirve para saber cuánto vale su inventario.</p>
-                    <?= $mensajeError('costoUnitario') ?>
+                    <p class="textoAyuda">Lo que pagó por todo lo que tiene ahora. Si no lo sabe, ponga 0.</p>
+                    <p class="costoCalculadoComponente" data-costo-calculado aria-live="polite"></p>
+                    <?= $mensajeError('costoTotal') ?>
                 </div>
             </div>
         <?php else: ?>
@@ -140,7 +142,8 @@ $atributos = $tipoComponente->getAtributosActivos();
                 <?php if ($ultimaCompra !== null): ?>
                     <div>
                         <span class="textoAyuda">Última compra</span>
-                        <strong><?= $ultimaCompra['fecha']->format('d/m/Y') ?>, <?= htmlspecialchars($ultimaCompra['proveedor']) ?></strong>
+                        <strong><?= $ultimaCompra['fecha']->format('d/m/Y') ?>,
+                            <?= htmlspecialchars($ultimaCompra['proveedor']) ?></strong>
                         <span class="textoAyuda"><?= Numero::moneda($ultimaCompra['costo']) ?> cada uno</span>
                     </div>
                 <?php endif; ?>
@@ -190,7 +193,8 @@ $atributos = $tipoComponente->getAtributosActivos();
                                         }
                                         ?>
                                         <option value="<?= $opcion->getIdOpcion() ?>" <?= $esActual ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($opcion->getValor()) ?>                    <?= $opcion->getActivo() ? '' : ' (ya no se usa)' ?>
+                                            <?= htmlspecialchars($opcion->getValor()) ?>
+                                            <?= $opcion->getActivo() ? '' : ' (ya no se usa)' ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
