@@ -6,16 +6,15 @@ use Aplicacion\Modelos\Proveedor;
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\Mensaje;
 use Aplicacion\Nucleo\Permiso;
-use Aplicacion\Nucleo\TipoIdentificacion;
 use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Nucleo\Validador;
+use Aplicacion\Repositorios\CompraProveedorRepositorio;
 use Aplicacion\Repositorios\ProveedorRepositorio;
 use Aplicacion\Repositorios\UsuarioRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
 use Configuracion\Configuracion;
 use DateTime;
 use Throwable;
-
 
 class ProveedorControlador
 {
@@ -60,20 +59,22 @@ class ProveedorControlador
 
     public function detalle(): void
     {
+        $proveedor = $this->cargarProveedor($_GET['id'] ?? null);
+
+        $filtros = ['proveedor' => (int) $proveedor->getIdProveedor(), 'estado' => 'todas'];
+        $compraRepositorio = new CompraProveedorRepositorio();
+
         $this->mostrarVista('Proveedor/detalle', [
-            'proveedor' => $this->cargarProveedor($_GET['id'] ?? null),
+            'proveedor' => $proveedor,
+            'compras' => $compraRepositorio->listar($this->idVendedor, $filtros),
+            'totalCompras' => $compraRepositorio->contar($this->idVendedor, $filtros),
+            'resumen' => $compraRepositorio->resumen($this->idVendedor, $filtros),
         ]);
     }
 
     public function nuevo(): void
     {
-        $this->mostrarFormulario(null, [
-            'tipoIdentificacion' => TipoIdentificacion::CEDULA_JURIDICA,
-            'numeroIdentificacion' => '',
-            'nombre' => '',
-            'telefono' => '',
-            'correo' => '',
-        ], []);
+        $this->mostrarFormulario(null, ['nombre' => '', 'telefono' => '', 'correo' => ''], []);
     }
 
     public function crear(): void
@@ -89,8 +90,6 @@ class ProveedorControlador
 
         $proveedor = new Proveedor(
             idVendedor: $this->idVendedor,
-            tipoIdentificacion: $datos['tipoIdentificacion'],
-            numeroIdentificacion: $datos['numeroIdentificacion'],
             nombre: $datos['nombre'],
             telefono: Validador::limpiarTelefono($datos['telefono']),
             correo: $datos['correo'],
@@ -116,8 +115,6 @@ class ProveedorControlador
         $proveedor = $this->cargarProveedor($_GET['id'] ?? null);
 
         $this->mostrarFormulario($proveedor, [
-            'tipoIdentificacion' => $proveedor->getTipoIdentificacion(),
-            'numeroIdentificacion' => $proveedor->getNumeroIdentificacion(),
             'nombre' => $proveedor->getNombre(),
             'telefono' => $proveedor->getTelefono(),
             'correo' => $proveedor->getCorreo(),
@@ -127,19 +124,15 @@ class ProveedorControlador
     public function actualizar(): void
     {
         $this->verificarCsrf('/proveedores');
-        
         $proveedor = $this->cargarProveedor($_POST['id'] ?? null);
 
         $datos = $this->leerDatos();
-        
         $validador = $this->validarDatos($datos, $proveedor->getIdProveedor());
         if (!$validador->esValido()) {
             $this->mostrarFormulario($proveedor, $datos, $validador->errores());
             return;
         }
 
-        $proveedor->setTipoIdentificacion($datos['tipoIdentificacion']);
-        $proveedor->setNumeroIdentificacion($datos['numeroIdentificacion']);
         $proveedor->setNombre($datos['nombre']);
         $proveedor->setTelefono(Validador::limpiarTelefono($datos['telefono']));
         $proveedor->setCorreo($datos['correo']);
@@ -180,12 +173,9 @@ class ProveedorControlador
         Mensaje::exito($activo
             ? $proveedor->getNombre() . ' fue activado'
             : $proveedor->getNombre() . ' fue desactivado');
-        $this->redirigir(($_POST['volver'] ?? '') === 'detalle'
-            ? '/proveedores/detalle?id=' . $proveedor->getIdProveedor()
-            : '/proveedores');
+        $this->redirigir('/proveedores');
     }
 
-    
     private function cargarProveedor(mixed $id): Proveedor
     {
         $idProveedor = is_string($id) && ctype_digit($id) ? (int) $id : 0;
@@ -204,31 +194,15 @@ class ProveedorControlador
         $leer = fn(string $campo): string => is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
 
         return [
-            'tipoIdentificacion' => $leer('tipoIdentificacion'),
-            'numeroIdentificacion' => TipoIdentificacion::limpiar($leer('numeroIdentificacion')),
             'nombre' => UsuarioRepositorio::limpiarEspacios($leer('nombre')),
             'telefono' => $leer('telefono'),
             'correo' => mb_strtolower($leer('correo'), 'UTF-8'),
         ];
     }
 
-    
     private function validarDatos(array $datos, ?int $idProveedor): Validador
     {
         $validador = new Validador();
-
-        
-        if (!TipoIdentificacion::existeParaProveedor($datos['tipoIdentificacion'])) {
-            $validador->agregarError('tipoIdentificacion', 'Seleccione el tipo de identificación');
-        }
-        $validador->requerido('numeroIdentificacion', $datos['numeroIdentificacion'], 'Ingrese la identificación');
-        if (
-            $validador->error('numeroIdentificacion') === null
-            && TipoIdentificacion::existeParaProveedor($datos['tipoIdentificacion'])
-            && !TipoIdentificacion::esValida($datos['tipoIdentificacion'], $datos['numeroIdentificacion'])
-        ) {
-            $validador->agregarError('numeroIdentificacion', TipoIdentificacion::mensaje($datos['tipoIdentificacion']));
-        }
 
         $validador->requerido('nombre', $datos['nombre'], 'Ingrese el nombre del proveedor')
             ->longitud('nombre', $datos['nombre'], 3, 50, 'El nombre debe tener entre 3 y 50 caracteres')
@@ -238,15 +212,8 @@ class ProveedorControlador
             ->telefono('telefono', $datos['telefono']);
 
         $validador->requerido('correo', $datos['correo'], 'Ingrese el correo')
-            ->correoGeneral('correo', $datos['correo']);
+            ->correo('correo', $datos['correo']);
 
-        
-        if (
-            $validador->error('numeroIdentificacion') === null
-            && $this->proveedorRepositorio->existeIdentificacion($this->idVendedor, $datos['numeroIdentificacion'], $idProveedor)
-        ) {
-            $validador->agregarError('numeroIdentificacion', 'Ya tiene un proveedor con esta identificación');
-        }
         if (
             $validador->error('nombre') === null
             && $this->proveedorRepositorio->existeNombre($this->idVendedor, $datos['nombre'], $idProveedor)

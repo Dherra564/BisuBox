@@ -68,15 +68,22 @@ class Validador
         return $this;
     }
 
-    public function correo(string $campo, ?string $valor, string $mensaje = 'Ingrese un correo de Gmail válido, por ejemplo nombre@gmail.com'): self
+    public function correo(string $campo, ?string $valor, string $mensaje = 'Revise el correo: debe ser como nombre@correo.com, sin espacios ni puntos seguidos'): self
     {
-        if (
-            $this->debeRevisar($campo, $valor)
-            && (!preg_match('/^[a-z0-9](\.?[a-z0-9])*@gmail\.com$/i', $valor) || mb_strlen($valor, 'UTF-8') > 150)
-        ) {
+        if ($this->debeRevisar($campo, $valor) && !self::esCorreo($valor)) {
             $this->agregarError($campo, $mensaje);
         }
         return $this;
+    }
+
+    public static function esCorreo(string $correo): bool
+    {
+        $partes = explode('@', $correo);
+
+        return count($partes) === 2
+            && strlen($partes[0]) <= 64
+            && strlen($correo) <= 150
+            && preg_match('/^[a-z0-9_%+-]+(\.[a-z0-9_%+-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,24}$/i', $correo) === 1;
     }
 
 
@@ -120,18 +127,6 @@ class Validador
         public function nombreComercial(string $campo, ?string $valor, string $mensaje = 'El nombre solo puede tener letras, números, espacios y los signos . , & \' -'): self
     {
         if ($this->debeRevisar($campo, $valor) && !preg_match('/^[\p{L}0-9][\p{L}0-9 .,&\'-]*$/u', trim($valor))) {
-            $this->agregarError($campo, $mensaje);
-        }
-        return $this;
-    }
-
-    
-    public function correoGeneral(string $campo, ?string $valor, string $mensaje = 'Ingrese un correo válido, por ejemplo ventas@proveedor.com'): self
-    {
-        if (
-            $this->debeRevisar($campo, $valor)
-            && (!preg_match('/^[a-z0-9._%+-]+@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/i', $valor) || mb_strlen($valor, 'UTF-8') > 150)
-        ) {
             $this->agregarError($campo, $mensaje);
         }
         return $this;

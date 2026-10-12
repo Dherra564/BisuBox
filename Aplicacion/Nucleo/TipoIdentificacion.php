@@ -2,13 +2,11 @@
 
 namespace Aplicacion\Nucleo;
 
-
 class TipoIdentificacion
 {
     public const CEDULA = 'Cedula';
     public const DIMEX = 'Dimex';
     public const PASAPORTE = 'Pasaporte';
-    public const CEDULA_JURIDICA = 'CedulaJuridica';
 
     private const TIPOS = [
         self::CEDULA => [
@@ -16,12 +14,6 @@ class TipoIdentificacion
             'patron' => '^[1-9][0-9]{8}$',
             'mensaje' => 'La cédula debe tener 9 dígitos y no empezar con 0, por ejemplo 1-0234-0567',
             'ayuda' => '9 dígitos, por ejemplo 1-0234-0567',
-        ],
-        self::CEDULA_JURIDICA => [
-            'nombre' => 'Cédula jurídica',
-            'patron' => '^3[0-9]{9}$',
-            'mensaje' => 'La cédula jurídica debe tener 10 dígitos y empezar con 3, por ejemplo 3-101-123456',
-            'ayuda' => '10 dígitos, por ejemplo 3-101-123456',
         ],
         self::DIMEX => [
             'nombre' => 'DIMEX',
@@ -37,27 +29,13 @@ class TipoIdentificacion
         ],
     ];
 
-    private const DE_PERSONA = [self::CEDULA, self::DIMEX, self::PASAPORTE];
-
-    /** Tipos de una persona (vendedores). @return array<string, array{nombre: string, patron: string, mensaje: string, ayuda: string}> */
+    /** @return array<string, array{nombre: string, patron: string, mensaje: string, ayuda: string}> */
     public static function todos(): array
-    {
-        return array_intersect_key(self::TIPOS, array_flip(self::DE_PERSONA));
-    }
-
-    
-    public static function paraProveedores(): array
     {
         return self::TIPOS;
     }
 
-    
     public static function existe(?string $tipo): bool
-    {
-        return $tipo !== null && in_array($tipo, self::DE_PERSONA, true);
-    }
-
-    public static function existeParaProveedor(?string $tipo): bool
     {
         return $tipo !== null && isset(self::TIPOS[$tipo]);
     }
@@ -88,9 +66,6 @@ class TipoIdentificacion
         $numero = (string) $numero;
         if ($tipo === self::CEDULA && strlen($numero) === 9) {
             return substr($numero, 0, 1) . '-' . substr($numero, 1, 4) . '-' . substr($numero, 5);
-        }
-        if ($tipo === self::CEDULA_JURIDICA && strlen($numero) === 10) {
-            return substr($numero, 0, 1) . '-' . substr($numero, 1, 3) . '-' . substr($numero, 4);
         }
         return $numero;
     }

@@ -26,7 +26,7 @@ $opcionesMenu = [
 $opcionesMenu = array_filter($opcionesMenu, fn(array $opcion): bool => Permiso::puede($opcion['permiso']));
 
 $proximasFases = UsuarioActual::esVendedor()
-    ? ['Proveedores','Inventario', 'Compras', 'Productos', 'Producción', 'Pedidos']
+    ? ['Productos', 'Producción', 'Pedidos']
     : ['Tiendas', 'Carrito', 'Mis pedidos'];
 ?>
 <!DOCTYPE html>

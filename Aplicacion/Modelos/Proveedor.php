@@ -4,13 +4,10 @@ namespace Aplicacion\Modelos;
 
 use DateTime;
 
-
 class Proveedor
 {
     private ?int $idProveedor;
     private ?int $idVendedor;
-    private ?string $tipoIdentificacion;
-    private ?string $numeroIdentificacion;
     private ?string $nombre;
     private ?string $telefono;
     private ?string $correo;
@@ -20,8 +17,6 @@ class Proveedor
     public function __construct(
         ?int $idProveedor = null,
         ?int $idVendedor = null,
-        ?string $tipoIdentificacion = null,
-        ?string $numeroIdentificacion = null,
         ?string $nombre = null,
         ?string $telefono = null,
         ?string $correo = null,
@@ -30,8 +25,6 @@ class Proveedor
     ) {
         $this->idProveedor = $idProveedor;
         $this->idVendedor = $idVendedor;
-        $this->tipoIdentificacion = $tipoIdentificacion;
-        $this->numeroIdentificacion = $numeroIdentificacion;
         $this->nombre = $nombre;
         $this->telefono = $telefono;
         $this->correo = $correo;
@@ -47,16 +40,6 @@ class Proveedor
     public function getIdVendedor(): ?int
     {
         return $this->idVendedor;
-    }
-
-    public function getTipoIdentificacion(): ?string
-    {
-        return $this->tipoIdentificacion;
-    }
-
-    public function getNumeroIdentificacion(): ?string
-    {
-        return $this->numeroIdentificacion;
     }
 
     public function getNombre(): ?string
@@ -87,16 +70,6 @@ class Proveedor
     public function setIdProveedor(?int $idProveedor): void
     {
         $this->idProveedor = $idProveedor;
-    }
-
-    public function setTipoIdentificacion(?string $tipoIdentificacion): void
-    {
-        $this->tipoIdentificacion = $tipoIdentificacion;
-    }
-
-    public function setNumeroIdentificacion(?string $numeroIdentificacion): void
-    {
-        $this->numeroIdentificacion = $numeroIdentificacion;
     }
 
     public function setNombre(?string $nombre): void

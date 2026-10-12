@@ -4,6 +4,7 @@
  * @var \Aplicacion\Modelos\Componente|null $componente
  * @var array $datos
  * @var array $errores
+ * @var array|null $ultimaCompra
  * @var string $urlBase
  */
 
@@ -136,8 +137,15 @@ $atributos = $tipoComponente->getAtributosActivos();
                     <span class="textoAyuda">Valor en existencia</span>
                     <strong><?= Numero::moneda($componente->getValorTotal()) ?></strong>
                 </div>
+                <?php if ($ultimaCompra !== null): ?>
+                    <div>
+                        <span class="textoAyuda">Última compra</span>
+                        <strong><?= $ultimaCompra['fecha']->format('d/m/Y') ?>, <?= htmlspecialchars($ultimaCompra['proveedor']) ?></strong>
+                        <span class="textoAyuda"><?= Numero::moneda($ultimaCompra['costo']) ?> cada uno</span>
+                    </div>
+                <?php endif; ?>
                 <p class="textoAyuda resumenComponenteNota">La existencia y el costo cambian solos con las compras y la
-                    producción.</p>
+                    producción. <a href="<?= $urlBase ?>/compras-proveedor/nueva">Registrar una compra</a></p>
             </div>
         <?php endif; ?>
     </section>

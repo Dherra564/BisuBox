@@ -22,6 +22,7 @@ $scriptsExtra = ['inventario.js'];
 $botonesAccion = $hayComponentes
     ? [
         ['texto' => 'Tipos de componente', 'ruta' => '/tipos-componente', 'secundario' => true],
+        ['texto' => 'Registrar compra', 'ruta' => '/compras-proveedor/nueva', 'secundario' => true],
         ['texto' => 'Agregar componente', 'ruta' => '/componentes/nuevo'],
     ]
     : [];
@@ -70,6 +71,7 @@ $detalle = function ($componente) use ($tiposPorId): string {
                 <p class="textoAyuda">Por ejemplo "Perla de vidrio rosada 8 mm", con cuántas tiene y cuánto le costó cada una.</p>
                 <?php if ($hayTipos): ?>
                     <a href="<?= $urlBase ?>/componentes/nuevo" class="boton">Agregar el primer componente</a>
+                    <p class="textoAyuda">También se agregan solos al <a href="<?= $urlBase ?>/compras-proveedor/nueva">registrar una compra</a> a un proveedor.</p>
                 <?php else: ?>
                     <p class="textoAyuda"><em>Disponible después del paso 1.</em></p>
                 <?php endif; ?>
@@ -245,7 +247,7 @@ $detalle = function ($componente) use ($tiposPorId): string {
                                     <?= Csrf::campo() ?>
                                     <input type="hidden" name="id" value="<?= $componente->getIdComponente() ?>">
                                     <input type="hidden" name="activo" value="<?= $componente->getActivo() ? '0' : '1' ?>">
-                                    <button type="submit" class="botonEnlace"><?= $componente->getActivo() ? 'Desactivar' : 'Activar' ?></button>
+                                    <button type="submit" class="boton botonSecundario botonPequeno <?= $componente->getActivo() ? 'botonPeligroSuave' : '' ?>"><?= $componente->getActivo() ? 'Desactivar' : 'Activar' ?></button>
                                 </form>
                             </td>
                         </tr>
