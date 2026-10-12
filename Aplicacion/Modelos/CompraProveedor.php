@@ -6,7 +6,7 @@ use DateTime;
 
 class CompraProveedor
 {
-    public const REGISTRADA = 'Registrada';
+    public const ACTIVA = 'Activa';
     public const ANULADA = 'Anulada';
 
     private ?int $idCompraProveedor;
@@ -32,7 +32,7 @@ class CompraProveedor
         float $subtotal,
         float $costoEnvio,
         float $total,
-        string $estado = self::REGISTRADA,
+        string $estado = self::ACTIVA,
         ?DateTime $fechaRegistro = null,
         array $detalles = [],
         string $nombreProveedor = '',

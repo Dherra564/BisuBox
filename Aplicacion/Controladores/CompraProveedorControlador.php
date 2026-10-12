@@ -21,7 +21,7 @@ use Throwable;
 
 class CompraProveedorControlador
 {
-    private const ESTADOS = ['todas' => 'Todas', 'registradas' => 'Registradas', 'anuladas' => 'Anuladas'];
+    private const ESTADOS = ['todas' => 'Todas', 'activas' => 'Activas', 'anuladas' => 'Anuladas'];
 
     private CompraProveedorRepositorio $compraRepositorio;
     private int $idVendedor;
@@ -50,7 +50,6 @@ class CompraProveedorControlador
         $estado = is_string($_GET['estado'] ?? null) && isset(self::ESTADOS[$_GET['estado']]) ? $_GET['estado'] : 'todas';
         $periodo = PeriodoFechas::leer($_GET);
 
-        // Cuántas hay en cada pestaña con el proveedor y las fechas escogidos
         $base = ['proveedor' => $proveedor, 'desde' => $periodo['desde'], 'hasta' => $periodo['hasta']];
         $conteos = [];
         foreach (array_keys(self::ESTADOS) as $codigo) {
@@ -109,7 +108,7 @@ class CompraProveedorControlador
             return;
         }
 
-        $armada = DatosCompraProveedor::crearCompra($datos, $this->idVendedor, $opciones['componentes']);
+        $armada = DatosCompraProveedor::crearCompra($datos, $this->idVendedor, $opciones['componentes'], $opciones['tipos']);
         try {
             $idCompraProveedor = $this->compraRepositorio->registrar($armada['compra'], $armada['nuevos']);
         } catch (Throwable $error) {

@@ -1908,43 +1908,41 @@ h1, h2, h3 {
     border-radius: 0;
 }
 
+/* Registrar compra: una sola columna con los tres pasos y el resumen al final */
 .registroCompra {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 20px;
+    max-width: 900px;
 }
 
-.registroCompraPasos {
-    flex: 999 1 540px;
-    min-width: 0;
+.pasoCompra {
+    padding: 22px 24px 8px;
 }
 
 .pasoEncabezado {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
     margin-bottom: 16px;
 }
 
 .pasoEncabezado h2 {
-    margin: 0;
+    margin: 2px 0 0;
 }
 
 .pasoEncabezado .textoAyuda {
-    margin: 2px 0 0;
+    margin: 4px 0 0;
 }
 
 .pasoNumero {
     flex: none;
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     background: var(--colorTitulo);
     color: var(--colorTextoClaro);
+    font-size: 0.9rem;
     font-weight: 700;
 }
 
@@ -1957,130 +1955,150 @@ h1, h2, h3 {
     color: var(--colorTextoSuave);
 }
 
+/* Paso 2: las pestañas van pegadas a los bordes de la sección */
 .pasoEscoger {
     padding-bottom: 0;
-    overflow: hidden;
 }
 
 .pasoEscoger .pestanas {
-    margin: 0 -22px;
-    padding: 0 22px;
+    margin: 0 -24px;
+    padding: 0 24px;
 }
 
 .panelEscoger {
-    margin: 0 -22px;
-    padding: 18px 22px 22px;
-    background: #fbfdfc;
-}
-
-.panelEscoger .etiquetaCampo {
-    display: block;
-    margin-bottom: 8px;
+    padding: 18px 0 20px;
 }
 
 .botonesTipo {
-    margin-bottom: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.botonTipo {
+    padding: 7px 14px;
+    border: 1px solid var(--colorBorde);
+    border-radius: 999px;
+    background: var(--colorSuperficie);
+    color: var(--colorTexto);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.botonTipo:hover {
+    border-color: var(--colorTitulo);
+}
+
+.botonTipo:focus-visible {
+    outline: 2px solid var(--colorFoco);
+    outline-offset: 2px;
+}
+
+.botonTipoActivo,
+.botonTipoActivo:hover {
+    border-color: var(--colorTitulo);
+    background: var(--colorTitulo);
+    color: var(--colorTextoClaro);
 }
 
 .buscadorComponentes {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 14px;
-    padding: 0 12px;
+    width: 100%;
+    margin-bottom: 6px;
+    padding: 10px 12px;
+    font: inherit;
+    color: var(--colorTexto);
     border: 1px solid var(--colorBordeCampo);
     border-radius: var(--radioCampo);
     background: var(--colorSuperficie);
 }
 
-.buscadorComponentes:focus-within {
+.buscadorComponentes:focus {
     outline: 2px solid var(--colorFoco);
     outline-offset: 1px;
 }
 
-.buscadorComponentes svg {
-    flex: none;
-    width: 16px;
-    height: 16px;
-    fill: none;
-    stroke: var(--colorTextoSuave);
-    stroke-width: 1.6;
-    stroke-linecap: round;
+.listaInventario {
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
-.buscadorComponentes input {
-    flex: 1;
-    min-width: 0;
-    padding: 11px 0;
-    border: none;
-    background: none;
-    font: inherit;
-    color: var(--colorTexto);
-    outline: none;
-}
-
-.tarjetasComponentes {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-}
-
-.tarjetaComponente {
+.filaInventario {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
-    padding: 12px 14px;
-    border: 1px solid var(--colorBorde);
-    border-radius: var(--radioCampo);
-    background: var(--colorSuperficie);
+    gap: 12px;
+    padding: 11px 2px;
+    border-bottom: 1px solid var(--colorBorde);
 }
 
-.tarjetaComponente[hidden] {
-    display: none;
+.filaInventario:last-child {
+    border-bottom: none;
 }
 
-.tarjetaComponenteTexto {
+.filaInventarioTexto {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
     min-width: 0;
 }
 
-.tarjetaComponenteTexto .textoAyuda {
-    margin: 0;
+.filaInventarioTexto span {
+    font-size: 0.85rem;
+    color: var(--colorTextoSuave);
 }
 
-.tarjetaComponente .boton {
+.filaInventario .boton {
     flex: none;
 }
 
 .enLaCompra {
     flex: none;
     color: var(--colorTitulo);
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     font-weight: 600;
 }
 
 .sinCoincidencias {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-top: 10px;
-    padding: 14px 16px;
-    border: 1px dashed var(--colorBordeFoto);
-    border-radius: var(--radioCampo);
-    background: var(--colorSuperficie);
-}
-
-.sinCoincidencias[hidden] {
-    display: none;
+    margin: 10px 0 0;
+    color: var(--colorTextoSuave);
 }
 
 .panelEscoger .sinResultados {
     padding: 20px 0;
+}
+
+/* Componente nuevo: los datos del tipo se desbloquean al escogerlo */
+.atributosNuevo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0 16px;
+}
+
+.atributosNuevo input:disabled {
+    border-style: dashed;
+    background: var(--colorFondo);
+}
+
+.atributosNuevo .textoAyuda {
+    margin: 0 0 14px;
+}
+
+.casillaAtributo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    font-weight: 400;
+}
+
+.casillaAtributo input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--colorTitulo);
 }
 
 .opcionesUnidad {
@@ -2099,14 +2117,13 @@ h1, h2, h3 {
 }
 
 .opcionUnidad {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 150px;
-    padding: 10px 14px;
-    border: 2px solid var(--colorBorde);
+    min-width: 120px;
+    padding: 10px 18px;
+    border: 1px solid var(--colorBordeCampo);
     border-radius: var(--radioCampo);
     background: var(--colorSuperficie);
+    font-weight: 600;
+    text-align: center;
     cursor: pointer;
 }
 
@@ -2116,15 +2133,10 @@ h1, h2, h3 {
     pointer-events: none;
 }
 
-.opcionUnidad span {
-    font-size: 0.8rem;
-    color: var(--colorTextoSuave);
-}
-
 .opcionUnidad:has(input:checked) {
     border-color: var(--colorTitulo);
-    background: var(--colorVerdeClaro);
-    color: var(--colorTitulo);
+    background: var(--colorTitulo);
+    color: var(--colorTextoClaro);
 }
 
 .opcionUnidad:has(input:focus-visible) {
@@ -2132,56 +2144,51 @@ h1, h2, h3 {
     outline-offset: 2px;
 }
 
-.pieNuevo {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-}
-
-.pieNuevo .textoAyuda {
-    margin: 0;
-}
-
-.listaLineasCompra {
+/* Paso 3: una fila por componente, como una tabla */
+.lineasEncabezado,
+.lineaCompra {
     display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr) minmax(0, 1.1fr) minmax(0, 0.8fr) 36px;
     gap: 12px;
 }
 
-.lineasVacias {
-    margin: 0;
-    padding: 26px 16px;
-    border: 1px dashed var(--colorBordeCampo);
-    border-radius: var(--radioCampo);
-    text-align: center;
+.lineasEncabezado {
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--colorBorde);
+    font-size: 0.85rem;
+    font-weight: 600;
     color: var(--colorTextoSuave);
 }
 
 .lineaCompra {
-    padding: 14px 16px 4px;
-    border: 1px solid var(--colorBorde);
-    border-radius: var(--radioCampo);
-    background: var(--colorSuperficie);
+    align-items: start;
+    padding: 12px 0 0;
+    border-bottom: 1px solid var(--colorBorde);
 }
 
-.lineaCompraEncabezado {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 10px;
+.lineaCompra:last-child {
+    border-bottom: none;
+}
+
+/* Los datos del componente nuevo van escondidos dentro de la fila */
+.lineaCompra [data-linea-valores] {
+    display: none;
+}
+
+.lineaCompra .campo {
+    margin-bottom: 12px;
 }
 
 .lineaCompraNombre {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
+    flex-direction: column;
+    gap: 2px;
+    padding-top: 4px;
+    min-width: 0;
 }
 
-.etiquetaTipo {
-    background: var(--colorFondo);
+.lineaCompraDetalle {
+    font-size: 0.85rem;
     color: var(--colorTextoSuave);
 }
 
@@ -2190,83 +2197,139 @@ h1, h2, h3 {
     color: var(--colorAdvertencia);
 }
 
-.lineaCompraEncabezado .botonQuitar {
-    width: 38px;
-    height: 38px;
+/* En la computadora el encabezado de la tabla hace de etiqueta */
+.etiquetaLinea {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
 }
 
-.lineaCompraCampos {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0 12px;
-    align-items: start;
+.lineaCompra .campoConUnidad {
+    gap: 6px;
 }
 
-.campoCostoCalculado .etiquetaCampo {
-    display: block;
-    margin-bottom: 6px;
+.campo .selectorMedida {
+    flex: none;
+    width: 68px;
+    padding-left: 8px;
+    padding-right: 4px;
 }
 
-.costoCalculado {
-    display: block;
-    padding: 9px 0;
-    font-size: 1.15rem;
-    font-weight: 700;
-}
-
-.avisoExistencia {
-    margin: 0 0 10px;
-    color: var(--colorTitulo);
-    font-size: 0.88rem;
-    font-weight: 600;
-}
-
-.resumenCompra {
-    flex: 1 1 260px;
+.lineaCompraCosto {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding: 20px 22px;
+    gap: 1px;
+    padding-top: 4px;
+}
+
+.lineaCompraCosto strong {
+    font-size: 1.05rem;
+}
+
+.botonQuitarLinea {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 4px;
+    border: none;
+    border-radius: var(--radioCampo);
+    background: none;
+    cursor: pointer;
+}
+
+.botonQuitarLinea:hover {
+    background: var(--colorErrorFondo);
+}
+
+.botonQuitarLinea:focus-visible {
+    outline: 2px solid var(--colorFoco);
+}
+
+.botonQuitarLinea svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: var(--colorTextoSuave);
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.botonQuitarLinea:hover svg {
+    stroke: var(--colorError);
+}
+
+.lineaCompraErrores {
+    grid-column: 1 / -1;
+    margin-bottom: 10px;
+}
+
+.lineaCompraErrores .errorCampo {
+    margin: 0 0 4px;
+}
+
+.lineasVacias {
+    margin: 0 0 14px;
+    color: var(--colorTextoSuave);
+}
+
+/* Resumen al final: totales y los botones para registrar o cancelar */
+.resumenCompra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px 24px;
     border: 1px solid var(--colorBorde);
     border-radius: var(--radio);
     background: var(--colorSuperficie);
 }
 
-.resumenCompra h2 {
-    margin: 0;
+.resumenCompraTotales {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px;
 }
 
-.resumenCompraDatos {
-    display: grid;
+.resumenCompraTotales > div {
+    display: flex;
+    flex-direction: column;
     gap: 2px;
-    margin: 0;
 }
 
-.resumenCompraDatos dt {
+.resumenCompraTotales span {
     font-size: 0.85rem;
     color: var(--colorTextoSuave);
 }
 
-.resumenCompraDatos dd {
-    margin: 0 0 8px;
-    font-weight: 600;
+.resumenCompraTotales strong {
+    font-size: 1.1rem;
 }
 
-.resumenCompra .totalesCompra {
-    max-width: none;
-    margin: 0;
+.resumenCompraTotal strong {
+    font-size: 1.5rem;
+    color: var(--colorTitulo);
 }
 
-.resumenCompra .textoAyuda {
-    margin: 0;
+.resumenCompraBotones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 18px;
 }
 
 .botonRegistrar {
     min-height: 48px;
+    padding-left: 28px;
+    padding-right: 28px;
 }
 
 .enlaceCancelar {
-    text-align: center;
     font-weight: 600;
 }
 
@@ -2706,23 +2769,17 @@ h1, h2, h3 {
         min-width: 0;
     }
 
-    .filaTres,
-    .tarjetasComponentes,
-    .lineaCompraCampos {
+        .filaTres {
         grid-template-columns: 1fr;
     }
 
-    .tarjetaComponente {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
-    .tarjetaComponente .boton {
-        align-self: stretch;
+    .pasoCompra {
+        padding: 18px 16px 6px;
     }
 
     .opcionUnidad {
-        flex: 1 1 100%;
+        flex: 1 1 0;
+        min-width: 0;
     }
 
     .pasoEscoger .pestana {
@@ -2732,11 +2789,69 @@ h1, h2, h3 {
         font-size: 0.9rem;
     }
 
-    .pasoEscoger .pestanas,
-    .panelEscoger {
+    .pasoEscoger .pestanas {
         margin: 0 -16px;
-        padding-left: 16px;
-        padding-right: 16px;
+        padding: 0 16px;
+    }
+
+    /* En el celular cada componente es una tarjeta con sus etiquetas */
+    .lineasEncabezado {
+        display: none;
+    }
+
+    .lineaCompra {
+        grid-template-columns: 1fr 1fr;
+        gap: 0 12px;
+        padding-top: 14px;
+    }
+
+    .lineaCompraNombre {
+        grid-column: 1;
+        margin-bottom: 10px;
+    }
+
+    .botonQuitarLinea {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+    }
+
+    .etiquetaLinea {
+        position: static;
+        width: auto;
+        height: auto;
+        overflow: visible;
+        clip: auto;
+        white-space: normal;
+        display: block;
+        margin-bottom: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--colorTextoSuave);
+    }
+
+    .lineaCompraCosto {
+        grid-column: 1 / -1;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 6px;
+        padding: 0 0 12px;
+    }
+
+    .lineaCompraCosto .etiquetaLinea {
+        margin: 0;
+    }
+
+    .resumenCompra {
+        padding: 18px 16px;
+    }
+
+    .resumenCompraBotones {
+        width: 100%;
+        flex-direction: column-reverse;
+        align-items: stretch;
+        text-align: center;
     }
 
     .totalesCompra {

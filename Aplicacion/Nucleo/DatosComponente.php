@@ -13,16 +13,6 @@ class DatosComponente
     public static function leer(TipoComponente $tipo): array
     {
         $texto = fn(mixed $valor): string => is_string($valor) ? trim($valor) : '';
-        $enviados = is_array($_POST['valor'] ?? null) ? $_POST['valor'] : [];
-
-        $valores = [];
-        foreach ($tipo->getAtributosActivos() as $atributo) {
-            $valor = $texto($enviados[$atributo->getIdAtributo()] ?? null);
-            if ($atributo->getClase() === ClaseDato::SINO) {
-                $valor = $valor === '1' ? '1' : '0';
-            }
-            $valores[(int) $atributo->getIdAtributo()] = UsuarioRepositorio::limpiarEspacios($valor);
-        }
 
         return [
             'nombre' => UsuarioRepositorio::limpiarEspacios($texto($_POST['nombre'] ?? null)),
@@ -30,8 +20,49 @@ class DatosComponente
             'existencia' => $texto($_POST['existencia'] ?? null),
             'costoTotal' => $texto($_POST['costoTotal'] ?? null),
             'existenciaMinima' => $texto($_POST['existenciaMinima'] ?? null),
-            'valores' => $valores,
+            'valores' => self::leerValores($tipo, $_POST['valor'] ?? null),
         ];
+    }
+
+    // Los valores de los atributos del tipo, por id de atributo; también se usa al crear un componente desde una compra
+    public static function leerValores(TipoComponente $tipo, mixed $enviados): array
+    {
+        $enviados = is_array($enviados) ? $enviados : [];
+
+        $valores = [];
+        foreach ($tipo->getAtributosActivos() as $atributo) {
+            $valor = $enviados[$atributo->getIdAtributo()] ?? null;
+            $valor = is_string($valor) ? trim($valor) : '';
+            if ($atributo->getClase() === ClaseDato::SINO) {
+                $valor = $valor === '1' ? '1' : '0';
+            }
+            $valores[(int) $atributo->getIdAtributo()] = UsuarioRepositorio::limpiarEspacios($valor);
+        }
+
+        return $valores;
+    }
+
+    // Revisa los valores de los atributos; los errores quedan como {prefijo}{idAtributo}
+    public static function validarValores(Validador $validador, string $prefijo, TipoComponente $tipo, array $valores): void
+    {
+        foreach ($tipo->getAtributosActivos() as $atributo) {
+            self::validarValor($validador, $prefijo . $atributo->getIdAtributo(), $atributo, $valores[(int) $atributo->getIdAtributo()] ?? '');
+        }
+    }
+
+    // Los números se guardan con punto, como los lee la base de datos
+    public static function valoresParaGuardar(TipoComponente $tipo, array $valores): array
+    {
+        $guardar = [];
+        foreach ($tipo->getAtributosActivos() as $atributo) {
+            $valor = $valores[(int) $atributo->getIdAtributo()] ?? '';
+            if ($atributo->getClase() === ClaseDato::NUMERO && $valor !== '') {
+                $valor = (string) Numero::leer($valor);
+            }
+            $guardar[(int) $atributo->getIdAtributo()] = $valor;
+        }
+
+        return $guardar;
     }
 
     public static function validar(
@@ -55,6 +86,7 @@ class DatosComponente
         }
         $enUnidades = $datos['unidad'] === UnidadMedida::UNIDAD;
 
+        // Al crearlo a mano: lo que tiene ahora y lo que pagó en total por eso; el costo de cada uno se calcula
         if ($original === null) {
             self::validarCantidad($validador, 'existencia', $datos['existencia'], $enUnidades, false);
             $existencia = Numero::leer($datos['existencia']) ?? 0;
@@ -64,22 +96,11 @@ class DatosComponente
         }
         self::validarCantidad($validador, 'existenciaMinima', $datos['existenciaMinima'], $enUnidades, false);
 
-        foreach ($tipo->getAtributosActivos() as $atributo) {
-            self::validarValor($validador, $atributo, $datos['valores'][(int) $atributo->getIdAtributo()] ?? '');
-        }
+        self::validarValores($validador, 'valor.', $tipo, $datos['valores']);
     }
 
     public static function crearComponente(array $datos, TipoComponente $tipo, int $idVendedor, ?Componente $original = null): Componente
     {
-        $valores = [];
-        foreach ($tipo->getAtributosActivos() as $atributo) {
-            $valor = $datos['valores'][(int) $atributo->getIdAtributo()] ?? '';
-            if ($atributo->getClase() === ClaseDato::NUMERO && $valor !== '') {
-                $valor = (string) Numero::leer($valor);
-            }
-            $valores[(int) $atributo->getIdAtributo()] = $valor;
-        }
-
         return new Componente(
             $original?->getIdComponente(),
             $idVendedor,
@@ -90,7 +111,7 @@ class DatosComponente
             $original?->getCostoUnitario() ?? self::costoUnitario($datos['existencia'], $datos['costoTotal']),
             Numero::leer($datos['existenciaMinima']) ?? 0,
             $original?->getActivo() ?? true,
-            $valores
+            self::valoresParaGuardar($tipo, $datos['valores'])
         );
     }
 
@@ -156,6 +177,7 @@ class DatosComponente
         return '';
     }
 
+    // El costo de cada uno: lo que pagó en total entre lo que tiene (4 decimales); sin existencia el costo es 0
     private static function costoUnitario(string $existencia, string $costoTotal): float
     {
         $cantidad = Numero::leer($existencia) ?? 0;
@@ -179,9 +201,8 @@ class DatosComponente
         }
     }
 
-    private static function validarValor(Validador $validador, TipoComponenteAtributo $atributo, string $valor): void
+    private static function validarValor(Validador $validador, string $campo, TipoComponenteAtributo $atributo, string $valor): void
     {
-        $campo = 'valor.' . $atributo->getIdAtributo();
         $clase = $atributo->getClase();
 
         if ($valor === '' || ($clase === ClaseDato::SINO)) {

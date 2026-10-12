@@ -1,3 +1,4 @@
+// Registrar compra: pestañas para escoger componentes, componente nuevo con los datos de su tipo, filas con cantidad y precio total, y el resumen
 document.addEventListener('DOMContentLoaded', function () {
     var formulario = document.querySelector('.formularioCompra');
     if (!formulario) {
@@ -6,37 +7,44 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var lista = formulario.querySelector('[data-lineas]');
     var sinLineas = formulario.querySelector('[data-sin-lineas]');
+    var encabezado = formulario.querySelector('[data-encabezado-lineas]');
     var plantilla = document.querySelector('[data-linea-plantilla]');
     var campoEnvio = formulario.querySelector('[data-costo-envio]');
     var maximo = parseInt(formulario.getAttribute('data-maximo-lineas'), 10) || 50;
     var patronNumero = /^[0-9]{1,10}([.,][0-9]{1,2})?$/;
 
+    // Cómo se cuenta cada unidad; igual que UnidadMedida en PHP
     var unidades = {
-        Unidad: { singular: 'unidad', plural: 'unidades', costo: 'Costo de cada uno', ayuda: 'Solo números enteros', entera: true },
-        Metro: { singular: 'metro', plural: 'metros', costo: 'Costo por metro', ayuda: 'En metros. Para centímetros use decimales: 20 cm = 0,20', entera: false },
-        Gramo: { singular: 'gramo', plural: 'gramos', costo: 'Costo por gramo', ayuda: 'En gramos; puede usar decimales, por ejemplo 2,5', entera: false }
+        Unidad: { singular: 'unidad', plural: 'unidades', abreviatura: 'u', por: 'cada uno' },
+        Metro: { singular: 'metro', plural: 'metros', abreviatura: 'm', por: 'por metro' },
+        Gramo: { singular: 'gramo', plural: 'gramos', abreviatura: 'g', por: 'por gramo' }
     };
 
+    // Las claves nuevas siguen después de la mayor que ya existe
     var siguienteClave = 0;
     lista.querySelectorAll('[data-linea]').forEach(function (linea) {
         siguienteClave = Math.max(siguienteClave, parseInt(linea.getAttribute('data-clave'), 10) + 1);
     });
 
+    // Igual que Numero::leer en PHP: "12", "12,5" o "12.50"; null si no es un número
     function leerNumero(texto) {
         texto = texto.replace(/\s/g, '');
         return patronNumero.test(texto) ? parseFloat(texto.replace(',', '.')) : null;
     }
 
+    // Número con punto para miles y coma para decimales, como number_format en PHP
     function formatear(numero, decimales) {
         var partes = numero.toFixed(decimales).split('.');
         var enteros = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
         return partes.length > 1 ? enteros + ',' + partes[1] : enteros;
     }
 
+    // Igual que Numero::moneda en PHP: ₡1.250 o ₡12,50
     function moneda(monto) {
         return '₡' + formatear(monto, Math.round(monto * 100) % 100 === 0 ? 0 : 2);
     }
 
+    // Igual que Numero::formatear en PHP: sin ceros de más
     function cantidadTexto(numero) {
         return formatear(numero, 2).replace(/,?0+$/, '');
     }
@@ -48,189 +56,6 @@ document.addEventListener('DOMContentLoaded', function () {
     function normalizar(texto) {
         return texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
     }
-
-    var pestanas = formulario.querySelectorAll('[data-pestana]');
-
-    function abrirPestana(nombre) {
-        pestanas.forEach(function (pestana) {
-            var activa = pestana.getAttribute('data-pestana') === nombre;
-            pestana.classList.toggle('pestanaActiva', activa);
-            pestana.setAttribute('aria-selected', activa ? 'true' : 'false');
-        });
-        formulario.querySelectorAll('[data-panel]').forEach(function (panel) {
-            panel.hidden = panel.getAttribute('data-panel') !== nombre;
-        });
-    }
-
-    pestanas.forEach(function (pestana) {
-        pestana.addEventListener('click', function () {
-            abrirPestana(pestana.getAttribute('data-pestana'));
-        });
-    });
-
-    var tarjetas = Array.prototype.slice.call(formulario.querySelectorAll('[data-tarjeta]'));
-    var buscador = formulario.querySelector('[data-buscar-componente]');
-    var sinCoincidencias = formulario.querySelector('[data-sin-coincidencias]');
-    var tipoElegido = '';
-
-    function filtrarTarjetas() {
-        var texto = buscador ? normalizar(buscador.value) : '';
-        var visibles = 0;
-        tarjetas.forEach(function (tarjeta) {
-            var coincide = (tipoElegido === '' || tarjeta.getAttribute('data-tipo') === tipoElegido)
-                && (texto === '' || normalizar(tarjeta.getAttribute('data-nombre')).indexOf(texto) !== -1);
-            tarjeta.hidden = !coincide;
-            visibles += coincide ? 1 : 0;
-        });
-        if (sinCoincidencias) {
-            sinCoincidencias.hidden = visibles > 0 || texto === '';
-            sinCoincidencias.querySelector('[data-texto-buscado]').textContent = buscador.value.trim();
-        }
-    }
-
-    formulario.querySelectorAll('[data-filtro-tipo]').forEach(function (boton) {
-        boton.addEventListener('click', function () {
-            tipoElegido = boton.getAttribute('data-filtro-tipo');
-            formulario.querySelectorAll('[data-filtro-tipo]').forEach(function (otro) {
-                otro.classList.toggle('botonFechaActivo', otro === boton);
-                otro.setAttribute('aria-pressed', otro === boton ? 'true' : 'false');
-            });
-            filtrarTarjetas();
-        });
-    });
-
-    if (buscador) {
-        buscador.addEventListener('input', filtrarTarjetas);
-        buscador.addEventListener('keydown', function (evento) {
-            if (evento.key === 'Enter') {
-                evento.preventDefault();
-            }
-        });
-    }
-
-    function marcarTarjeta(idComponente, agregado) {
-        tarjetas.forEach(function (tarjeta) {
-            if (tarjeta.getAttribute('data-id') === idComponente) {
-                tarjeta.querySelector('[data-en-compra]').hidden = !agregado;
-                tarjeta.querySelector('[data-agregar]').hidden = agregado;
-            }
-        });
-    }
-
-    function crearLinea(datos) {
-        if (lineas().length >= maximo) {
-            window.alert('Una compra puede tener como máximo ' + maximo + ' componentes.');
-            return null;
-        }
-        var contenedor = document.createElement('div');
-        contenedor.innerHTML = plantilla.innerHTML.replace(/__n__/g, String(siguienteClave++)).trim();
-        var linea = contenedor.firstElementChild;
-        var unidad = unidades[datos.unidad] || unidades.Unidad;
-
-        linea.setAttribute('data-componente', datos.componente);
-        linea.setAttribute('data-existencia', String(datos.existencia));
-        linea.setAttribute('data-plural', unidad.plural);
-        linea.setAttribute('data-entera', unidad.entera ? '1' : '0');
-        linea.setAttribute('data-unidad', datos.unidad);
-        linea.setAttribute('data-nuevo', datos.nuevo ? '1' : '0');
-        linea.querySelector('[data-linea-componente]').value = datos.componente;
-        linea.querySelector('[data-linea-tipo]').value = datos.nuevo ? datos.tipo : '';
-        linea.querySelector('[data-linea-nombre]').value = datos.nuevo ? datos.nombre : '';
-        linea.querySelector('[data-linea-unidad]').value = datos.nuevo ? datos.unidad : '';
-        linea.querySelector('[data-linea-titulo]').textContent = datos.nombre;
-        linea.querySelector('[data-linea-tipo-nombre]').textContent = datos.tipoNombre;
-        linea.querySelector('[data-linea-marca-nuevo]').hidden = !datos.nuevo;
-        linea.querySelector('[data-linea-quitar]').setAttribute('aria-label', 'Quitar ' + datos.nombre + ' de la compra');
-        linea.querySelector('[data-linea-plural]').textContent = unidad.plural;
-        linea.querySelector('[data-linea-ayuda]').textContent = unidad.ayuda;
-        linea.querySelector('[data-linea-etiqueta-costo]').textContent = unidad.costo;
-
-        lista.appendChild(linea);
-        actualizar();
-        linea.querySelector('[data-linea-cantidad]').focus();
-        return linea;
-    }
-
-    function actualizarLinea(linea) {
-        var unidad = unidades[linea.getAttribute('data-unidad')] || unidades.Unidad;
-        var cantidad = leerNumero(linea.querySelector('[data-linea-cantidad]').value) || 0;
-        var total = leerNumero(linea.querySelector('[data-linea-total]').value) || 0;
-
-        linea.querySelector('[data-linea-costo]').textContent = cantidad > 0 ? moneda(Math.round(total / cantidad * 100) / 100) : '—';
-
-        var ayuda = unidad.ayuda;
-        if (linea.getAttribute('data-unidad') === 'Metro' && cantidad > 0) {
-            ayuda += ' · ' + cantidadTexto(cantidad) + ' m = ' + cantidadTexto(cantidad * 100) + ' cm';
-        }
-        linea.querySelector('[data-linea-ayuda]').textContent = ayuda;
-
-        var existencia = parseFloat(linea.getAttribute('data-existencia')) || 0;
-        var aviso = linea.querySelector('[data-linea-aviso]');
-        if (linea.getAttribute('data-nuevo') === '1') {
-            aviso.textContent = cantidad > 0 ? 'Entrará al inventario con ' + cantidadTexto(cantidad) + ' ' + unidad.plural : 'Componente nuevo: se agrega al inventario al registrar la compra';
-        } else {
-            aviso.textContent = 'Tiene ' + cantidadTexto(existencia) + ' ' + (existencia === 1 ? unidad.singular : unidad.plural)
-                + (cantidad > 0 ? ' → quedará con ' + cantidadTexto(existencia + cantidad) : '');
-        }
-
-        return total;
-    }
-
-    function actualizar() {
-        var subtotal = 0;
-        lineas().forEach(function (linea) {
-            subtotal += actualizarLinea(linea);
-        });
-        var envio = leerNumero(campoEnvio.value) || 0;
-        var cantidadLineas = lineas().length;
-
-        sinLineas.hidden = cantidadLineas > 0;
-        formulario.querySelector('[data-resumen-cantidad]').textContent = cantidadLineas === 1 ? '1 componente' : cantidadLineas + ' componentes';
-        formulario.querySelector('[data-total-subtotal]').textContent = moneda(subtotal);
-        formulario.querySelector('[data-total-envio]').textContent = envio > 0 ? moneda(envio) : 'Sin envío';
-        formulario.querySelector('[data-total-compra]').textContent = moneda(subtotal + envio);
-
-        var proveedor = formulario.querySelector('#proveedor');
-        formulario.querySelector('[data-resumen-proveedor]').textContent = proveedor.value !== ''
-            ? proveedor.options[proveedor.selectedIndex].text.trim() : 'Sin escoger';
-        var fecha = formulario.querySelector('#fecha').value;
-        formulario.querySelector('[data-resumen-fecha]').textContent = /^\d{4}-\d{2}-\d{2}$/.test(fecha)
-            ? fecha.split('-').reverse().join('/') : 'Sin escoger';
-    }
-
-    tarjetas.forEach(function (tarjeta) {
-        tarjeta.querySelector('[data-agregar]').addEventListener('click', function () {
-            var linea = crearLinea({
-                componente: tarjeta.getAttribute('data-id'),
-                nombre: tarjeta.getAttribute('data-nombre'),
-                tipoNombre: tarjeta.getAttribute('data-tipo-nombre'),
-                unidad: tarjeta.getAttribute('data-unidad'),
-                existencia: parseFloat(tarjeta.getAttribute('data-existencia')) || 0,
-                nuevo: false
-            });
-            if (linea) {
-                marcarTarjeta(tarjeta.getAttribute('data-id'), true);
-            }
-        });
-    });
-
-    lista.addEventListener('click', function (evento) {
-        var boton = evento.target.closest('[data-linea-quitar]');
-        if (!boton) {
-            return;
-        }
-        var linea = boton.closest('[data-linea]');
-        if (linea.getAttribute('data-nuevo') !== '1') {
-            marcarTarjeta(linea.getAttribute('data-componente'), false);
-        }
-        linea.remove();
-        actualizar();
-    });
-
-    // ---------- Componente nuevo ----------
-    var nuevoTipo = formulario.querySelector('[data-nuevo-tipo]');
-    var nuevoNombre = formulario.querySelector('[data-nuevo-nombre]');
-    var botonNuevo = formulario.querySelector('[data-agregar-nuevo]');
 
     function quitarErrores(contenedor) {
         contenedor.querySelectorAll('.campoConError').forEach(function (campo) {
@@ -250,8 +75,250 @@ document.addEventListener('DOMContentLoaded', function () {
         contenedor.appendChild(error);
     }
 
+    // ---------- Pestañas: De mi inventario / Componente nuevo ----------
+    var pestanas = formulario.querySelectorAll('[data-pestana]');
+
+    function abrirPestana(nombre) {
+        pestanas.forEach(function (pestana) {
+            var activa = pestana.getAttribute('data-pestana') === nombre;
+            pestana.classList.toggle('pestanaActiva', activa);
+            pestana.setAttribute('aria-selected', activa ? 'true' : 'false');
+        });
+        formulario.querySelectorAll('[data-panel]').forEach(function (panel) {
+            panel.hidden = panel.getAttribute('data-panel') !== nombre;
+        });
+    }
+
+    pestanas.forEach(function (pestana) {
+        pestana.addEventListener('click', function () {
+            abrirPestana(pestana.getAttribute('data-pestana'));
+        });
+    });
+
+    // ---------- De mi inventario: filtro por tipo y buscador ----------
+    var filas = Array.prototype.slice.call(formulario.querySelectorAll('[data-fila-inventario]'));
+    var buscador = formulario.querySelector('[data-buscar-componente]');
+    var sinCoincidencias = formulario.querySelector('[data-sin-coincidencias]');
+    var tipoElegido = '';
+
+    function filtrarInventario() {
+        var texto = buscador ? normalizar(buscador.value) : '';
+        var visibles = 0;
+        filas.forEach(function (fila) {
+            var coincide = (tipoElegido === '' || fila.getAttribute('data-tipo') === tipoElegido)
+                && (texto === '' || normalizar(fila.getAttribute('data-nombre')).indexOf(texto) !== -1);
+            fila.hidden = !coincide;
+            visibles += coincide ? 1 : 0;
+        });
+        if (sinCoincidencias) {
+            sinCoincidencias.hidden = visibles > 0 || texto === '';
+            sinCoincidencias.querySelector('[data-texto-buscado]').textContent = buscador.value.trim();
+        }
+    }
+
+    formulario.querySelectorAll('[data-filtro-tipo]').forEach(function (boton) {
+        boton.addEventListener('click', function () {
+            tipoElegido = boton.getAttribute('data-filtro-tipo');
+            formulario.querySelectorAll('[data-filtro-tipo]').forEach(function (otro) {
+                otro.classList.toggle('botonTipoActivo', otro === boton);
+                otro.setAttribute('aria-pressed', otro === boton ? 'true' : 'false');
+            });
+            filtrarInventario();
+        });
+    });
+
+    if (buscador) {
+        buscador.addEventListener('input', filtrarInventario);
+        // Enter en el buscador no debe enviar la compra
+        buscador.addEventListener('keydown', function (evento) {
+            if (evento.key === 'Enter') {
+                evento.preventDefault();
+            }
+        });
+    }
+
+    function marcarFila(idComponente, agregado) {
+        filas.forEach(function (fila) {
+            if (fila.getAttribute('data-id') === idComponente) {
+                fila.querySelector('[data-en-compra]').hidden = !agregado;
+                fila.querySelector('[data-agregar]').hidden = agregado;
+            }
+        });
+    }
+
+    // ---------- Filas de la compra (paso 3) ----------
+    function crearLinea(datos) {
+        if (lineas().length >= maximo) {
+            window.alert('Una compra puede tener como máximo ' + maximo + ' componentes.');
+            return null;
+        }
+        var contenedor = document.createElement('div');
+        var clave = String(siguienteClave++);
+        contenedor.innerHTML = plantilla.innerHTML.replace(/__n__/g, clave).trim();
+        var linea = contenedor.firstElementChild;
+        var unidad = unidades[datos.unidad] || unidades.Unidad;
+        var esMetro = datos.unidad === 'Metro';
+
+        linea.setAttribute('data-componente', datos.componente);
+        linea.setAttribute('data-existencia', String(datos.existencia));
+        linea.setAttribute('data-unidad', datos.unidad);
+        linea.setAttribute('data-nuevo', datos.nuevo ? '1' : '0');
+        linea.setAttribute('data-detalle', datos.detalle);
+        linea.querySelector('[data-linea-componente]').value = datos.componente;
+        linea.querySelector('[data-linea-tipo]').value = datos.nuevo ? datos.tipo : '';
+        linea.querySelector('[data-linea-nombre]').value = datos.nuevo ? datos.nombre : '';
+        linea.querySelector('[data-linea-unidad]').value = datos.nuevo ? datos.unidad : '';
+        linea.querySelector('[data-linea-titulo]').textContent = datos.nombre;
+        linea.querySelector('[data-linea-marca-nuevo]').hidden = !datos.nuevo;
+        linea.querySelector('[data-linea-quitar]').setAttribute('aria-label', 'Quitar ' + datos.nombre + ' de la compra');
+        linea.querySelector('[data-linea-medida]').hidden = !esMetro;
+        linea.querySelector('[data-linea-abreviatura]').hidden = esMetro;
+        linea.querySelector('[data-linea-abreviatura]').textContent = unidad.abreviatura;
+        linea.querySelector('[data-linea-por]').textContent = unidad.por;
+
+        // Los datos del tipo del componente nuevo viajan escondidos en la fila
+        var valores = linea.querySelector('[data-linea-valores]');
+        (datos.valores || []).forEach(function (valor) {
+            var campo = document.createElement('input');
+            campo.type = 'hidden';
+            campo.name = 'linea[' + clave + '][valor][' + valor.atributo + ']';
+            campo.value = valor.valor;
+            valores.appendChild(campo);
+        });
+
+        lista.appendChild(linea);
+        actualizar();
+        linea.querySelector('[data-linea-cantidad]').focus();
+        return linea;
+    }
+
+    // La cantidad en la unidad del componente: los centímetros pasan a metros
+    function cantidadEnUnidad(linea) {
+        var cantidad = leerNumero(linea.querySelector('[data-linea-cantidad]').value) || 0;
+        var medida = linea.querySelector('[data-linea-medida]');
+        return linea.getAttribute('data-unidad') === 'Metro' && medida.value === 'cm' ? cantidad / 100 : cantidad;
+    }
+
+    function actualizarLinea(linea) {
+        var unidad = unidades[linea.getAttribute('data-unidad')] || unidades.Unidad;
+        var cantidad = cantidadEnUnidad(linea);
+        var total = leerNumero(linea.querySelector('[data-linea-total]').value) || 0;
+
+        // El costo de cada uno: lo que pagó entre lo que compró
+        linea.querySelector('[data-linea-costo]').textContent = cantidad > 0 ? moneda(Math.round(total / cantidad * 100) / 100) : '—';
+
+        // "Perlas · tiene 15 unidades, quedará con 215 unidades" o, si es nuevo, con cuánto entra
+        var existencia = parseFloat(linea.getAttribute('data-existencia')) || 0;
+        var detalle = linea.getAttribute('data-detalle');
+        if (linea.getAttribute('data-nuevo') === '1') {
+            detalle += cantidad > 0 ? ' · entra con ' + cantidadTexto(cantidad) + ' ' + (cantidad === 1 ? unidad.singular : unidad.plural) : '';
+        } else {
+            detalle += ' · tiene ' + cantidadTexto(existencia) + ' ' + (existencia === 1 ? unidad.singular : unidad.plural)
+                + (cantidad > 0 ? ', quedará con ' + cantidadTexto(existencia + cantidad) + ' ' + (existencia + cantidad === 1 ? unidad.singular : unidad.plural) : '');
+        }
+        linea.querySelector('[data-linea-detalle]').textContent = detalle;
+
+        return total;
+    }
+
+    function actualizar() {
+        var subtotal = 0;
+        lineas().forEach(function (linea) {
+            subtotal += actualizarLinea(linea);
+        });
+        var envio = leerNumero(campoEnvio.value) || 0;
+        var cantidadLineas = lineas().length;
+
+        sinLineas.hidden = cantidadLineas > 0;
+        var avisoVacio = formulario.querySelector('[data-error-lineas]');
+        if (avisoVacio && cantidadLineas > 0) {
+            avisoVacio.remove();
+        }
+        encabezado.hidden = cantidadLineas === 0;
+        formulario.querySelector('[data-resumen-cantidad]').textContent = cantidadLineas === 1 ? '1 componente' : cantidadLineas + ' componentes';
+        formulario.querySelector('[data-total-subtotal]').textContent = moneda(subtotal);
+        formulario.querySelector('[data-total-envio]').textContent = envio > 0 ? moneda(envio) : 'Sin envío';
+        formulario.querySelector('[data-total-compra]').textContent = moneda(subtotal + envio);
+    }
+
+    filas.forEach(function (fila) {
+        fila.querySelector('[data-agregar]').addEventListener('click', function () {
+            var linea = crearLinea({
+                componente: fila.getAttribute('data-id'),
+                nombre: fila.getAttribute('data-nombre'),
+                detalle: fila.getAttribute('data-tipo-nombre'),
+                unidad: fila.getAttribute('data-unidad'),
+                existencia: parseFloat(fila.getAttribute('data-existencia')) || 0,
+                nuevo: false
+            });
+            if (linea) {
+                marcarFila(fila.getAttribute('data-id'), true);
+            }
+        });
+    });
+
+    lista.addEventListener('click', function (evento) {
+        var boton = evento.target.closest('[data-linea-quitar]');
+        if (!boton) {
+            return;
+        }
+        var linea = boton.closest('[data-linea]');
+        if (linea.getAttribute('data-nuevo') !== '1') {
+            marcarFila(linea.getAttribute('data-componente'), false);
+        }
+        linea.remove();
+        actualizar();
+    });
+
+    // ---------- Componente nuevo ----------
+    var nuevoTipo = formulario.querySelector('[data-nuevo-tipo]');
+    var nuevoNombre = formulario.querySelector('[data-nuevo-nombre]');
+    var botonNuevo = formulario.querySelector('[data-agregar-nuevo]');
+
+    // Al escoger el tipo se desbloquean sus datos
+    function mostrarAtributos() {
+        formulario.querySelector('[data-atributos-vacio]').hidden = nuevoTipo.value !== '';
+        formulario.querySelectorAll('[data-atributos-tipo]').forEach(function (bloque) {
+            bloque.hidden = bloque.getAttribute('data-atributos-tipo') !== nuevoTipo.value;
+        });
+    }
+
+    function camposAtributos() {
+        var bloque = formulario.querySelector('[data-atributos-tipo="' + nuevoTipo.value + '"]');
+        return bloque ? Array.prototype.slice.call(bloque.querySelectorAll('[data-atributo]')) : [];
+    }
+
+    // "Blanco, 8 mm, Elástico", para mostrar en la fila
+    function textoAtributo(campo) {
+        var clase = campo.getAttribute('data-clase');
+        if (clase === 'SiNo') {
+            return campo.checked ? campo.getAttribute('data-nombre') : '';
+        }
+        if (campo.value.trim() === '') {
+            return '';
+        }
+        if (clase === 'Lista') {
+            return campo.options[campo.selectedIndex].text.trim();
+        }
+        return clase === 'Numero' && campo.getAttribute('data-unidad') !== ''
+            ? campo.value.trim() + ' ' + campo.getAttribute('data-unidad')
+            : campo.value.trim();
+    }
+
+    function limpiarNuevo() {
+        nuevoNombre.value = '';
+        camposAtributos().forEach(function (campo) {
+            if (campo.type === 'checkbox') {
+                campo.checked = false;
+            } else {
+                campo.value = '';
+            }
+        });
+    }
+
     if (botonNuevo) {
         var panelNuevo = formulario.querySelector('[data-panel="nuevo"]');
+        nuevoTipo.addEventListener('change', mostrarAtributos);
 
         botonNuevo.addEventListener('click', function () {
             quitarErrores(panelNuevo);
@@ -260,39 +327,61 @@ document.addEventListener('DOMContentLoaded', function () {
             var unidad = formulario.querySelector('[data-nueva-unidad]:checked');
             var primero = null;
 
-            if (nuevoTipo.value === '') {
-                ponerError(nuevoTipo, 'Escoja el tipo del componente');
-                primero = nuevoTipo;
-            }
-            var repetidoInventario = tarjetas.some(function (tarjeta) {
-                return normalizar(tarjeta.getAttribute('data-nombre')) === comparable;
+            var repetidoInventario = filas.some(function (fila) {
+                return normalizar(fila.getAttribute('data-nombre')) === comparable;
             });
             var repetidoCompra = lineas().some(function (linea) {
                 return linea.getAttribute('data-nuevo') === '1' && normalizar(linea.querySelector('[data-linea-nombre]').value) === comparable;
             });
-            var mensajeNombre = nombre.length < 2 || nombre.length > 100 ? 'Escriba el nombre del componente (entre 2 y 100 caracteres)'
+            var mensajeNombre = nombre === '' ? 'Escriba el nombre del componente'
+                : nombre.length < 2 ? 'El nombre es muy corto'
                 : repetidoInventario ? 'Ya tiene un componente con ese nombre; búsquelo en "De mi inventario"'
                 : repetidoCompra ? 'Ya agregó un componente nuevo con ese nombre' : '';
             if (mensajeNombre !== '') {
                 ponerError(nuevoNombre, mensajeNombre);
-                primero = primero || nuevoNombre;
+                primero = nuevoNombre;
             }
+            if (nuevoTipo.value === '') {
+                ponerError(nuevoTipo, 'Escoja el tipo del componente');
+                primero = primero || nuevoTipo;
+            }
+
+            // Lo obligatorio del tipo y que los números sean números
+            camposAtributos().forEach(function (campo) {
+                var mensaje = '';
+                if (campo.hasAttribute('data-obligatorio') && campo.value.trim() === '') {
+                    mensaje = 'Este tipo siempre pide ' + campo.getAttribute('data-nombre').toLowerCase();
+                } else if (campo.getAttribute('data-clase') === 'Numero' && campo.value.trim() !== '' && leerNumero(campo.value) === null) {
+                    mensaje = 'Escriba un número, por ejemplo 8 o 8,5';
+                }
+                if (mensaje !== '') {
+                    ponerError(campo, mensaje);
+                    primero = primero || campo;
+                }
+            });
+
             if (primero) {
                 primero.focus();
                 return;
             }
 
+            var campos = camposAtributos();
+            var enCorto = campos.map(textoAtributo).filter(function (texto) { return texto !== ''; }).join(', ');
+            var tipoNombre = nuevoTipo.options[nuevoTipo.selectedIndex].text.trim();
             var linea = crearLinea({
                 componente: 'nuevo',
                 nombre: nombre,
                 tipo: nuevoTipo.value,
-                tipoNombre: nuevoTipo.options[nuevoTipo.selectedIndex].text.trim(),
+                detalle: tipoNombre + (enCorto !== '' ? ' · ' + enCorto : ''),
                 unidad: unidad ? unidad.value : 'Unidad',
                 existencia: 0,
-                nuevo: true
+                nuevo: true,
+                valores: campos.map(function (campo) {
+                    return { atributo: campo.getAttribute('data-atributo'), valor: campo.type === 'checkbox' ? (campo.checked ? '1' : '0') : campo.value.trim() };
+                })
             });
             if (linea) {
-                nuevoNombre.value = '';
+                limpiarNuevo();
             }
         });
 
@@ -308,6 +397,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 quitarErrores(evento.target.closest('.campo'));
             }
         });
+        panelNuevo.addEventListener('change', function (evento) {
+            if (evento.target.closest('.campoConError')) {
+                quitarErrores(evento.target.closest('.campo'));
+            }
+        });
+        mostrarAtributos();
     }
 
     var crearDesdeBusqueda = formulario.querySelector('[data-crear-desde-busqueda]');
@@ -344,18 +439,19 @@ document.addEventListener('DOMContentLoaded', function () {
             var cantidad = linea.querySelector('[data-linea-cantidad]');
             var total = linea.querySelector('[data-linea-total]');
             var numeroCantidad = leerNumero(cantidad.value);
-            var esMetro = linea.getAttribute('data-unidad') === 'Metro';
+            var enCentimetros = linea.getAttribute('data-unidad') === 'Metro' && linea.querySelector('[data-linea-medida]').value === 'cm';
             var mensajeCantidad = '';
             var mensajeTotal = '';
 
             if (cantidad.value.trim() !== '') {
                 if (numeroCantidad === null) {
-                    mensajeCantidad = esMetro ? 'Escriba los metros con hasta 2 decimales; para centímetros: 20 cm = 0,20'
-                        : 'Escriba un número con hasta 2 decimales, por ejemplo 200 o 1,5';
+                    mensajeCantidad = 'Escriba un número, por ejemplo 200 o 1,5';
                 } else if (numeroCantidad <= 0) {
                     mensajeCantidad = 'La cantidad debe ser mayor que 0';
-                } else if (linea.getAttribute('data-entera') === '1' && Math.floor(numeroCantidad) !== numeroCantidad) {
+                } else if (linea.getAttribute('data-unidad') === 'Unidad' && Math.floor(numeroCantidad) !== numeroCantidad) {
                     mensajeCantidad = 'Se cuenta por unidades: use números enteros';
+                } else if (enCentimetros && Math.floor(numeroCantidad) !== numeroCantidad) {
+                    mensajeCantidad = 'Los centímetros van sin decimales';
                 }
             }
             if (total.value.trim() !== '' && leerNumero(total.value) === null) {
@@ -376,6 +472,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    filtrarTarjetas();
+    filtrarInventario();
     actualizar();
 });

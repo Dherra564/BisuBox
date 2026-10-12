@@ -15,6 +15,8 @@ class DatosCompraProveedor
 {
     public const NUEVO = 'nuevo';
     public const MAXIMO_LINEAS = 50;
+    public const METROS = 'm';
+    public const CENTIMETROS = 'cm';
 
     public static function leer(): array
     {
@@ -31,7 +33,9 @@ class DatosCompraProveedor
                 'nombre' => UsuarioRepositorio::limpiarEspacios($texto($linea['nombre'] ?? null)),
                 'unidad' => $texto($linea['unidad'] ?? null),
                 'cantidad' => $texto($linea['cantidad'] ?? null),
+                'medida' => ($linea['medida'] ?? null) === self::CENTIMETROS ? self::CENTIMETROS : self::METROS,
                 'total' => $texto($linea['total'] ?? null),
+                'valores' => is_array($linea['valor'] ?? null) ? array_map($texto, $linea['valor']) : [],
             ];
             $vacia = $leida['componente'] === '' && $leida['nombre'] === '' && $leida['cantidad'] === '' && $leida['total'] === '';
             if (!$vacia) {
@@ -103,6 +107,10 @@ class DatosCompraProveedor
 
             if ($linea['componente'] === self::NUEVO) {
                 $unidad = self::validarNuevo($validador, $campo, $linea, $tipos, $idVendedor, $componenteRepositorio, $nombresNuevos);
+                if (isset($tipos[(int) $linea['tipo']]) && ctype_digit($linea['tipo'])) {
+                    $tipo = $tipos[(int) $linea['tipo']];
+                    DatosComponente::validarValores($validador, $campo . 'valor.', $tipo, DatosComponente::leerValores($tipo, $linea['valores']));
+                }
             } elseif ($linea['componente'] === '') {
                 $validador->agregarError($campo . 'componente', 'Escoja el componente o cree uno nuevo');
             } elseif (!ctype_digit($linea['componente']) || !isset($componentes[(int) $linea['componente']])) {
@@ -114,10 +122,9 @@ class DatosCompraProveedor
                 $unidad = $componentes[(int) $linea['componente']]->getUnidad();
             }
 
-            self::validarCantidad($validador, $campo . 'cantidad', $linea['cantidad'], $unidad);
+            self::validarCantidad($validador, $campo . 'cantidad', $linea['cantidad'], $unidad, $linea['medida']);
             self::validarTotal($validador, $campo . 'total', $linea['total']);
 
-            $cantidad = Numero::leer($linea['cantidad']);
             if (
                 $cantidad !== null && $validador->error($campo . 'cantidad') === null
                 && isset($componentes[(int) $linea['componente']])
@@ -130,13 +137,15 @@ class DatosCompraProveedor
 
     /**
      * @param array<int, Componente> $componentes
+     * @param array<int, TipoComponente> $tipos
      * @return array{compra: CompraProveedor, nuevos: array<int, Componente>}
      */
-    public static function crearCompra(array $datos, int $idVendedor, array $componentes): array
+    public static function crearCompra(array $datos, int $idVendedor, array $componentes, array $tipos): array
     {
         $lineas = [];
         foreach (array_values($datos['lineas']) as $indice => $linea) {
-            $cantidad = (float) Numero::leer($linea['cantidad']);
+            $unidad = $linea['componente'] === self::NUEVO ? $linea['unidad'] : $componentes[(int) $linea['componente']]->getUnidad();
+            $cantidad = (float) self::cantidadEnUnidad($linea, $unidad);
             $total = round((float) Numero::leer($linea['total']), 2);
             $lineas[$indice] = $linea + ['cantidadNumero' => $cantidad, 'costoNumero' => round($total / $cantidad, 4), 'subtotal' => $total];
         }
@@ -152,7 +161,10 @@ class DatosCompraProveedor
         foreach ($lineas as $indice => $linea) {
             $esNuevo = $linea['componente'] === self::NUEVO;
             if ($esNuevo) {
-                $nuevos[$indice] = new Componente(null, $idVendedor, (int) $linea['tipo'], $linea['nombre'], $linea['unidad']);
+                // El componente nuevo nace en 0 con los datos de su tipo; la compra le suma la cantidad y le pone el costo
+                $tipo = $tipos[(int) $linea['tipo']];
+                $valores = DatosComponente::valoresParaGuardar($tipo, DatosComponente::leerValores($tipo, $linea['valores']));
+                $nuevos[$indice] = new Componente(null, $idVendedor, (int) $linea['tipo'], $linea['nombre'], $linea['unidad'], 0, 0, 0, true, $valores);
             }
             $detalles[$indice] = new CompraProveedorDetalle(
                 null,
@@ -175,7 +187,7 @@ class DatosCompraProveedor
             $subtotal,
             $costoEnvio,
             round($subtotal + $costoEnvio, 2),
-            CompraProveedor::REGISTRADA,
+            CompraProveedor::ACTIVA,
             null,
             $detalles
         );
@@ -213,7 +225,7 @@ class DatosCompraProveedor
         }
 
         $validador->requerido($campo . 'nombre', $linea['nombre'], 'Escriba el nombre del componente nuevo')
-            ->longitud($campo . 'nombre', $linea['nombre'], 2, 100, 'El nombre debe tener entre 2 y 100 caracteres');
+            ->longitud($campo . 'nombre', $linea['nombre'], 2, 100, 'El nombre es muy corto');
         $nombreComparable = mb_strtolower($linea['nombre'], 'UTF-8');
         if ($validador->error($campo . 'nombre') === null) {
             if ($componenteRepositorio->existeNombre($idVendedor, $linea['nombre'])) {
@@ -232,23 +244,36 @@ class DatosCompraProveedor
         return $linea['unidad'];
     }
 
-    private static function validarCantidad(Validador $validador, string $campo, string $valor, ?string $unidad): void
+    // La cantidad en la unidad del componente: los centímetros pasan a metros (75 cm = 0,75 m)
+    private static function cantidadEnUnidad(array $linea, ?string $unidad): ?float
+    {
+        $cantidad = Numero::leer($linea['cantidad']);
+        if ($cantidad === null) {
+            return null;
+        }
+
+        return $unidad === UnidadMedida::METRO && $linea['medida'] === self::CENTIMETROS ? round($cantidad / 100, 2) : $cantidad;
+    }
+
+    private static function validarCantidad(Validador $validador, string $campo, string $valor, ?string $unidad, string $medida): void
     {
         if ($valor === '') {
-            $validador->agregarError($campo, 'Escriba cuántos compró');
+            $validador->agregarError($campo, 'Escriba cuánto compró');
             return;
         }
         $cantidad = Numero::leer($valor);
+        $enCentimetros = $unidad === UnidadMedida::METRO && $medida === self::CENTIMETROS;
         if ($cantidad === null || $cantidad > Numero::MAXIMO) {
-            $validador->agregarError($campo, $unidad === UnidadMedida::METRO
-                ? 'Escriba los metros con hasta 2 decimales; para centímetros: 20 cm = 0,20'
-                : 'Escriba un número con hasta 2 decimales, por ejemplo 200 o 1,5');
+            $validador->agregarError($campo, 'Escriba un número, por ejemplo 200 o 1,5');
         } elseif ($cantidad <= 0) {
             $validador->agregarError($campo, 'La cantidad debe ser mayor que 0');
         } elseif ($unidad === UnidadMedida::UNIDAD && floor($cantidad) != $cantidad) {
             $validador->agregarError($campo, 'Se cuenta por unidades: use números enteros');
+        } elseif ($enCentimetros && floor($cantidad) != $cantidad) {
+            $validador->agregarError($campo, 'Los centímetros van sin decimales');
         }
     }
+
     private static function validarTotal(Validador $validador, string $campo, string $valor): void
     {
         if ($valor === '') {

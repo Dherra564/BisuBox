@@ -60,7 +60,7 @@ class CompraProveedorRepositorio
     /** @return array{compras: int, total: float, envios: float} */
     public function resumen(int $idVendedor, array $filtros): array
     {
-        [$condiciones, $valores] = $this->construirFiltros($idVendedor, ['estado' => 'registradas'] + $filtros);
+        [$condiciones, $valores] = $this->construirFiltros($idVendedor, ['estado' => 'activas'] + $filtros);
         $consulta = $this->conexion->prepare(
             'SELECT COUNT(*) AS compras, COALESCE(SUM(c.tbcompraproveedortotal), 0) AS total, COALESCE(SUM(c.tbcompraproveedorcostoenvio), 0) AS envios
              FROM tbcompraproveedor c INNER JOIN tbproveedor p ON p.tbproveedorid = c.tbcompraproveedorproveedorid' . $condiciones
@@ -128,7 +128,7 @@ class CompraProveedorRepositorio
              ORDER BY c.tbcompraproveedorfecha DESC, c.tbcompraproveedorid DESC
              LIMIT 1"
         );
-        $consulta->execute([$idComponente, $idVendedor, CompraProveedor::REGISTRADA]);
+        $consulta->execute([$idComponente, $idVendedor, CompraProveedor::ACTIVA]);
         $fila = $consulta->fetch();
 
         return $fila ? [
@@ -178,7 +178,7 @@ class CompraProveedorRepositorio
                 $compra->getSubtotal(),
                 $compra->getCostoEnvio(),
                 $compra->getTotal(),
-                CompraProveedor::REGISTRADA,
+                CompraProveedor::ACTIVA,
                 (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
@@ -228,7 +228,7 @@ class CompraProveedorRepositorio
                 'SELECT tbcompraproveedorestado FROM tbcompraproveedor WHERE tbcompraproveedorid = ? AND tbcompraproveedorvendedorid = ? FOR UPDATE'
             );
             $consulta->execute([$compra->getIdCompraProveedor(), $idVendedor]);
-            if ($consulta->fetchColumn() !== CompraProveedor::REGISTRADA) {
+            if ($consulta->fetchColumn() !== CompraProveedor::ACTIVA) {
                 throw new OperacionNoPermitida('Esta compra ya estaba anulada.');
             }
 
@@ -292,10 +292,10 @@ class CompraProveedorRepositorio
             $valores[] = $filtros['proveedor'];
         }
 
-        $estado = $filtros['estado'] ?? 'registradas';
+        $estado = $filtros['estado'] ?? 'activas';
         if ($estado !== 'todas') {
             $condiciones[] = 'c.tbcompraproveedorestado = ?';
-            $valores[] = $estado === 'anuladas' ? CompraProveedor::ANULADA : CompraProveedor::REGISTRADA;
+            $valores[] = $estado === 'anuladas' ? CompraProveedor::ANULADA : CompraProveedor::ACTIVA;
         }
 
         if (($filtros['desde'] ?? null) instanceof DateTime) {

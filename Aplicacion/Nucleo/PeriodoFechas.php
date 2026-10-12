@@ -62,21 +62,6 @@ class PeriodoFechas
         };
     }
 
-    public static function enFrase(array $periodo): string
-    {
-        $formato = fn(DateTime $fecha): string => $fecha->format('d/m/Y');
-
-        return match (true) {
-            $periodo['periodo'] === self::MES => 'de este mes',
-            $periodo['periodo'] === self::MES_PASADO => 'del mes pasado',
-            $periodo['periodo'] === self::ANIO => 'de este año',
-            $periodo['desde'] !== null && $periodo['hasta'] !== null => 'del ' . $formato($periodo['desde']) . ' al ' . $formato($periodo['hasta']),
-            $periodo['desde'] !== null => 'desde el ' . $formato($periodo['desde']),
-            $periodo['hasta'] !== null => 'hasta el ' . $formato($periodo['hasta']),
-            default => '',
-        };
-    }
-
     public static function etiqueta(array $periodo): string
     {
         if (isset(self::PERIODOS[$periodo['periodo']])) {

@@ -22,9 +22,6 @@ use Aplicacion\Nucleo\PeriodoFechas;
 $titulo = 'Compras a proveedores';
 $paginaActual = 'proveedores';
 $volverA = ['texto' => 'Proveedores', 'ruta' => '/proveedores'];
-$botonesAccion = [
-    ['texto' => '+ Registrar compra', 'ruta' => '/compras-proveedor/nueva' . ($proveedor !== null ? '?proveedor=' . $proveedor : '')],
-];
 $scriptsExtra = ['filtrosCompras.js'];
 require __DIR__ . '/../Plantilla/encabezado.php';
 
@@ -45,10 +42,6 @@ foreach ($proveedores as $opcion) {
         $nombreProveedor = (string) $opcion->getNombre();
     }
 }
-$palabraEstado = ['todas' => '', 'registradas' => ' registrada', 'anuladas' => ' anulada'][$estado];
-$frase = 'Mostrando ' . ($total === 1 ? '1 compra' . $palabraEstado : $total . ' compras' . ($palabraEstado !== '' ? $palabraEstado . 's' : ''))
-    . ($nombreProveedor !== null ? ' a ' . $nombreProveedor : '')
-    . (PeriodoFechas::enFrase($periodo) !== '' ? ' ' . PeriodoFechas::enFrase($periodo) : '');
 $etiquetaFecha = PeriodoFechas::etiqueta($periodo);
 $hayFiltros = $nombreProveedor !== null || $etiquetaFecha !== '';
 $esRango = $periodo['periodo'] === PeriodoFechas::RANGO;
@@ -69,7 +62,7 @@ $esRango = $periodo['periodo'] === PeriodoFechas::RANGO;
             <span class="textoAyuda">Con envíos incluidos</span>
         </div>
         <div class="tarjeta tarjetaResumen">
-            <span class="tarjetaResumenTitulo">Compras registradas</span>
+            <span class="tarjetaResumenTitulo">Compras activas</span>
             <span class="tarjetaNumero"><?= $resumen['compras'] ?></span>
             <span class="textoAyuda">Las anuladas no cuentan</span>
         </div>
@@ -137,24 +130,23 @@ $esRango = $periodo['periodo'] === PeriodoFechas::RANGO;
                 <input type="hidden" name="periodo" value="<?= $periodo['periodo'] ?>">
             <?php endif; ?>
 
-            <div class="fraseFiltros">
-                <span><?= htmlspecialchars($frase) ?></span>
-                <?php if ($nombreProveedor !== null): ?>
-                    <a href="<?= $enlace(['proveedor' => null, 'pagina' => null]) ?>" class="chipFiltro"
-                        aria-label="Quitar el filtro de proveedor <?= htmlspecialchars($nombreProveedor) ?>"><?= htmlspecialchars($nombreProveedor) ?>
-                        <span aria-hidden="true">✕</span></a>
-                <?php endif; ?>
-                <?php if ($etiquetaFecha !== ''): ?>
-                    <a href="<?= $enlace(['periodo' => PeriodoFechas::TODO, 'pagina' => null] + $sinFechas) ?>"
-                        class="chipFiltro"
-                        aria-label="Quitar el filtro de fecha <?= htmlspecialchars($etiquetaFecha) ?>"><?= htmlspecialchars($etiquetaFecha) ?>
-                        <span aria-hidden="true">✕</span></a>
-                <?php endif; ?>
-                <?php if ($hayFiltros): ?>
+            <?php if ($hayFiltros): ?>
+                <div class="fraseFiltros">
+                    <?php if ($nombreProveedor !== null): ?>
+                        <a href="<?= $enlace(['proveedor' => null, 'pagina' => null]) ?>" class="chipFiltro"
+                            aria-label="Quitar el filtro de proveedor <?= htmlspecialchars($nombreProveedor) ?>"><?= htmlspecialchars($nombreProveedor) ?>
+                            <span aria-hidden="true">✕</span></a>
+                    <?php endif; ?>
+                    <?php if ($etiquetaFecha !== ''): ?>
+                        <a href="<?= $enlace(['periodo' => PeriodoFechas::TODO, 'pagina' => null] + $sinFechas) ?>"
+                            class="chipFiltro"
+                            aria-label="Quitar el filtro de fecha <?= htmlspecialchars($etiquetaFecha) ?>"><?= htmlspecialchars($etiquetaFecha) ?>
+                            <span aria-hidden="true">✕</span></a>
+                    <?php endif; ?>
                     <a href="<?= $enlace(['proveedor' => null, 'periodo' => PeriodoFechas::TODO, 'pagina' => null] + $sinFechas) ?>"
                         class="enlaceQuitarFiltros">Quitar filtros</a>
-                <?php endif; ?>
-            </div>
+                </div>
+            <?php endif; ?>
         </form>
 
         <?php if ($compras === []): ?>
@@ -210,6 +202,11 @@ $esRango = $periodo['periodo'] === PeriodoFechas::RANGO;
         require __DIR__ . '/../Plantilla/paginacion.php';
     ?>
     <?php endif; ?>
+
+    <div class="grupoBotones accionesLista">
+        <a href="<?= $urlBase ?>/compras-proveedor/nueva<?= $proveedor !== null ? '?proveedor=' . $proveedor : '' ?>"
+            class="boton">Registrar compra</a>
+    </div>
 <?php endif; ?>
 
 <?php require __DIR__ . '/../Plantilla/pie.php'; ?>
