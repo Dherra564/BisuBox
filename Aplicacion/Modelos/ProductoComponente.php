@@ -2,10 +2,10 @@
 
 namespace Aplicacion\Modelos;
 
-class ProcesoComponente
+class ProductoComponente
 {
-    private ?int $idProcesoComponente;
-    private ?int $idProceso;
+    private ?int $idProductoComponente;
+    private ?int $idProducto;
     private int $idComponente;
     private float $cantidad;
     private float $costoUnitario;
@@ -14,9 +14,10 @@ class ProcesoComponente
     private string $nombreTipo;
     private string $unidad;
 
+    // La cantidad es lo que lleva un solo producto
     public function __construct(
-        ?int $idProcesoComponente,
-        ?int $idProceso,
+        ?int $idProductoComponente,
+        ?int $idProducto,
         int $idComponente,
         float $cantidad,
         float $costoUnitario,
@@ -25,8 +26,8 @@ class ProcesoComponente
         string $nombreTipo = '',
         string $unidad = ''
     ) {
-        $this->idProcesoComponente = $idProcesoComponente;
-        $this->idProceso = $idProceso;
+        $this->idProductoComponente = $idProductoComponente;
+        $this->idProducto = $idProducto;
         $this->idComponente = $idComponente;
         $this->cantidad = $cantidad;
         $this->costoUnitario = $costoUnitario;
@@ -36,14 +37,14 @@ class ProcesoComponente
         $this->unidad = $unidad;
     }
 
-    public function getIdProcesoComponente(): ?int
+    public function getIdProductoComponente(): ?int
     {
-        return $this->idProcesoComponente;
+        return $this->idProductoComponente;
     }
 
-    public function getIdProceso(): ?int
+    public function getIdProducto(): ?int
     {
-        return $this->idProceso;
+        return $this->idProducto;
     }
 
     public function getIdComponente(): int
@@ -81,13 +82,13 @@ class ProcesoComponente
         return $this->unidad;
     }
 
-    public function setIdProcesoComponente(?int $idProcesoComponente): void
+    public function setIdProductoComponente(?int $idProductoComponente): void
     {
-        $this->idProcesoComponente = $idProcesoComponente;
+        $this->idProductoComponente = $idProductoComponente;
     }
 
-    public function setIdProceso(?int $idProceso): void
+    public function setIdProducto(?int $idProducto): void
     {
-        $this->idProceso = $idProceso;
+        $this->idProducto = $idProducto;
     }
 }

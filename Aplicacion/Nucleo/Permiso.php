@@ -15,7 +15,7 @@ class Permiso
         'tienda.gestionar' => [Rol::VENDEDOR],
         'inventario.gestionar' => [Rol::VENDEDOR],
         'proveedores.gestionar' => [Rol::VENDEDOR],
-        'procesos.gestionar' => [Rol::VENDEDOR],
+        'productos.gestionar' => [Rol::VENDEDOR],
         'comprasProveedor.gestionar' => [Rol::VENDEDOR],
     ];
 

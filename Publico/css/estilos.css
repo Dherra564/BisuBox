@@ -2413,6 +2413,579 @@ h1, h2, h3 {
     font-size: 1.15rem;
 }
 
+/* ---------- Productos ---------- */
+/* Crear: pasos a la izquierda y el precio siempre a la vista a la derecha */
+.creadorProducto {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 18px;
+    align-items: start;
+}
+
+.columnaPrecio {
+    position: sticky;
+    top: 16px;
+}
+
+.pasoProducto h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.numeroPaso {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--colorTitulo);
+    color: var(--colorTextoClaro);
+    font-size: 0.9rem;
+}
+
+.encabezadoProducto {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+}
+
+.zonaFoto.zonaFotoProducto {
+    display: flex;
+    min-height: 0;
+    padding: 12px;
+    gap: 6px;
+}
+
+.fotoPerfilGrande.fotoProducto {
+    width: 120px;
+    height: 120px;
+    border-radius: var(--radioCampo);
+}
+
+.enlaceFoto {
+    color: var(--colorTitulo);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.zonaFotoProducto:focus-within .enlaceFoto {
+    outline: 2px solid var(--colorFoco);
+    outline-offset: 2px;
+}
+
+.selectorCantidad {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.campo .selectorCantidad input {
+    width: 76px;
+    text-align: center;
+    font-weight: 700;
+}
+
+.botonCantidad {
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--colorBordeCampo);
+    border-radius: var(--radioCampo);
+    background: var(--colorSuperficie);
+    color: var(--colorTitulo);
+    font: inherit;
+    font-size: 1.3rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.botonCantidad:hover {
+    background: var(--colorVerdeClaro);
+}
+
+.selectorCantidadGrande {
+    display: flex;
+    justify-content: center;
+    margin: 6px 0 10px;
+}
+
+.modalHiceMas .grupoBotones {
+    margin-top: 18px;
+}
+
+.selectorCantidadGrande input {
+    width: 96px;
+    padding: 10px;
+    border: 1px solid var(--colorBordeCampo);
+    border-radius: var(--radioCampo);
+    font: inherit;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.detalleOpcional {
+    margin-top: 6px;
+}
+
+.detalleOpcional summary {
+    cursor: pointer;
+    color: var(--colorTitulo);
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.listaReceta {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.lineaReceta {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1.3fr) 90px 44px;
+    gap: 10px;
+    align-items: start;
+    padding: 10px 12px;
+    border-radius: var(--radioCampo);
+    background: var(--colorFondo);
+}
+
+.lineaRecetaExtra {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1.3fr) 44px;
+}
+
+.lineaReceta .campo {
+    margin-bottom: 0;
+}
+
+.subtotalReceta {
+    padding-top: 10px;
+    font-weight: 700;
+    text-align: right;
+}
+
+.lineaReceta .avisoExistencia {
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.lineaReceta .avisoExistencia:not(.errorCampo) {
+    color: var(--colorTitulo);
+}
+
+.enlaceAgregar {
+    width: 100%;
+    padding: 9px 14px;
+    border: 1px dashed var(--colorBordeFoto);
+    border-radius: var(--radioCampo);
+    background: transparent;
+    color: var(--colorTitulo);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.enlaceAgregar:hover {
+    background: var(--colorVerdeClaro);
+}
+
+.filaTiempo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.filaTiempo .campoConUnidad {
+    flex: 1 1 100px;
+}
+
+/* El precio como un recibo: costos, ganancia y precio final */
+.ticketPrecio {
+    padding: 20px 22px;
+    border: 1px solid var(--colorBorde);
+    border-top: 4px solid var(--colorTitulo);
+    border-radius: var(--radio);
+    background: var(--colorSuperficie);
+}
+
+.ticketPrecio h2 {
+    margin: 0 0 12px;
+    font-size: 1.05rem;
+}
+
+.cuentaPrecio {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+}
+
+.cuentaPrecio div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.cuentaPrecio dt {
+    color: var(--colorTextoSuave);
+}
+
+.cuentaPrecio dd {
+    margin: 0;
+    font-weight: 600;
+}
+
+.cuentaPrecio .cuentaTotal {
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--colorBordeCampo);
+    font-size: 1.1rem;
+}
+
+.cuentaTotal dt {
+    color: var(--colorTexto);
+    font-weight: 600;
+}
+
+.cuentaTotal dd {
+    color: var(--colorTitulo);
+    font-weight: 700;
+}
+
+.opcionesGanancia {
+    margin: 18px 0 12px;
+    padding: 0;
+    border: none;
+}
+
+.opcionesGanancia legend {
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.chipsGanancia {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.chipGanancia input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.chipGanancia span {
+    display: block;
+    padding: 7px 0;
+    text-align: center;
+    border: 1px solid var(--colorBordeCampo);
+    border-radius: 999px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.chipGanancia input:checked + span {
+    border-color: var(--colorTitulo);
+    background: var(--colorTitulo);
+    color: var(--colorTextoClaro);
+}
+
+.chipGanancia input:focus-visible + span {
+    outline: 2px solid var(--colorFoco);
+    outline-offset: 2px;
+}
+
+.campoPrecioVenta input {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.resultadoGanancia {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: var(--radioCampo);
+    background: var(--colorExitoFondo);
+    color: var(--colorExito);
+    font-weight: 600;
+}
+
+.resultadoGanancia.gananciaNegativa {
+    background: var(--colorErrorFondo);
+    color: var(--colorError);
+}
+
+.resumenDescuento {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border: 1px dashed var(--colorBordeCampo);
+    border-radius: var(--radioCampo);
+    font-size: 0.9rem;
+}
+
+.resumenDescuentoTitulo {
+    margin: 0;
+    font-weight: 600;
+}
+
+.resumenDescuento ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+}
+
+.columnaPrecio .accionesFormulario {
+    margin-top: 14px;
+}
+
+/* Lista: cada producto como una tarjeta con su foto */
+.resumenProductos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    margin: -8px 0 16px;
+    color: var(--colorTextoSuave);
+}
+
+.resumenProductos strong {
+    color: var(--colorTexto);
+}
+
+.resumenAgotados {
+    color: var(--colorError);
+    font-weight: 600;
+}
+
+.gridProductos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 0;
+    padding: 16px;
+    list-style: none;
+}
+
+.tarjetaProducto {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--colorBorde);
+    border-radius: var(--radio);
+    background: var(--colorSuperficie);
+    transition: box-shadow 0.15s;
+}
+
+.tarjetaProducto:hover {
+    box-shadow: 0 6px 18px rgba(38, 64, 54, 0.12);
+}
+
+.tarjetaProductoInactiva {
+    opacity: 0.65;
+}
+
+.enlaceTarjetaProducto {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-bottom: 8px;
+    color: var(--colorTexto);
+    text-decoration: none;
+}
+
+.fotoTarjetaProducto {
+    position: relative;
+    display: block;
+    aspect-ratio: 4 / 3;
+    margin-bottom: 8px;
+    background: var(--colorVerdeClaro);
+}
+
+.fotoTarjetaProducto img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.fotoTarjetaProducto .etiqueta {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+.nombreTarjetaProducto,
+.precioTarjetaProducto,
+.gananciaTarjetaProducto {
+    padding: 0 14px;
+}
+
+.nombreTarjetaProducto {
+    font-weight: 600;
+}
+
+.precioTarjetaProducto {
+    font-family: var(--fuenteTitulos);
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--colorTitulo);
+}
+
+.gananciaTarjetaProducto {
+    font-size: 0.85rem;
+    color: var(--colorExito);
+}
+
+.gananciaNegativa {
+    color: var(--colorError);
+}
+
+.botonHiceMas {
+    align-self: flex-start;
+    margin: 0 14px 14px;
+}
+
+/* Detalle: foto y precio arriba; lo que lleva y las veces que lo ha hecho abajo */
+.fichaProducto {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 24px;
+    margin-bottom: 16px;
+    padding: 20px 22px;
+    border: 1px solid var(--colorBorde);
+    border-radius: var(--radio);
+    background: var(--colorSuperficie);
+}
+
+.fotoFichaProducto {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: var(--radio);
+    object-fit: cover;
+    background: var(--colorVerdeClaro);
+}
+
+.fichaProductoInactiva .fotoFichaProducto {
+    opacity: 0.6;
+}
+
+.datosFichaProducto {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.descripcionFicha {
+    margin: 0;
+    color: var(--colorTextoSuave);
+}
+
+.precioFicha {
+    margin: 0;
+    font-family: var(--fuenteTitulos);
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.1;
+    color: var(--colorTitulo);
+}
+
+.gananciaFicha {
+    margin: 0;
+    color: var(--colorExito);
+    font-weight: 600;
+}
+
+.existenciaFicha {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 6px 0;
+}
+
+.numeroExistencia {
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+
+.columnasFicha {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.listaLleva,
+.listaVeces {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.listaLleva li,
+.listaVeces li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--colorBorde);
+}
+
+.listaLleva li > span:first-child,
+.listaVeces li > span:first-child {
+    display: flex;
+    flex-direction: column;
+}
+
+.listaLleva .totalLleva {
+    border-bottom: none;
+    color: var(--colorTitulo);
+    font-weight: 700;
+}
+
+.vezAnulada {
+    opacity: 0.6;
+}
+
+@media (max-width: 900px) {
+    .creadorProducto {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .columnaPrecio {
+        position: static;
+    }
+}
+
+@media (max-width: 720px) {
+    .encabezadoProducto,
+    .fichaProducto,
+    .columnasFicha {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .fotoFichaProducto {
+        max-width: 260px;
+    }
+
+    .lineaReceta,
+    .lineaRecetaExtra {
+        grid-template-columns: minmax(0, 1fr) auto 44px;
+    }
+
+    .lineaReceta > .campoComponente,
+    .lineaRecetaExtra > .campo:first-child {
+        grid-column: 1 / -1;
+    }
+
+    .gridProductos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        padding: 10px;
+    }
+}
+
 /* ---------- Celular ---------- */
 @media (max-width: 768px) {
     .menuLateral {
@@ -2795,104 +3368,31 @@ h1, h2, h3 {
         border-radius: 0;
         padding: 10px 0;
     }
-}
 
-/* Procesos: una tarjeta por componente usado y por costo extra */
-.listaLineasProceso {
-    display: grid;
-    gap: 12px;
-    margin-bottom: 12px;
-}
 
-.lineaProceso {
-    padding: 14px 16px 4px;
-    border: 1px solid var(--colorBorde);
-    border-radius: var(--radioCampo);
-    background: var(--colorSuperficie);
-}
+.encabezadoProducto,
+    .fichaProducto,
+    .columnasFicha {
+        grid-template-columns: minmax(0, 1fr);
+    }
 
-.lineaProcesoCampos {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 44px;
-    gap: 0 12px;
-    align-items: start;
-}
+    .fotoFichaProducto {
+        max-width: 260px;
+    }
 
-.lineaProcesoCampos .botonQuitar {
-    margin-top: 27px;
-}
+    .lineaReceta,
+    .lineaRecetaExtra {
+        grid-template-columns: minmax(0, 1fr) auto 44px;
+    }
 
-.campoSubtotal .etiquetaCampo {
-    display: block;
-    margin-bottom: 6px;
-}
+    .lineaReceta > .campoComponente,
+    .lineaRecetaExtra > .campo:first-child {
+        grid-column: 1 / -1;
+    }
 
-.subtotalLinea {
-    display: block;
-    padding: 9px 0;
-    font-weight: 700;
-}
-
-.lineaProceso .avisoExistencia {
-    margin: 6px 0 0;
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
-.lineaProceso .avisoExistencia:not(.errorCampo) {
-    color: var(--colorTitulo);
-}
-
-.lineaExtraCampos {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) 44px;
-    gap: 0 12px;
-    align-items: start;
-}
-
-.lineaExtraCampos .botonQuitar {
-    margin-top: 27px;
-}
-
-.filaTiempo {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.filaTiempo .campoConUnidad {
-    flex: 1 1 120px;
-}
-
-.detalleManoObra {
-    margin: 4px 0 14px;
-    font-weight: 600;
-}
-
-.lineaExtraCampos {
-    grid-template-columns: minmax(0, 1fr) auto;
-}
-
-.lineaExtraCampos > .campo {
-    grid-column: 1 / -1;
-}
-
-.lineaExtraCampos .botonQuitar {
-    justify-self: end;
-    margin-top: 0;
-}
-
-.lineaProcesoCampos {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-}
-
-.lineaProcesoCampos > .campoComponente {
-    grid-column: 1 / -1;
-}
-
-.lineaProcesoCampos .botonQuitar {
-    grid-column: 1 / -1;
-    justify-self: end;
-    margin-top: 0;
-    margin-bottom: 10px;
+    .gridProductos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        padding: 10px;
+    }
 }

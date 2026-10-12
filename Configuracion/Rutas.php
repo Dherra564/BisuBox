@@ -63,16 +63,15 @@ return function (Enrutador $enrutador): void {
     $enrutador->post('/proveedores/actualizar', [ProveedorControlador::class, 'actualizar']);
     $enrutador->post('/proveedores/estado', [ProveedorControlador::class, 'cambiarEstado']);
 
-    $enrutador->get('/procesos', [ProcesoControlador::class, 'listar']);
-    $enrutador->get('/procesos/nuevo', [ProcesoControlador::class, 'nuevo']);
-    $enrutador->post('/procesos/nuevo', [ProcesoControlador::class, 'registrar']);
-    $enrutador->get('/procesos/detalle', [ProcesoControlador::class, 'detalle']);
-    $enrutador->post('/procesos/anular', [ProcesoControlador::class, 'anular']);
-    $enrutador->get('/compras-proveedor', [CompraProveedorControlador::class, 'listar']);
-    $enrutador->get('/compras-proveedor/nueva', [CompraProveedorControlador::class, 'nueva']);
-    $enrutador->post('/compras-proveedor/nueva', [CompraProveedorControlador::class, 'registrar']);
-    $enrutador->get('/compras-proveedor/detalle', [CompraProveedorControlador::class, 'detalle']);
-    $enrutador->post('/compras-proveedor/anular', [CompraProveedorControlador::class, 'anular']);
+    $enrutador->get('/productos', [ProductoControlador::class, 'listar']);
+    $enrutador->get('/productos/nuevo', [ProductoControlador::class, 'nuevo']);
+    $enrutador->post('/productos/nuevo', [ProductoControlador::class, 'insertar']);
+    $enrutador->get('/productos/detalle', [ProductoControlador::class, 'detalle']);
+    $enrutador->get('/productos/editar', [ProductoControlador::class, 'editar']);
+    $enrutador->post('/productos/editar', [ProductoControlador::class, 'actualizar']);
+    $enrutador->post('/productos/estado', [ProductoControlador::class, 'cambiarEstado']);
+    $enrutador->post('/productos/producir', [ProductoControlador::class, 'producir']);
+    $enrutador->post('/productos/anular-produccion', [ProductoControlador::class, 'anularProduccion']);
 
     $enrutador->get('/sesiones', [SesionControlador::class, 'listar']);
 };

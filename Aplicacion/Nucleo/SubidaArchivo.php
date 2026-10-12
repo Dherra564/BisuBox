@@ -16,7 +16,7 @@ class SubidaArchivo
 
     private const CARPETA_PERFILES = '/Almacenamiento/Fotos/Perfiles';
     private const CARPETA_LOGOS = '/Almacenamiento/Fotos/Logos';
-
+    private const CARPETA_PRODUCTOS = '/Almacenamiento/Fotos/Productos';
     private string $error = '';
 
     public static function seEnvio(?array $archivo): bool
@@ -34,6 +34,11 @@ class SubidaArchivo
         return $this->guardarImagen($archivo, self::CARPETA_LOGOS, 'El logo');
     }
 
+    public function guardarFotoProducto(array $archivo): ?string
+    {
+        return $this->guardarImagen($archivo, self::CARPETA_PRODUCTOS, 'La foto');
+    }
+
     public function obtenerError(): string
     {
         return $this->error;
@@ -49,6 +54,11 @@ class SubidaArchivo
         self::eliminar($nombre, self::CARPETA_LOGOS);
     }
 
+        public static function eliminarFotoProducto(?string $nombre): void
+    {
+        self::eliminar($nombre, self::CARPETA_PRODUCTOS);
+    }
+
     public static function rutaFotoPerfil(string $nombre): ?string
     {
         return self::ruta($nombre, self::CARPETA_PERFILES);
@@ -57,6 +67,11 @@ class SubidaArchivo
     public static function rutaLogo(string $nombre): ?string
     {
         return self::ruta($nombre, self::CARPETA_LOGOS);
+    }
+
+        public static function rutaFotoProducto(string $nombre): ?string
+    {
+        return self::ruta($nombre, self::CARPETA_PRODUCTOS);
     }
 
     private function guardarImagen(array $archivo, string $carpetaRelativa, string $queEs): ?string

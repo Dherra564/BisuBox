@@ -3,16 +3,17 @@
 namespace Aplicacion\Nucleo;
 
 use Aplicacion\Modelos\Componente;
-use Aplicacion\Modelos\Proceso;
-use Aplicacion\Modelos\ProcesoComponente;
-use Aplicacion\Modelos\ProcesoExtra;
+use Aplicacion\Modelos\Producto;
+use Aplicacion\Modelos\ProductoComponente;
+use Aplicacion\Modelos\ProductoExtra;
+use Aplicacion\Repositorios\ProductoRepositorio;
 use Aplicacion\Repositorios\UsuarioRepositorio;
-use DateTime;
 
-class DatosProceso
+class DatosProducto
 {
     public const MAXIMO_COMPONENTES = 50;
     public const MAXIMO_EXTRAS = 20;
+    public const GANANCIAS = [20, 30, 50, 70, 100];
 
     public static function leer(): array
     {
@@ -47,10 +48,8 @@ class DatosProceso
             }
         }
 
-        return [
-            'nombre' => UsuarioRepositorio::limpiarEspacios($texto($_POST['nombre'] ?? null)),
-            'descripcion' => (string) preg_replace('/\s+/u', ' ', $texto($_POST['descripcion'] ?? null)),
-            'fecha' => $texto($_POST['fecha'] ?? null),
+        return self::leerDatosComunes() + [
+            'cantidad' => $texto($_POST['cantidad'] ?? null),
             'horas' => $texto($_POST['horas'] ?? null),
             'minutos' => $texto($_POST['minutos'] ?? null),
             'tarifaHora' => $texto($_POST['tarifaHora'] ?? null),
@@ -59,12 +58,27 @@ class DatosProceso
         ];
     }
 
+    // Lo único que se cambia al editar: lo que lleva ya quedó guardado
+    public static function leerDatosComunes(): array
+    {
+        $texto = fn(string $campo): string => is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
+
+        return [
+            'nombre' => UsuarioRepositorio::limpiarEspacios($texto('nombre')),
+            'descripcion' => (string) preg_replace('/\s+/u', ' ', $texto('descripcion')),
+            'ganancia' => $texto('ganancia'),
+            'precioVenta' => $texto('precioVenta'),
+        ];
+    }
+
     public static function vacio(?float $tarifaHora = null): array
     {
         return [
             'nombre' => '',
             'descripcion' => '',
-            'fecha' => date('Y-m-d'),
+            'ganancia' => '50',
+            'precioVenta' => '',
+            'cantidad' => '1',
             'horas' => '',
             'minutos' => '',
             'tarifaHora' => Numero::paraCampo($tarifaHora),
@@ -73,16 +87,57 @@ class DatosProceso
         ];
     }
 
-    /** @param array<int, Componente> $componentes los activos del vendedor, por id */
-    public static function validar(Validador $validador, array $datos, array $componentes): void
+    public static function paraEditar(Producto $producto): array
     {
-        $validador->requerido('nombre', $datos['nombre'], 'Escriba qué producto hizo, por ejemplo Collar de perlas')
+        $porcentaje = $producto->getPorcentajeGanancia();
+
+        return [
+            'nombre' => $producto->getNombre(),
+            'descripcion' => (string) $producto->getDescripcion(),
+            'ganancia' => $porcentaje !== null && in_array((int) $porcentaje, self::GANANCIAS, true) && floor($porcentaje) == $porcentaje
+                ? (string) (int) $porcentaje : '',
+            'precioVenta' => Numero::paraCampo($producto->getPrecioVenta()),
+        ];
+    }
+
+    public static function validarDatosComunes(Validador $validador, array $datos, int $idVendedor, ?Producto $original = null): void
+    {
+        $validador->requerido('nombre', $datos['nombre'], 'Escriba el nombre del producto, por ejemplo Collar de perlas')
             ->longitud('nombre', $datos['nombre'], 3, 60, 'El nombre debe tener entre 3 y 60 caracteres')
             ->nombreComercial('nombre', $datos['nombre']);
+        if (
+            $validador->error('nombre') === null
+            && (new ProductoRepositorio())->existeNombre($idVendedor, $datos['nombre'], $original?->getIdProducto())
+        ) {
+            $validador->agregarError('nombre', 'Ya tiene un producto con ese nombre');
+        }
 
-        $validador->longitud('descripcion', $datos['descripcion'], 1, 200, 'La descripción puede tener hasta 200 caracteres');
+        $validador->longitud('descripcion', $datos['descripcion'], 1, 300, 'La descripción puede tener hasta 300 caracteres');
 
-        self::validarFecha($validador, $datos['fecha']);
+        if ($datos['precioVenta'] === '') {
+            $validador->agregarError('precioVenta', 'Escriba en cuánto lo va a vender');
+        } else {
+            $precio = Numero::leer($datos['precioVenta']);
+            if ($precio === null || $precio > Numero::MAXIMO) {
+                $validador->agregarError('precioVenta', 'Escriba un monto, por ejemplo 8500 o 8500,50');
+            } elseif ($precio <= 0) {
+                $validador->agregarError('precioVenta', 'El precio debe ser mayor que 0');
+            }
+        }
+    }
+
+    /** @param array<int, Componente> $componentes los activos del vendedor, por id */
+    public static function validar(Validador $validador, array $datos, array $componentes, int $idVendedor): void
+    {
+        self::validarDatosComunes($validador, $datos, $idVendedor);
+
+        if ($datos['cantidad'] === '') {
+            $validador->agregarError('cantidad', 'Escriba cuántos hizo');
+        } elseif (!self::esCantidadValida($datos['cantidad'])) {
+            $validador->agregarError('cantidad', 'Escriba cuántos hizo, con números enteros desde 1');
+        }
+        $cantidad = self::esCantidadValida($datos['cantidad']) ? (int) $datos['cantidad'] : 1;
+
         self::validarTiempo($validador, $datos['horas'], $datos['minutos']);
 
         if ($datos['tarifaHora'] === '') {
@@ -94,24 +149,25 @@ class DatosProceso
             }
         }
 
-        self::validarComponentes($validador, $datos['componentes'], $componentes);
+        self::validarComponentes($validador, $datos['componentes'], $componentes, $cantidad);
         self::validarExtras($validador, $datos['extras']);
-
-        if ($validador->esValido()) {
-            $proceso = self::crearProceso($datos, 0, $componentes);
-            if ($proceso->getPrecio() > Numero::MAXIMO) {
-                $validador->agregarError('lineas', 'El precio total es demasiado alto; revise las cantidades y los montos');
-            }
-        }
     }
 
-    /** @param array<int, Componente> $componentes */
-    public static function crearProceso(array $datos, int $idVendedor, array $componentes): Proceso
+    public static function esCantidadValida(string $cantidad): bool
+    {
+        return preg_match('/^[0-9]{1,4}$/', $cantidad) === 1 && (int) $cantidad >= 1;
+    }
+
+    /**
+     * Arma el producto con los costos de uno solo
+     * @param array<int, Componente> $componentes
+     */
+    public static function crearProducto(array $datos, int $idVendedor, array $componentes): Producto
     {
         $minutos = ((int) $datos['horas']) * 60 + (int) $datos['minutos'];
         $tarifaHora = (float) Numero::leer($datos['tarifaHora']);
 
-        $detalles = [];
+        $lineas = [];
         $costoComponentes = 0.0;
         foreach ($datos['componentes'] as $linea) {
             $componente = $componentes[(int) $linea['componente']];
@@ -120,7 +176,7 @@ class DatosProceso
             $subtotal = round($cantidad * $costo, 2);
             $costoComponentes += $subtotal;
 
-            $detalles[] = new ProcesoComponente(
+            $lineas[] = new ProductoComponente(
                 null,
                 null,
                 (int) $componente->getIdComponente(),
@@ -138,51 +194,37 @@ class DatosProceso
         foreach ($datos['extras'] as $extra) {
             $monto = (float) Numero::leer($extra['monto']);
             $costoExtras += $monto;
-            $extras[] = new ProcesoExtra(null, null, $extra['concepto'], $monto);
+            $extras[] = new ProductoExtra(null, null, $extra['concepto'], $monto);
         }
 
         $costoComponentes = round($costoComponentes, 2);
         $costoExtras = round($costoExtras, 2);
         $costoManoObra = round($minutos / 60 * $tarifaHora, 2);
 
-        return new Proceso(
+        return new Producto(
             null,
             $idVendedor,
             $datos['nombre'],
             $datos['descripcion'] !== '' ? $datos['descripcion'] : null,
-            PeriodoFechas::leerFecha($datos['fecha']) ?? new DateTime('today'),
+            null,
             $minutos,
             $tarifaHora,
             $costoComponentes,
             $costoManoObra,
             $costoExtras,
             round($costoComponentes + $costoManoObra + $costoExtras, 2),
-            Proceso::ACTIVO,
+            (float) Numero::leer($datos['precioVenta']),
+            0,
+            true,
             null,
-            $detalles,
+            $lineas,
             $extras
         );
     }
 
-    private static function validarFecha(Validador $validador, string $fecha): void
-    {
-        if ($fecha === '') {
-            $validador->agregarError('fecha', 'Escoja en el calendario el día en que hizo el producto');
-            return;
-        }
-        $dia = PeriodoFechas::leerFecha($fecha);
-        if ($dia === null) {
-            $validador->agregarError('fecha', 'Escoja una fecha válida en el calendario');
-        } elseif ($dia > new DateTime('today')) {
-            $validador->agregarError('fecha', 'La fecha no puede ser después de hoy');
-        } elseif ($dia < new DateTime('2000-01-01')) {
-            $validador->agregarError('fecha', 'Escoja una fecha a partir del año 2000');
-        }
-    }
-
     private static function validarTiempo(Validador $validador, string $horas, string $minutos): void
     {
-        $mensaje = 'Escriba cuánto tardó, por ejemplo 1 hora y 30 minutos (los minutos van de 0 a 59)';
+        $mensaje = 'Escriba cuánto tarda en hacer uno, por ejemplo 0 horas y 45 minutos (los minutos van de 0 a 59)';
 
         if (
             ($horas !== '' && !preg_match('/^[0-9]{1,3}$/', $horas))
@@ -198,14 +240,14 @@ class DatosProceso
     }
 
     /** @param array<int, Componente> $componentes */
-    private static function validarComponentes(Validador $validador, array $lineas, array $componentes): void
+    private static function validarComponentes(Validador $validador, array $lineas, array $componentes, int $cantidadProductos): void
     {
         if ($lineas === []) {
-            $validador->agregarError('lineas', 'Agregue al menos un componente de los que usó');
+            $validador->agregarError('lineas', 'Agregue al menos un componente de los que lleva');
             return;
         }
         if (count($lineas) > self::MAXIMO_COMPONENTES) {
-            $validador->agregarError('lineas', 'Un proceso puede tener como máximo ' . self::MAXIMO_COMPONENTES . ' componentes');
+            $validador->agregarError('lineas', 'Un producto puede llevar como máximo ' . self::MAXIMO_COMPONENTES . ' componentes');
             return;
         }
 
@@ -215,7 +257,7 @@ class DatosProceso
             $componente = null;
 
             if ($linea['componente'] === '') {
-                $validador->agregarError($campo . 'componente', 'Escoja el componente que usó');
+                $validador->agregarError($campo . 'componente', 'Escoja el componente');
             } elseif (!ctype_digit($linea['componente']) || !isset($componentes[(int) $linea['componente']])) {
                 $validador->agregarError($campo . 'componente', 'Escoja un componente de la lista');
             } elseif (in_array((int) $linea['componente'], $usados, true)) {
@@ -225,7 +267,7 @@ class DatosProceso
                 $componente = $componentes[(int) $linea['componente']];
             }
 
-            self::validarCantidad($validador, $campo . 'cantidad', $linea, $componente);
+            self::validarCantidad($validador, $campo . 'cantidad', $linea, $componente, $cantidadProductos);
         }
     }
 
@@ -241,11 +283,11 @@ class DatosProceso
         return $enCentimetros ? round($cantidad / 100, 2) : $cantidad;
     }
 
-    private static function validarCantidad(Validador $validador, string $campo, array $linea, ?Componente $componente): void
+    private static function validarCantidad(Validador $validador, string $campo, array $linea, ?Componente $componente, int $cantidadProductos): void
     {
         $valor = $linea['cantidad'];
         if ($valor === '') {
-            $validador->agregarError($campo, 'Escriba cuántos usó');
+            $validador->agregarError($campo, 'Escriba cuánto lleva');
             return;
         }
 
@@ -267,13 +309,15 @@ class DatosProceso
             return;
         }
         $cantidad = self::cantidadEnUnidad($linea, $componente);
+        $necesita = round($cantidad * $cantidadProductos, 2);
 
         if ($componente->getUnidad() === UnidadMedida::UNIDAD && floor($cantidad) != $cantidad) {
             $validador->agregarError($campo, 'Se cuenta por unidades: use números enteros');
-        } elseif ($cantidad > $componente->getExistencia() + 0.001) {
+        } elseif ($necesita > $componente->getExistencia() + 0.001) {
             $validador->agregarError(
                 $campo,
-                'No alcanza: solo tiene ' . UnidadMedida::cantidad($componente->getExistencia(), $componente->getUnidad())
+                'No alcanza: para ' . $cantidadProductos . ' necesita ' . UnidadMedida::cantidad($necesita, $componente->getUnidad())
+                . ' y solo tiene ' . UnidadMedida::cantidad($componente->getExistencia(), $componente->getUnidad())
             );
         } elseif (round($cantidad * $componente->getCostoUnitario(), 2) > Numero::MAXIMO) {
             $validador->agregarError($campo, 'Con esta cantidad el costo es demasiado alto');
@@ -283,14 +327,14 @@ class DatosProceso
     private static function validarExtras(Validador $validador, array $extras): void
     {
         if (count($extras) > self::MAXIMO_EXTRAS) {
-            $validador->agregarError('extras', 'Un proceso puede tener como máximo ' . self::MAXIMO_EXTRAS . ' costos extra');
+            $validador->agregarError('extras', 'Un producto puede tener como máximo ' . self::MAXIMO_EXTRAS . ' gastos extra');
             return;
         }
 
         foreach ($extras as $clave => $extra) {
             $campo = 'extra.' . $clave . '.';
 
-            $validador->requerido($campo . 'concepto', $extra['concepto'], 'Escriba para qué fue, por ejemplo Luz o Transporte')
+            $validador->requerido($campo . 'concepto', $extra['concepto'], 'Escriba para qué fue, por ejemplo Empaque')
                 ->longitud($campo . 'concepto', $extra['concepto'], 2, 60, 'El concepto debe tener entre 2 y 60 caracteres')
                 ->nombreComercial($campo . 'concepto', $extra['concepto'], 'El concepto solo puede tener letras, números, espacios y los signos . , & \' -');
 
@@ -300,7 +344,7 @@ class DatosProceso
             }
             $monto = Numero::leer($extra['monto']);
             if ($monto === null || $monto > Numero::MAXIMO) {
-                $validador->agregarError($campo . 'monto', 'Escriba un monto, por ejemplo 1500 o 1500,50');
+                $validador->agregarError($campo . 'monto', 'Escriba un monto, por ejemplo 150 o 150,50');
             } elseif ($monto <= 0) {
                 $validador->agregarError($campo . 'monto', 'El monto debe ser mayor que 0');
             }

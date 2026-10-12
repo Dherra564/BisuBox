@@ -41,11 +41,11 @@ $accesos = [
         'ruta' => '/sesiones',
         'descripcion' => 'Consulte cuándo ha ingresado al sistema.'
     ],
-        [
-        'texto' => 'Procesos',
-        'permiso' => 'procesos.gestionar',
-        'ruta' => '/procesos',
-        'descripcion' => 'Registre cada producto que hace: lo que usó del inventario, el tiempo y su precio.'
+    [
+        'texto' => 'Productos',
+        'permiso' => 'productos.gestionar',
+        'ruta' => '/productos',
+        'descripcion' => 'Registre lo que hace: se descuentan los componentes y el sistema le ayuda a ponerle precio.'
     ],
 ];
 $accesos = array_filter($accesos, fn(array $acceso): bool => Permiso::puede($acceso['permiso']));
