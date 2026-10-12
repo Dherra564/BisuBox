@@ -58,7 +58,7 @@ class ProcesoRepositorio
     /** @return array{procesos: int, valor: float, minutos: int} */
     public function resumen(int $idVendedor, array $filtros): array
     {
-        [$condiciones, $valores] = $this->construirFiltros($idVendedor, ['estado' => 'registrados'] + $filtros);
+        [$condiciones, $valores] = $this->construirFiltros($idVendedor, ['estado' => 'activos'] + $filtros);
         $consulta = $this->conexion->prepare(
             'SELECT COUNT(*) AS procesos, COALESCE(SUM(p.tbprocesoprecio), 0) AS valor, COALESCE(SUM(p.tbprocesominutos), 0) AS minutos
              FROM tbproceso p' . $condiciones
@@ -185,7 +185,7 @@ class ProcesoRepositorio
                 $proceso->getCostoManoObra(),
                 $proceso->getCostoExtras(),
                 $proceso->getPrecio(),
-                Proceso::REGISTRADO,
+                Proceso::ACTIVO,
                 (new DateTime())->format('Y-m-d H:i:s'),
             ]);
 
@@ -245,7 +245,7 @@ class ProcesoRepositorio
                 'SELECT tbprocesoestado FROM tbproceso WHERE tbprocesoid = ? AND tbprocesovendedorid = ? FOR UPDATE'
             );
             $consulta->execute([$proceso->getIdProceso(), $idVendedor]);
-            if ($consulta->fetchColumn() !== Proceso::REGISTRADO) {
+            if ($consulta->fetchColumn() !== Proceso::ACTIVO) {
                 throw new OperacionNoPermitida('Este proceso ya estaba anulado.');
             }
 
@@ -296,7 +296,7 @@ class ProcesoRepositorio
         $estado = $filtros['estado'] ?? 'todos';
         if ($estado !== 'todos') {
             $condiciones[] = 'p.tbprocesoestado = ?';
-            $valores[] = $estado === 'anulados' ? Proceso::ANULADO : Proceso::REGISTRADO;
+            $valores[] = $estado === 'anulados' ? Proceso::ANULADO : Proceso::ACTIVO;
         }
 
         if (($filtros['desde'] ?? null) instanceof DateTime) {

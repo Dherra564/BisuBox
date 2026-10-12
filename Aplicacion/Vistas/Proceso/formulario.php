@@ -7,6 +7,7 @@
  */
 
 use Aplicacion\Nucleo\Csrf;
+use Aplicacion\Nucleo\DatosCompraProveedor;
 use Aplicacion\Nucleo\DatosProceso;
 use Aplicacion\Nucleo\UnidadMedida;
 
@@ -47,14 +48,18 @@ $filaComponente = function (string $clave, array $linea) use ($claseCampo, $mens
                 . ' data-existencia="' . $componente->getExistencia() . '"'
                 . ' data-costo="' . $componente->getCostoUnitario() . '"'
                 . ' data-plural="' . $unidad['plural'] . '"'
+                . ' data-metro="' . ($componente->getUnidad() === UnidadMedida::METRO ? '1' : '0') . '"'
+                . ' data-etiqueta-costo="' . htmlspecialchars($unidad['costo']) . '"'
                 . ' data-entera="' . ($componente->getUnidad() === UnidadMedida::UNIDAD ? '1' : '0') . '">'
                 . htmlspecialchars($componente->getNombre()) . ($agotado ? ' (agotado)' : '') . '</option>';
         }
         $opciones .= '</optgroup>';
     }
 
-    return '<div class="lineaCompra" data-linea data-clave="' . $clave . '">'
-        . '<div class="lineaCompraCampos">'
+    $enCentimetros = ($linea['medida'] ?? '') === DatosCompraProveedor::CENTIMETROS;
+
+    return '<div class="lineaProceso" data-linea data-clave="' . $clave . '">'
+        . '<div class="lineaProcesoCampos">'
         . '<div class="' . $claseCampo($campo . 'componente', 'campoComponente') . '">'
         . '<label for="componente-' . $clave . '-componente">Componente</label>'
         . '<select id="componente-' . $clave . '-componente" name="' . $nombre . '[componente]" data-linea-componente>' . $opciones . '</select>'
@@ -66,12 +71,16 @@ $filaComponente = function (string $clave, array $linea) use ($claseCampo, $mens
         . '<div class="campoConUnidad">'
         . '<input type="text" id="componente-' . $clave . '-cantidad" name="' . $nombre . '[cantidad]" maxlength="13" inputmode="decimal"'
         . ' data-linea-cantidad placeholder="0" value="' . htmlspecialchars($linea['cantidad']) . '">'
+        . '<select name="' . $nombre . '[medida]" class="selectorMedida" aria-label="Metros o centímetros" data-linea-medida hidden>'
+        . '<option value="m"' . ($enCentimetros ? '' : ' selected') . '>m</option>'
+        . '<option value="cm"' . ($enCentimetros ? ' selected' : '') . '>cm</option>'
+        . '</select>'
         . '<span class="unidadCampo" data-linea-unidad></span>'
         . '</div>'
         . $mensajeError($campo . 'cantidad')
         . '</div>'
         . '<div class="campo campoSubtotal">'
-        . '<span class="etiquetaCampo">Costo de cada uno</span>'
+        . '<span class="etiquetaCampo" data-linea-etiqueta-costo>Costo de cada uno</span>'
         . '<span class="subtotalLinea" data-linea-costo>₡0</span>'
         . '</div>'
         . '<div class="campo campoSubtotal">'
@@ -88,7 +97,7 @@ $filaExtra = function (string $clave, array $extra) use ($claseCampo, $mensajeEr
     $campo = 'extra.' . $clave . '.';
     $nombre = 'extra[' . $clave . ']';
 
-    return '<div class="lineaCompra" data-extra data-clave="' . $clave . '">'
+    return '<div class="lineaProceso" data-extra data-clave="' . $clave . '">'
         . '<div class="lineaExtraCampos">'
         . '<div class="' . $claseCampo($campo . 'concepto') . '">'
         . '<label for="extra-' . $clave . '-concepto">¿Para qué fue?</label>'
@@ -111,7 +120,7 @@ $filaExtra = function (string $clave, array $extra) use ($claseCampo, $mensajeEr
         . '</div>';
 };
 
-$lineaVacia = ['componente' => '', 'cantidad' => ''];
+$lineaVacia = ['componente' => '', 'cantidad' => '', 'medida' => 'm'];
 $lineas = $datos['componentes'] !== [] ? $datos['componentes'] : [0 => $lineaVacia];
 $extras = $datos['extras'];
 ?>
@@ -123,9 +132,9 @@ $extras = $datos['extras'];
     </div>
 <?php endif; ?>
 
-<form method="post" action="<?= $urlBase ?>/procesos/nuevo" novalidate
-    class="validarFormulario formularioProceso"
-    data-maximo-componentes="<?= DatosProceso::MAXIMO_COMPONENTES ?>" data-maximo-extras="<?= DatosProceso::MAXIMO_EXTRAS ?>"
+<form method="post" action="<?= $urlBase ?>/procesos/nuevo" novalidate class="validarFormulario formularioProceso"
+    data-maximo-componentes="<?= DatosProceso::MAXIMO_COMPONENTES ?>"
+    data-maximo-extras="<?= DatosProceso::MAXIMO_EXTRAS ?>"
     data-confirmar="Al registrar el proceso se descuenta del inventario lo que usó. Si después encuentra un error, puede anularlo y los componentes vuelven al inventario."
     data-titulo="Registrar proceso" data-boton="Registrar proceso">
     <?= Csrf::campo() ?>
@@ -136,10 +145,9 @@ $extras = $datos['extras'];
         <div class="<?= $claseCampo('nombre') ?>">
             <label for="nombre">Producto <span class="obligatorio">*</span></label>
             <input type="text" id="nombre" name="nombre" minlength="3" maxlength="60" required
-                   data-regla="nombreComercial" data-contador
-                   data-mensaje-requerido="Escriba qué producto hizo, por ejemplo Collar de perlas"
-                   data-mensaje-largo="El nombre debe tener entre 3 y 60 caracteres"
-                   value="<?= $valor('nombre') ?>">
+                data-regla="nombreComercial" data-contador
+                data-mensaje-requerido="Escriba qué producto hizo, por ejemplo Collar de perlas"
+                data-mensaje-largo="El nombre debe tener entre 3 y 60 caracteres" value="<?= $valor('nombre') ?>">
             <p class="textoAyuda">Por ejemplo Collar de perlas o Aretes de flor</p>
             <?= $mensajeError('nombre') ?>
         </div>
@@ -148,15 +156,14 @@ $extras = $datos['extras'];
             <div class="<?= $claseCampo('fecha') ?>">
                 <label for="fecha">Fecha <span class="obligatorio">*</span></label>
                 <input type="date" id="fecha" name="fecha" required max="<?= date('Y-m-d') ?>" min="2000-01-01"
-                       data-mensaje-requerido="Escoja en el calendario el día en que hizo el producto"
-                       value="<?= $valor('fecha') ?>">
-                <p class="textoAyuda">El día en que lo hizo, no hace falta que sea hoy.</p>
+                    data-mensaje-requerido="Escoja en el calendario el día en que hizo el producto"
+                    value="<?= $valor('fecha') ?>">
                 <?= $mensajeError('fecha') ?>
             </div>
             <div class="<?= $claseCampo('descripcion') ?>">
                 <label for="descripcion">Descripción</label>
                 <input type="text" id="descripcion" name="descripcion" maxlength="200" data-contador
-                       placeholder="Opcional" value="<?= $valor('descripcion') ?>">
+                    placeholder="Opcional" value="<?= $valor('descripcion') ?>">
                 <p class="textoAyuda">Opcional. Por ejemplo, el modelo o algún detalle.</p>
                 <?= $mensajeError('descripcion') ?>
             </div>
@@ -168,14 +175,15 @@ $extras = $datos['extras'];
         <p class="textoAyuda">Una línea por componente. Al registrar, la cantidad se descuenta de su inventario.</p>
         <?= $mensajeError('lineas') ?>
 
-        <div class="listaLineasCompra" data-lineas>
+        <div class="listaLineasProceso" data-lineas>
             <?php foreach ($lineas as $clave => $linea): ?>
                 <?= $filaComponente((string) $clave, $linea) ?>
             <?php endforeach; ?>
         </div>
 
         <div class="contactosPie">
-            <button type="button" class="boton botonSecundario botonPequeno" data-linea-agregar>Agregar otro componente</button>
+            <button type="button" class="boton botonSecundario botonPequeno" data-linea-agregar>Agregar otro
+                componente</button>
             <span class="textoAyuda" data-lineas-cuenta></span>
         </div>
     </section>
@@ -189,12 +197,12 @@ $extras = $datos['extras'];
                 <div class="filaTiempo">
                     <div class="campoConUnidad">
                         <input type="text" id="horas" name="horas" maxlength="3" inputmode="numeric" placeholder="0"
-                               data-horas value="<?= $valor('horas') ?>">
+                            data-horas value="<?= $valor('horas') ?>">
                         <span class="unidadCampo">horas</span>
                     </div>
                     <div class="campoConUnidad">
                         <input type="text" id="minutos" name="minutos" maxlength="2" inputmode="numeric" placeholder="0"
-                               data-minutos aria-label="Minutos" value="<?= $valor('minutos') ?>">
+                            data-minutos aria-label="Minutos" value="<?= $valor('minutos') ?>">
                         <span class="unidadCampo">minutos</span>
                     </div>
                 </div>
@@ -206,10 +214,10 @@ $extras = $datos['extras'];
                 <div class="campoConUnidad campoConMoneda">
                     <span class="unidadCampo">₡</span>
                     <input type="text" id="tarifaHora" name="tarifaHora" maxlength="13" inputmode="decimal" required
-                           data-regla="cantidad" data-tarifa placeholder="0"
-                           data-mensaje-requerido="Escriba cuánto cobra por hora, o 0 si no cobra mano de obra"
-                           data-mensaje-regla="Escriba un monto, por ejemplo 2000 o 2000,50"
-                           value="<?= $valor('tarifaHora') ?>">
+                        data-regla="cantidad" data-tarifa placeholder="0"
+                        data-mensaje-requerido="Escriba cuánto cobra por hora, o 0 si no cobra mano de obra"
+                        data-mensaje-regla="Escriba un monto, por ejemplo 2000 o 2000,50"
+                        value="<?= $valor('tarifaHora') ?>">
                 </div>
                 <p class="textoAyuda">Escriba 0 si no cobra mano de obra.</p>
                 <?= $mensajeError('tarifaHora') ?>
@@ -220,7 +228,8 @@ $extras = $datos['extras'];
 
     <section class="formularioSeccion">
         <h2>4. Costos extra</h2>
-        <p class="textoAyuda">Opcional. Todo lo que gastó además de los componentes y su trabajo: luz, transporte, empaque...</p>
+        <p class="textoAyuda">Opcional. Todo lo que gastó además de los componentes y su trabajo: luz, transporte,
+            empaque...</p>
         <?= $mensajeError('extras') ?>
 
         <datalist id="sugerenciasExtra">
@@ -231,14 +240,15 @@ $extras = $datos['extras'];
         </datalist>
 
         <p class="textoAyuda" data-extras-vacio <?= $extras !== [] ? 'hidden' : '' ?>>No ha agregado costos extra.</p>
-        <div class="listaLineasCompra" data-extras>
+        <div class="listaLineasProceso" data-extras>
             <?php foreach ($extras as $clave => $extra): ?>
                 <?= $filaExtra((string) $clave, $extra) ?>
             <?php endforeach; ?>
         </div>
 
         <div class="contactosPie">
-            <button type="button" class="boton botonSecundario botonPequeno" data-extra-agregar>Agregar costo extra</button>
+            <button type="button" class="boton botonSecundario botonPequeno" data-extra-agregar>Agregar costo
+                extra</button>
         </div>
     </section>
 
@@ -249,13 +259,14 @@ $extras = $datos['extras'];
             <div><span>Mano de obra</span><strong data-total-mano-obra>₡0</strong></div>
             <div><span>Costos extra</span><strong data-total-extras>₡0</strong></div>
             <div class="totalCompra"><span>Precio final</span><strong data-total-precio>₡0</strong></div>
-            <p class="textoAyuda">Se calcula solo: componentes (con el costo que tienen en su inventario) + mano de obra (tiempo × lo que cobra por hora) + costos extra.</p>
+            <p class="textoAyuda">Se calcula solo: componentes (con el costo que tienen en su inventario) + mano de obra
+                (tiempo × lo que cobra por hora) + costos extra.</p>
         </div>
     </section>
 
-    <div class="grupoBotones accionesFormulario">
-        <a href="<?= $urlBase ?>/procesos" class="boton botonSecundario">Cancelar</a>
+    <div class="grupoBotones accionesFormulario accionesIzquierda">
         <button type="submit" class="boton">Registrar proceso</button>
+        <a href="<?= $urlBase ?>/procesos" class="boton botonSecundario">Cancelar</a>
     </div>
 </form>
 

@@ -2796,6 +2796,53 @@ h1, h2, h3 {
         padding: 10px 0;
     }
 }
+
+/* Procesos: una tarjeta por componente usado y por costo extra */
+.listaLineasProceso {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.lineaProceso {
+    padding: 14px 16px 4px;
+    border: 1px solid var(--colorBorde);
+    border-radius: var(--radioCampo);
+    background: var(--colorSuperficie);
+}
+
+.lineaProcesoCampos {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 44px;
+    gap: 0 12px;
+    align-items: start;
+}
+
+.lineaProcesoCampos .botonQuitar {
+    margin-top: 27px;
+}
+
+.campoSubtotal .etiquetaCampo {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.subtotalLinea {
+    display: block;
+    padding: 9px 0;
+    font-weight: 700;
+}
+
+.lineaProceso .avisoExistencia {
+    margin: 6px 0 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.lineaProceso .avisoExistencia:not(.errorCampo) {
+    color: var(--colorTitulo);
+}
+
 .lineaExtraCampos {
     display: grid;
     grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) 44px;
@@ -2822,17 +2869,30 @@ h1, h2, h3 {
     font-weight: 600;
 }
 
-@media (max-width: 720px) {
-    .lineaExtraCampos {
-        grid-template-columns: minmax(0, 1fr) auto;
-    }
+.lineaExtraCampos {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
 
-    .lineaExtraCampos > .campo {
-        grid-column: 1 / -1;
-    }
+.lineaExtraCampos > .campo {
+    grid-column: 1 / -1;
+}
 
-    .lineaExtraCampos .botonQuitar {
-        justify-self: end;
-        margin-top: 0;
-    }
+.lineaExtraCampos .botonQuitar {
+    justify-self: end;
+    margin-top: 0;
+}
+
+.lineaProcesoCampos {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.lineaProcesoCampos > .campoComponente {
+    grid-column: 1 / -1;
+}
+
+.lineaProcesoCampos .botonQuitar {
+    grid-column: 1 / -1;
+    justify-self: end;
+    margin-top: 0;
+    margin-bottom: 10px;
 }

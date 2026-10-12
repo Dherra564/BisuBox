@@ -11,10 +11,6 @@ use Aplicacion\Nucleo\UnidadMedida;
 $titulo = htmlspecialchars_decode(htmlspecialchars($proceso->getNombre()));
 $paginaActual = 'procesos';
 $volverA = ['texto' => 'Procesos', 'ruta' => '/procesos'];
-$botonesAccion = [
-    ['texto' => 'Ver inventario', 'ruta' => '/inventario', 'secundario' => true],
-    ['texto' => 'Registrar otro proceso', 'ruta' => '/procesos/nuevo'],
-];
 require __DIR__ . '/../Plantilla/encabezado.php';
 
 $hayExtras = $proceso->getExtras() !== [];
@@ -39,7 +35,8 @@ $hayExtras = $proceso->getExtras() !== [];
         </div>
         <div>
             <span class="textoAyuda">Estado</span>
-            <span class="etiqueta <?= $proceso->estaAnulado() ? 'etiquetaInactivo' : 'etiquetaActivo' ?>"><?= $proceso->getEstado() ?></span>
+            <span
+                class="etiqueta <?= $proceso->estaAnulado() ? 'etiquetaInactivo' : 'etiquetaActivo' ?>"><?= $proceso->getEstado() ?></span>
         </div>
     </header>
 
@@ -60,8 +57,13 @@ $hayExtras = $proceso->getExtras() !== [];
                             <span class="nombreComponente"><?= htmlspecialchars($detalle->getNombreComponente()) ?></span>
                             <span class="detalleComponente"><?= htmlspecialchars($detalle->getNombreTipo()) ?></span>
                         </td>
-                        <td data-etiqueta="Cantidad" class="numero"><?= UnidadMedida::cantidad($detalle->getCantidad(), $detalle->getUnidad()) ?></td>
-                        <td data-etiqueta="Costo de cada uno" class="numero"><?= Numero::moneda($detalle->getCostoUnitario()) ?></td>
+                        <td data-etiqueta="Cantidad" class="numero">
+                            <?= UnidadMedida::cantidad($detalle->getCantidad(), $detalle->getUnidad()) ?></td>
+                        <td data-etiqueta="<?= UnidadMedida::etiquetaCosto($detalle->getUnidad()) ?>" class="numero">
+                            <?= Numero::moneda($detalle->getCostoUnitario()) ?>
+                            <span
+                                class="detalleComponente"><?= ['Metro' => 'el metro', 'Gramo' => 'el gramo'][$detalle->getUnidad()] ?? 'cada uno' ?></span>
+                        </td>
                         <td data-etiqueta="Subtotal" class="numero"><?= Numero::moneda($detalle->getSubtotal()) ?></td>
                     </tr>
                 <?php endforeach; ?>
@@ -93,27 +95,34 @@ $hayExtras = $proceso->getExtras() !== [];
     <div class="totalesCompra">
         <div><span>Componentes</span><strong><?= Numero::moneda($proceso->getCostoComponentes()) ?></strong></div>
         <div><span>Mano de obra</span><strong><?= Numero::moneda($proceso->getCostoManoObra()) ?></strong></div>
-        <div><span>Costos extra</span><strong><?= $hayExtras ? Numero::moneda($proceso->getCostoExtras()) : 'Sin costos extra' ?></strong></div>
-        <div class="totalCompra"><span>Precio final</span><strong><?= Numero::moneda($proceso->getPrecio()) ?></strong></div>
+        <div><span>Costos
+                extra</span><strong><?= $hayExtras ? Numero::moneda($proceso->getCostoExtras()) : 'Sin costos extra' ?></strong>
+        </div>
+        <div class="totalCompra"><span>Precio final</span><strong><?= Numero::moneda($proceso->getPrecio()) ?></strong>
+        </div>
         <p class="textoAyuda">
-            Mano de obra: <?= Numero::duracion($proceso->getMinutos()) ?> a <?= Numero::moneda($proceso->getTarifaHora()) ?> por hora.
+            Mano de obra: <?= Numero::duracion($proceso->getMinutos()) ?> a
+            <?= Numero::moneda($proceso->getTarifaHora()) ?> por hora.
             Los costos de los componentes son los que tenían en el inventario al registrar el proceso.
         </p>
     </div>
 
     <?php if ($proceso->getFechaRegistro() !== null): ?>
-        <p class="textoAyuda">Registrado en el sistema el <?= $proceso->getFechaRegistro()->format('d/m/Y \a \l\a\s H:i') ?>.</p>
+        <p class="textoAyuda">Registrado en el sistema el
+            <?= $proceso->getFechaRegistro()->format('d/m/Y \a \l\a\s H:i') ?>.</p>
     <?php endif; ?>
 </article>
 
 <?php if ($proceso->estaAnulado()): ?>
-    <p class="cajaInformativa">Este proceso está anulado: los componentes que usó ya volvieron al inventario y no cuenta en los totales.</p>
+    <p class="cajaInformativa">Este proceso está anulado: los componentes que usó ya volvieron al inventario y no cuenta en
+        los totales.</p>
 <?php else: ?>
     <div class="cajaAnular">
-        <p>¿Encontró un error en este proceso? Anúlelo y regístrelo de nuevo. Al anularlo, los componentes que usó vuelven al inventario.</p>
-        <form method="post" action="<?= $urlBase ?>/procesos/anular" class="formularioEnLinea"
-              data-titulo="Anular proceso" data-boton="Anular proceso" data-peligro
-              data-confirmar="¿Anular el proceso «<?= htmlspecialchars($proceso->getNombre()) ?>» del <?= $proceso->getFecha()->format('d/m/Y') ?>? Los componentes que usó volverán al inventario. Esto no se puede deshacer.">
+        <p>¿Encontró un error en este proceso? Anúlelo y regístrelo de nuevo. Al anularlo, los componentes que usó vuelven
+            al inventario.</p>
+        <form method="post" action="<?= $urlBase ?>/procesos/anular" class="formularioEnLinea" data-titulo="Anular proceso"
+            data-boton="Anular proceso" data-peligro
+            data-confirmar="¿Anular el proceso «<?= htmlspecialchars($proceso->getNombre()) ?>» del <?= $proceso->getFecha()->format('d/m/Y') ?>? Los componentes que usó volverán al inventario. Esto no se puede deshacer.">
             <?= Csrf::campo() ?>
             <input type="hidden" name="id" value="<?= $proceso->getIdProceso() ?>">
             <button type="submit" class="boton botonPeligro">Anular proceso</button>

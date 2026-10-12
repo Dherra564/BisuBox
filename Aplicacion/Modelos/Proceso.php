@@ -8,7 +8,7 @@ use DateTime;
 
 class Proceso
 {
-    public const REGISTRADO = 'Registrado';
+    public const ACTIVO = 'Activo';
     public const ANULADO = 'Anulado';
 
     private ?int $idProceso;
@@ -46,7 +46,7 @@ class Proceso
         float $costoManoObra,
         float $costoExtras,
         float $precio,
-        string $estado = self::REGISTRADO,
+        string $estado = self::ACTIVO,
         ?DateTime $fechaRegistro = null,
         array $componentes = [],
         array $extras = [],

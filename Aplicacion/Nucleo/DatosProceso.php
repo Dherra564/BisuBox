@@ -26,6 +26,7 @@ class DatosProceso
             $leida = [
                 'componente' => $texto($linea['componente'] ?? null),
                 'cantidad' => $texto($linea['cantidad'] ?? null),
+                'medida' => ($linea['medida'] ?? null) === DatosCompraProveedor::CENTIMETROS ? DatosCompraProveedor::CENTIMETROS : DatosCompraProveedor::METROS,
             ];
             if ($leida['componente'] !== '' || $leida['cantidad'] !== '') {
                 $componentes[(int) $clave] = $leida;
@@ -67,7 +68,7 @@ class DatosProceso
             'horas' => '',
             'minutos' => '',
             'tarifaHora' => Numero::paraCampo($tarifaHora),
-            'componentes' => [0 => ['componente' => '', 'cantidad' => '']],
+            'componentes' => [0 => ['componente' => '', 'cantidad' => '', 'medida' => DatosCompraProveedor::METROS]],
             'extras' => [],
         ];
     }
@@ -114,7 +115,7 @@ class DatosProceso
         $costoComponentes = 0.0;
         foreach ($datos['componentes'] as $linea) {
             $componente = $componentes[(int) $linea['componente']];
-            $cantidad = (float) Numero::leer($linea['cantidad']);
+            $cantidad = (float) self::cantidadEnUnidad($linea, $componente);
             $costo = $componente->getCostoUnitario();
             $subtotal = round($cantidad * $costo, 2);
             $costoComponentes += $subtotal;
@@ -156,7 +157,7 @@ class DatosProceso
             $costoManoObra,
             $costoExtras,
             round($costoComponentes + $costoManoObra + $costoExtras, 2),
-            Proceso::REGISTRADO,
+            Proceso::ACTIVO,
             null,
             $detalles,
             $extras
@@ -224,12 +225,25 @@ class DatosProceso
                 $componente = $componentes[(int) $linea['componente']];
             }
 
-            self::validarCantidad($validador, $campo . 'cantidad', $linea['cantidad'], $componente);
+            self::validarCantidad($validador, $campo . 'cantidad', $linea, $componente);
         }
     }
 
-    private static function validarCantidad(Validador $validador, string $campo, string $valor, ?Componente $componente): void
+    // La cantidad en la unidad del componente: los centímetros pasan a metros (75 cm = 0,75 m)
+    private static function cantidadEnUnidad(array $linea, ?Componente $componente): ?float
     {
+        $cantidad = Numero::leer($linea['cantidad']);
+        if ($cantidad === null) {
+            return null;
+        }
+        $enCentimetros = $componente?->getUnidad() === UnidadMedida::METRO && $linea['medida'] === DatosCompraProveedor::CENTIMETROS;
+
+        return $enCentimetros ? round($cantidad / 100, 2) : $cantidad;
+    }
+
+    private static function validarCantidad(Validador $validador, string $campo, array $linea, ?Componente $componente): void
+    {
+        $valor = $linea['cantidad'];
         if ($valor === '') {
             $validador->agregarError($campo, 'Escriba cuántos usó');
             return;
@@ -247,6 +261,12 @@ class DatosProceso
         if ($componente === null) {
             return;
         }
+        $enCentimetros = $componente->getUnidad() === UnidadMedida::METRO && $linea['medida'] === DatosCompraProveedor::CENTIMETROS;
+        if ($enCentimetros && floor($cantidad) != $cantidad) {
+            $validador->agregarError($campo, 'Los centímetros van sin decimales');
+            return;
+        }
+        $cantidad = self::cantidadEnUnidad($linea, $componente);
 
         if ($componente->getUnidad() === UnidadMedida::UNIDAD && floor($cantidad) != $cantidad) {
             $validador->agregarError($campo, 'Se cuenta por unidades: use números enteros');

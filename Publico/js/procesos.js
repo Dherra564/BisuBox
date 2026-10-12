@@ -81,18 +81,34 @@ document.addEventListener('DOMContentLoaded', function () {
         return parseInt(horas || '0', 10) * 60 + parseInt(minutos || '0', 10);
     }
 
+    // Si el componente va por metro, la cantidad puede venir en centímetros (75 cm = 0,75 m)
+    function enCentimetros(linea) {
+        var select = linea.querySelector('[data-linea-componente]');
+        var opcion = select.options[select.selectedIndex];
+        return opcion && opcion.getAttribute('data-metro') === '1' && linea.querySelector('[data-linea-medida]').value === 'cm';
+    }
+
+    function cantidadEnUnidad(linea) {
+        var cantidad = leerNumero(linea.querySelector('[data-linea-cantidad]').value) || 0;
+        return enCentimetros(linea) ? cantidad / 100 : cantidad;
+    }
+
     function actualizarComponente(linea) {
         var select = linea.querySelector('[data-linea-componente]');
         var opcion = select.options[select.selectedIndex];
         var hayComponente = select.value !== '' && opcion && opcion.hasAttribute('data-costo');
+        var esMetro = hayComponente && opcion.getAttribute('data-metro') === '1';
 
         var plural = hayComponente ? opcion.getAttribute('data-plural') : '';
         var costo = hayComponente ? parseFloat(opcion.getAttribute('data-costo')) || 0 : 0;
         var existencia = hayComponente ? parseFloat(opcion.getAttribute('data-existencia')) || 0 : 0;
-        var cantidad = leerNumero(linea.querySelector('[data-linea-cantidad]').value) || 0;
+        var cantidad = cantidadEnUnidad(linea);
         var subtotal = Math.round(cantidad * costo * 100) / 100;
 
+        linea.querySelector('[data-linea-medida]').hidden = !esMetro;
+        linea.querySelector('[data-linea-unidad]').hidden = esMetro;
         linea.querySelector('[data-linea-unidad]').textContent = plural;
+        linea.querySelector('[data-linea-etiqueta-costo]').textContent = hayComponente ? opcion.getAttribute('data-etiqueta-costo') : 'Costo de cada uno';
         linea.querySelector('[data-linea-costo]').textContent = costoTexto(costo);
         linea.querySelector('[data-linea-subtotal]').textContent = moneda(subtotal);
 
@@ -249,8 +265,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 marcar(cantidad, 'La cantidad debe ser mayor que 0');
             } else if (opcion && opcion.getAttribute('data-entera') === '1' && Math.floor(numero) !== numero) {
                 marcar(cantidad, 'Se cuenta por unidades: use números enteros');
+            } else if (enCentimetros(linea) && Math.floor(numero) !== numero) {
+                marcar(cantidad, 'Los centímetros van sin decimales');
             } else if (opcion && opcion.hasAttribute('data-existencia')
-                && numero > (parseFloat(opcion.getAttribute('data-existencia')) || 0) + 0.001) {
+                && cantidadEnUnidad(linea) > (parseFloat(opcion.getAttribute('data-existencia')) || 0) + 0.001) {
                 marcar(cantidad, 'No alcanza: solo tiene ' + cantidadTexto(parseFloat(opcion.getAttribute('data-existencia'))));
             }
         });

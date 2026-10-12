@@ -19,7 +19,7 @@ use Throwable;
 
 class ProcesoControlador
 {
-    private const ESTADOS = ['todos' => 'Todos', 'registrados' => 'Registrados', 'anulados' => 'Anulados'];
+    private const ESTADOS = ['todos' => 'Todos', 'activos' => 'Activos', 'anulados' => 'Anulados'];
 
     private ProcesoRepositorio $procesoRepositorio;
     private int $idVendedor;
@@ -44,8 +44,14 @@ class ProcesoControlador
         $estado = is_string($_GET['estado'] ?? null) && isset(self::ESTADOS[$_GET['estado']]) ? $_GET['estado'] : 'todos';
         $periodo = PeriodoFechas::leer($_GET);
 
-        $filtros = ['busqueda' => $busqueda, 'estado' => $estado, 'desde' => $periodo['desde'], 'hasta' => $periodo['hasta']];
-        $total = $this->procesoRepositorio->contar($this->idVendedor, $filtros);
+        $base = ['busqueda' => $busqueda, 'desde' => $periodo['desde'], 'hasta' => $periodo['hasta']];
+        $conteos = [];
+        foreach (array_keys(self::ESTADOS) as $codigo) {
+            $conteos[$codigo] = $this->procesoRepositorio->contar($this->idVendedor, ['estado' => $codigo] + $base);
+        }
+
+        $filtros = ['estado' => $estado] + $base;
+        $total = $conteos[$estado];
         $totalPaginas = max(1, (int) ceil($total / ProcesoRepositorio::POR_PAGINA));
         $pagina = min(max(1, (int) ($_GET['pagina'] ?? 1)), $totalPaginas);
 
@@ -55,6 +61,7 @@ class ProcesoControlador
             'busqueda' => $busqueda,
             'estado' => $estado,
             'estados' => self::ESTADOS,
+            'conteos' => $conteos,
             'periodo' => $periodo,
             'pagina' => $pagina,
             'totalPaginas' => $totalPaginas,
