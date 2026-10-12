@@ -12,14 +12,9 @@
  */
 
 use Aplicacion\Nucleo\Csrf;
-use Aplicacion\Nucleo\TipoIdentificacion;
 
 $titulo = 'Proveedores';
 $paginaActual = 'proveedores';
-$botonesAccion = [
-    ['texto' => 'Compras a proveedores', 'ruta' => '/compras-proveedor', 'secundario' => true],
-    ['texto' => 'Nuevo proveedor', 'ruta' => '/proveedores/nuevo'],
-];
 require __DIR__ . '/../Plantilla/encabezado.php';
 
 $hayFiltros = $busqueda !== '' || $estado !== '';
@@ -34,7 +29,7 @@ $formatoTelefono = fn(?string $telefono): string => strlen((string) $telefono) =
         <div class="campo">
             <label for="busqueda">Buscar</label>
             <input type="search" id="busqueda" name="busqueda" maxlength="100"
-                   placeholder="Nombre, identificación, teléfono o correo" value="<?= htmlspecialchars($busqueda) ?>">
+                   placeholder="Nombre, teléfono o correo" value="<?= htmlspecialchars($busqueda) ?>">
         </div>
         <div class="campo">
             <label for="estado">Estado</label>
@@ -59,7 +54,6 @@ $formatoTelefono = fn(?string $telefono): string => strlen((string) $telefono) =
             <p>No se encontraron proveedores con esos filtros.</p>
         <?php else: ?>
             <p>Todavía no tiene proveedores registrados.</p>
-            <p><a href="<?= $urlBase ?>/proveedores/nuevo" class="boton">Registrar el primero</a></p>
         <?php endif; ?>
     </div>
 <?php else: ?>
@@ -68,7 +62,6 @@ $formatoTelefono = fn(?string $telefono): string => strlen((string) $telefono) =
             <thead>
                 <tr>
                     <th>Nombre</th>
-                    <th>Identificación</th>
                     <th>Contacto</th>
                     <th>Estado</th>
                     <th>Acciones</th>
@@ -80,14 +73,8 @@ $formatoTelefono = fn(?string $telefono): string => strlen((string) $telefono) =
                     $nombre = htmlspecialchars((string) $proveedor->getNombre());
                     $estaActivo = $proveedor->getEstado();
                     ?>
-                    <tr>
-                        <td data-etiqueta="Nombre"><?= $nombre ?></td>
-                        <td data-etiqueta="Identificación">
-                            <span>
-                                <?= htmlspecialchars(TipoIdentificacion::formatear($proveedor->getTipoIdentificacion(), $proveedor->getNumeroIdentificacion())) ?>
-                                <br><span class="textoAyuda"><?= htmlspecialchars(TipoIdentificacion::nombre($proveedor->getTipoIdentificacion())) ?></span>
-                            </span>
-                        </td>
+                    <tr class="<?= $estaActivo ? '' : 'filaInactiva' ?>">
+                        <td data-etiqueta="Nombre"><strong><?= $nombre ?></strong></td>
                         <td data-etiqueta="Contacto">
                             <span>
                                 <?= htmlspecialchars($formatoTelefono($proveedor->getTelefono())) ?>
@@ -102,8 +89,10 @@ $formatoTelefono = fn(?string $telefono): string => strlen((string) $telefono) =
                             <?php endif; ?>
                         </td>
                         <td data-etiqueta="Acciones" class="acciones">
-                            <a href="<?= $urlBase ?>/proveedores/detalle?id=<?= (int) $proveedor->getIdProveedor() ?>">Ver</a>
-                            <a href="<?= $urlBase ?>/proveedores/editar?id=<?= (int) $proveedor->getIdProveedor() ?>">Editar</a>
+                            <a href="<?= $urlBase ?>/proveedores/detalle?id=<?= (int) $proveedor->getIdProveedor() ?>"
+                               class="boton botonSecundario botonPequeno">Ver</a>
+                            <a href="<?= $urlBase ?>/proveedores/editar?id=<?= (int) $proveedor->getIdProveedor() ?>"
+                               class="boton botonSecundario botonPequeno">Editar</a>
                             <form method="post" action="<?= $urlBase ?>/proveedores/estado" class="formularioEnLinea"
                                   data-confirmar="<?= $estaActivo
                                       ? "¿Desea desactivar a {$nombre}? Ya no podrá elegirlo en compras nuevas."
@@ -114,7 +103,9 @@ $formatoTelefono = fn(?string $telefono): string => strlen((string) $telefono) =
                                 <?= Csrf::campo() ?>
                                 <input type="hidden" name="id" value="<?= (int) $proveedor->getIdProveedor() ?>">
                                 <input type="hidden" name="activo" value="<?= $estaActivo ? '0' : '1' ?>">
-                                <button type="submit" class="botonEnlace"><?= $estaActivo ? 'Desactivar' : 'Activar' ?></button>
+                                <button type="submit" class="boton botonSecundario botonPequeno <?= $estaActivo ? 'botonPeligroSuave' : '' ?>">
+                                    <?= $estaActivo ? 'Desactivar' : 'Activar' ?>
+                                </button>
                             </form>
                         </td>
                     </tr>
@@ -130,5 +121,10 @@ $formatoTelefono = fn(?string $telefono): string => strlen((string) $telefono) =
     require __DIR__ . '/../Plantilla/paginacion.php';
     ?>
 <?php endif; ?>
+
+<div class="grupoBotones accionesLista">
+    <a href="<?= $urlBase ?>/proveedores/nuevo" class="boton">Nuevo proveedor</a>
+    <a href="<?= $urlBase ?>/compras-proveedor" class="boton">Lista de compras</a>
+</div>
 
 <?php require __DIR__ . '/../Plantilla/pie.php'; ?>

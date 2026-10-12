@@ -247,7 +247,7 @@ $detalle = function ($componente) use ($tiposPorId): string {
                                     <?= Csrf::campo() ?>
                                     <input type="hidden" name="id" value="<?= $componente->getIdComponente() ?>">
                                     <input type="hidden" name="activo" value="<?= $componente->getActivo() ? '0' : '1' ?>">
-                                    <button type="submit" class="botonEnlace"><?= $componente->getActivo() ? 'Desactivar' : 'Activar' ?></button>
+                                    <button type="submit" class="boton botonSecundario botonPequeno <?= $componente->getActivo() ? 'botonPeligroSuave' : '' ?>"><?= $componente->getActivo() ? 'Desactivar' : 'Activar' ?></button>
                                 </form>
                             </td>
                         </tr>

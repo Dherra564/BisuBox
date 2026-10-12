@@ -7,11 +7,11 @@
  */
 
 use Aplicacion\Nucleo\Csrf;
-use Aplicacion\Nucleo\TipoIdentificacion;
 
 $esNuevo = $proveedor === null;
 $titulo = $esNuevo ? 'Nuevo proveedor' : 'Editar proveedor';
 $paginaActual = 'proveedores';
+$volverA = $esNuevo ? ['texto' => 'Volver', 'ruta' => '/proveedores'] : ['texto' => 'Proveedores', 'ruta' => '/proveedores'];
 require __DIR__ . '/../Plantilla/encabezado.php';
 
 $valor = fn(string $campo): string => htmlspecialchars((string) ($datos[$campo] ?? ''));
@@ -19,12 +19,8 @@ $claseCampo = fn(string $campo): string => isset($errores[$campo]) ? 'campo camp
 $mensajeError = fn(string $campo): string => isset($errores[$campo])
     ? '<p class="errorCampo">' . htmlspecialchars($errores[$campo]) . '</p>'
     : '';
-$tiposIdentificacion = TipoIdentificacion::paraProveedores();
-$tipoElegido = $datos['tipoIdentificacion'] ?? '';
 $rutaCancelar = $esNuevo ? '/proveedores' : '/proveedores/detalle?id=' . (int) $proveedor->getIdProveedor();
 ?>
-
-<p><a href="<?= $urlBase ?>/proveedores">← Proveedores</a></p>
 
 <?php if ($errores !== []): ?>
     <div class="alerta alertaError" role="alert">
@@ -56,38 +52,6 @@ $rutaCancelar = $esNuevo ? '/proveedores' : '/proveedores/detalle?id=' . (int) $
                    value="<?= $valor('nombre') ?>">
             <p class="textoAyuda">Por ejemplo Perlas del Valle S.A.</p>
             <?= $mensajeError('nombre') ?>
-        </div>
-
-        <div class="filaCampos">
-            <div class="<?= $claseCampo('tipoIdentificacion') ?>">
-                <label for="tipoIdentificacion">Tipo de identificación <span class="obligatorio">*</span></label>
-                <select id="tipoIdentificacion" name="tipoIdentificacion" required
-                        data-mensaje-requerido="Seleccione el tipo de identificación">
-                    <option value="">Seleccione el tipo</option>
-                    <?php foreach ($tiposIdentificacion as $codigo => $tipo): ?>
-                        <option value="<?= $codigo ?>" <?= $tipoElegido === $codigo ? 'selected' : '' ?>
-                                data-patron="<?= htmlspecialchars($tipo['patron']) ?>"
-                                data-mensaje="<?= htmlspecialchars($tipo['mensaje']) ?>"
-                                data-ayuda="<?= htmlspecialchars($tipo['ayuda']) ?>">
-                            <?= htmlspecialchars($tipo['nombre']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-                <?= $mensajeError('tipoIdentificacion') ?>
-            </div>
-            <div class="<?= $claseCampo('numeroIdentificacion') ?>">
-                <label for="numeroIdentificacion">Identificación <span class="obligatorio">*</span></label>
-                <input type="text" id="numeroIdentificacion" name="numeroIdentificacion" maxlength="25" required
-                       data-regla="identificacion" data-tipo="tipoIdentificacion" data-campo-ayuda="ayudaIdentificacion"
-                       data-mensaje-requerido="Ingrese la identificación"
-                       value="<?= htmlspecialchars(TipoIdentificacion::formatear($tipoElegido, $datos['numeroIdentificacion'] ?? '')) ?>">
-                <p class="textoAyuda" id="ayudaIdentificacion">
-                    <?= htmlspecialchars(isset($tiposIdentificacion[$tipoElegido])
-                        ? $tiposIdentificacion[$tipoElegido]['ayuda']
-                        : 'Primero seleccione el tipo') ?>
-                </p>
-                <?= $mensajeError('numeroIdentificacion') ?>
-            </div>
         </div>
     </section>
 

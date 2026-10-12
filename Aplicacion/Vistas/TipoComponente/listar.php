@@ -112,7 +112,7 @@ usort($tiposComponente, fn($a, $b): int => (int) $b->getActivo() <=> (int) $a->g
                             <?= Csrf::campo() ?>
                             <input type="hidden" name="id" value="<?= $tipoComponente->getIdTipoComponente() ?>">
                             <input type="hidden" name="activo" value="0">
-                            <button type="submit" class="boton botonSecundario botonPequeno">Desactivar</button>
+                            <button type="submit" class="boton botonSecundario botonPequeno botonPeligroSuave">Desactivar</button>
                         </form>
                     <?php else: ?>
                         <form method="post" action="<?= $urlBase ?>/tipos-componente/estado" class="formularioEnLinea">

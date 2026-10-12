@@ -403,6 +403,14 @@ h1, h2, h3 {
     font-weight: 500;
 }
 
+.botonPeligroSuave {
+    color: var(--colorError);
+}
+
+.botonPeligroSuave:hover {
+    background: var(--colorErrorFondo);
+}
+
 .botonCompleto {
     width: 100%;
 }
@@ -538,10 +546,8 @@ h1, h2, h3 {
     white-space: nowrap;
 }
 
-.tabla .acciones a,
-.tabla .acciones button {
-    margin-right: 10px;
-    font-weight: 600;
+.tabla .acciones .boton {
+    margin: 2px 6px 2px 0;
 }
 
 .botonEnlace {
@@ -591,8 +597,12 @@ h1, h2, h3 {
 }
 
 .etiquetaInactivo {
-    background: var(--colorInactivoFondo);
-    color: var(--colorInactivo);
+    background: var(--colorErrorFondo);
+    color: var(--colorError);
+}
+
+.accionesLista {
+    margin-top: 20px;
 }
 
 /* ---------- Listas con filtros (Vendedores) y Mi perfil ---------- */
@@ -2050,6 +2060,22 @@ h1, h2, h3 {
         font-weight: 600;
         color: var(--colorTextoSuave);
         text-align: left;
+    }
+       
+    .tabla td.acciones {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+        padding-top: 10px;
+        white-space: normal;
+    }
+
+    .tabla td.acciones::before {
+        display: none;
+    }
+
+    .tabla .acciones .boton {
+        margin: 0;
     }
 
     .disenoFormulario {

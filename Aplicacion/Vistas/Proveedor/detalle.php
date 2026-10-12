@@ -1,41 +1,27 @@
 <?php
 /**
  * @var \Aplicacion\Modelos\Proveedor $proveedor
- * @var array $periodo
- * @var \Aplicacion\Modelos\CompraProveedor[] $compras  las del período, de la más reciente a la más antigua
+ * @var \Aplicacion\Modelos\CompraProveedor[] $compras
  * @var int $totalCompras
  * @var array $resumen
  * @var string $urlBase
  */
 
-use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\Numero;
-use Aplicacion\Nucleo\PeriodoFechas;
-use Aplicacion\Nucleo\TipoIdentificacion;
 
 $titulo = 'Detalle del proveedor';
 $paginaActual = 'proveedores';
+$volverA = ['texto' => 'Proveedores', 'ruta' => '/proveedores'];
 require __DIR__ . '/../Plantilla/encabezado.php';
 
-$nombre = htmlspecialchars((string) $proveedor->getNombre());
 $telefono = (string) $proveedor->getTelefono();
 $telefono = strlen($telefono) === 8 ? substr($telefono, 0, 4) . '-' . substr($telefono, 4) : $telefono;
-$estaActivo = $proveedor->getEstado();
 $idProveedor = (int) $proveedor->getIdProveedor();
-$enlacePeriodo = fn(string $codigo): string => $urlBase . '/proveedores/detalle?' . http_build_query(['id' => $idProveedor, 'periodo' => $codigo]);
 ?>
 
-<p><a href="<?= $urlBase ?>/proveedores">← Proveedores</a></p>
-
 <section class="formularioSeccion">
-    <h2><?= $nombre ?></h2>
+    <h2><?= htmlspecialchars((string) $proveedor->getNombre()) ?></h2>
     <dl class="listaDatos">
-        <dt>Identificación</dt>
-        <dd>
-            <?= htmlspecialchars(TipoIdentificacion::nombre($proveedor->getTipoIdentificacion())) ?>:
-            <?= htmlspecialchars(TipoIdentificacion::formatear($proveedor->getTipoIdentificacion(), $proveedor->getNumeroIdentificacion())) ?>
-        </dd>
-
         <dt>Teléfono</dt>
         <dd><?= htmlspecialchars($telefono) ?></dd>
 
@@ -47,7 +33,7 @@ $enlacePeriodo = fn(string $codigo): string => $urlBase . '/proveedores/detalle?
 
         <dt>Estado</dt>
         <dd>
-            <?php if ($estaActivo): ?>
+            <?php if ($proveedor->getEstado()): ?>
                 <span class="etiqueta etiquetaActivo">Activo</span>
             <?php else: ?>
                 <span class="etiqueta etiquetaInactivo">Inactivo</span>
@@ -55,41 +41,10 @@ $enlacePeriodo = fn(string $codigo): string => $urlBase . '/proveedores/detalle?
             <?php endif; ?>
         </dd>
     </dl>
-
-    <div class="grupoBotones">
-        <a href="<?= $urlBase ?>/proveedores/editar?id=<?= (int) $proveedor->getIdProveedor() ?>" class="boton">Editar</a>
-        <form method="post" action="<?= $urlBase ?>/proveedores/estado" class="formularioEnLinea"
-              data-confirmar="<?= $estaActivo
-                  ? "¿Desea desactivar a {$nombre}? Ya no podrá elegirlo en compras nuevas."
-                  : "¿Desea activar a {$nombre}? Podrá elegirlo de nuevo en sus compras." ?>"
-              data-titulo="<?= $estaActivo ? 'Desactivar proveedor' : 'Activar proveedor' ?>"
-              data-boton="<?= $estaActivo ? 'Desactivar' : 'Activar' ?>" <?= $estaActivo ? 'data-peligro' : '' ?>>
-            <?= Csrf::campo() ?>
-            <input type="hidden" name="id" value="<?= (int) $proveedor->getIdProveedor() ?>">
-            <input type="hidden" name="activo" value="<?= $estaActivo ? '0' : '1' ?>">
-            <input type="hidden" name="volver" value="detalle">
-            <button type="submit" class="boton <?= $estaActivo ? 'botonPeligro' : 'botonSecundario' ?>">
-                <?= $estaActivo ? 'Desactivar' : 'Activar' ?>
-            </button>
-        </form>
-    </div>
 </section>
 
-<section class="formularioSeccion comprasProveedor" id="compras">
-    <div class="encabezadoSeccion">
-        <h2>Compras a este proveedor</h2>
-        <?php if ($estaActivo): ?>
-            <a href="<?= $urlBase ?>/compras-proveedor/nueva?proveedor=<?= $idProveedor ?>" class="boton botonPequeno">Registrar compra a este proveedor</a>
-        <?php endif; ?>
-    </div>
-
-    <form method="get" action="<?= $urlBase ?>/proveedores/detalle#compras" class="filtros filtrosFechasProveedor">
-        <input type="hidden" name="id" value="<?= $idProveedor ?>">
-        <?php require __DIR__ . '/../Plantilla/filtroFechas.php'; ?>
-        <div class="filtrosBotones">
-            <button type="submit" class="boton botonSecundario">Ver este rango</button>
-        </div>
-    </form>
+<section class="formularioSeccion comprasProveedor">
+    <h2>Compras a este proveedor</h2>
 
     <div class="resumenProveedor">
         <div>
@@ -107,7 +62,7 @@ $enlacePeriodo = fn(string $codigo): string => $urlBase . '/proveedores/detalle?
     </div>
 
     <?php if ($compras === []): ?>
-        <p class="estadoVacio estadoVacioPequeno"><?= $periodo['periodo'] === PeriodoFechas::TODO ? 'Todavía no hay compras a este proveedor.' : 'No hay compras a este proveedor en este período.' ?></p>
+        <p class="estadoVacio estadoVacioPequeno">Todavía no hay compras a este proveedor.</p>
     <?php else: ?>
         <div class="tablaContenedor">
             <table class="tabla tablaCompras">
@@ -140,7 +95,7 @@ $enlacePeriodo = fn(string $codigo): string => $urlBase . '/proveedores/detalle?
         <?php if ($totalCompras > count($compras)): ?>
             <p class="textoAyuda">
                 Se muestran las <?= count($compras) ?> más recientes de <?= $totalCompras ?>.
-                <a href="<?= htmlspecialchars($urlBase . '/compras-proveedor?' . http_build_query(['proveedor' => $idProveedor, 'estado' => 'todas'] + PeriodoFechas::parametros($periodo))) ?>">Ver todas</a>
+                <a href="<?= $urlBase ?>/compras-proveedor?proveedor=<?= $idProveedor ?>">Ver todas</a>
             </p>
         <?php endif; ?>
     <?php endif; ?>
