@@ -86,8 +86,8 @@ $atributos = $tipoComponente->getAtributosActivos();
                 <label for="existenciaMinima">Avisarme cuando solo queden</label>
                 <div class="campoConUnidad">
                     <input type="text" id="existenciaMinima" name="existenciaMinima" maxlength="13" inputmode="decimal"
-                        data-regla="cantidad" placeholder="0" value="<?= $valor('existenciaMinima') ?>">
-                    data-mensaje-regla="Escriba un número con hasta 2 decimales, por ejemplo 12 o 12,50"
+                        data-regla="cantidad" data-mensaje-regla="Escriba un número con hasta 2 decimales, por ejemplo 12 o 12,50"
+                        placeholder="0" value="<?= $valor('existenciaMinima') ?>">
                     <span class="unidadCampo" data-unidad-plural><?= $plural ?></span>
                 </div>
                 <p class="textoAyuda">Opcional. Con esa cantidad o menos, se marca como "Por acabarse".</p>
@@ -101,7 +101,8 @@ $atributos = $tipoComponente->getAtributosActivos();
                     <label for="existencia">¿Cuántas tiene ahora?</label>
                     <div class="campoConUnidad">
                         <input type="text" id="existencia" name="existencia" maxlength="13" inputmode="decimal"
-                            data-regla="cantidad" placeholder="0" value="<?= $valor('existencia') ?>">
+                            data-regla="cantidad" data-mensaje-regla="Escriba un número con hasta 2 decimales, por ejemplo 12 o 12,50"
+                            placeholder="0" value="<?= $valor('existencia') ?>">
                         <select name="medida" class="selectorMedida" aria-label="Metros o centímetros" data-medida
                             <?= $esMetro ? '' : 'hidden' ?>>
                             <option value="m" <?= $enCentimetros ? '' : 'selected' ?>>m</option>
@@ -120,8 +121,8 @@ $atributos = $tipoComponente->getAtributosActivos();
                     <div class="campoConUnidad campoConMoneda">
                         <span class="unidadCampo">₡</span>
                         <input type="text" id="costoTotal" name="costoTotal" maxlength="13" inputmode="decimal"
-                            data-regla="cantidad" placeholder="0" data-costo-total value="<?= $valor('costoTotal') ?>">
-                        data-mensaje-regla="Escriba un número con hasta 2 decimales, por ejemplo 12 o 12,50"
+                            data-regla="cantidad" data-mensaje-regla="Escriba un número con hasta 2 decimales, por ejemplo 12 o 12,50"
+                            placeholder="0" data-costo-total value="<?= $valor('costoTotal') ?>">
                     </div>
                     <p class="costoCalculadoComponente" data-costo-calculado aria-live="polite"></p>
                     <?= $mensajeError('costoTotal') ?>
