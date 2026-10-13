@@ -214,23 +214,27 @@ class ProveedorControlador
         $validador->requerido('correo', $datos['correo'], 'Ingrese el correo')
             ->correo('correo', $datos['correo']);
 
-        if (
-            $validador->error('nombre') === null
-            && $this->proveedorRepositorio->existeNombre($this->idVendedor, $datos['nombre'], $idProveedor)
-        ) {
-            $validador->agregarError('nombre', 'Ya tiene un proveedor con este nombre');
-        }
-        if (
-            $validador->error('telefono') === null
-            && $this->proveedorRepositorio->existeTelefono($this->idVendedor, Validador::limpiarTelefono($datos['telefono']), $idProveedor)
-        ) {
-            $validador->agregarError('telefono', 'Ya tiene un proveedor con este teléfono');
-        }
-        if (
-            $validador->error('correo') === null
-            && $this->proveedorRepositorio->existeCorreo($this->idVendedor, $datos['correo'], $idProveedor)
-        ) {
-            $validador->agregarError('correo', 'Ya tiene un proveedor con este correo');
+        $unicos = [
+            'nombre' => ['valor' => $datos['nombre'], 'texto' => 'nombre'],
+            'telefono' => ['valor' => Validador::limpiarTelefono($datos['telefono']), 'texto' => 'teléfono'],
+            'correo' => ['valor' => $datos['correo'], 'texto' => 'correo'],
+        ];
+        foreach ($unicos as $campo => $unico) {
+            if ($validador->error($campo) !== null) {
+                continue;
+            }
+            $repetido = $this->proveedorRepositorio->buscarRepetido($this->idVendedor, $campo, $unico['valor'], $idProveedor);
+            if ($repetido === null) {
+                continue;
+            }
+            $mensaje = 'Ya tiene un proveedor con este ' . $unico['texto'];
+            if ($campo !== 'nombre') {
+                $mensaje .= ': ' . $repetido->getNombre();
+            }
+            if (!$repetido->getEstado()) {
+                $mensaje .= ' (está desactivado; puede activarlo desde la lista de proveedores)';
+            }
+            $validador->agregarError($campo, $mensaje);
         }
 
         return $validador;

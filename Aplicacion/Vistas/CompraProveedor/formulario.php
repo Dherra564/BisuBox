@@ -1,12 +1,10 @@
 <?php
 /**
- * Registrar compra en tres pasos: datos, escoger lo que compró (del inventario o nuevo) y cantidad con precio total.
- * Al final, el resumen con el total y el botón para registrar.
- * @var array $datos  ['proveedor', 'fecha', 'costoEnvio', 'lineas' => [n => línea]]
+* @var array $datos
  * @var array $errores
- * @var \Aplicacion\Modelos\Proveedor[] $proveedores  activos, por id
- * @var \Aplicacion\Modelos\Componente[] $componentes  activos, por id
- * @var \Aplicacion\Modelos\TipoComponente[] $tipos  activos, por id
+ * @var \Aplicacion\Modelos\Proveedor[] $proveedores
+ * @var \Aplicacion\Modelos\Componente[] $componentes
+ * @var \Aplicacion\Modelos\TipoComponente[] $tipos
  * @var string $urlBase
  */
 
@@ -31,14 +29,12 @@ $mensajeError = fn(string $campo, string $antes = ''): string => isset($errores[
 $unidades = UnidadMedida::todas();
 $sePuedeCrear = $tipos !== [];
 
-// Los tipos que tienen componentes, para los botones de filtro de "De mi inventario"
 $tiposConComponentes = [];
 foreach ($componentes as $componente) {
     $tiposConComponentes[$componente->getIdTipoComponente()] = $componente->getNombreTipo();
 }
 asort($tiposConComponentes);
 
-// Los datos del tipo que se llenaron, en corto: "Blanco, 8 mm, Elástico"
 $datosEnCorto = function (array $linea) use ($tipos): string {
     $tipo = $tipos[(int) $linea['tipo']] ?? null;
     if ($tipo === null) {
@@ -59,7 +55,6 @@ $datosEnCorto = function (array $linea) use ($tipos): string {
     return implode(', ', array_filter($partes));
 };
 
-// Lo que necesita una línea para mostrarse: nombre, tipo, unidad, existencia y los datos del tipo si es nuevo
 $infoLinea = function (array $linea) use ($componentes, $tipos, $datosEnCorto): array {
     if ($linea['componente'] === DatosCompraProveedor::NUEVO) {
         $nombreTipo = isset($tipos[(int) $linea['tipo']]) ? $tipos[(int) $linea['tipo']]->getNombre() : '';
@@ -84,7 +79,6 @@ $infoLinea = function (array $linea) use ($componentes, $tipos, $datosEnCorto): 
     ];
 };
 
-// Una fila del paso 3; la misma función arma la plantilla que usa el JS al agregar
 $filaLinea = function (string $clave, array $linea, array $info) use ($claseCampo, $mensajeError, $unidades): string {
     $campo = 'linea.' . $clave . '.';
     $nombre = 'linea[' . $clave . ']';
@@ -165,10 +159,10 @@ $abrirNuevo = $componentes === [];
     </div>
 <?php endif; ?>
 
-<form method="post" action="<?= $urlBase ?>/compras-proveedor/nueva" novalidate class="validarFormulario formularioCompra"
-      data-maximo-lineas="<?= DatosCompraProveedor::MAXIMO_LINEAS ?>"
-      data-confirmar="Al registrar la compra se suma al inventario lo que compró. Si después encuentra un error, puede anularla."
-      data-titulo="Registrar compra" data-boton="Registrar compra">
+<form method="post" action="<?= $urlBase ?>/compras-proveedor/nueva" novalidate
+    class="validarFormulario formularioCompra" data-maximo-lineas="<?= DatosCompraProveedor::MAXIMO_LINEAS ?>"
+    data-confirmar="Al registrar la compra se suma al inventario lo que compró. Si después encuentra un error, puede anularla."
+    data-titulo="Registrar compra" data-boton="Registrar compra">
     <?= Csrf::campo() ?>
 
     <div class="registroCompra">
@@ -180,7 +174,8 @@ $abrirNuevo = $componentes === [];
             <div class="filaCampos filaTres">
                 <div class="<?= $claseCampo('proveedor') ?>">
                     <label for="proveedor">Proveedor <span class="obligatorio">*</span></label>
-                    <select id="proveedor" name="proveedor" required data-mensaje-requerido="Escoja a qué proveedor le compró">
+                    <select id="proveedor" name="proveedor" required
+                        data-mensaje-requerido="Escoja a qué proveedor le compró">
                         <option value="">Escoja el proveedor</option>
                         <?php foreach ($proveedores as $proveedor): ?>
                             <option value="<?= $proveedor->getIdProveedor() ?>" <?= (string) $proveedor->getIdProveedor() === $datos['proveedor'] ? 'selected' : '' ?>>
@@ -193,17 +188,18 @@ $abrirNuevo = $componentes === [];
                 <div class="<?= $claseCampo('fecha') ?>">
                     <label for="fecha">Fecha de la compra <span class="obligatorio">*</span></label>
                     <input type="date" id="fecha" name="fecha" required max="<?= date('Y-m-d') ?>" min="2000-01-01"
-                           data-mensaje-requerido="Escoja en el calendario el día de la compra"
-                           value="<?= htmlspecialchars($datos['fecha']) ?>">
+                        data-mensaje-requerido="Escoja en el calendario el día de la compra"
+                        value="<?= htmlspecialchars($datos['fecha']) ?>">
                     <?= $mensajeError('fecha') ?>
                 </div>
                 <div class="<?= $claseCampo('costoEnvio') ?>">
                     <label for="costoEnvio">Costo de envío <span class="textoOpcional">(opcional)</span></label>
                     <div class="campoConUnidad campoConMoneda">
                         <span class="unidadCampo">₡</span>
-                        <input type="text" id="costoEnvio" name="costoEnvio" maxlength="13" inputmode="decimal" data-regla="cantidad"
-                               data-mensaje-regla="Escriba un monto, por ejemplo 2500 o 2500,50" placeholder="0"
-                               data-costo-envio value="<?= htmlspecialchars($datos['costoEnvio']) ?>">
+                        <input type="text" id="costoEnvio" name="costoEnvio" maxlength="13" inputmode="decimal"
+                            data-regla="cantidad"
+                            data-mensaje-regla="Escriba un monto, por ejemplo 2500 o 2500,50. Si no pagó envío, déjelo vacío"
+                            data-costo-envio value="<?= htmlspecialchars($datos['costoEnvio']) ?>">
                     </div>
                     <?= $mensajeError('costoEnvio') ?>
                 </div>
@@ -215,76 +211,90 @@ $abrirNuevo = $componentes === [];
                 <span class="pasoNumero" aria-hidden="true">2</span>
                 <div>
                     <h2>Escoja lo que compró</h2>
-                    <p class="textoAyuda">Búsquelo en su inventario o créelo si es la primera vez que lo compra. Puede agregar todos los componentes que quiera.</p>
+                    <p class="textoAyuda">Búsquelo en su inventario o créelo si es la primera vez que lo compra. Puede
+                        agregar todos los componentes que quiera.</p>
                 </div>
             </div>
 
             <div class="pestanas pestanasEscoger" role="tablist" aria-label="De dónde sale el componente">
-                <button type="button" class="pestana <?= $abrirNuevo ? '' : 'pestanaActiva' ?>" role="tab" id="pestanaInventario"
-                        aria-controls="panelInventario" aria-selected="<?= $abrirNuevo ? 'false' : 'true' ?>" data-pestana="inventario">De mi inventario</button>
-                <button type="button" class="pestana <?= $abrirNuevo ? 'pestanaActiva' : '' ?>" role="tab" id="pestanaNuevo"
-                        aria-controls="panelNuevo" aria-selected="<?= $abrirNuevo ? 'true' : 'false' ?>" data-pestana="nuevo">Componente nuevo</button>
+                <button type="button" class="pestana <?= $abrirNuevo ? '' : 'pestanaActiva' ?>" role="tab"
+                    id="pestanaInventario" aria-controls="panelInventario"
+                    aria-selected="<?= $abrirNuevo ? 'false' : 'true' ?>" data-pestana="inventario">De mi
+                    inventario</button>
+                <button type="button" class="pestana <?= $abrirNuevo ? 'pestanaActiva' : '' ?>" role="tab"
+                    id="pestanaNuevo" aria-controls="panelNuevo" aria-selected="<?= $abrirNuevo ? 'true' : 'false' ?>"
+                    data-pestana="nuevo">Componente nuevo</button>
             </div>
 
-            <div class="panelEscoger" role="tabpanel" id="panelInventario" aria-labelledby="pestanaInventario" data-panel="inventario" <?= $abrirNuevo ? 'hidden' : '' ?>>
+            <div class="panelEscoger" role="tabpanel" id="panelInventario" aria-labelledby="pestanaInventario"
+                data-panel="inventario" <?= $abrirNuevo ? 'hidden' : '' ?>>
                 <?php if ($componentes === []): ?>
-                    <p class="sinResultados">Todavía no tiene componentes en su inventario. Créelos en la pestaña "Componente nuevo".</p>
+                    <p class="sinResultados">Todavía no tiene componentes en su inventario. Créelos en la pestaña
+                        "Componente nuevo".</p>
                 <?php else: ?>
                     <div class="botonesTipo" role="group" aria-label="Tipo de componente">
-                        <button type="button" class="botonTipo botonTipoActivo" aria-pressed="true" data-filtro-tipo="">Todos</button>
+                        <button type="button" class="botonTipo botonTipoActivo" aria-pressed="true"
+                            data-filtro-tipo="">Todos</button>
                         <?php foreach ($tiposConComponentes as $idTipo => $nombreTipo): ?>
-                            <button type="button" class="botonTipo" aria-pressed="false" data-filtro-tipo="<?= $idTipo ?>"><?= htmlspecialchars($nombreTipo) ?></button>
+                            <button type="button" class="botonTipo" aria-pressed="false"
+                                data-filtro-tipo="<?= $idTipo ?>"><?= htmlspecialchars($nombreTipo) ?></button>
                         <?php endforeach; ?>
                     </div>
-                    <input type="search" class="buscadorComponentes" aria-label="Buscar componente" placeholder="Buscar por nombre"
-                           autocomplete="off" data-buscar-componente>
+                    <input type="search" class="buscadorComponentes" aria-label="Buscar componente"
+                        placeholder="Buscar por nombre" autocomplete="off" data-buscar-componente>
                     <ul class="listaInventario">
                         <?php foreach ($componentes as $componente): ?>
                             <?php
                             $unidad = $unidades[$componente->getUnidad()] ?? $unidades[UnidadMedida::UNIDAD];
                             $agregado = in_array((string) $componente->getIdComponente(), $enCompra, true);
                             ?>
-                            <li class="filaInventario" data-fila-inventario
-                                data-id="<?= $componente->getIdComponente() ?>" data-tipo="<?= $componente->getIdTipoComponente() ?>"
+                            <li class="filaInventario" data-fila-inventario data-id="<?= $componente->getIdComponente() ?>"
+                                data-tipo="<?= $componente->getIdTipoComponente() ?>"
                                 data-nombre="<?= htmlspecialchars($componente->getNombre()) ?>"
                                 data-tipo-nombre="<?= htmlspecialchars($componente->getNombreTipo()) ?>"
                                 data-unidad="<?= htmlspecialchars($componente->getUnidad()) ?>"
                                 data-existencia="<?= $componente->getExistencia() ?>">
                                 <div class="filaInventarioTexto">
                                     <strong><?= htmlspecialchars($componente->getNombre()) ?></strong>
-                                    <span><?= htmlspecialchars($componente->getNombreTipo()) ?> · tiene <?= UnidadMedida::cantidad($componente->getExistencia(), $componente->getUnidad()) ?></span>
+                                    <span><?= htmlspecialchars($componente->getNombreTipo()) ?> · tiene
+                                        <?= UnidadMedida::cantidad($componente->getExistencia(), $componente->getUnidad()) ?></span>
                                 </div>
                                 <span class="enLaCompra" data-en-compra <?= $agregado ? '' : 'hidden' ?>>Agregado ✓</span>
                                 <button type="button" class="boton botonSecundario botonPequeno" data-agregar <?= $agregado ? 'hidden' : '' ?>
-                                        aria-label="Agregar <?= htmlspecialchars($componente->getNombre()) ?> a la compra">Agregar</button>
+                                    aria-label="Agregar <?= htmlspecialchars($componente->getNombre()) ?> a la compra">Agregar</button>
                             </li>
                         <?php endforeach; ?>
                     </ul>
                     <p class="sinCoincidencias" data-sin-coincidencias hidden>
                         No tiene ningún componente que se llame «<span data-texto-buscado></span>».
                         <?php if ($sePuedeCrear): ?>
-                            <button type="button" class="botonEnlace" data-crear-desde-busqueda>Crearlo como componente nuevo</button>
+                            <button type="button" class="botonEnlace" data-crear-desde-busqueda>Crearlo como componente
+                                nuevo</button>
                         <?php endif; ?>
                     </p>
                 <?php endif; ?>
             </div>
 
-            <div class="panelEscoger" role="tabpanel" id="panelNuevo" aria-labelledby="pestanaNuevo" data-panel="nuevo" <?= $abrirNuevo ? '' : 'hidden' ?>>
+            <div class="panelEscoger" role="tabpanel" id="panelNuevo" aria-labelledby="pestanaNuevo" data-panel="nuevo"
+                <?= $abrirNuevo ? '' : 'hidden' ?>>
                 <?php if (!$sePuedeCrear): ?>
                     <p class="sinResultados">Para crear componentes primero necesita sus tipos, por ejemplo Perlas o Hilos.
-                        <a href="<?= $urlBase ?>/tipos-componente">Crear tipos de componente</a></p>
+                        <a href="<?= $urlBase ?>/tipos-componente">Crear tipos de componente</a>
+                    </p>
                 <?php else: ?>
                     <div class="filaCampos">
                         <div class="campo">
                             <label for="nuevoNombre">Nombre del componente</label>
-                            <input type="text" id="nuevoNombre" maxlength="100" placeholder="Por ejemplo: Perla blanca 8 mm" autocomplete="off" data-nuevo-nombre>
+                            <input type="text" id="nuevoNombre" maxlength="100" placeholder="Por ejemplo: Perla blanca 8 mm"
+                                autocomplete="off" data-nuevo-nombre>
                         </div>
                         <div class="campo">
                             <label for="nuevoTipo">Tipo</label>
                             <select id="nuevoTipo" data-nuevo-tipo>
                                 <option value="">Escoja el tipo</option>
                                 <?php foreach ($tipos as $tipo): ?>
-                                    <option value="<?= $tipo->getIdTipoComponente() ?>"><?= htmlspecialchars($tipo->getNombre()) ?></option>
+                                    <option value="<?= $tipo->getIdTipoComponente() ?>">
+                                        <?= htmlspecialchars($tipo->getNombre()) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -322,12 +332,14 @@ $abrirNuevo = $componentes === [];
                                             <select id="<?= $idCampo ?>" <?= $datosAtributo ?>>
                                                 <option value="">Escoja</option>
                                                 <?php foreach ($atributo->getOpcionesActivas() as $opcion): ?>
-                                                    <option value="<?= $opcion->getIdOpcion() ?>"><?= htmlspecialchars($opcion->getValor()) ?></option>
+                                                    <option value="<?= $opcion->getIdOpcion() ?>"><?= htmlspecialchars($opcion->getValor()) ?>
+                                                    </option>
                                                 <?php endforeach; ?>
                                             </select>
                                         <?php elseif ($atributo->getClase() === ClaseDato::NUMERO): ?>
                                             <div class="campoConUnidad">
-                                                <input type="text" id="<?= $idCampo ?>" maxlength="13" inputmode="decimal" placeholder="0" <?= $datosAtributo ?>>
+                                                <input type="text" id="<?= $idCampo ?>" maxlength="13" inputmode="decimal" placeholder="0"
+                                                    <?= $datosAtributo ?>>
                                                 <?php if ($atributo->getUnidad()): ?>
                                                     <span class="unidadCampo"><?= htmlspecialchars($atributo->getUnidad()) ?></span>
                                                 <?php endif; ?>
@@ -346,7 +358,9 @@ $abrirNuevo = $componentes === [];
                         <div class="opcionesUnidadLista">
                             <?php foreach ($unidades as $codigo => $unidad): ?>
                                 <label class="opcionUnidad">
-                                    <input type="radio" name="unidadNueva" value="<?= $codigo ?>" <?= $codigo === UnidadMedida::UNIDAD ? 'checked' : '' ?> data-nueva-unidad form="sinFormulario">
+                                    <input type="radio" name="unidadNueva" value="<?= $codigo ?>"
+                                        <?= $codigo === UnidadMedida::UNIDAD ? 'checked' : '' ?> data-nueva-unidad
+                                        form="sinFormulario">
                                     Por <?= mb_strtolower($unidad['nombre'], 'UTF-8') ?>
                                 </label>
                             <?php endforeach; ?>
@@ -367,9 +381,11 @@ $abrirNuevo = $componentes === [];
             <?php if (isset($errores['lineas'])): ?>
                 <p class="errorCampo" data-error-lineas><?= htmlspecialchars($errores['lineas']) ?></p>
             <?php endif; ?>
-            <p class="lineasVacias" data-sin-lineas <?= $datos['lineas'] === [] ? '' : 'hidden' ?>>Todavía no ha agregado componentes.</p>
+            <p class="lineasVacias" data-sin-lineas <?= $datos['lineas'] === [] ? '' : 'hidden' ?>>Todavía no ha agregado
+                componentes.</p>
             <div class="lineasEncabezado" aria-hidden="true" data-encabezado-lineas <?= $datos['lineas'] === [] ? 'hidden' : '' ?>>
-                <span>Componente</span><span>Cantidad</span><span>Precio total del componente</span><span>Costo</span><span></span>
+                <span>Componente</span><span>Cantidad</span><span>Precio total del
+                    componente</span><span>Costo</span><span></span>
             </div>
             <div class="listaLineasCompra" data-lineas>
                 <?php foreach ($datos['lineas'] as $clave => $linea): ?>

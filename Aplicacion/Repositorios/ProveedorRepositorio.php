@@ -69,19 +69,19 @@ class ProveedorRepositorio
         return (int) $consulta->fetchColumn();
     }
 
-    public function existeNombre(int $idVendedor, string $nombre, ?int $excluirIdProveedor = null): bool
+    public function buscarRepetido(int $idVendedor, string $campo, string $valor, ?int $excluirIdProveedor = null): ?Proveedor
     {
-        return $this->existe($idVendedor, 'tbproveedornombre', $nombre, $excluirIdProveedor);
-    }
+        $columnas = ['nombre' => 'tbproveedornombre', 'telefono' => 'tbproveedortelefono', 'correo' => 'tbproveedorcorreo'];
 
-    public function existeTelefono(int $idVendedor, string $telefono, ?int $excluirIdProveedor = null): bool
-    {
-        return $this->existe($idVendedor, 'tbproveedortelefono', $telefono, $excluirIdProveedor);
-    }
+        $consulta = $this->conexion->prepare(
+            "SELECT * FROM tbproveedor
+             WHERE tbproveedorvendedorid = ? AND {$columnas[$campo]} = ? AND tbproveedorid <> ?
+             LIMIT 1"
+        );
+        $consulta->execute([$idVendedor, trim($valor), $excluirIdProveedor ?? 0]);
+        $fila = $consulta->fetch();
 
-    public function existeCorreo(int $idVendedor, string $correo, ?int $excluirIdProveedor = null): bool
-    {
-        return $this->existe($idVendedor, 'tbproveedorcorreo', $correo, $excluirIdProveedor);
+        return $fila ? $this->crearDesdeFila($fila) : null;
     }
 
     public function insertar(Proveedor $proveedor): int
@@ -144,17 +144,6 @@ class ProveedorRepositorio
         $consulta->execute([$activo ? 1 : 0, $proveedor->getIdProveedor(), $proveedor->getIdVendedor()]);
 
         $proveedor->setEstado($activo);
-    }
-
-    private function existe(int $idVendedor, string $columna, string $valor, ?int $excluirIdProveedor): bool
-    {
-        $consulta = $this->conexion->prepare(
-            "SELECT COUNT(*) FROM tbproveedor
-             WHERE tbproveedorvendedorid = ? AND {$columna} = ? AND tbproveedorid <> ?"
-        );
-        $consulta->execute([$idVendedor, trim($valor), $excluirIdProveedor ?? 0]);
-
-        return (int) $consulta->fetchColumn() > 0;
     }
 
     private function construirFiltros(int $idVendedor, string $busqueda, ?bool $activo): array

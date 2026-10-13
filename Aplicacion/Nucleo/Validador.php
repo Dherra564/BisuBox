@@ -87,12 +87,17 @@ class Validador
     }
 
 
-    public function telefono(string $campo, ?string $valor, string $mensaje = 'El teléfono debe tener 8 dígitos, solo números'): self
+    public function telefono(string $campo, ?string $valor, string $mensaje = 'El teléfono debe tener 8 dígitos y empezar con 2, 4, 5, 6, 7 u 8'): self
     {
-        if ($this->debeRevisar($campo, $valor) && !preg_match('/^[0-9]{8}$/', self::limpiarTelefono($valor))) {
+        if ($this->debeRevisar($campo, $valor) && !self::esTelefono(self::limpiarTelefono($valor))) {
             $this->agregarError($campo, $mensaje);
         }
         return $this;
+    }
+
+    public static function esTelefono(string $telefono): bool
+    {
+        return preg_match('/^[245678][0-9]{7}$/', $telefono) === 1;
     }
 
     public function nombreTienda(string $campo, ?string $valor, string $mensaje = 'El nombre solo puede tener letras, números, espacios y los signos . & \' -'): self
@@ -124,7 +129,7 @@ class Validador
         return $this;
     }
 
-        public function nombreComercial(string $campo, ?string $valor, string $mensaje = 'El nombre solo puede tener letras, números, espacios y los signos . , & \' -'): self
+    public function nombreComercial(string $campo, ?string $valor, string $mensaje = 'El nombre solo puede tener letras, números, espacios y los signos . , & \' -'): self
     {
         if ($this->debeRevisar($campo, $valor) && !preg_match('/^[\p{L}0-9][\p{L}0-9 .,&\'-]*$/u', trim($valor))) {
             $this->agregarError($campo, $mensaje);

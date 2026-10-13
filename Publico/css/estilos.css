@@ -3088,7 +3088,50 @@ h1, h2, h3 {
     margin-top: 14px;
 }
 
-/* Lista: cada producto como una tarjeta con su foto */
+.cierreProducto {
+    display: grid;
+    gap: 14px;
+}
+
+.cierreProducto .ticketPrecio {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+        "titulo titulo"
+        "cuenta ganancia"
+        "cuenta precio"
+        "cuenta resultado";
+    column-gap: 36px;
+    align-items: start;
+}
+
+.cierreProducto .ticketPrecio h2 {
+    grid-area: titulo;
+}
+
+.cierreProducto .cuentaPrecio {
+    grid-area: cuenta;
+    padding-right: 36px;
+    border-right: 1px dashed var(--colorBordeCampo);
+}
+
+.cierreProducto .opcionesGanancia {
+    grid-area: ganancia;
+    margin-top: 0;
+}
+
+.cierreProducto .campoPrecioVenta {
+    grid-area: precio;
+}
+
+.cierreProducto .resultadoGanancia {
+    grid-area: resultado;
+}
+
+.cierreProducto .resumenDescuento {
+    margin-top: 0;
+}
+
 .resumenProductos {
     display: flex;
     flex-wrap: wrap;
@@ -3315,6 +3358,25 @@ h1, h2, h3 {
 
     .fotoFichaProducto {
         max-width: 260px;
+    }
+
+    .cierreProducto .ticketPrecio {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+            "titulo"
+            "cuenta"
+            "ganancia"
+            "precio"
+            "resultado";
+    }
+
+    .cierreProducto .cuentaPrecio {
+        padding-right: 0;
+        border-right: none;
+    }
+
+    .cierreProducto .opcionesGanancia {
+        margin-top: 18px;
     }
 
     .lineaReceta,

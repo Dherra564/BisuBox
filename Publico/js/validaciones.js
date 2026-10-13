@@ -25,9 +25,9 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         telefono: {
             prueba: function (valor) {
-                return /^[0-9]{8}$/.test(limpiarTelefono(valor));
+            return esTelefono(limpiarTelefono(valor));
             },
-            mensaje: 'El teléfono debe tener 8 dígitos, solo números'
+            mensaje: 'El teléfono debe tener 8 dígitos y empezar con 2, 4, 5, 6, 7 u 8'
         },
         nombreTienda: {
             patron: /^[\p{L}0-9][\p{L}0-9 .&'-]*$/u,
@@ -58,6 +58,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return numeros;
     }
 
+    function esTelefono(numeros) {
+        return /^[245678][0-9]{7}$/.test(numeros);
+    }
+
     // Igual que TipoContacto::esValido en PHP; las reglas de cada tipo vienen en la opción elegida
     function esContactoValido(campo, valor) {
         var fila = campo.closest('.filaContacto');
@@ -68,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var opcion = tipo.options[tipo.selectedIndex];
 
         if (opcion.hasAttribute('data-telefono')) {
-            return /^[0-9]{8}$/.test(limpiarTelefono(valor));
+            return esTelefono(limpiarTelefono(valor));
         }
 
         var esEnlace = /^https?:\/\//i.test(valor) || /^(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)+\//i.test(valor);

@@ -12,7 +12,7 @@ class TipoContacto
 
     public const MAXIMO_POR_TIENDA = 10;
 
-   
+
     private const TIPOS = [
         self::WHATSAPP => [
             'nombre' => 'WhatsApp',
@@ -55,7 +55,7 @@ class TipoContacto
             'ejemplo' => 'https://mitienda.com',
         ],
     ];
-    
+
 
     /** @return array<string, array{nombre: string, usuario: ?string, dominios: string[], mensaje: string, ayuda: string, ejemplo: string}> */
     public static function todos(): array
@@ -114,7 +114,7 @@ class TipoContacto
             return false;
         }
         if ($tipo === self::WHATSAPP) {
-            return preg_match('/^[0-9]{8}$/', $valor) === 1;
+            return Validador::esTelefono($valor);
         }
         if (self::esEnlace($valor)) {
             return self::enlaceEsDelTipo($tipo, $valor);

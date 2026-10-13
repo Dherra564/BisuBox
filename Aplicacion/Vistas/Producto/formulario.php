@@ -130,141 +130,139 @@ $hayErrorExtras = array_filter(array_keys($errores), fn(string $campo): bool => 
     data-titulo="Guardar producto" data-boton="Guardar producto">
     <?= Csrf::campo() ?>
 
-    <div class="creadorProducto">
-        <div class="pasosProducto">
-            <section class="formularioSeccion pasoProducto">
-                <h2><span class="numeroPaso" aria-hidden="true">1</span> ¿Qué hizo?</h2>
+    <div class="pasosProducto">
+        <section class="formularioSeccion pasoProducto">
+            <h2><span class="numeroPaso" aria-hidden="true">1</span> ¿Qué hizo?</h2>
 
-                <div class="encabezadoProducto">
-                    <div class="<?= $claseCampo('foto', 'campoFotoProducto') ?>">
-                        <div class="zonaFoto zonaFotoProducto">
-                            <img src="<?= $urlBase ?>/imagenes/productoPorDefecto.svg" alt=""
-                                class="fotoPerfilGrande fotoProducto">
-                            <label for="foto" class="enlaceFoto">Agregar foto</label>
-                            <input type="file" id="foto" name="foto" accept="image/jpeg,image/png" class="campoArchivo">
-                            <span class="nombreArchivo">JPG o PNG</span>
-                        </div>
-                        <?= $mensajeError('foto') ?>
+            <div class="encabezadoProducto">
+                <div class="<?= $claseCampo('foto', 'campoFotoProducto') ?>">
+                    <div class="zonaFoto zonaFotoProducto">
+                        <img src="<?= $urlBase ?>/imagenes/productoPorDefecto.svg" alt=""
+                            class="fotoPerfilGrande fotoProducto">
+                        <label for="foto" class="enlaceFoto">Agregar foto</label>
+                        <input type="file" id="foto" name="foto" accept="image/jpeg,image/png" class="campoArchivo">
+                        <span class="nombreArchivo">JPG o PNG</span>
                     </div>
-
-                    <div class="datosProducto">
-                        <div class="<?= $claseCampo('nombre') ?>">
-                            <label for="nombre">Nombre <span class="obligatorio">*</span></label>
-                            <input type="text" id="nombre" name="nombre" minlength="3" maxlength="60" required
-                                data-regla="nombreComercial" placeholder="Por ejemplo Collar de perlas"
-                                data-mensaje-requerido="Escriba el nombre del producto, por ejemplo Collar de perlas"
-                                data-mensaje-largo="El nombre debe tener entre 3 y 60 caracteres"
-                                value="<?= $valor('nombre') ?>">
-                            <?= $mensajeError('nombre') ?>
-                        </div>
-
-                        <div class="<?= $claseCampo('cantidad') ?>">
-                            <label for="cantidad">¿Cuántos hizo? <span class="obligatorio">*</span></label>
-                            <div class="selectorCantidad">
-                                <button type="button" class="botonCantidad" data-cantidad-menos
-                                    aria-label="Uno menos">−</button>
-                                <input type="text" id="cantidad" name="cantidad" maxlength="4" inputmode="numeric"
-                                    data-cantidad value="<?= $valor('cantidad') ?>">
-                                <button type="button" class="botonCantidad" data-cantidad-mas
-                                    aria-label="Uno más">+</button>
-                            </div>
-                            <?= $mensajeError('cantidad') ?>
-                        </div>
-                    </div>
+                    <?= $mensajeError('foto') ?>
                 </div>
 
-                <details class="detalleOpcional" <?= $datos['descripcion'] !== '' || isset($errores['descripcion']) ? 'open' : '' ?>>
-                    <summary>Agregar una descripción</summary>
-                    <div class="<?= $claseCampo('descripcion') ?>">
-                        <label for="descripcion" class="soloLectores">Descripción</label>
-                        <textarea id="descripcion" name="descripcion" maxlength="300" rows="2" data-contador
-                            placeholder="Así lo verán sus clientes en la tienda"><?= $valor('descripcion') ?></textarea>
-                        <?= $mensajeError('descripcion') ?>
+                <div class="datosProducto">
+                    <div class="<?= $claseCampo('nombre') ?>">
+                        <label for="nombre">Nombre <span class="obligatorio">*</span></label>
+                        <input type="text" id="nombre" name="nombre" minlength="3" maxlength="60" required
+                            data-regla="nombreComercial" placeholder="Por ejemplo Collar de perlas"
+                            data-mensaje-requerido="Escriba el nombre del producto, por ejemplo Collar de perlas"
+                            data-mensaje-largo="El nombre debe tener entre 3 y 60 caracteres"
+                            value="<?= $valor('nombre') ?>">
+                        <?= $mensajeError('nombre') ?>
                     </div>
-                </details>
-            </section>
 
-            <section class="formularioSeccion pasoProducto">
-                <h2><span class="numeroPaso" aria-hidden="true">2</span> ¿Qué lleva cada uno?</h2>
-                <p class="textoAyuda">Anote lo que lleva <strong>un solo</strong> producto. El sistema lo multiplica por
-                    los que hizo.</p>
-                <?= $mensajeError('lineas') ?>
+                    <div class="<?= $claseCampo('cantidad') ?>">
+                        <label for="cantidad">¿Cuántos hizo? <span class="obligatorio">*</span></label>
+                        <div class="selectorCantidad">
+                            <button type="button" class="botonCantidad" data-cantidad-menos
+                                aria-label="Uno menos">−</button>
+                            <input type="text" id="cantidad" name="cantidad" maxlength="4" inputmode="numeric"
+                                data-cantidad value="<?= $valor('cantidad') ?>">
+                            <button type="button" class="botonCantidad" data-cantidad-mas
+                                aria-label="Uno más">+</button>
+                        </div>
+                        <?= $mensajeError('cantidad') ?>
+                    </div>
+                </div>
+            </div>
 
-                <div class="listaReceta" data-lineas>
-                    <?php foreach ($lineas as $clave => $linea): ?>
-                        <?= $filaComponente((string) $clave, $linea) ?>
+            <details class="detalleOpcional" <?= $datos['descripcion'] !== '' || isset($errores['descripcion']) ? 'open' : '' ?>>
+                <summary>Agregar una descripción</summary>
+                <div class="<?= $claseCampo('descripcion') ?>">
+                    <label for="descripcion" class="soloLectores">Descripción</label>
+                    <textarea id="descripcion" name="descripcion" maxlength="300" rows="2" data-contador
+                        placeholder="Así lo verán sus clientes en la tienda"><?= $valor('descripcion') ?></textarea>
+                    <?= $mensajeError('descripcion') ?>
+                </div>
+            </details>
+        </section>
+
+        <section class="formularioSeccion pasoProducto">
+            <h2><span class="numeroPaso" aria-hidden="true">2</span> ¿Qué lleva cada uno?</h2>
+            <p class="textoAyuda">Anote lo que lleva <strong>un solo</strong> producto. El sistema lo multiplica por los
+                que hizo.</p>
+            <?= $mensajeError('lineas') ?>
+
+            <div class="listaReceta" data-lineas>
+                <?php foreach ($lineas as $clave => $linea): ?>
+                    <?= $filaComponente((string) $clave, $linea) ?>
+                <?php endforeach; ?>
+            </div>
+            <button type="button" class="enlaceAgregar" data-linea-agregar>+ Otro componente</button>
+        </section>
+
+        <section class="formularioSeccion pasoProducto">
+            <h2><span class="numeroPaso" aria-hidden="true">3</span> Su trabajo</h2>
+
+            <div class="filaCampos">
+                <div class="<?= $claseCampo('tiempo') ?>">
+                    <label for="horas">¿Cuánto tarda en hacer uno? <span class="obligatorio">*</span></label>
+                    <div class="filaTiempo">
+                        <div class="campoConUnidad">
+                            <input type="text" id="horas" name="horas" maxlength="3" inputmode="numeric" placeholder="0"
+                                data-horas value="<?= $valor('horas') ?>">
+                            <span class="unidadCampo">h</span>
+                        </div>
+                        <div class="campoConUnidad">
+                            <input type="text" id="minutos" name="minutos" maxlength="2" inputmode="numeric"
+                                placeholder="0" data-minutos aria-label="Minutos" value="<?= $valor('minutos') ?>">
+                            <span class="unidadCampo">min</span>
+                        </div>
+                    </div>
+                    <?= $mensajeError('tiempo') ?>
+                </div>
+                <div class="<?= $claseCampo('tarifaHora') ?>">
+                    <label for="tarifaHora">Cobra por hora <span class="obligatorio">*</span></label>
+                    <div class="campoConUnidad campoConMoneda">
+                        <span class="unidadCampo">₡</span>
+                        <input type="text" id="tarifaHora" name="tarifaHora" maxlength="13" inputmode="decimal" required
+                            data-regla="cantidad" data-tarifa placeholder="0"
+                            data-mensaje-requerido="Escriba cuánto cobra por hora, o 0 si no cobra mano de obra"
+                            data-mensaje-regla="Escriba un monto, por ejemplo 2000 o 2000,50"
+                            value="<?= $valor('tarifaHora') ?>">
+                    </div>
+                    <p class="textoAyuda">Escriba 0 si no cobra su trabajo.</p>
+                    <?= $mensajeError('tarifaHora') ?>
+                </div>
+            </div>
+
+            <details class="detalleOpcional" <?= $extras !== [] || $hayErrorExtras ? 'open' : '' ?>>
+                <summary>Otros gastos de cada uno (luz, transporte…)</summary>
+                <?= $mensajeError('extras') ?>
+                <datalist id="sugerenciasExtra">
+                    <option value="Empaque"></option>
+                    <option value="Transporte"></option>
+                    <option value="Luz"></option>
+                    <option value="Etiqueta"></option>
+                </datalist>
+                <div class="listaReceta" data-extras>
+                    <?php foreach ($extras as $clave => $extra): ?>
+                        <?= $filaExtra((string) $clave, $extra) ?>
                     <?php endforeach; ?>
                 </div>
-                <button type="button" class="enlaceAgregar" data-linea-agregar>+ Otro componente</button>
-            </section>
+                <button type="button" class="enlaceAgregar" data-extra-agregar>+ Agregar gasto</button>
+            </details>
+        </section>
+    </div>
 
-            <section class="formularioSeccion pasoProducto">
-                <h2><span class="numeroPaso" aria-hidden="true">3</span> Su trabajo</h2>
+    <div class="cierreProducto">
+        <?php require __DIR__ . '/precio.php'; ?>
 
-                <div class="filaCampos">
-                    <div class="<?= $claseCampo('tiempo') ?>">
-                        <label for="horas">¿Cuánto tarda en hacer uno? <span class="obligatorio">*</span></label>
-                        <div class="filaTiempo">
-                            <div class="campoConUnidad">
-                                <input type="text" id="horas" name="horas" maxlength="3" inputmode="numeric"
-                                    placeholder="0" data-horas value="<?= $valor('horas') ?>">
-                                <span class="unidadCampo">h</span>
-                            </div>
-                            <div class="campoConUnidad">
-                                <input type="text" id="minutos" name="minutos" maxlength="2" inputmode="numeric"
-                                    placeholder="0" data-minutos aria-label="Minutos" value="<?= $valor('minutos') ?>">
-                                <span class="unidadCampo">min</span>
-                            </div>
-                        </div>
-                        <?= $mensajeError('tiempo') ?>
-                    </div>
-                    <div class="<?= $claseCampo('tarifaHora') ?>">
-                        <label for="tarifaHora">Cobra por hora <span class="obligatorio">*</span></label>
-                        <div class="campoConUnidad campoConMoneda">
-                            <span class="unidadCampo">₡</span>
-                            <input type="text" id="tarifaHora" name="tarifaHora" maxlength="13" inputmode="decimal"
-                                required data-regla="cantidad" data-tarifa placeholder="0"
-                                data-mensaje-requerido="Escriba cuánto cobra por hora, o 0 si no cobra mano de obra"
-                                data-mensaje-regla="Escriba un monto, por ejemplo 2000 o 2000,50"
-                                value="<?= $valor('tarifaHora') ?>">
-                        </div>
-                        <p class="textoAyuda">Escriba 0 si no cobra su trabajo.</p>
-                        <?= $mensajeError('tarifaHora') ?>
-                    </div>
-                </div>
-
-                <details class="detalleOpcional" <?= $extras !== [] || $hayErrorExtras ? 'open' : '' ?>>
-                    <summary>Otros gastos de cada uno (empaque, transporte…)</summary>
-                    <?= $mensajeError('extras') ?>
-                    <datalist id="sugerenciasExtra">
-                        <option value="Empaque"></option>
-                        <option value="Transporte"></option>
-                        <option value="Luz"></option>
-                        <option value="Etiqueta"></option>
-                    </datalist>
-                    <div class="listaReceta" data-extras>
-                        <?php foreach ($extras as $clave => $extra): ?>
-                            <?= $filaExtra((string) $clave, $extra) ?>
-                        <?php endforeach; ?>
-                    </div>
-                    <button type="button" class="enlaceAgregar" data-extra-agregar>+ Agregar gasto</button>
-                </details>
-            </section>
+        <div class="resumenDescuento" data-resumen-descuento hidden>
+            <p class="resumenDescuentoTitulo" data-resumen-titulo></p>
+            <ul data-resumen-lista></ul>
         </div>
 
-        <aside class="columnaPrecio">
-            <?php require __DIR__ . '/precio.php'; ?>
-
-            <div class="resumenDescuento" data-resumen-descuento hidden>
-                <p class="resumenDescuentoTitulo" data-resumen-titulo></p>
-                <ul data-resumen-lista></ul>
-            </div>
-
-            <div class="grupoBotones accionesFormulario accionesIzquierda">
-                <button type="submit" class="boton">Guardar producto</button>
-                <a href="<?= $urlBase ?>/productos" class="boton botonSecundario">Cancelar</a>
-            </div>
-        </aside>
+        <div class="grupoBotones accionesFormulario">
+            <a href="<?= $urlBase ?>/productos" class="boton botonSecundario">Cancelar</a>
+            <button type="submit" class="boton">Guardar producto</button>
+        </div>
     </div>
 </form>
 

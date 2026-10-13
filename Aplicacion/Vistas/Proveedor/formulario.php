@@ -12,6 +12,7 @@ $esNuevo = $proveedor === null;
 $titulo = $esNuevo ? 'Nuevo proveedor' : 'Editar proveedor';
 $paginaActual = 'proveedores';
 $volverA = $esNuevo ? ['texto' => 'Volver', 'ruta' => '/proveedores'] : ['texto' => 'Proveedores', 'ruta' => '/proveedores'];
+$scriptsExtra = ['proveedor.js'];
 require __DIR__ . '/../Plantilla/encabezado.php';
 
 $valor = fn(string $campo): string => htmlspecialchars((string) ($datos[$campo] ?? ''));
@@ -29,12 +30,10 @@ $rutaCancelar = $esNuevo ? '/proveedores' : '/proveedores/detalle?id=' . (int) $
     </div>
 <?php endif; ?>
 
-<form method="post" action="<?= $urlBase ?>/proveedores/<?= $esNuevo ? 'crear' : 'actualizar' ?>"
-      novalidate class="validarFormulario"
-      <?php if (!$esNuevo): ?>
-          data-confirmar="¿Desea guardar los cambios de <?= htmlspecialchars((string) $proveedor->getNombre()) ?>?"
-          data-titulo="Guardar cambios" data-boton="Guardar"
-      <?php endif; ?>>
+<form method="post" action="<?= $urlBase ?>/proveedores/<?= $esNuevo ? 'crear' : 'actualizar' ?>" novalidate
+    class="validarFormulario" <?php if (!$esNuevo): ?>
+        data-confirmar="¿Desea guardar los cambios de <?= htmlspecialchars((string) $proveedor->getNombre()) ?>?"
+        data-titulo="Guardar cambios" data-boton="Guardar" <?php endif; ?>>
     <?= Csrf::campo() ?>
     <?php if (!$esNuevo): ?>
         <input type="hidden" name="id" value="<?= (int) $proveedor->getIdProveedor() ?>">
@@ -46,10 +45,8 @@ $rutaCancelar = $esNuevo ? '/proveedores' : '/proveedores/detalle?id=' . (int) $
         <div class="<?= $claseCampo('nombre') ?>">
             <label for="nombre">Nombre de la empresa <span class="obligatorio">*</span></label>
             <input type="text" id="nombre" name="nombre" minlength="3" maxlength="50" required
-                   data-regla="nombreComercial" data-contador
-                   data-mensaje-requerido="Ingrese el nombre del proveedor"
-                   data-mensaje-largo="El nombre debe tener entre 3 y 50 caracteres"
-                   value="<?= $valor('nombre') ?>">
+                data-regla="nombreComercial" data-contador data-mensaje-requerido="Ingrese el nombre del proveedor"
+                data-mensaje-largo="El nombre debe tener entre 3 y 50 caracteres" value="<?= $valor('nombre') ?>">
             <p class="textoAyuda">Por ejemplo Perlas del Valle S.A.</p>
             <?= $mensajeError('nombre') ?>
         </div>
@@ -61,17 +58,16 @@ $rutaCancelar = $esNuevo ? '/proveedores' : '/proveedores/detalle?id=' . (int) $
         <div class="filaCampos">
             <div class="<?= $claseCampo('telefono') ?>">
                 <label for="telefono">Teléfono o celular <span class="obligatorio">*</span></label>
-                <input type="tel" id="telefono" name="telefono" maxlength="15" required inputmode="tel"
-                       data-regla="telefono" data-mensaje-requerido="Ingrese el teléfono"
-                       value="<?= $valor('telefono') ?>">
-                <p class="textoAyuda">8 dígitos, por ejemplo 88451290</p>
+                <input type="tel" id="telefono" name="telefono" maxlength="15" required inputmode="tel" d
+                    data-regla="telefono" data-mensaje-requerido="Ingrese el teléfono" data-mascara-telefono
+                    value="<?= $valor('telefono') ?>">
+                <p class="textoAyuda">8 dígitos, por ejemplo 8845-1290</p>
                 <?= $mensajeError('telefono') ?>
             </div>
-             <div class="<?= $claseCampo('correo') ?>">
+            <div class="<?= $claseCampo('correo') ?>">
                 <label for="correo">Correo <span class="obligatorio">*</span></label>
                 <input type="email" id="correo" name="correo" maxlength="150" required autocomplete="off"
-                       data-regla="correo" data-mensaje-requerido="Ingrese el correo"
-                       value="<?= $valor('correo') ?>">
+                    data-regla="correo" data-mensaje-requerido="Ingrese el correo" value="<?= $valor('correo') ?>">
                 <p class="textoAyuda">Por ejemplo ventas@proveedor.com</p>
                 <?= $mensajeError('correo') ?>
             </div>

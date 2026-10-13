@@ -113,7 +113,7 @@ $urlFoto = fn(?string $foto): string => htmlspecialchars($foto !== null
                         </a>
                         <?php if ($producto->getActivo()): ?>
                             <button type="button" class="boton botonSecundario botonPequeno botonHiceMas" data-hice-mas
-                                data-id="<?= $producto->getIdProducto() ?>" data-nombre="<?= $nombre ?>">+ Hice más</button>
+                                data-id="<?= $producto->getIdProducto() ?>" data-nombre="<?= $nombre ?>">Crear otro</button>
                         <?php endif; ?>
                     </li>
                 <?php endforeach; ?>

@@ -12,39 +12,33 @@ document.addEventListener('DOMContentLoaded', function () {
     var campoEnvio = formulario.querySelector('[data-costo-envio]');
     var maximo = parseInt(formulario.getAttribute('data-maximo-lineas'), 10) || 50;
     var patronNumero = /^[0-9]{1,10}([.,][0-9]{1,2})?$/;
+    var patronNombre = /^[\p{L}0-9][\p{L}0-9 .,()#\/&'-]*$/u;
 
-    // Cómo se cuenta cada unidad; igual que UnidadMedida en PHP
     var unidades = {
         Unidad: { singular: 'unidad', plural: 'unidades', abreviatura: 'u', por: 'cada uno' },
         Metro: { singular: 'metro', plural: 'metros', abreviatura: 'm', por: 'por metro' },
         Gramo: { singular: 'gramo', plural: 'gramos', abreviatura: 'g', por: 'por gramo' }
     };
 
-    // Las claves nuevas siguen después de la mayor que ya existe
-    var siguienteClave = 0;
     lista.querySelectorAll('[data-linea]').forEach(function (linea) {
         siguienteClave = Math.max(siguienteClave, parseInt(linea.getAttribute('data-clave'), 10) + 1);
     });
 
-    // Igual que Numero::leer en PHP: "12", "12,5" o "12.50"; null si no es un número
     function leerNumero(texto) {
         texto = texto.replace(/\s/g, '');
         return patronNumero.test(texto) ? parseFloat(texto.replace(',', '.')) : null;
     }
 
-    // Número con punto para miles y coma para decimales, como number_format en PHP
     function formatear(numero, decimales) {
         var partes = numero.toFixed(decimales).split('.');
         var enteros = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
         return partes.length > 1 ? enteros + ',' + partes[1] : enteros;
     }
 
-    // Igual que Numero::moneda en PHP: ₡1.250 o ₡12,50
     function moneda(monto) {
         return '₡' + formatear(monto, Math.round(monto * 100) % 100 === 0 ? 0 : 2);
     }
 
-    // Igual que Numero::formatear en PHP: sin ceros de más
     function cantidadTexto(numero) {
         return formatear(numero, 2).replace(/,?0+$/, '');
     }
@@ -75,7 +69,6 @@ document.addEventListener('DOMContentLoaded', function () {
         contenedor.appendChild(error);
     }
 
-    // ---------- Pestañas: De mi inventario / Componente nuevo ----------
     var pestanas = formulario.querySelectorAll('[data-pestana]');
 
     function abrirPestana(nombre) {
@@ -95,7 +88,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ---------- De mi inventario: filtro por tipo y buscador ----------
     var filas = Array.prototype.slice.call(formulario.querySelectorAll('[data-fila-inventario]'));
     var buscador = formulario.querySelector('[data-buscar-componente]');
     var sinCoincidencias = formulario.querySelector('[data-sin-coincidencias]');
@@ -129,7 +121,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (buscador) {
         buscador.addEventListener('input', filtrarInventario);
-        // Enter en el buscador no debe enviar la compra
         buscador.addEventListener('keydown', function (evento) {
             if (evento.key === 'Enter') {
                 evento.preventDefault();
@@ -146,7 +137,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ---------- Filas de la compra (paso 3) ----------
     function crearLinea(datos) {
         if (lineas().length >= maximo) {
             window.alert('Una compra puede tener como máximo ' + maximo + ' componentes.');
@@ -176,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function () {
         linea.querySelector('[data-linea-abreviatura]').textContent = unidad.abreviatura;
         linea.querySelector('[data-linea-por]').textContent = unidad.por;
 
-        // Los datos del tipo del componente nuevo viajan escondidos en la fila
+       
         var valores = linea.querySelector('[data-linea-valores]');
         (datos.valores || []).forEach(function (valor) {
             var campo = document.createElement('input');
@@ -192,7 +182,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return linea;
     }
 
-    // La cantidad en la unidad del componente: los centímetros pasan a metros
     function cantidadEnUnidad(linea) {
         var cantidad = leerNumero(linea.querySelector('[data-linea-cantidad]').value) || 0;
         var medida = linea.querySelector('[data-linea-medida]');
@@ -204,10 +193,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var cantidad = cantidadEnUnidad(linea);
         var total = leerNumero(linea.querySelector('[data-linea-total]').value) || 0;
 
-        // El costo de cada uno: lo que pagó entre lo que compró
         linea.querySelector('[data-linea-costo]').textContent = cantidad > 0 ? moneda(Math.round(total / cantidad * 100) / 100) : '—';
 
-        // "Perlas · tiene 15 unidades, quedará con 215 unidades" o, si es nuevo, con cuánto entra
         var existencia = parseFloat(linea.getAttribute('data-existencia')) || 0;
         var detalle = linea.getAttribute('data-detalle');
         if (linea.getAttribute('data-nuevo') === '1') {
@@ -270,12 +257,10 @@ document.addEventListener('DOMContentLoaded', function () {
         actualizar();
     });
 
-    // ---------- Componente nuevo ----------
     var nuevoTipo = formulario.querySelector('[data-nuevo-tipo]');
     var nuevoNombre = formulario.querySelector('[data-nuevo-nombre]');
     var botonNuevo = formulario.querySelector('[data-agregar-nuevo]');
 
-    // Al escoger el tipo se desbloquean sus datos
     function mostrarAtributos() {
         formulario.querySelector('[data-atributos-vacio]').hidden = nuevoTipo.value !== '';
         formulario.querySelectorAll('[data-atributos-tipo]').forEach(function (bloque) {
@@ -288,7 +273,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return bloque ? Array.prototype.slice.call(bloque.querySelectorAll('[data-atributo]')) : [];
     }
 
-    // "Blanco, 8 mm, Elástico", para mostrar en la fila
     function textoAtributo(campo) {
         var clase = campo.getAttribute('data-clase');
         if (clase === 'SiNo') {
@@ -334,7 +318,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 return linea.getAttribute('data-nuevo') === '1' && normalizar(linea.querySelector('[data-linea-nombre]').value) === comparable;
             });
             var mensajeNombre = nombre === '' ? 'Escriba el nombre del componente'
-                : nombre.length < 2 ? 'El nombre es muy corto'
+                : nombre.length < 2 || nombre.length > 100 ? 'El nombre debe tener entre 2 y 100 letras'
+                : !patronNombre.test(nombre) ? 'El nombre solo puede tener letras, números, espacios y los signos . , ( ) # / & \' -'
                 : repetidoInventario ? 'Ya tiene un componente con ese nombre; búsquelo en "De mi inventario"'
                 : repetidoCompra ? 'Ya agregó un componente nuevo con ese nombre' : '';
             if (mensajeNombre !== '') {
@@ -346,7 +331,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 primero = primero || nuevoTipo;
             }
 
-            // Lo obligatorio del tipo y que los números sean números
             camposAtributos().forEach(function (campo) {
                 var mensaje = '';
                 if (campo.hasAttribute('data-obligatorio') && campo.value.trim() === '') {
@@ -385,7 +369,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Enter en el nombre agrega el componente en vez de enviar la compra
         nuevoNombre.addEventListener('keydown', function (evento) {
             if (evento.key === 'Enter') {
                 evento.preventDefault();
@@ -417,9 +400,18 @@ document.addEventListener('DOMContentLoaded', function () {
     formulario.addEventListener('input', actualizar);
     formulario.addEventListener('change', actualizar);
 
-    // Lo que validaciones.js no revisa: que haya componentes y que la cantidad vaya con su unidad
     formulario.addEventListener('submit', function (evento) {
         var primero = null;
+        var fecha = formulario.querySelector('#fecha');
+        if (fecha.value !== '' && !fecha.closest('.campoConError')) {
+            var mensajeFecha = fecha.value > fecha.max ? 'La fecha no puede ser después de hoy'
+                : fecha.value < fecha.min ? 'Escoja una fecha a partir del año 2000' : '';
+            if (mensajeFecha !== '') {
+                ponerError(fecha, mensajeFecha);
+                primero = fecha;
+            }
+        }
+
         var avisoVacio = formulario.querySelector('[data-error-lineas]');
         if (avisoVacio) {
             avisoVacio.remove();
@@ -431,7 +423,7 @@ document.addEventListener('DOMContentLoaded', function () {
             error.textContent = 'Agregue al menos un componente a la compra';
             sinLineas.parentNode.insertBefore(error, sinLineas);
             evento.preventDefault();
-            formulario.querySelector('[data-pestana].pestanaActiva').focus();
+            (primero || formulario.querySelector('[data-pestana].pestanaActiva')).focus();
             return;
         }
 
@@ -444,7 +436,9 @@ document.addEventListener('DOMContentLoaded', function () {
             var mensajeTotal = '';
 
             if (cantidad.value.trim() !== '') {
-                if (numeroCantidad === null) {
+                if (cantidad.value.trim().charAt(0) === '-') {
+                    mensajeCantidad = 'No puede ser un número negativo';
+                } else if (numeroCantidad === null) {
                     mensajeCantidad = 'Escriba un número, por ejemplo 200 o 1,5';
                 } else if (numeroCantidad <= 0) {
                     mensajeCantidad = 'La cantidad debe ser mayor que 0';
@@ -454,8 +448,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     mensajeCantidad = 'Los centímetros van sin decimales';
                 }
             }
-            if (total.value.trim() !== '' && leerNumero(total.value) === null) {
-                mensajeTotal = 'Escriba un monto, por ejemplo 2400 o 2400,50';
+            if (total.value.trim() !== '') {
+                var numeroTotal = leerNumero(total.value);
+                if (total.value.trim().charAt(0) === '-') {
+                    mensajeTotal = 'No puede ser un número negativo';
+                } else if (numeroTotal === null) {
+                    mensajeTotal = 'Escriba un monto, por ejemplo 2400 o 2400,50';
+                } else if (numeroTotal <= 0) {
+                    mensajeTotal = 'El precio total debe ser mayor que 0';
+                }
             }
 
             [[cantidad, mensajeCantidad], [total, mensajeTotal]].forEach(function (par) {

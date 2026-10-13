@@ -87,6 +87,7 @@ $atributos = $tipoComponente->getAtributosActivos();
                 <div class="campoConUnidad">
                     <input type="text" id="existenciaMinima" name="existenciaMinima" maxlength="13" inputmode="decimal"
                         data-regla="cantidad" placeholder="0" value="<?= $valor('existenciaMinima') ?>">
+                    data-mensaje-regla="Escriba un número con hasta 2 decimales, por ejemplo 12 o 12,50"
                     <span class="unidadCampo" data-unidad-plural><?= $plural ?></span>
                 </div>
                 <p class="textoAyuda">Opcional. Con esa cantidad o menos, se marca como "Por acabarse".</p>
@@ -120,6 +121,7 @@ $atributos = $tipoComponente->getAtributosActivos();
                         <span class="unidadCampo">₡</span>
                         <input type="text" id="costoTotal" name="costoTotal" maxlength="13" inputmode="decimal"
                             data-regla="cantidad" placeholder="0" data-costo-total value="<?= $valor('costoTotal') ?>">
+                        data-mensaje-regla="Escriba un número con hasta 2 decimales, por ejemplo 12 o 12,50"
                     </div>
                     <p class="costoCalculadoComponente" data-costo-calculado aria-live="polite"></p>
                     <?= $mensajeError('costoTotal') ?>
@@ -177,14 +179,14 @@ $atributos = $tipoComponente->getAtributosActivos();
                                 <div class="campoConUnidad">
                                     <input type="text" id="<?= $idCampo ?>" name="<?= $nombreCampo ?>" maxlength="13"
                                         inputmode="decimal" data-regla="cantidad"
-                                        data-mensaje-regla="Escriba un número, por ejemplo 8 o 8,5"
+                                        data-mensaje-regla="Escriba un número, por ejemplo 8 o 8,5" data-atributo-numero
                                         data-mensaje-requerido="<?= htmlspecialchars($mensajeRequerido) ?>" <?= $obligatorio ? 'required' : '' ?> value="<?= htmlspecialchars($valorActual) ?>">
                                     <?php if ($atributo->getUnidad()): ?>
                                         <span class="unidadCampo"><?= htmlspecialchars($atributo->getUnidad()) ?></span>
                                     <?php endif; ?>
                                 </div>
                             <?php else: ?>
-                                <input type="text" id="<?= $idCampo ?>" name="<?= $nombreCampo ?>" maxlength="300"
+                                <input type="text" id="<?= $idCampo ?>" name="<?= $nombreCampo ?>" maxlength="300" data-atributo-texto
                                     data-mensaje-requerido="<?= htmlspecialchars($mensajeRequerido) ?>" <?= $obligatorio ? 'required' : '' ?> value="<?= htmlspecialchars($valorActual) ?>">
                             <?php endif; ?>
                             <?= $mensajeError($campo) ?>

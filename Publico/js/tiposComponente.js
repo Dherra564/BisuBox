@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var plantillaOpcion = document.querySelector('[data-opcion-plantilla]');
     var maximoDatos = parseInt(formulario.getAttribute('data-maximo-datos'), 10) || 20;
     var maximoOpciones = parseInt(formulario.getAttribute('data-maximo-opciones'), 10) || 30;
+    var patronNombre = /^[\p{L}0-9][\p{L}0-9 .,()#\/&'-]*$/u;
+    var signos = ' solo pueden tener letras, números, espacios y los signos . , ( ) # / & \' -';
 
     var siguienteClave = 1;
     formulario.querySelectorAll('[data-dato]').forEach(function (fila) {
@@ -187,12 +189,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
         filas().forEach(function (fila) {
             var campoNombre = fila.querySelector('[data-dato-nombre]');
-            var nombre = campoNombre.value.trim().toLowerCase();
-            if (nombre !== '' && nombres.indexOf(nombre) !== -1 && !campoNombre.closest('.campoConError')) {
-                ponerError(campoNombre.closest('.campo'), 'Ya hay otro dato con este nombre');
-                primero = primero || campoNombre;
+            var nombre = campoNombre.value.replace(/\s+/g, ' ').trim().toLowerCase();
+            if (nombre !== '' && !campoNombre.closest('.campoConError')) {
+                var mensajeNombre = !patronNombre.test(nombre) ? 'El nombre solo puede tener letras, números, espacios y los signos . , ( ) # / & \' -'
+                    : nombres.indexOf(nombre) !== -1 ? 'Ya hay otro dato con este nombre' : '';
+                if (mensajeNombre !== '') {
+                    ponerError(campoNombre.closest('.campo'), mensajeNombre);
+                    primero = primero || campoNombre;
+                }
             }
             nombres.push(nombre);
+
+            var campoUnidad = fila.querySelector('[data-dato-unidad]');
+            var contenedorUnidad = campoUnidad.closest('.campo');
+            quitarErrores(contenedorUnidad);
+            var unidad = campoUnidad.value.replace(/\s+/g, ' ').trim();
+            if (claseDe(fila) === 'Numero' && unidad !== '' && !patronNombre.test(unidad)) {
+                ponerError(contenedorUnidad, 'La unidad solo puede tener letras, números, espacios y los signos . , ( ) # / & \' -');
+                primero = primero || campoUnidad;
+            }
 
             var campoOpciones = fila.querySelector('[data-solo-clase="Lista"]');
             quitarErrores(campoOpciones);
@@ -201,13 +216,16 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             var valores = [];
             campoOpciones.querySelectorAll('.filaOpcion input[type="text"]').forEach(function (opcion) {
-                if (opcion.value.trim() !== '') {
-                    valores.push(opcion.value.trim().toLowerCase());
+                var texto = opcion.value.replace(/\s+/g, ' ').trim();
+                if (texto !== '') {
+                    valores.push(texto.toLowerCase());
                 }
             });
             var mensaje = '';
             if (valores.length < 2) {
                 mensaje = 'Una lista necesita al menos 2 opciones';
+            } else if (valores.some(function (valor) { return !patronNombre.test(valor); })) {
+                mensaje = 'Las opciones' + signos;
             } else if (valores.some(function (valor, indice) { return valores.indexOf(valor) !== indice; })) {
                 mensaje = 'Hay opciones repetidas';
             }

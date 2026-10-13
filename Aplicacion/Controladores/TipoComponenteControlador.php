@@ -99,7 +99,8 @@ class TipoComponenteControlador
         } catch (Throwable $error) {
             error_log('Error al crear el tipo de componente: ' . $error->getMessage());
             Mensaje::error('No se pudo guardar. Intente de nuevo.');
-            $this->redirigir('/tipos-componente/nuevo');
+            $this->mostrarFormulario($datos, [], null);
+            return;
         }
 
         Mensaje::exito('Tipo de componente "' . $datos['nombre'] . '" creado');
@@ -130,7 +131,8 @@ class TipoComponenteControlador
         } catch (Throwable $error) {
             error_log('Error al actualizar el tipo de componente: ' . $error->getMessage());
             Mensaje::error('No se pudo guardar. Intente de nuevo.');
-            $this->redirigir('/tipos-componente/editar?id=' . $tipoComponente->getIdTipoComponente());
+            $this->mostrarFormulario($datos, [], $tipoComponente);
+            return;
         }
 
         Mensaje::exito('Tipo de componente "' . $datos['nombre'] . '" guardado');
@@ -141,7 +143,12 @@ class TipoComponenteControlador
     {
         $this->verificarCsrf('/tipos-componente');
         $tipoComponente = $this->buscarTipo($_POST['id'] ?? null);
-        $activo = ($_POST['activo'] ?? '') === '1';
+        $estado = $_POST['activo'] ?? null;
+        if (!in_array($estado, ['1', '0'], true)) {
+            Mensaje::error('Estado no válido');
+            $this->redirigir('/tipos-componente');
+        }
+        $activo = $estado === '1';
 
         try {
             $this->tipoComponenteRepositorio->cambiarEstado((int) $tipoComponente->getIdTipoComponente(), $this->idVendedor(), $activo);

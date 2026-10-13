@@ -84,7 +84,9 @@ class DatosCompraProveedor
 
         if ($datos['costoEnvio'] !== '') {
             $envio = Numero::leer($datos['costoEnvio']);
-            if ($envio === null || $envio > Numero::MAXIMO) {
+            if (str_starts_with($datos['costoEnvio'], '-')) {
+                $validador->agregarError('costoEnvio', 'No puede ser un número negativo');
+            } elseif ($envio === null || $envio > Numero::MAXIMO) {
                 $validador->agregarError('costoEnvio', 'Escriba un monto, por ejemplo 2500 o 2500,50. Si no pagó envío, déjelo vacío');
             }
         }
@@ -225,8 +227,7 @@ class DatosCompraProveedor
             $validador->agregarError($campo . 'tipo', 'Escoja el tipo del componente nuevo');
         }
 
-        $validador->requerido($campo . 'nombre', $linea['nombre'], 'Escriba el nombre del componente nuevo')
-            ->longitud($campo . 'nombre', $linea['nombre'], 2, 100, 'El nombre es muy corto');
+        DatosComponente::validarNombre($validador, $campo . 'nombre', $linea['nombre'], 'Escriba el nombre del componente nuevo');
         $nombreComparable = mb_strtolower($linea['nombre'], 'UTF-8');
         if ($validador->error($campo . 'nombre') === null) {
             if ($componenteRepositorio->existeNombre($idVendedor, $linea['nombre'])) {
@@ -245,7 +246,6 @@ class DatosCompraProveedor
         return $linea['unidad'];
     }
 
-    // La cantidad en la unidad del componente: los centímetros pasan a metros (75 cm = 0,75 m)
     private static function cantidadEnUnidad(array $linea, ?string $unidad): ?float
     {
         $cantidad = Numero::leer($linea['cantidad']);
@@ -264,7 +264,9 @@ class DatosCompraProveedor
         }
         $cantidad = Numero::leer($valor);
         $enCentimetros = $unidad === UnidadMedida::METRO && $medida === self::CENTIMETROS;
-        if ($cantidad === null || $cantidad > Numero::MAXIMO) {
+        if (str_starts_with($valor, '-')) {
+            $validador->agregarError($campo, 'No puede ser un número negativo');
+        } elseif ($cantidad === null || $cantidad > Numero::MAXIMO) {
             $validador->agregarError($campo, 'Escriba un número, por ejemplo 200 o 1,5');
         } elseif ($cantidad <= 0) {
             $validador->agregarError($campo, 'La cantidad debe ser mayor que 0');
@@ -282,8 +284,12 @@ class DatosCompraProveedor
             return;
         }
         $total = Numero::leer($valor);
-        if ($total === null || $total > Numero::MAXIMO) {
+        if (str_starts_with($valor, '-')) {
+            $validador->agregarError($campo, 'No puede ser un número negativo');
+        } elseif ($total === null || $total > Numero::MAXIMO) {
             $validador->agregarError($campo, 'Escriba un monto, por ejemplo 2400 o 2400,50');
+        } elseif ($total <= 0) {
+            $validador->agregarError($campo, 'El precio total debe ser mayor que 0');
         }
     }
 }

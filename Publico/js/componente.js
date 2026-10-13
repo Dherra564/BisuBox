@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return document.querySelector('[data-unidad]:checked') || opciones[0];
     }
 
-    // Lo que tiene en la unidad del componente: los centímetros pasan a metros
     function cantidadEnUnidad(opcion) {
         var cantidad = leerNumero(existencia.value) || 0;
         return opcion.value === 'Metro' && medida && medida.value === 'cm' ? cantidad / 100 : cantidad;
@@ -64,4 +63,95 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     actualizar();
+
+    var formulario = document.querySelector('.formularioComponente');
+    var patronNombre = /^[\p{L}0-9][\p{L}0-9 .,()#\/&'-]*$/u;
+    var signos = 'puede tener letras, números, espacios y los signos . , ( ) # / & \' -';
+
+    function ponerError(campo, mensaje) {
+        var contenedor = campo.closest('.campo');
+        var anterior = contenedor.querySelector('.errorCampo');
+        if (anterior) {
+            anterior.remove();
+        }
+        contenedor.classList.add('campoConError');
+        var error = document.createElement('p');
+        error.className = 'errorCampo';
+        error.textContent = mensaje;
+        contenedor.appendChild(error);
+    }
+
+    function revisarCantidad(campo, entera, enCentimetros) {
+        var valor = campo.value.trim();
+        if (valor === '') {
+            return '';
+        }
+        if (valor.charAt(0) === '-') {
+            return 'No puede ser un número negativo';
+        }
+        var numero = leerNumero(valor);
+        if (numero === null) {
+            return '';
+        }
+        if (entera && Math.floor(numero) !== numero) {
+            return 'Si se mide por unidades, use números enteros';
+        }
+        if (enCentimetros && Math.floor(numero) !== numero) {
+            return 'Los centímetros van sin decimales';
+        }
+        return '';
+    }
+
+    function limpiar(texto) {
+        return texto.replace(/\s+/g, ' ').trim();
+    }
+
+    formulario.addEventListener('submit', function (evento) {
+        var yaHabiaErrores = evento.defaultPrevented;
+        var opcion = elegida();
+        var enUnidades = opcion.value === 'Unidad';
+        var revisiones = [];
+
+        var nombre = formulario.querySelector('#nombre');
+        var textoNombre = limpiar(nombre.value);
+        if (textoNombre.length >= 2 && textoNombre.length <= 100 && !patronNombre.test(textoNombre)) {
+            revisiones.push([nombre, 'El nombre solo ' + signos]);
+        }
+
+        if (existencia && costoTotal) {
+            var enCentimetros = opcion.value === 'Metro' && medida && medida.value === 'cm';
+            var mensajeExistencia = revisarCantidad(existencia, enUnidades, enCentimetros);
+            revisiones.push([existencia, mensajeExistencia]);
+            var tiene = mensajeExistencia === '' && !existencia.closest('.campoConError') ? leerNumero(existencia.value) || 0 : 0;
+            revisiones.push([costoTotal, costoTotal.value.trim() === '' && tiene > 0
+                ? 'Escriba cuánto pagó en total por lo que tiene. Si no lo sabe, ponga 0'
+                : revisarCantidad(costoTotal, false, false)]);
+        }
+
+        var minima = formulario.querySelector('#existenciaMinima');
+        revisiones.push([minima, revisarCantidad(minima, enUnidades, false)]);
+
+        formulario.querySelectorAll('[data-atributo-numero]').forEach(function (campo) {
+            revisiones.push([campo, campo.value.trim().charAt(0) === '-' ? 'No puede ser un número negativo' : '']);
+        });
+        formulario.querySelectorAll('[data-atributo-texto]').forEach(function (campo) {
+            var texto = limpiar(campo.value);
+            revisiones.push([campo, texto !== '' && !patronNombre.test(texto) ? 'Solo ' + signos : '']);
+        });
+
+        var primero = null;
+        revisiones.forEach(function (revision) {
+            if (revision[1] !== '') {
+                ponerError(revision[0], revision[1]);
+                primero = primero || revision[0];
+            }
+        });
+
+        if (primero) {
+            evento.preventDefault();
+            if (!yaHabiaErrores) {
+                primero.focus();
+            }
+        }
+    });
 });

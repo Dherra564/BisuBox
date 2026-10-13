@@ -77,7 +77,8 @@ class ComponenteControlador
         } catch (Throwable $error) {
             error_log('Error al crear el componente: ' . $error->getMessage());
             Mensaje::error('No se pudo guardar. Intente de nuevo.');
-            $this->redirigir('/componentes/nuevo?tipo=' . $tipo->getIdTipoComponente());
+            $this->mostrarFormulario($datos, [], $tipo, null);
+            return;
         }
 
         Mensaje::exito('Componente "' . $datos['nombre'] . '" agregado al inventario');
@@ -115,7 +116,8 @@ class ComponenteControlador
         } catch (Throwable $error) {
             error_log('Error al actualizar el componente: ' . $error->getMessage());
             Mensaje::error('No se pudo guardar. Intente de nuevo.');
-            $this->redirigir('/componentes/editar?id=' . $componente->getIdComponente());
+            $this->mostrarFormulario($datos, [], $tipo, $componente);
+            return;
         }
 
         Mensaje::exito('Componente "' . $datos['nombre'] . '" guardado');
@@ -126,7 +128,12 @@ class ComponenteControlador
     {
         $this->verificarCsrf('/inventario');
         $componente = $this->buscarComponente($_POST['id'] ?? null);
-        $activo = ($_POST['activo'] ?? '') === '1';
+        $estado = $_POST['activo'] ?? null;
+        if (!in_array($estado, ['1', '0'], true)) {
+            Mensaje::error('Estado no válido');
+            $this->redirigir('/inventario');
+        }
+        $activo = $estado === '1';
 
         try {
             $this->componenteRepositorio->cambiarEstado((int) $componente->getIdComponente(), $this->idVendedor(), $activo);

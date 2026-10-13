@@ -51,7 +51,7 @@ $unidadesTexto = fn(int $cantidad): string => $cantidad === 1 ? '1 unidad' : $ca
 
         <?php if ($producto->getActivo()): ?>
             <button type="button" class="boton" data-hice-mas data-id="<?= $producto->getIdProducto() ?>"
-                    data-nombre="<?= $nombre ?>" data-alcanza="<?= $alcanzaPara ?>">+ Hice más</button>
+                    data-nombre="<?= $nombre ?>" data-alcanza="<?= $alcanzaPara ?>">Crear otro</button>
             <p class="textoAyuda">
                 <?= $alcanzaPara > 0
                     ? 'Con lo que tiene en el inventario le alcanza para hacer ' . $alcanzaPara . ' más.'

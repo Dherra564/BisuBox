@@ -11,6 +11,18 @@ use Aplicacion\Repositorios\UsuarioRepositorio;
 class DatosComponente
 {
     public const CENTIMETROS = 'cm';
+    public const PATRON_NOMBRE = '/^[\p{L}0-9][\p{L}0-9 .,()#\/&\'-]*$/u';
+    public const MENSAJE_NOMBRE = 'El nombre solo puede tener letras, números, espacios y los signos . , ( ) # / & \' -';
+    public const MENSAJE_TEXTO = 'Solo puede tener letras, números, espacios y los signos . , ( ) # / & \' -';
+
+    public static function validarNombre(Validador $validador, string $campo, string $nombre, string $mensajeRequerido): void
+    {
+        $validador->requerido($campo, $nombre, $mensajeRequerido)
+            ->longitud($campo, $nombre, 2, 100, 'El nombre debe tener entre 2 y 100 caracteres');
+        if ($validador->error($campo) === null && !preg_match(self::PATRON_NOMBRE, $nombre)) {
+            $validador->agregarError($campo, self::MENSAJE_NOMBRE);
+        }
+    }
 
     public static function leer(TipoComponente $tipo): array
     {
@@ -27,7 +39,6 @@ class DatosComponente
         ];
     }
 
-    // Los valores de los atributos del tipo, por id de atributo; también se usa al crear un componente desde una compra
     public static function leerValores(TipoComponente $tipo, mixed $enviados): array
     {
         $enviados = is_array($enviados) ? $enviados : [];
@@ -45,7 +56,6 @@ class DatosComponente
         return $valores;
     }
 
-    // Revisa los valores de los atributos; los errores quedan como {prefijo}{idAtributo}
     public static function validarValores(Validador $validador, string $prefijo, TipoComponente $tipo, array $valores): void
     {
         foreach ($tipo->getAtributosActivos() as $atributo) {
@@ -53,7 +63,6 @@ class DatosComponente
         }
     }
 
-    // Los números se guardan con punto, como los lee la base de datos
     public static function valoresParaGuardar(TipoComponente $tipo, array $valores): array
     {
         $guardar = [];
@@ -75,8 +84,7 @@ class DatosComponente
         int $idVendedor,
         ?Componente $original = null
     ): void {
-        $validador->requerido('nombre', $datos['nombre'], 'Escriba el nombre del componente, por ejemplo Perla rosada 8 mm')
-            ->longitud('nombre', $datos['nombre'], 2, 100, 'El nombre debe tener entre 2 y 100 caracteres');
+        self::validarNombre($validador, 'nombre', $datos['nombre'], 'Escriba el nombre del componente, por ejemplo Perla rosada 8 mm');
         if (
             $validador->error('nombre') === null
             && (new ComponenteRepositorio())->existeNombre($idVendedor, $datos['nombre'], $original?->getIdComponente())
@@ -89,7 +97,6 @@ class DatosComponente
         }
         $enUnidades = $datos['unidad'] === UnidadMedida::UNIDAD;
 
-        // Al crearlo a mano: lo que tiene ahora y lo que pagó en total por eso; el costo de cada uno se calcula
         if ($original === null) {
             self::validarCantidad($validador, 'existencia', $datos['existencia'], $enUnidades, false);
             $enCentimetros = $datos['unidad'] === UnidadMedida::METRO && $datos['medida'] === self::CENTIMETROS;
@@ -186,13 +193,11 @@ class DatosComponente
         return '';
     }
 
-    // El costo de cada uno: lo que pagó en total entre lo que tiene (4 decimales); sin existencia el costo es 0
     private static function costoUnitario(float $cantidad, string $costoTotal): float
     {
         return $cantidad > 0 ? round((Numero::leer($costoTotal) ?? 0) / $cantidad, 4) : 0.0;
     }
 
-    // Lo que tiene ahora en la unidad del componente: los centímetros pasan a metros (75 cm = 0,75 m)
     private static function existencia(array $datos): float
     {
         $cantidad = Numero::leer($datos['existencia']) ?? 0;
@@ -209,7 +214,9 @@ class DatosComponente
         }
 
         $numero = Numero::leer($valor);
-        if ($numero === null || $numero > Numero::MAXIMO) {
+        if (str_starts_with($valor, '-')) {
+            $validador->agregarError($campo, 'No puede ser un número negativo');
+        } elseif ($numero === null || $numero > Numero::MAXIMO) {
             $validador->agregarError($campo, 'Escriba un número con hasta 2 decimales, por ejemplo 12 o 12,50');
         } elseif ($entera && floor($numero) != $numero) {
             $validador->agregarError($campo, 'Si se mide por unidades, use números enteros');
@@ -227,7 +234,9 @@ class DatosComponente
             return;
         }
 
-        if ($clase === ClaseDato::NUMERO && Numero::leer($valor) === null) {
+        if ($clase === ClaseDato::NUMERO && str_starts_with($valor, '-')) {
+            $validador->agregarError($campo, 'No puede ser un número negativo');
+        } elseif ($clase === ClaseDato::NUMERO && Numero::leer($valor) === null) {
             $validador->agregarError($campo, 'Escriba un número, por ejemplo 8 o 8,5');
         } elseif ($clase === ClaseDato::LISTA) {
             $opciones = array_map(fn($opcion): string => (string) $opcion->getIdOpcion(), $atributo->getOpciones());
@@ -236,6 +245,9 @@ class DatosComponente
             }
         } elseif ($clase === ClaseDato::TEXTO) {
             $validador->longitud($campo, $valor, 1, 300, 'Puede tener como máximo 300 caracteres');
+            if ($validador->error($campo) === null && !preg_match(self::PATRON_NOMBRE, $valor)) {
+                $validador->agregarError($campo, self::MENSAJE_TEXTO);
+            }
         }
     }
 }

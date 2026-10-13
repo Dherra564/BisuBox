@@ -70,6 +70,9 @@ class DatosTipoComponente
 
             $validador->requerido($campo . 'nombre', $dato['nombre'], 'Escriba el nombre del dato o quítelo')
                 ->longitud($campo . 'nombre', $dato['nombre'], 1, 60, 'El nombre puede tener como máximo 60 caracteres');
+            if ($validador->error($campo . 'nombre') === null && !preg_match(DatosComponente::PATRON_NOMBRE, $dato['nombre'])) {
+                $validador->agregarError($campo . 'nombre', DatosComponente::MENSAJE_NOMBRE);
+            }
             $nombreComparable = mb_strtolower($dato['nombre'], 'UTF-8');
             if ($validador->error($campo . 'nombre') === null && in_array($nombreComparable, $nombresUsados, true)) {
                 $validador->agregarError($campo . 'nombre', 'Ya hay otro dato con este nombre');
@@ -83,6 +86,9 @@ class DatosTipoComponente
 
             if ($dato['clase'] === ClaseDato::NUMERO) {
                 $validador->longitud($campo . 'unidad', $dato['unidad'], 1, 20, 'La unidad puede tener como máximo 20 caracteres');
+                if ($validador->error($campo . 'unidad') === null && $dato['unidad'] !== '' && !preg_match(DatosComponente::PATRON_NOMBRE, $dato['unidad'])) {
+                    $validador->agregarError($campo . 'unidad', 'La unidad solo puede tener caracteres, números, espacios y los signos . , ( ) # / & \' -');
+                }
             }
 
             if ($dato['clase'] === ClaseDato::LISTA) {
@@ -170,6 +176,10 @@ class DatosTipoComponente
         foreach ($opciones as $opcion) {
             if (mb_strlen($opcion['valor'], 'UTF-8') > 60) {
                 $validador->agregarError($campo, 'Cada opción puede tener como máximo 60 caracteres');
+                return;
+            }
+            if (!preg_match(DatosComponente::PATRON_NOMBRE, $opcion['valor'])) {
+                $validador->agregarError($campo, 'Las opciones solo pueden tener caracteres, números, espacios y los signos . , ( ) # / & \' -');
                 return;
             }
             $valores[] = mb_strtolower($opcion['valor'], 'UTF-8');
