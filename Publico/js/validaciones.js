@@ -25,9 +25,9 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         telefono: {
             prueba: function (valor) {
-            return esTelefono(limpiarTelefono(valor));
+                return /^[0-9]{8}$/.test(limpiarTelefono(valor));
             },
-            mensaje: 'El teléfono debe tener 8 dígitos y empezar con 2, 4, 5, 6, 7 u 8'
+            mensaje: 'El teléfono debe tener 8 dígitos, solo números'
         },
         nombreTienda: {
             patron: /^[\p{L}0-9][\p{L}0-9 .&'-]*$/u,
@@ -57,10 +57,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return numeros;
     }
 
-    function esTelefono(numeros) {
-        return /^[245678][0-9]{7}$/.test(numeros);
-    }
-
     function esContactoValido(campo, valor) {
         var fila = campo.closest('.filaContacto');
         var tipo = fila ? fila.querySelector('[data-contacto-tipo]') : null;
@@ -70,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var opcion = tipo.options[tipo.selectedIndex];
 
         if (opcion.hasAttribute('data-telefono')) {
-            return esTelefono(limpiarTelefono(valor));
+            return /^[0-9]{8}$/.test(limpiarTelefono(valor));
         }
 
         var esEnlace = /^https?:\/\//i.test(valor) || /^(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)+\//i.test(valor);
