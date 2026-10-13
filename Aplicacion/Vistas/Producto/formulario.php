@@ -32,7 +32,6 @@ foreach ($componentes as $componente) {
 
 $iconoQuitar = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>';
 
-// Una línea por componente: lo que lleva un solo producto
 $filaComponente = function (string $clave, array $linea) use ($claseCampo, $mensajeError, $componentesPorTipo, $unidades, $iconoQuitar): string {
     $campo = 'componente.' . $clave . '.';
     $nombre = 'componente[' . $clave . ']';

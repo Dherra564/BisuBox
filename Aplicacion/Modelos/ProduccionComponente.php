@@ -10,7 +10,6 @@ class ProduccionComponente
     private float $cantidad;
     private float $costoUnitario;
 
-    // La cantidad es todo lo que se descontó del inventario en esa producción
     public function __construct(
         ?int $idProduccionComponente,
         ?int $idProduccion,

@@ -27,7 +27,6 @@ class ProduccionRepositorio
         $this->productoRepositorio = new ProductoRepositorio();
     }
 
-    // Crear un producto es registrar su primera producción: o se guarda todo o nada
     public function crearProducto(Producto $producto, int $cantidad): int
     {
         $transaccionPropia = BaseDatos::iniciarTransaccion();
@@ -50,7 +49,6 @@ class ProduccionRepositorio
         return $idProducto;
     }
 
-    // Descuenta lo que lleva cada uno por la cantidad que hizo y suma la cantidad al producto
     public function producir(Producto $producto, int $cantidad): int
     {
         $transaccionPropia = BaseDatos::iniciarTransaccion();
@@ -179,7 +177,6 @@ class ProduccionRepositorio
         return $this->crearDesdeFila($fila, $componentes);
     }
 
-    // Quita del producto los que se hicieron y devuelve los componentes al inventario
     public function anular(Produccion $produccion): void
     {
         $transaccionPropia = BaseDatos::iniciarTransaccion();

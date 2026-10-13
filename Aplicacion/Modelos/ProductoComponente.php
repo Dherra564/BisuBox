@@ -14,7 +14,6 @@ class ProductoComponente
     private string $nombreTipo;
     private string $unidad;
 
-    // La cantidad es lo que lleva un solo producto
     public function __construct(
         ?int $idProductoComponente,
         ?int $idProducto,

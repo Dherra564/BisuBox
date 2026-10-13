@@ -20,7 +20,7 @@ class ProductoRepositorio
         $this->conexion = BaseDatos::obtenerConexion();
     }
 
-    // Con lo que lleva cada uno (componentes y otros gastos)
+    
     public function buscarPorId(int $idProducto, int $idVendedor): ?Producto
     {
         $consulta = $this->conexion->prepare(
@@ -128,7 +128,6 @@ class ProductoRepositorio
         return (int) $consulta->fetchColumn() > 0;
     }
 
-    // Guarda el producto con lo que lleva; la existencia empieza en 0 y sube con la producción
     public function insertar(Producto $producto): int
     {
         $transaccionPropia = BaseDatos::iniciarTransaccion();
@@ -205,7 +204,6 @@ class ProductoRepositorio
         return $idProducto;
     }
 
-    // Lo que lleva y la existencia no se tocan aquí
     public function actualizar(Producto $producto): void
     {
         $consulta = $this->conexion->prepare(
@@ -232,7 +230,6 @@ class ProductoRepositorio
         $producto->setActivo($activo);
     }
 
-    // Se usa dentro de una transacción para que nadie más cambie la existencia mientras tanto
     public function bloquearExistencia(int $idProducto, int $idVendedor): ?array
     {
         $consulta = $this->conexion->prepare(

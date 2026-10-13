@@ -21,7 +21,6 @@ $paginaActual = 'productos';
 $scriptsExtra = ['productos.js'];
 require __DIR__ . '/../Plantilla/encabezado.php';
 
-// Cada enlace cambia un filtro y conserva los demás
 $parametros = array_filter(['busqueda' => $busqueda, 'estado' => $estado !== 'activos' ? $estado : null]);
 $enlace = function (array $cambios) use ($urlBase, $parametros): string {
     $consulta = array_filter(array_merge($parametros, $cambios), fn($valor): bool => $valor !== null && $valor !== '');

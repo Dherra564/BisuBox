@@ -60,7 +60,6 @@ class DatosProducto
         ];
     }
 
-    // Lo único que se cambia al editar: lo que lleva ya quedó guardado
     public static function leerDatosComunes(): array
     {
         $texto = fn(string $campo): string => is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
