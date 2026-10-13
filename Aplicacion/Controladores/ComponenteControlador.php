@@ -1,5 +1,4 @@
 <?php
-
 namespace Aplicacion\Controladores;
 
 use Aplicacion\Modelos\Componente;
@@ -26,7 +25,7 @@ class ComponenteControlador
     public function __construct()
     {
         Permiso::exigir('inventario.gestionar');
-        $this->componenteRepositorio = new ComponenteRepositorio();
+        $this->componenteRepositorio     = new ComponenteRepositorio();
         $this->tipoComponenteRepositorio = new TipoComponenteRepositorio();
 
         $vendedor = (new VendedorRepositorio())->buscarPorIdUsuario((int) UsuarioActual::id());
@@ -64,10 +63,10 @@ class ComponenteControlador
             $this->redirigir('/componentes/nuevo');
         }
 
-        $datos = DatosComponente::leer($tipo);
+        $datos     = DatosComponente::leer($tipo);
         $validador = new Validador();
         DatosComponente::validar($validador, $datos, $tipo, $this->idVendedor());
-        if (!$validador->esValido()) {
+        if (! $validador->esValido()) {
             $this->mostrarFormulario($datos, $validador->errores(), $tipo, null);
             return;
         }
@@ -82,14 +81,14 @@ class ComponenteControlador
 
         Mensaje::exito('Componente "' . $datos['nombre'] . '" agregado al inventario');
         $this->redirigir(($_POST['siguiente'] ?? '') === 'otro'
-            ? '/componentes/nuevo?tipo=' . $tipo->getIdTipoComponente()
-            : '/inventario');
+                ? '/componentes/nuevo?tipo=' . $tipo->getIdTipoComponente()
+                : '/inventario');
     }
 
     public function editar(): void
     {
         $componente = $this->buscarComponente($_GET['id'] ?? null);
-        $tipo = $this->tipoDe($componente);
+        $tipo       = $this->tipoDe($componente);
         $this->mostrarFormulario(DatosComponente::paraFormulario($componente, $tipo), [], $tipo, $componente);
     }
 
@@ -97,12 +96,12 @@ class ComponenteControlador
     {
         $this->verificarCsrf('/inventario');
         $componente = $this->buscarComponente($_POST['id'] ?? null);
-        $tipo = $this->tipoDe($componente);
+        $tipo       = $this->tipoDe($componente);
 
-        $datos = DatosComponente::leer($tipo);
+        $datos     = DatosComponente::leer($tipo);
         $validador = new Validador();
         DatosComponente::validar($validador, $datos, $tipo, $this->idVendedor(), $componente);
-        if (!$validador->esValido()) {
+        if (! $validador->esValido()) {
             $this->mostrarFormulario($datos, $validador->errores(), $tipo, $componente);
             return;
         }
@@ -126,7 +125,12 @@ class ComponenteControlador
     {
         $this->verificarCsrf('/inventario');
         $componente = $this->buscarComponente($_POST['id'] ?? null);
-        $activo = ($_POST['activo'] ?? '') === '1';
+        $estado     = $_POST['activo'] ?? null;
+        if (! in_array($estado, ['1', '0'], true)) {
+            Mensaje::error('Estado no válido');
+            $this->redirigir('/inventario');
+        }
+        $activo = $estado === '1';
 
         try {
             $this->componenteRepositorio->cambiarEstado((int) $componente->getIdComponente(), $this->idVendedor(), $activo);
@@ -142,7 +146,7 @@ class ComponenteControlador
 
     private function buscarTipoActivo(mixed $id): ?TipoComponente
     {
-        if (!is_string($id) || !ctype_digit($id)) {
+        if (! is_string($id) || ! ctype_digit($id)) {
             return null;
         }
         $tipo = $this->tipoComponenteRepositorio->buscarPorId((int) $id, $this->idVendedor());
@@ -180,9 +184,9 @@ class ComponenteControlador
     {
         $this->mostrarVista('Componente/formulario', [
             'tipoComponente' => $tipo,
-            'componente' => $componente,
-            'datos' => $datos,
-            'errores' => $errores,
+            'componente'     => $componente,
+            'datos'          => $datos,
+            'errores'        => $errores,
         ]);
     }
 
@@ -193,7 +197,7 @@ class ComponenteControlador
 
     private function verificarCsrf(string $rutaSiFalla): void
     {
-        if (!Csrf::esValido()) {
+        if (! Csrf::esValido()) {
             Mensaje::error('La página expiró. Recargue e intente de nuevo.');
             $this->redirigir($rutaSiFalla);
         }
