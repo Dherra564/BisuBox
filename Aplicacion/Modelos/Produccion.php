@@ -20,7 +20,7 @@ class Produccion
     /** @var ProduccionComponente[] */
     private array $componentes;
 
-    /** @param ProduccionComponente[] $componentes lo que se descontó del inventario */
+    /** @param ProduccionComponente[] $componentes*/
     public function __construct(
         ?int $idProduccion,
         ?int $idVendedor,

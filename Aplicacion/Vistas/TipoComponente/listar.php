@@ -63,7 +63,8 @@ usort($tiposComponente, fn($a, $b): int => (int) $b->getActivo() <=> (int) $a->g
     ?>
     <?php if ($totalComponentes === 0): ?>
         <div class="cajaPaso">
-            <p><strong>Siguiente paso:</strong> agregue sus componentes. Por ejemplo, "Perla de vidrio rosada 8 mm" en Perlas.</p>
+            <p><strong>Siguiente paso:</strong> agregue sus componentes. Por ejemplo, "Perla de vidrio rosada 8 mm" en Perlas.
+            </p>
             <a href="<?= $urlBase ?>/componentes/nuevo" class="boton">Agregar componente</a>
         </div>
     <?php endif; ?>

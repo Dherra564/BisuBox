@@ -229,7 +229,6 @@ class ComponenteRepositorio
         $consulta->execute([$activo ? 1 : 0, $idComponente, $idVendedor]);
     }
 
-    // Los componentes activos ordenados por tipo y nombre; para escogerlos en una compra
     /** @return Componente[] */
     public function listarActivos(int $idVendedor): array
     {

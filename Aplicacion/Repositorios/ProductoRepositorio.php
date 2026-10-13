@@ -67,7 +67,7 @@ class ProductoRepositorio
         return $this->crearDesdeFila($fila, $componentes, $extras);
     }
 
-    /** @return Producto[] sin el detalle de lo que llevan */
+    /** @return Producto[]*/
     public function listar(int $idVendedor, array $filtros, int $pagina = 1): array
     {
         [$condiciones, $valores] = $this->construirFiltros($idVendedor, $filtros);
@@ -92,7 +92,7 @@ class ProductoRepositorio
         return (int) $consulta->fetchColumn();
     }
 
-    /** @return array{unidades: int, valor: float, agotados: int} solo de los activos */
+    /** @return array{unidades: int, valor: float, agotados: int}*/
     public function resumen(int $idVendedor): array
     {
         $consulta = $this->conexion->prepare(

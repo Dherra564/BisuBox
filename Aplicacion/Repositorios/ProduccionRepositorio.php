@@ -141,7 +141,7 @@ class ProduccionRepositorio
         return $idProduccion;
     }
 
-    /** @return Produccion[] de un producto, las más recientes primero */
+    /** @return Produccion[]*/
     public function listarPorProducto(int $idProducto, int $idVendedor): array
     {
         $consulta = $this->conexion->prepare(

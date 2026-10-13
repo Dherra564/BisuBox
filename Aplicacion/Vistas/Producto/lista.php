@@ -5,7 +5,7 @@
  * @var string $busqueda
  * @var string $estado
  * @var array $estados
- * @var array $conteos  cuántos productos hay en cada pestaña
+ * @var array $conteos
  * @var int $pagina
  * @var int $totalPaginas
  * @var int $total

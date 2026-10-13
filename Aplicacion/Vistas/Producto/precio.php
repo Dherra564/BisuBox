@@ -1,12 +1,10 @@
 <?php
 /**
- * Cuenta del precio de un producto: costo total, ganancia y precio de venta.
- * Lo usan el formulario para crear y el de editar.
  * @var array $datos
  * @var callable $claseCampo
  * @var callable $mensajeError
  * @var callable $valor
- * @var \Aplicacion\Modelos\Producto|null $productoCostos  con los costos ya guardados; null si se calculan al escribir
+ * @var \Aplicacion\Modelos\Producto|null $productoCostos
  */
 
 use Aplicacion\Nucleo\DatosProducto;

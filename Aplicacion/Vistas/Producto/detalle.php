@@ -2,7 +2,7 @@
 /**
  * @var \Aplicacion\Modelos\Producto $producto
  * @var \Aplicacion\Modelos\Produccion[] $producciones
- * @var int $alcanzaPara  cuántos más puede hacer con lo que tiene en el inventario
+ * @var int $alcanzaPara
  * @var string[] $desactivados
  * @var string $urlBase
  */

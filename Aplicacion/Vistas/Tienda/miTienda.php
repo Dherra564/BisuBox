@@ -1,5 +1,5 @@
 <?php
-    /**
+/**
  * @var \Aplicacion\Modelos\Vendedor $vendedor
  * @var array $datos
  * @var array $errores
