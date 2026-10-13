@@ -169,9 +169,6 @@ CREATE TABLE `tbcomponentevalor` (
 
 --
 -- Estructura de tabla para la tabla `tbproducto`
--- Productos que hace y vende cada vendedor; al crearlo se registra también su primera producción
--- Los costos son de un solo producto: componentes + mano de obra (minutos / 60 * tarifa por hora) + extras
--- El precio de venta es el costo total más la ganancia que escoge el vendedor (puede cambiarlo)
 --
 
 CREATE TABLE `tbproducto` (
@@ -197,7 +194,6 @@ CREATE TABLE `tbproducto` (
 
 --
 -- Estructura de tabla para la tabla `tbproductocomponente`
--- Lo que lleva un solo producto; el costo es el del inventario al momento de crearlo
 --
 
 CREATE TABLE `tbproductocomponente` (
@@ -214,7 +210,6 @@ CREATE TABLE `tbproductocomponente` (
 
 --
 -- Estructura de tabla para la tabla `tbproductoextra`
--- Otros gastos de un solo producto: empaque, luz, transporte...
 --
 
 CREATE TABLE `tbproductoextra` (
@@ -229,8 +224,6 @@ CREATE TABLE `tbproductoextra` (
 
 --
 -- Estructura de tabla para la tabla `tbproduccion`
--- Cada vez que el vendedor hace productos: resta los componentes y suma la cantidad al producto
--- El estado es Activa o Anulada
 --
 
 CREATE TABLE `tbproduccion` (
@@ -248,7 +241,6 @@ CREATE TABLE `tbproduccion` (
 
 --
 -- Estructura de tabla para la tabla `tbproduccioncomponente`
--- Lo que se descontó del inventario en esa producción, para devolverlo si se anula
 --
 
 CREATE TABLE `tbproduccioncomponente` (
@@ -316,7 +308,6 @@ CREATE TABLE `tbcompraproveedordetalle` (
 -- --------------------------------------------------------
 --
 -- Estructura de tabla para la tabla `tbfoto`
--- Fotos de perfil, logos de tienda y fotos de productos
 --
 
 CREATE TABLE `tbfoto` (

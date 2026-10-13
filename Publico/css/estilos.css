@@ -731,7 +731,7 @@ h1, h2, h3 {
     color: var(--colorTextoSuave);
 }
 
-/* El registro de vendedor es largo: la página es más ancha y cada sección es su propia tarjeta */
+
 .tarjetaRegistro {
     max-width: 880px;
     padding: 24px 0;
@@ -743,7 +743,7 @@ h1, h2, h3 {
     margin-bottom: 20px;
 }
 
-/* Campo de solo lectura con un botón al lado (dirección de la tienda) */
+
 .campoConBoton {
     display: flex;
     gap: 10px;
@@ -754,7 +754,7 @@ h1, h2, h3 {
     min-width: 0;
 }
 
-/* Casilla con su texto al lado, por ejemplo "Mostrar mi tienda" */
+
 .campoCasilla {
     display: flex;
     align-items: flex-start;
@@ -1808,7 +1808,6 @@ h1, h2, h3 {
     border-radius: 0;
 }
 
-/* Registrar compra: una sola columna con los tres pasos y el resumen al final */
 .registroCompra {
     max-width: 900px;
 }
@@ -1855,7 +1854,6 @@ h1, h2, h3 {
     color: var(--colorTextoSuave);
 }
 
-/* Paso 2: las pestañas van pegadas a los bordes de la sección */
 .pasoEscoger {
     padding-bottom: 0;
 }
@@ -1971,7 +1969,6 @@ h1, h2, h3 {
     padding: 20px 0;
 }
 
-/* Componente nuevo: los datos del tipo se desbloquean al escogerlo */
 .atributosNuevo {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -2044,7 +2041,6 @@ h1, h2, h3 {
     outline-offset: 2px;
 }
 
-/* Paso 3: una fila por componente, como una tabla */
 .lineasEncabezado,
 .lineaCompra {
     display: grid;
@@ -2070,7 +2066,6 @@ h1, h2, h3 {
     border-bottom: none;
 }
 
-/* Los datos del componente nuevo van escondidos dentro de la fila */
 .lineaCompra [data-linea-valores] {
     display: none;
 }
@@ -2097,7 +2092,6 @@ h1, h2, h3 {
     color: var(--colorAdvertencia);
 }
 
-/* En la computadora el encabezado de la tabla hace de etiqueta */
 .etiquetaLinea {
     position: absolute;
     width: 1px;
@@ -2177,7 +2171,6 @@ h1, h2, h3 {
     color: var(--colorTextoSuave);
 }
 
-/* Resumen al final: totales y los botones para registrar o cancelar */
 .resumenCompra {
     display: flex;
     flex-wrap: wrap;
@@ -2686,7 +2679,6 @@ h1, h2, h3 {
         padding: 0 16px;
     }
 
-    /* En el celular cada componente es una tarjeta con sus etiquetas */
     .lineasEncabezado {
         display: none;
     }
@@ -2762,7 +2754,6 @@ h1, h2, h3 {
     }
 }
 /* ---------- Productos ---------- */
-/* Crear: pasos a la izquierda y el precio siempre a la vista a la derecha */
 .creadorProducto {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 340px;
@@ -2951,7 +2942,6 @@ h1, h2, h3 {
     flex: 1 1 100px;
 }
 
-/* El precio como un recibo: costos, ganancia y precio final */
 .ticketPrecio {
     padding: 20px 22px;
     border: 1px solid var(--colorBorde);
@@ -3237,7 +3227,6 @@ h1, h2, h3 {
     margin: 0 14px 14px;
 }
 
-/* Detalle: foto y precio arriba; lo que lleva y las veces que lo ha hecho abajo */
 .fichaProducto {
     display: grid;
     grid-template-columns: 220px minmax(0, 1fr);
