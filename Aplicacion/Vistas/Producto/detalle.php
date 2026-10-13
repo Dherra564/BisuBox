@@ -118,7 +118,7 @@ $unidadesTexto = fn(int $cantidad): string => $cantidad === 1 ? '1 unidad' : $ca
                         <?php else: ?>
                             <form method="post" action="<?= $urlBase ?>/productos/anular-produccion" class="formularioEnLinea"
                                   data-titulo="Anular" data-boton="Anular" data-peligro
-                                  data-confirmar="¿Anular <?= $produccion->getCantidad() === 1 ? 'la unidad' : 'las ' . $unidadesTexto($produccion->getCantidad()) ?> del
+                                  data-confirmar="¿Anular <?= $produccion->getCantidad() === 1 ? 'la unidad' : 'las ' . $unidadesTexto($produccion->getCantidad()) ?> del <?= $produccion->getFecha()->format('d/m/Y') ?>? Se quitan de «<?= $nombre ?>» y los componentes vuelven al inventario.">
                                 <?= Csrf::campo() ?>
                                 <input type="hidden" name="id" value="<?= $produccion->getIdProduccion() ?>">
                                 <button type="submit" class="boton botonSecundario botonPequeno botonPeligroSuave">Anular</button>
