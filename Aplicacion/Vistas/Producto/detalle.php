@@ -11,7 +11,7 @@ use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\UnidadMedida;
 
-$titulo = $producto->getNombre();
+$titulo = 'Detalle producto';
 $paginaActual = 'productos';
 $volverA = ['texto' => 'Productos', 'ruta' => '/productos'];
 $scriptsExtra = ['productos.js'];
@@ -32,6 +32,7 @@ $unidadesTexto = fn(int $cantidad): string => $cantidad === 1 ? '1 unidad' : $ca
     <img src="<?= htmlspecialchars($urlFoto) ?>" alt="Foto de <?= $nombre ?>" class="fotoFichaProducto">
 
     <div class="datosFichaProducto">
+        <h2 class="nombreFicha"><?= $nombre ?></h2>
         <?php if (!$producto->getActivo()): ?>
             <span class="etiqueta etiquetaInactivo">Desactivado</span>
         <?php endif; ?>
@@ -117,7 +118,7 @@ $unidadesTexto = fn(int $cantidad): string => $cantidad === 1 ? '1 unidad' : $ca
                         <?php else: ?>
                             <form method="post" action="<?= $urlBase ?>/productos/anular-produccion" class="formularioEnLinea"
                                   data-titulo="Anular" data-boton="Anular" data-peligro
-                                  data-confirmar="¿Anular las <?= $unidadesTexto($produccion->getCantidad()) ?> del <?= $produccion->getFecha()->format('d/m/Y') ?>? Se quitan de «<?= $nombre ?>» y los componentes vuelven al inventario.">
+                                  data-confirmar="¿Anular <?= $produccion->getCantidad() === 1 ? 'la unidad' : 'las ' . $unidadesTexto($produccion->getCantidad()) ?> del
                                 <?= Csrf::campo() ?>
                                 <input type="hidden" name="id" value="<?= $produccion->getIdProduccion() ?>">
                                 <button type="submit" class="boton botonSecundario botonPequeno botonPeligroSuave">Anular</button>
