@@ -51,14 +51,8 @@ sudo mysql -e "CREATE USER 'bisubox'@'localhost' IDENTIFIED BY 'Bisubox2026'; GR
 
 En `.env` poner `bdUsuario=bisubox` y `bdContrasena=Bisubox2026`.
 
-5. Dar permiso de escritura a la carpeta de fotos y registros (Apache corre como `www-data`):
 
-```bash
-sudo chown -R www-data:www-data Almacenamiento
-sudo chmod -R 775 Almacenamiento
-```
-
-6. Abrir `http://localhost/BisuBox`.
+5. Abrir `http://localhost/BisuBox`.
 
 Si una imagen no se guarda, el motivo queda anotado en `Almacenamiento/Registros/errores.log`.
 
