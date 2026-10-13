@@ -15,6 +15,7 @@ class AutenticacionControlador
 {
     private const MENSAJE_FALLO = 'Correo o contraseña incorrectos';
     private const MENSAJE_DESACTIVADA = 'Su cuenta está desactivada.';
+    private const CLAVE_CORREO_INTENTO = 'correoIntento';
 
     public function iniciarSesion(): void
     {
@@ -23,13 +24,16 @@ class AutenticacionControlador
             $this->redirigir('/ingresar');
         }
 
-        $correo = strtolower(trim($_POST['correo'] ?? ''));
-        $contrasena = $_POST['contrasena'] ?? '';
+        // Solo se aceptan textos: si llega otra cosa (por ejemplo correo[]=x) se trata como vacío
+        $correo = is_string($_POST['correo'] ?? null) ? strtolower(trim($_POST['correo'])) : '';
+        $contrasena = is_string($_POST['contrasena'] ?? null) ? $_POST['contrasena'] : '';
 
         if ($correo === '') {
             Mensaje::error('Ingrese su correo');
             $this->redirigir('/ingresar');
         }
+        $this->recordarCorreo($correo);
+
         if ($contrasena === '') {
             Mensaje::error('Ingrese su contraseña');
             $this->redirigir('/ingresar');
@@ -51,6 +55,7 @@ class AutenticacionControlador
             $this->redirigir('/ingresar');
         }
 
+        unset($_SESSION[self::CLAVE_CORREO_INTENTO]);
         Acceso::abrirSesion($usuario);
 
         $this->redirigir('/');
@@ -76,24 +81,33 @@ class AutenticacionControlador
         $this->redirigir('/ingresar');
     }
 
-    private function redirigir(string $ruta): never
-    {
-        header('Location: ' . rtrim((string) Configuracion::obtener('appUrl', ''), '/') . $ruta);
-        exit;
-    }
-
-    private function mostrarVista(string $vista): void
-    {
-        $mensajes = Mensaje::obtener();
-        require Configuracion::rutaBase() . '/Aplicacion/Vistas/' . $vista . '.php';
-    }
-
     public function mostrarLogin(): void
     {
         if (UsuarioActual::haySesion()) {
             $this->redirigir('/');
         }
 
-        $this->mostrarVista('Autenticacion/ingresar');
+        $correoIntento = (string) ($_SESSION[self::CLAVE_CORREO_INTENTO] ?? '');
+        unset($_SESSION[self::CLAVE_CORREO_INTENTO]);
+
+        $this->mostrarVista('Autenticacion/ingresar', ['correoIntento' => $correoIntento]);
+    }
+
+    private function recordarCorreo(string $correo): void
+    {
+        $_SESSION[self::CLAVE_CORREO_INTENTO] = mb_substr($correo, 0, 150, 'UTF-8');
+    }
+
+    private function redirigir(string $ruta): never
+    {
+        header('Location: ' . rtrim((string) Configuracion::obtener('appUrl', ''), '/') . $ruta);
+        exit;
+    }
+
+    private function mostrarVista(string $vista, array $variablesVista = []): void
+    {
+        $variablesVista['mensajes'] = Mensaje::obtener();
+        extract($variablesVista, EXTR_SKIP);
+        require Configuracion::rutaBase() . '/Aplicacion/Vistas/' . $vista . '.php';
     }
 }

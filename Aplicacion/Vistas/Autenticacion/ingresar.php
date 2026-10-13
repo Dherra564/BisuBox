@@ -19,7 +19,7 @@ require __DIR__ . '/../Plantilla/encabezadoAcceso.php';
     <div class="campo">
         <label for="correo">Correo electrónico <span class="obligatorio">*</span></label>
         <input type="email" id="correo" name="correo" maxlength="150" required autofocus autocomplete="username"
-            data-mensaje-requerido="Ingrese su correo">
+            data-mensaje-requerido="Ingrese su correo" value="<?= htmlspecialchars($correoIntento ?? '') ?>">
     </div>
 
     <div class="campo">
