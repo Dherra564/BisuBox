@@ -314,7 +314,22 @@ CREATE TABLE `tbcompraproveedordetalle` (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
+--
+-- Estructura de tabla para la tabla `tbfoto`
+-- Fotos de perfil, logos de tienda y fotos de productos
+--
 
+CREATE TABLE `tbfoto` (
+    `tbfotoid` int(11) NOT NULL,
+    `tbfotocarpeta` varchar(20) DEFAULT NULL,
+    `tbfotonombre` varchar(40) DEFAULT NULL,
+    `tbfototipo` varchar(20) DEFAULT NULL,
+    `tbfotodatos` mediumblob DEFAULT NULL,
+    `tbfotoregistrofecha` datetime DEFAULT NULL,
+    PRIMARY KEY (`tbfotoid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
 --
 -- Datos iniciales: un vendedor con su tienda y un cliente
 --
