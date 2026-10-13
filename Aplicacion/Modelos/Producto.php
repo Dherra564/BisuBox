@@ -29,7 +29,6 @@ class Producto
     private array $extras;
 
     /**
-     * Los costos son de un solo producto
      * @param ProductoComponente[] $componentes
      * @param ProductoExtra[] $extras
      */
@@ -131,7 +130,6 @@ class Producto
         return $this->precioVenta;
     }
 
-    // Lo que gana por cada uno que venda
     public function getGanancia(): float
     {
         return round($this->precioVenta - $this->costoTotal, 2);

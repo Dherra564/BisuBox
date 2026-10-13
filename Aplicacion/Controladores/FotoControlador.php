@@ -5,8 +5,6 @@ namespace Aplicacion\Controladores;
 use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\SubidaArchivo;
 use Configuracion\Configuracion;
-use finfo;
-
 
 class FotoControlador
 {
@@ -15,55 +13,49 @@ class FotoControlador
         Permiso::exigirSesion();
 
         $nombre = is_string($_GET['archivo'] ?? null) ? $_GET['archivo'] : '';
-        $ruta = SubidaArchivo::rutaFotoPerfil($nombre);
+        $foto = SubidaArchivo::obtenerFotoPerfil($nombre);
 
         header('X-Content-Type-Options: nosniff');
         header('Cache-Control: private, max-age=86400');
 
-        if ($ruta === null) {
+        if ($foto === null) {
             $this->mostrarAvatarPorDefecto();
             return;
         }
 
-        header('Content-Type: ' . (new finfo(FILEINFO_MIME_TYPE))->file($ruta));
-        header('Content-Length: ' . filesize($ruta));
-        readfile($ruta);
+        $this->enviar($foto);
     }
 
     public function mostrarLogo(): void
     {
         $nombre = is_string($_GET['archivo'] ?? null) ? $_GET['archivo'] : '';
-        $ruta = SubidaArchivo::rutaLogo($nombre);
-
-        header('X-Content-Type-Options: nosniff');
-
-        if ($ruta === null) {
-            http_response_code(404);
-            return;
-        }
-
-        header('Cache-Control: public, max-age=86400');
-        header('Content-Type: ' . (new finfo(FILEINFO_MIME_TYPE))->file($ruta));
-        header('Content-Length: ' . filesize($ruta));
-        readfile($ruta);
+        $this->mostrarPublica(SubidaArchivo::obtenerLogo($nombre));
     }
 
     public function mostrarProducto(): void
     {
         $nombre = is_string($_GET['archivo'] ?? null) ? $_GET['archivo'] : '';
-        $ruta = SubidaArchivo::rutaFotoProducto($nombre);
+        $this->mostrarPublica(SubidaArchivo::obtenerFotoProducto($nombre));
+    }
 
+    private function mostrarPublica(?array $foto): void
+    {
         header('X-Content-Type-Options: nosniff');
 
-        if ($ruta === null) {
+        if ($foto === null) {
             http_response_code(404);
             return;
         }
 
         header('Cache-Control: public, max-age=86400');
-        header('Content-Type: ' . (new finfo(FILEINFO_MIME_TYPE))->file($ruta));
-        header('Content-Length: ' . filesize($ruta));
-        readfile($ruta);
+        $this->enviar($foto);
+    }
+
+    private function enviar(array $foto): void
+    {
+        header('Content-Type: ' . $foto['tipo']);
+        header('Content-Length: ' . strlen($foto['datos']));
+        echo $foto['datos'];
     }
 
     private function mostrarAvatarPorDefecto(): void

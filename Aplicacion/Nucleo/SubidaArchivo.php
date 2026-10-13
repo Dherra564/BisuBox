@@ -2,21 +2,27 @@
 
 namespace Aplicacion\Nucleo;
 
+use Aplicacion\Repositorios\FotoRepositorio;
 use Configuracion\Configuracion;
 use finfo;
+use GdImage;
+use Throwable;
 
 class SubidaArchivo
 {
     public const TAMANO_MAXIMO = 5 * 1024 * 1024;
+
+    private const TAMANO_GUARDADO = 900 * 1024;
+    private const LADO_MAXIMO = 1200;
 
     private const TIPOS_PERMITIDOS = [
         'image/jpeg' => 'jpg',
         'image/png' => 'png',
     ];
 
-    private const CARPETA_PERFILES = '/Almacenamiento/Fotos/Perfiles';
-    private const CARPETA_LOGOS = '/Almacenamiento/Fotos/Logos';
-    private const CARPETA_PRODUCTOS = '/Almacenamiento/Fotos/Productos';
+    private const CARPETA_PERFILES = 'Perfiles';
+    private const CARPETA_LOGOS = 'Logos';
+    private const CARPETA_PRODUCTOS = 'Productos';
     private string $error = '';
 
     public static function seEnvio(?array $archivo): bool
@@ -54,27 +60,27 @@ class SubidaArchivo
         self::eliminar($nombre, self::CARPETA_LOGOS);
     }
 
-        public static function eliminarFotoProducto(?string $nombre): void
+    public static function eliminarFotoProducto(?string $nombre): void
     {
         self::eliminar($nombre, self::CARPETA_PRODUCTOS);
     }
 
-    public static function rutaFotoPerfil(string $nombre): ?string
+    public static function obtenerFotoPerfil(string $nombre): ?array
     {
-        return self::ruta($nombre, self::CARPETA_PERFILES);
+        return self::obtener($nombre, self::CARPETA_PERFILES);
     }
 
-    public static function rutaLogo(string $nombre): ?string
+    public static function obtenerLogo(string $nombre): ?array
     {
-        return self::ruta($nombre, self::CARPETA_LOGOS);
+        return self::obtener($nombre, self::CARPETA_LOGOS);
     }
 
-        public static function rutaFotoProducto(string $nombre): ?string
+    public static function obtenerFotoProducto(string $nombre): ?array
     {
-        return self::ruta($nombre, self::CARPETA_PRODUCTOS);
+        return self::obtener($nombre, self::CARPETA_PRODUCTOS);
     }
 
-    private function guardarImagen(array $archivo, string $carpetaRelativa, string $queEs): ?string
+    private function guardarImagen(array $archivo, string $carpeta, string $queEs): ?string
     {
         $this->error = '';
         $mensajeFormato = $queEs . ' debe ser JPG o PNG y pesar como máximo 5 MB';
@@ -97,51 +103,145 @@ class SubidaArchivo
             return $this->fallar($mensajeFormato);
         }
 
-        $carpeta = Configuracion::rutaBase() . $carpetaRelativa;
-        if (!self::prepararCarpeta($carpeta)) {
-            return $this->fallar('No se pudo guardar la imagen. Intente de nuevo más tarde.');
+        $imagen = self::reducir($temporal, $tipo);
+        if ($imagen === null) {
+            return $this->fallar($queEs . ' es muy pesada. Use una imagen más pequeña.');
         }
 
-        $nombre = bin2hex(random_bytes(16)) . '.' . self::TIPOS_PERMITIDOS[$tipo];
-        if (!move_uploaded_file($temporal, $carpeta . '/' . $nombre)) {
-            error_log("No se pudo mover la imagen subida a {$carpeta}/{$nombre}");
+        $nombre = bin2hex(random_bytes(16)) . '.' . self::TIPOS_PERMITIDOS[$imagen['tipo']];
+        try {
+            (new FotoRepositorio())->insertar($carpeta, $nombre, $imagen['tipo'], $imagen['datos']);
+        } catch (Throwable $error) {
+            error_log('No se pudo guardar la imagen en la base de datos: ' . $error->getMessage());
             return $this->fallar('No se pudo guardar la imagen. Intente de nuevo más tarde.');
         }
-
-        @chmod($carpeta . '/' . $nombre, 0644);
 
         return $nombre;
     }
 
-
-    public static function prepararCarpeta(string $carpeta): bool
+    private static function reducir(string $ruta, string $tipo): ?array
     {
-        if (!is_dir($carpeta)) {
-            @mkdir($carpeta, 0775, true);
-        }
-        if (is_dir($carpeta) && is_writable($carpeta)) {
-            return true;
+        $original = (string) file_get_contents($ruta);
+        if (!function_exists('imagecreatefromstring')) {
+            return strlen($original) <= self::TAMANO_GUARDADO ? ['tipo' => $tipo, 'datos' => $original] : null;
         }
 
-        error_log("El servidor no puede escribir en {$carpeta}. En Linux, desde la carpeta del proyecto ejecute: "
-            . 'sudo chown -R www-data:www-data Almacenamiento && sudo chmod -R 775 Almacenamiento');
-        return false;
+        $imagen = @imagecreatefromstring($original);
+        if ($imagen === false) {
+            return null;
+        }
+        $imagen = self::enderezar($imagen, $ruta, $tipo);
+
+        $ancho = imagesx($imagen);
+        $alto = imagesy($imagen);
+        $escala = min(1, self::LADO_MAXIMO / max($ancho, $alto));
+        if ($escala === 1 && strlen($original) <= self::TAMANO_GUARDADO && !self::fueGirada($ruta, $tipo)) {
+            imagedestroy($imagen);
+            return ['tipo' => $tipo, 'datos' => $original];
+        }
+
+        for ($intento = 0; $intento < 6; $intento++) {
+            $nuevoAncho = max(1, (int) round($ancho * $escala));
+            $nuevoAlto = max(1, (int) round($alto * $escala));
+            $copia = imagecreatetruecolor($nuevoAncho, $nuevoAlto);
+            if ($tipo === 'image/png') {
+                imagealphablending($copia, false);
+                imagesavealpha($copia, true);
+            }
+            imagecopyresampled($copia, $imagen, 0, 0, 0, 0, $nuevoAncho, $nuevoAlto, $ancho, $alto);
+
+            ob_start();
+            $tipo === 'image/png' ? imagepng($copia, null, 9) : imagejpeg($copia, null, 82);
+            $datos = (string) ob_get_clean();
+            imagedestroy($copia);
+
+            if (strlen($datos) <= self::TAMANO_GUARDADO) {
+                imagedestroy($imagen);
+                return ['tipo' => $tipo, 'datos' => $datos];
+            }
+            $escala *= 0.75;
+        }
+
+        imagedestroy($imagen);
+        return null;
     }
 
-    private static function eliminar(?string $nombre, string $carpetaRelativa): void
+    private static function enderezar(GdImage $imagen, string $ruta, string $tipo): GdImage
     {
-        $ruta = $nombre !== null ? self::ruta($nombre, $carpetaRelativa) : null;
+        $grados = match (self::orientacion($ruta, $tipo)) {
+            3 => 180,
+            6 => -90,
+            8 => 90,
+            default => 0,
+        };
+        if ($grados === 0) {
+            return $imagen;
+        }
+        $girada = imagerotate($imagen, $grados, 0);
+        if ($girada === false) {
+            return $imagen;
+        }
+        imagedestroy($imagen);
+        return $girada;
+    }
+
+    private static function fueGirada(string $ruta, string $tipo): bool
+    {
+        return in_array(self::orientacion($ruta, $tipo), [3, 6, 8], true);
+    }
+
+    private static function orientacion(string $ruta, string $tipo): int
+    {
+        if ($tipo !== 'image/jpeg' || !function_exists('exif_read_data')) {
+            return 1;
+        }
+        $exif = @exif_read_data($ruta);
+        return is_array($exif) ? (int) ($exif['Orientation'] ?? 1) : 1;
+    }
+
+    private static function eliminar(?string $nombre, string $carpeta): void
+    {
+        if ($nombre === null || !self::esNombreValido($nombre)) {
+            return;
+        }
+        try {
+            (new FotoRepositorio())->eliminar($carpeta, $nombre);
+        } catch (Throwable $error) {
+            error_log('No se pudo borrar la imagen de la base de datos: ' . $error->getMessage());
+        }
+
+        $ruta = self::rutaAnterior($nombre, $carpeta);
         if ($ruta !== null) {
             @unlink($ruta);
         }
     }
 
-    private static function ruta(string $nombre, string $carpetaRelativa): ?string
+    private static function obtener(string $nombre, string $carpeta): ?array
     {
-        if (!preg_match('/^[a-f0-9]{32}\.(jpg|png)$/', $nombre)) {
+        if (!self::esNombreValido($nombre)) {
             return null;
         }
-        $ruta = Configuracion::rutaBase() . $carpetaRelativa . '/' . $nombre;
+
+        $foto = (new FotoRepositorio())->buscar($carpeta, $nombre);
+        if ($foto !== null) {
+            return $foto;
+        }
+
+        $ruta = self::rutaAnterior($nombre, $carpeta);
+        if ($ruta === null) {
+            return null;
+        }
+        return ['tipo' => (string) (new finfo(FILEINFO_MIME_TYPE))->file($ruta), 'datos' => (string) file_get_contents($ruta)];
+    }
+
+    private static function esNombreValido(string $nombre): bool
+    {
+        return preg_match('/^[a-f0-9]{32}\.(jpg|png)$/', $nombre) === 1;
+    }
+
+    private static function rutaAnterior(string $nombre, string $carpeta): ?string
+    {
+        $ruta = Configuracion::rutaBase() . '/Almacenamiento/Fotos/' . $carpeta . '/' . $nombre;
         return is_file($ruta) ? $ruta : null;
     }
 

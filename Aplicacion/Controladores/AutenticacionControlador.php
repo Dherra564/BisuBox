@@ -24,7 +24,6 @@ class AutenticacionControlador
             $this->redirigir('/ingresar');
         }
 
-        // Solo se aceptan textos: si llega otra cosa (por ejemplo correo[]=x) se trata como vacío
         $correo = is_string($_POST['correo'] ?? null) ? strtolower(trim($_POST['correo'])) : '';
         $contrasena = is_string($_POST['contrasena'] ?? null) ? $_POST['contrasena'] : '';
 

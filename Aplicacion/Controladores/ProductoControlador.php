@@ -46,7 +46,6 @@ class ProductoControlador
         $busqueda = is_string($_GET['busqueda'] ?? null) ? mb_substr(trim($_GET['busqueda']), 0, 100, 'UTF-8') : '';
         $estado = is_string($_GET['estado'] ?? null) && isset(self::ESTADOS[$_GET['estado']]) ? $_GET['estado'] : 'activos';
 
-        // Cuántos hay en cada pestaña con la búsqueda escrita
         $conteos = [];
         foreach (array_keys(self::ESTADOS) as $codigo) {
             $conteos[$codigo] = $this->productoRepositorio->contar($this->idVendedor, ['estado' => $codigo, 'busqueda' => $busqueda]);
@@ -212,7 +211,6 @@ class ProductoControlador
         $this->redirigir('/productos/detalle?id=' . $producto->getIdProducto());
     }
 
-    // "Hice más": usa lo que lleva cada uno, ya guardado
     public function producir(): void
     {
         $this->verificarCsrf('/productos');
@@ -269,7 +267,7 @@ class ProductoControlador
         $this->redirigir($volver);
     }
 
-    /** @return array<int, \Aplicacion\Modelos\Componente> los activos, por id */
+    /** @return array<int, \Aplicacion\Modelos\Componente>*/
     private function componentesDisponibles(): array
     {
         $componentes = [];
