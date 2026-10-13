@@ -34,6 +34,12 @@ class Enrutador
             ErrorControlador::metodoNoPermitido();
         }
 
+        $coincidencia = $this->buscarConParametros($metodo, $ruta);
+        if ($coincidencia !== null) {
+            $this->ejecutar($coincidencia[0], $coincidencia[1]);
+            return;
+        }
+
         $this->rutaNoEncontrada();
     }
 
@@ -66,10 +72,10 @@ class Enrutador
         return $ruta === '' ? '/' : $ruta;
     }
 
-    private function ejecutar(array | Closure $accion): void
+    private function ejecutar(array | Closure $accion, array $parametros = []): void
     {
         if ($accion instanceof Closure) {
-            $accion();
+            $accion(...$parametros);
             return;
         }
 
@@ -78,11 +84,27 @@ class Enrutador
             throw new RuntimeException("La ruta apunta a {$clase}::{$metodo}, que no existe.");
         }
 
-        (new $clase())->$metodo();
+        (new $clase())->$metodo(...$parametros);
     }
 
     private function rutaNoEncontrada(): void
     {
         ErrorControlador::noEncontrado();
     }
+
+    private function buscarConParametros(string $metodo, string $ruta): ?array
+    {
+        foreach ($this->rutas[$metodo] ?? [] as $patron => $accion) {
+            if (! str_contains($patron, '{enlace}')) {
+                continue;
+            }
+            $expresion = '#^' . str_replace('\{enlace\}', '(?P<enlace>[A-Za-z0-9-]+)', preg_quote($patron, '#')) . '$#';
+            if (preg_match($expresion, $ruta, $coincidencias) === 1) {
+                return [$accion, [$coincidencias['enlace']]];
+            }
+        }
+
+        return null;
+    }
+
 }
