@@ -45,7 +45,7 @@ class PerfilControlador
         $this->verificarCsrf('/perfil');
 
         $leer = fn(string $campo): string => is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
-        // Solo el vendedor tiene identificación; el cliente no la ve ni la envía
+        
         $tieneIdentificacion = $this->usuario->esVendedor();
 
         $datos = [

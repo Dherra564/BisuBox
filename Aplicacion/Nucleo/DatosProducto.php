@@ -294,7 +294,7 @@ class DatosProducto
         }
     }
 
-    // La cantidad en la unidad del componente: los centímetros pasan a metros (75 cm = 0,75 m)
+    
     private static function cantidadEnUnidad(array $linea, ?Componente $componente): ?float
     {
         $cantidad = Numero::leer($linea['cantidad']);

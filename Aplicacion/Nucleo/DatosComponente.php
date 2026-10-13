@@ -56,6 +56,7 @@ class DatosComponente
         return $valores;
     }
 
+    
     public static function validarValores(Validador $validador, string $prefijo, TipoComponente $tipo, array $valores): void
     {
         foreach ($tipo->getAtributosActivos() as $atributo) {
@@ -63,6 +64,7 @@ class DatosComponente
         }
     }
 
+    
     public static function valoresParaGuardar(TipoComponente $tipo, array $valores): array
     {
         $guardar = [];
@@ -97,6 +99,7 @@ class DatosComponente
         }
         $enUnidades = $datos['unidad'] === UnidadMedida::UNIDAD;
 
+        
         if ($original === null) {
             self::validarCantidad($validador, 'existencia', $datos['existencia'], $enUnidades, false);
             $enCentimetros = $datos['unidad'] === UnidadMedida::METRO && $datos['medida'] === self::CENTIMETROS;
@@ -193,11 +196,13 @@ class DatosComponente
         return '';
     }
 
+    
     private static function costoUnitario(float $cantidad, string $costoTotal): float
     {
         return $cantidad > 0 ? round((Numero::leer($costoTotal) ?? 0) / $cantidad, 4) : 0.0;
     }
 
+    
     private static function existencia(array $datos): float
     {
         $cantidad = Numero::leer($datos['existencia']) ?? 0;
