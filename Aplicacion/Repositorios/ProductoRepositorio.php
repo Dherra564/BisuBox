@@ -1,5 +1,4 @@
 <?php
-
 namespace Aplicacion\Repositorios;
 
 use Aplicacion\Modelos\Producto;
@@ -29,7 +28,7 @@ class ProductoRepositorio
         );
         $consulta->execute([$idProducto, $idVendedor]);
         $fila = $consulta->fetch();
-        if (!$fila) {
+        if (! $fila) {
             return null;
         }
 
@@ -72,7 +71,7 @@ class ProductoRepositorio
     public function listar(int $idVendedor, array $filtros, int $pagina = 1): array
     {
         [$condiciones, $valores] = $this->construirFiltros($idVendedor, $filtros);
-        $desplazamiento = (max(1, $pagina) - 1) * self::POR_PAGINA;
+        $desplazamiento          = (max(1, $pagina) - 1) * self::POR_PAGINA;
 
         $consulta = $this->conexion->prepare(
             'SELECT * FROM tbproducto' . $condiciones . '
@@ -87,7 +86,7 @@ class ProductoRepositorio
     public function contar(int $idVendedor, array $filtros = []): int
     {
         [$condiciones, $valores] = $this->construirFiltros($idVendedor, $filtros);
-        $consulta = $this->conexion->prepare('SELECT COUNT(*) FROM tbproducto' . $condiciones);
+        $consulta                = $this->conexion->prepare('SELECT COUNT(*) FROM tbproducto' . $condiciones);
         $consulta->execute($valores);
 
         return (int) $consulta->fetchColumn();
@@ -245,8 +244,8 @@ class ProductoRepositorio
 
         return $fila ? [
             'existencia' => (int) $fila['tbproductoexistencia'],
-            'nombre' => (string) $fila['tbproductonombre'],
-            'activo' => (bool) $fila['tbproductoactivo'],
+            'nombre'     => (string) $fila['tbproductonombre'],
+            'activo'     => (bool) $fila['tbproductoactivo'],
         ] : null;
     }
 
@@ -261,11 +260,11 @@ class ProductoRepositorio
     private function construirFiltros(int $idVendedor, array $filtros): array
     {
         $condiciones = ['tbproductovendedorid = ?'];
-        $valores = [$idVendedor];
+        $valores     = [$idVendedor];
 
         $busqueda = trim((string) ($filtros['busqueda'] ?? ''));
         if ($busqueda !== '') {
-            $patron = '%' . addcslashes($busqueda, '%_\\') . '%';
+            $patron        = '%' . addcslashes($busqueda, '%_\\') . '%';
             $condiciones[] = '(tbproductonombre LIKE ? OR tbproductodescripcion LIKE ?)';
             array_push($valores, $patron, $patron);
         }
@@ -273,7 +272,7 @@ class ProductoRepositorio
         $estado = $filtros['estado'] ?? 'todos';
         if ($estado === 'activos' || $estado === 'inactivos') {
             $condiciones[] = 'tbproductoactivo = ?';
-            $valores[] = $estado === 'activos' ? 1 : 0;
+            $valores[]     = $estado === 'activos' ? 1 : 0;
         } elseif ($estado === 'agotados') {
             $condiciones[] = 'tbproductoactivo = 1 AND tbproductoexistencia <= 0';
         }
@@ -307,4 +306,16 @@ class ProductoRepositorio
             $extras
         );
     }
+
+    public function listarActivos(int $idVendedor): array
+    {
+        $consulta = $this->conexion->prepare(
+            'SELECT * FROM tbproducto WHERE tbproductovendedorid = ? AND tbproductoactivo = 1
+         ORDER BY tbproductonombre ASC, tbproductoid ASC'
+        );
+        $consulta->execute([$idVendedor]);
+
+        return array_map(fn(array $fila): Producto => $this->crearDesdeFila($fila), $consulta->fetchAll());
+    }
+
 }

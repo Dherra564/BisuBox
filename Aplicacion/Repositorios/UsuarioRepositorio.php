@@ -10,7 +10,9 @@ use Throwable;
 
 class UsuarioRepositorio
 {
+
     private PDO $conexion;
+    private const HASH_SIN_USUARIO = '$2y$12$cy7xzNTAn0Gl/Ymia8TU1evpuuyjzp4UfwlBRIY0ocJvWYYVhAdzm';
 
     public function __construct()
     {
@@ -133,14 +135,13 @@ class UsuarioRepositorio
         return $consulta->execute([self::encriptar($contrasenaNueva), $idUsuario]);
     }
 
-    public function verificarCredenciales(string $correo, string $contrasena): ?Usuario
+       public function verificarCredenciales(string $correo, string $contrasena): ?Usuario
     {
         $usuario = $this->buscarPorCorreo($correo);
-        if ($usuario === null || $usuario->getContrasena() === null) {
-            return null;
-        }
+        $hash = $usuario?->getContrasena() ?? self::HASH_SIN_USUARIO;
+        $correcta = password_verify($contrasena, $hash);
 
-        return password_verify($contrasena, $usuario->getContrasena()) ? $usuario : null;
+        return $usuario !== null && $usuario->getContrasena() !== null && $correcta ? $usuario : null;
     }
 
     public static function limpiarEspacios(string $texto): string

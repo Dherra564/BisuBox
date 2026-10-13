@@ -1,4 +1,3 @@
-// Registrar compra: pestañas para escoger componentes, componente nuevo con los datos de su tipo, filas con cantidad y precio total, y el resumen
 document.addEventListener('DOMContentLoaded', function () {
     var formulario = document.querySelector('.formularioCompra');
     if (!formulario) {
@@ -20,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
         Gramo: { singular: 'gramo', plural: 'gramos', abreviatura: 'g', por: 'por gramo' }
     };
 
+    var siguienteClave = 0;
     lista.querySelectorAll('[data-linea]').forEach(function (linea) {
         siguienteClave = Math.max(siguienteClave, parseInt(linea.getAttribute('data-clave'), 10) + 1);
     });
@@ -166,7 +166,6 @@ document.addEventListener('DOMContentLoaded', function () {
         linea.querySelector('[data-linea-abreviatura]').textContent = unidad.abreviatura;
         linea.querySelector('[data-linea-por]').textContent = unidad.por;
 
-       
         var valores = linea.querySelector('[data-linea-valores]');
         (datos.valores || []).forEach(function (valor) {
             var campo = document.createElement('input');

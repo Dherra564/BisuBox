@@ -12,6 +12,7 @@ use Aplicacion\Controladores\ProveedorControlador;
 use Aplicacion\Controladores\RegistroControlador;
 use Aplicacion\Controladores\SesionControlador;
 use Aplicacion\Controladores\TiendaControlador;
+use Aplicacion\Controladores\TiendaPublicaControlador;
 use Aplicacion\Controladores\TipoComponenteControlador;
 use Aplicacion\Nucleo\Enrutador;
 
@@ -81,4 +82,5 @@ return function (Enrutador $enrutador): void {
     $enrutador->post('/compras-proveedor/anular', [CompraProveedorControlador::class, 'anular']);
 
     $enrutador->get('/sesiones', [SesionControlador::class, 'listar']);
+    $enrutador->get('/tienda/{enlace}', [TiendaPublicaControlador::class, 'mostrar']);
 };
