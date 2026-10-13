@@ -228,7 +228,7 @@ class DatosComponente
         $clase = $atributo->getClase();
 
         if ($valor === '' || ($clase === ClaseDato::SINO)) {
-            if ($valor === '' && $atributo->getObligatorio()) {
+            if ($valor === '') {
                 $validador->agregarError($campo, 'Este tipo siempre pide ' . mb_strtolower($atributo->getNombre(), 'UTF-8'));
             }
             return;

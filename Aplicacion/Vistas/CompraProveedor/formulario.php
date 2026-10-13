@@ -314,11 +314,11 @@ $abrirNuevo = $componentes === [];
                             <?php foreach ($tipo->getAtributosActivos() as $atributo): ?>
                                 <?php
                                 $idCampo = 'nuevoAtributo' . $atributo->getIdAtributo();
-                                $marca = $atributo->getObligatorio() ? ' <span class="obligatorio">*</span>' : '';
+                                $marca = ' <span class="obligatorio">*</span>';
                                 $datosAtributo = 'data-atributo="' . $atributo->getIdAtributo() . '" data-clase="' . $atributo->getClase() . '"'
                                     . ' data-nombre="' . htmlspecialchars($atributo->getNombre()) . '"'
                                     . ' data-unidad="' . htmlspecialchars((string) $atributo->getUnidad()) . '"'
-                                    . ($atributo->getObligatorio() ? ' data-obligatorio' : '');
+                                    . ' data-obligatorio';
                                 ?>
                                 <div class="campo">
                                     <?php if ($atributo->getClase() === ClaseDato::SINO): ?>

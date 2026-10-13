@@ -147,8 +147,7 @@ $atributos = $tipoComponente->getAtributosActivos();
                     $idCampo = 'valor-' . $idAtributo;
                     $nombreCampo = 'valor[' . $idAtributo . ']';
                     $valorActual = (string) ($datos['valores'][$idAtributo] ?? '');
-                    $obligatorio = $atributo->getObligatorio();
-                    $marca = $obligatorio ? ' <span class="obligatorio">*</span>' : '';
+                    $marca = ' <span class="obligatorio">*</span>';
                     $mensajeRequerido = 'Este tipo siempre pide ' . mb_strtolower($atributo->getNombre(), 'UTF-8');
                     ?>
                     <?php if ($atributo->getClase() === ClaseDato::SINO): ?>
@@ -160,7 +159,7 @@ $atributos = $tipoComponente->getAtributosActivos();
                         <div class="<?= $claseCampo($campo) ?>">
                             <label for="<?= $idCampo ?>"><?= htmlspecialchars($atributo->getNombre()) . $marca ?></label>
                             <?php if ($atributo->getClase() === ClaseDato::LISTA): ?>
-                                <select id="<?= $idCampo ?>" name="<?= $nombreCampo ?>" <?= $obligatorio ? 'required' : '' ?>
+                                <select id="<?= $idCampo ?>" name="<?= $nombreCampo ?>" required
                                     data-mensaje-requerido="<?= htmlspecialchars($mensajeRequerido) ?>">
                                     <option value="">Escoja una opción</option>
                                     <?php foreach ($atributo->getOpciones() as $opcion): ?>
@@ -181,14 +180,14 @@ $atributos = $tipoComponente->getAtributosActivos();
                                     <input type="text" id="<?= $idCampo ?>" name="<?= $nombreCampo ?>" maxlength="13"
                                         inputmode="decimal" data-regla="cantidad"
                                         data-mensaje-regla="Escriba un número, por ejemplo 8 o 8,5" data-atributo-numero
-                                        data-mensaje-requerido="<?= htmlspecialchars($mensajeRequerido) ?>" <?= $obligatorio ? 'required' : '' ?> value="<?= htmlspecialchars($valorActual) ?>">
+                                        data-mensaje-requerido="<?= htmlspecialchars($mensajeRequerido) ?>" required value="<?= htmlspecialchars($valorActual) ?>">
                                     <?php if ($atributo->getUnidad()): ?>
                                         <span class="unidadCampo"><?= htmlspecialchars($atributo->getUnidad()) ?></span>
                                     <?php endif; ?>
                                 </div>
                             <?php else: ?>
                                 <input type="text" id="<?= $idCampo ?>" name="<?= $nombreCampo ?>" maxlength="300" data-atributo-texto
-                                    data-mensaje-requerido="<?= htmlspecialchars($mensajeRequerido) ?>" <?= $obligatorio ? 'required' : '' ?> value="<?= htmlspecialchars($valorActual) ?>">
+                                    data-mensaje-requerido="<?= htmlspecialchars($mensajeRequerido) ?>" required value="<?= htmlspecialchars($valorActual) ?>">
                             <?php endif; ?>
                             <?= $mensajeError($campo) ?>
                         </div>
