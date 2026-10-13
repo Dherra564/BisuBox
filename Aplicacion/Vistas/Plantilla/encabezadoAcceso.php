@@ -1,12 +1,8 @@
 <?php
-/**
- * @var string $titulo
- * @var string|null $claseTarjeta
- */
 
 use Configuracion\Configuracion;
 
-$urlBase = rtrim((string) Configuracion::obtener('appUrl', ''), '/');
+$urlBase = Configuracion::urlBase();
 $claseTarjeta = $claseTarjeta ?? '';
 ?>
 <!DOCTYPE html>

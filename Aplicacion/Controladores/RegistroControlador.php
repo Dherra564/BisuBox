@@ -74,7 +74,7 @@ class RegistroControlador
             return;
         }
 
-         $vendedorRepositorio = new VendedorRepositorio();
+        $vendedorRepositorio = new VendedorRepositorio();
         $vendedor = new Vendedor(
             tipoIdentificacion: $datos['tipoIdentificacion'],
             numeroIdentificacion: $datos['numeroIdentificacion'],
@@ -231,7 +231,7 @@ class RegistroControlador
 
     private function redirigir(string $ruta): never
     {
-        header('Location: ' . rtrim((string) Configuracion::obtener('appUrl'), '/') . $ruta);
+        header('Location: ' . Configuracion::urlBase() . $ruta);
         exit;
     }
 }

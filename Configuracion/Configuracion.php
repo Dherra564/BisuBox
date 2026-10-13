@@ -42,7 +42,7 @@ class Configuracion
         $esDesarrollo = self::esDesarrollo();
         ini_set('display_errors', $esDesarrollo ? '1' : '0');
         ini_set('log_errors', '1');
-        
+
         $carpetaRegistros = self::rutaBase() . '/Almacenamiento/Registros';
         if (!is_dir($carpetaRegistros)) {
             @mkdir($carpetaRegistros, 0775, true);
@@ -60,12 +60,24 @@ class Configuracion
         return self::$valores[$clave] ?? $porDefecto;
     }
 
+    public static function urlBase(): string
+    {
+        $carpetaPublica = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/');
+        $ruta = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+
+        if ($carpetaPublica === '' || strcasecmp($ruta, $carpetaPublica) === 0 || stripos($ruta, $carpetaPublica . '/') === 0) {
+            return $carpetaPublica;
+        }
+
+        return rtrim(str_replace('\\', '/', dirname($carpetaPublica)), '/.');
+    }
+
     public static function recurso(string $ruta): string
     {
         $archivo = self::rutaBase() . '/Publico/' . $ruta;
         $version = is_file($archivo) ? filemtime($archivo) : 0;
 
-        return rtrim((string) self::obtener('appUrl', ''), '/') . '/' . $ruta . '?v=' . $version;
+        return self::urlBase() . '/' . $ruta . '?v=' . $version;
     }
 
     public static function esDesarrollo(): bool

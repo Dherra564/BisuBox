@@ -6,7 +6,7 @@ use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\UsuarioActual;
 use Configuracion\Configuracion;
 
-$urlBase = rtrim((string) Configuracion::obtener('appUrl', ''), '/');
+$urlBase = Configuracion::urlBase();
 $titulo = $titulo ?? 'BisuBox';
 $paginaActual = $paginaActual ?? '';
 $botonAccion = $botonAccion ?? null;

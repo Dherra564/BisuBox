@@ -45,7 +45,7 @@ class PerfilControlador
         $this->verificarCsrf('/perfil');
 
         $leer = fn(string $campo): string => is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
-        
+
         $tieneIdentificacion = $this->usuario->esVendedor();
 
         $datos = [
@@ -248,7 +248,7 @@ class PerfilControlador
 
     private function redirigir(string $ruta): never
     {
-        header('Location: ' . rtrim((string) Configuracion::obtener('appUrl'), '/') . $ruta);
+        header('Location: ' . Configuracion::urlBase() . $ruta);
         exit;
     }
 }

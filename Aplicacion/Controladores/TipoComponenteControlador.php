@@ -38,7 +38,7 @@ class TipoComponenteControlador
     {
         $this->mostrarVista('TipoComponente/listar', [
             'tiposComponente' => $this->tipoComponenteRepositorio->listarPorVendedor($this->idVendedor()),
-            'sugeridos'       => TipoComponenteSugerido::todos(),
+            'sugeridos' => TipoComponenteSugerido::todos(),
         ]);
     }
 
@@ -47,11 +47,11 @@ class TipoComponenteControlador
         $this->verificarCsrf('/tipos-componente');
 
         $elegidos = is_array($_POST['sugeridos'] ?? null) ? $_POST['sugeridos'] : [];
-        $tipos    = [];
+        $tipos = [];
         foreach ($elegidos as $nombre) {
             if (
                 is_string($nombre) && TipoComponenteSugerido::existe($nombre)
-                && ! $this->tipoComponenteRepositorio->existeNombre($this->idVendedor(), $nombre)
+                && !$this->tipoComponenteRepositorio->existeNombre($this->idVendedor(), $nombre)
             ) {
                 $tipos[] = TipoComponenteSugerido::crear($nombre, $this->idVendedor());
             }
@@ -71,8 +71,8 @@ class TipoComponenteControlador
         }
 
         Mensaje::exito(count($tipos) === 1
-                ? 'Se agregó 1 tipo de componente. Puede cambiarlo cuando quiera.'
-                : 'Se agregaron ' . count($tipos) . ' tipos de componente. Puede cambiarlos cuando quiera.');
+            ? 'Se agregó 1 tipo de componente. Puede cambiarlo cuando quiera.'
+            : 'Se agregaron ' . count($tipos) . ' tipos de componente. Puede cambiarlos cuando quiera.');
         $this->redirigir('/tipos-componente');
     }
 
@@ -85,10 +85,10 @@ class TipoComponenteControlador
     {
         $this->verificarCsrf('/tipos-componente/nuevo');
 
-        $datos     = DatosTipoComponente::leer();
+        $datos = DatosTipoComponente::leer();
         $validador = new Validador();
         DatosTipoComponente::validar($validador, $datos, $this->idVendedor());
-        if (! $validador->esValido()) {
+        if (!$validador->esValido()) {
             $this->mostrarFormulario($datos, $validador->errores(), null);
             return;
         }
@@ -117,10 +117,10 @@ class TipoComponenteControlador
         $this->verificarCsrf('/tipos-componente');
         $tipoComponente = $this->buscarTipo($_POST['id'] ?? null);
 
-        $datos     = DatosTipoComponente::leer();
+        $datos = DatosTipoComponente::leer();
         $validador = new Validador();
         DatosTipoComponente::validar($validador, $datos, $this->idVendedor(), $tipoComponente);
-        if (! $validador->esValido()) {
+        if (!$validador->esValido()) {
             $this->mostrarFormulario($datos, $validador->errores(), $tipoComponente);
             return;
         }
@@ -179,9 +179,9 @@ class TipoComponenteControlador
     {
         $this->mostrarVista('TipoComponente/formulario', [
             'tipoComponente' => $tipoComponente,
-            'datos'          => $datos,
-            'ocultos'        => DatosTipoComponente::ocultosParaFormulario($tipoComponente, $datos),
-            'errores'        => $errores,
+            'datos' => $datos,
+            'ocultos' => DatosTipoComponente::ocultosParaFormulario($tipoComponente, $datos),
+            'errores' => $errores,
         ]);
     }
 
@@ -192,7 +192,7 @@ class TipoComponenteControlador
 
     private function verificarCsrf(string $rutaSiFalla): void
     {
-        if (! Csrf::esValido()) {
+        if (!Csrf::esValido()) {
             Mensaje::error('La página expiró. Recargue e intente de nuevo.');
             $this->redirigir($rutaSiFalla);
         }
@@ -207,7 +207,7 @@ class TipoComponenteControlador
 
     private function redirigir(string $ruta): never
     {
-        header('Location: ' . rtrim((string) Configuracion::obtener('appUrl'), '/') . $ruta);
+        header('Location: ' . Configuracion::urlBase() . $ruta);
         exit;
     }
 }

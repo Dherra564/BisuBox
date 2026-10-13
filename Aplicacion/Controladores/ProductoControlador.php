@@ -267,7 +267,6 @@ class ProductoControlador
         $this->redirigir($volver);
     }
 
-    /** @return array<int, \Aplicacion\Modelos\Componente>*/
     private function componentesDisponibles(): array
     {
         $componentes = [];
@@ -351,7 +350,7 @@ class ProductoControlador
 
     private function redirigir(string $ruta): never
     {
-        header('Location: ' . rtrim((string) Configuracion::obtener('appUrl'), '/') . $ruta);
+        header('Location: ' . Configuracion::urlBase() . $ruta);
         exit;
     }
 }

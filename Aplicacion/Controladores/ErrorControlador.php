@@ -38,20 +38,10 @@ class ErrorControlador
     {
         http_response_code($codigo);
 
-        $urlBase = self::urlBase();
+        $urlBase = Configuracion::urlBase();
         $haySesion = UsuarioActual::haySesion();
 
         require Configuracion::rutaBase() . '/Aplicacion/Vistas/Error/error.php';
         exit;
-    }
-
-    private static function urlBase(): string
-    {
-        $url = Configuracion::obtener('appUrl');
-        if ($url !== null && $url !== '') {
-            return rtrim($url, '/');
-        }
-
-        return rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
     }
 }
