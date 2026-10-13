@@ -20,13 +20,11 @@ document.addEventListener('DOMContentLoaded', function () {
         return formatear(numero, 2).replace(/,?0+$/, '');
     }
 
-    // Cuántos hizo, o 0 si lo escrito no es un entero desde 1
     function leerCantidad(campo) {
         var texto = campo.value.trim();
         return /^[0-9]{1,4}$/.test(texto) && parseInt(texto, 10) >= 1 ? parseInt(texto, 10) : 0;
     }
 
-    // Botones − y + junto a la cantidad
     document.querySelectorAll('.selectorCantidad').forEach(function (selector) {
         var campo = selector.querySelector('[data-cantidad]');
         function cambiar(paso) {
@@ -37,7 +35,6 @@ document.addEventListener('DOMContentLoaded', function () {
         selector.querySelector('[data-cantidad-mas]').addEventListener('click', function () { cambiar(1); });
     });
 
-    // Ventana "Hice más"
     var modalHiceMas = document.getElementById('modalHiceMas');
     if (modalHiceMas) {
         var campoCantidadModal = modalHiceMas.querySelector('[data-cantidad]');
@@ -72,7 +69,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Precio: costo total + la ganancia escogida; el vendedor puede cambiarlo
     var bloquePrecio = document.querySelector('[data-precio]');
     var actualizarPrecio = function () {};
     if (bloquePrecio) {
@@ -103,7 +99,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function aplicarGanancia() {
             var porcentaje = gananciaEscogida();
-            // Se redondea hacia arriba a los ₡10 para que quede un precio fácil de cobrar
             if (porcentaje !== null && costoActual > 0) {
                 campoPrecio.value = String(Math.ceil(costoActual * (1 + porcentaje / 100) / 10) * 10);
             }
@@ -122,7 +117,6 @@ document.addEventListener('DOMContentLoaded', function () {
         opcionesGanancia.forEach(function (opcion) {
             opcion.addEventListener('change', aplicarGanancia);
         });
-        // Si escribe otro precio, ya no es ninguna de las ganancias de la lista
         campoPrecio.addEventListener('input', function () {
             opcionesGanancia.forEach(function (opcion) {
                 opcion.checked = false;
@@ -137,7 +131,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Lo que lleva cada uno (solo al crear el producto)
     var formulario = document.querySelector('[data-receta]');
     if (!formulario) {
         return;
@@ -180,7 +173,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return leerCantidad(campoCantidad) || 1;
     }
 
-    // Devuelve los minutos escritos, o 0 si lo escrito no es válido
     function minutosTotales() {
         var horas = campoHoras.value.trim();
         var minutos = campoMinutos.value.trim();
@@ -195,7 +187,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return select.value !== '' ? select.options[select.selectedIndex] : null;
     }
 
-    // Si el componente va por metro, la cantidad puede venir en centímetros (75 cm = 0,75 m)
     function enCentimetros(linea) {
         var opcion = opcionDe(linea);
         return opcion !== null && opcion.getAttribute('data-metro') === '1' && linea.querySelector('[data-linea-medida]').value === 'cm';
@@ -262,7 +253,6 @@ document.addEventListener('DOMContentLoaded', function () {
         formulario.querySelector('[data-costo-total]').textContent = moneda(costoTotal);
         actualizarPrecio(costoTotal);
 
-        // Lo que se va a descontar del inventario por todos los que hizo
         var hechos = productosHechos();
         resumenDescuento.querySelector('[data-resumen-titulo]').textContent = (hechos === 1 ? 'Por el que hizo' : 'Por los ' + hechos + ' que hizo')
             + ' se descuenta del inventario:';

@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return document.querySelector('[data-unidad]:checked') || opciones[0];
     }
 
-    // Lo que tiene en la unidad del componente: los centímetros pasan a metros
     function cantidadEnUnidad(opcion) {
         var cantidad = leerNumero(existencia.value) || 0;
         return opcion.value === 'Metro' && medida && medida.value === 'cm' ? cantidad / 100 : cantidad;

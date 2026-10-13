@@ -49,7 +49,6 @@ document.addEventListener('DOMContentLoaded', function () {
         },
     };
 
-    // Igual que Validador::limpiarTelefono en PHP
     function limpiarTelefono(valor) {
         var numeros = valor.replace(/\D/g, '');
         if (numeros.length === 11 && numeros.indexOf('506') === 0) {
@@ -58,7 +57,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return numeros;
     }
 
-    // Igual que TipoContacto::esValido en PHP; las reglas de cada tipo vienen en la opción elegida
     function esContactoValido(campo, valor) {
         var fila = campo.closest('.filaContacto');
         var tipo = fila ? fila.querySelector('[data-contacto-tipo]') : null;
@@ -192,7 +190,6 @@ document.addEventListener('DOMContentLoaded', function () {
         + 'input[data-distinto-de], select[required], textarea[required]';
 
     document.querySelectorAll('form.validarFormulario').forEach(function (formulario) {
-        // Se buscan al enviar, así también se revisan las filas que se agregaron después (contactos)
         function camposPorRevisar() {
             var campos = formulario.querySelectorAll(selectorCampos);
             return Array.prototype.filter.call(campos, function (campo) {
