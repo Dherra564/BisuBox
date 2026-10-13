@@ -27,7 +27,7 @@ class DatosComponente
         ];
     }
 
-    // Los valores de los atributos del tipo, por id de atributo; también se usa al crear un componente desde una compra
+    
     public static function leerValores(TipoComponente $tipo, mixed $enviados): array
     {
         $enviados = is_array($enviados) ? $enviados : [];
@@ -45,7 +45,7 @@ class DatosComponente
         return $valores;
     }
 
-    // Revisa los valores de los atributos; los errores quedan como {prefijo}{idAtributo}
+    
     public static function validarValores(Validador $validador, string $prefijo, TipoComponente $tipo, array $valores): void
     {
         foreach ($tipo->getAtributosActivos() as $atributo) {
@@ -53,7 +53,7 @@ class DatosComponente
         }
     }
 
-    // Los números se guardan con punto, como los lee la base de datos
+    
     public static function valoresParaGuardar(TipoComponente $tipo, array $valores): array
     {
         $guardar = [];
@@ -89,7 +89,7 @@ class DatosComponente
         }
         $enUnidades = $datos['unidad'] === UnidadMedida::UNIDAD;
 
-        // Al crearlo a mano: lo que tiene ahora y lo que pagó en total por eso; el costo de cada uno se calcula
+        
         if ($original === null) {
             self::validarCantidad($validador, 'existencia', $datos['existencia'], $enUnidades, false);
             $enCentimetros = $datos['unidad'] === UnidadMedida::METRO && $datos['medida'] === self::CENTIMETROS;
@@ -186,13 +186,13 @@ class DatosComponente
         return '';
     }
 
-    // El costo de cada uno: lo que pagó en total entre lo que tiene (4 decimales); sin existencia el costo es 0
+    
     private static function costoUnitario(float $cantidad, string $costoTotal): float
     {
         return $cantidad > 0 ? round((Numero::leer($costoTotal) ?? 0) / $cantidad, 4) : 0.0;
     }
 
-    // Lo que tiene ahora en la unidad del componente: los centímetros pasan a metros (75 cm = 0,75 m)
+    
     private static function existencia(array $datos): float
     {
         $cantidad = Numero::leer($datos['existencia']) ?? 0;

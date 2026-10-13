@@ -22,7 +22,7 @@ $titulo = 'Procesos';
 $paginaActual = 'procesos';
 require __DIR__ . '/../Plantilla/encabezado.php';
 
-// Cada enlace cambia un filtro y conserva los demás
+
 $parametros = array_filter(['busqueda' => $busqueda, 'estado' => $estado !== 'todos' ? $estado : null])
     + PeriodoFechas::parametros($periodo);
 $enlace = function (array $cambios) use ($urlBase, $parametros): string {
@@ -35,7 +35,7 @@ $enlace = function (array $cambios) use ($urlBase, $parametros): string {
 $sinFechas = ['desde' => null, 'hasta' => null];
 $cantidadTexto = fn(int $cantidad, string $uno, string $varios): string => $cantidad === 1 ? "1 {$uno}" : "{$cantidad} {$varios}";
 
-// Los filtros activos se muestran como etiquetas que se quitan con ✕
+
 $etiquetaFecha = PeriodoFechas::etiqueta($periodo);
 $hayFiltros = $busqueda !== '' || $etiquetaFecha !== '';
 $esRango = $periodo['periodo'] === PeriodoFechas::RANGO;

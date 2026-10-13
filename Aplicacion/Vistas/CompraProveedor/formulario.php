@@ -31,14 +31,14 @@ $mensajeError = fn(string $campo, string $antes = ''): string => isset($errores[
 $unidades = UnidadMedida::todas();
 $sePuedeCrear = $tipos !== [];
 
-// Los tipos que tienen componentes, para los botones de filtro de "De mi inventario"
+
 $tiposConComponentes = [];
 foreach ($componentes as $componente) {
     $tiposConComponentes[$componente->getIdTipoComponente()] = $componente->getNombreTipo();
 }
 asort($tiposConComponentes);
 
-// Los datos del tipo que se llenaron, en corto: "Blanco, 8 mm, Elástico"
+
 $datosEnCorto = function (array $linea) use ($tipos): string {
     $tipo = $tipos[(int) $linea['tipo']] ?? null;
     if ($tipo === null) {
@@ -59,7 +59,7 @@ $datosEnCorto = function (array $linea) use ($tipos): string {
     return implode(', ', array_filter($partes));
 };
 
-// Lo que necesita una línea para mostrarse: nombre, tipo, unidad, existencia y los datos del tipo si es nuevo
+
 $infoLinea = function (array $linea) use ($componentes, $tipos, $datosEnCorto): array {
     if ($linea['componente'] === DatosCompraProveedor::NUEVO) {
         $nombreTipo = isset($tipos[(int) $linea['tipo']]) ? $tipos[(int) $linea['tipo']]->getNombre() : '';
@@ -84,7 +84,7 @@ $infoLinea = function (array $linea) use ($componentes, $tipos, $datosEnCorto): 
     ];
 };
 
-// Una fila del paso 3; la misma función arma la plantilla que usa el JS al agregar
+
 $filaLinea = function (string $clave, array $linea, array $info) use ($claseCampo, $mensajeError, $unidades): string {
     $campo = 'linea.' . $clave . '.';
     $nombre = 'linea[' . $clave . ']';

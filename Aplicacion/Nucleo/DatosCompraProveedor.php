@@ -162,7 +162,7 @@ class DatosCompraProveedor
         foreach ($lineas as $indice => $linea) {
             $esNuevo = $linea['componente'] === self::NUEVO;
             if ($esNuevo) {
-                // El componente nuevo nace en 0 con los datos de su tipo; la compra le suma la cantidad y le pone el costo
+                
                 $tipo = $tipos[(int) $linea['tipo']];
                 $valores = DatosComponente::valoresParaGuardar($tipo, DatosComponente::leerValores($tipo, $linea['valores']));
                 $nuevos[$indice] = new Componente(null, $idVendedor, (int) $linea['tipo'], $linea['nombre'], $linea['unidad'], 0, 0, 0, true, $valores);
@@ -245,7 +245,7 @@ class DatosCompraProveedor
         return $linea['unidad'];
     }
 
-    // La cantidad en la unidad del componente: los centímetros pasan a metros (75 cm = 0,75 m)
+    
     private static function cantidadEnUnidad(array $linea, ?string $unidad): ?float
     {
         $cantidad = Numero::leer($linea['cantidad']);

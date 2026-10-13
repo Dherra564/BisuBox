@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return '₡' + formatear(monto, Math.round(monto * 100) % 100 === 0 ? 0 : 2);
     }
 
-    // El costo del inventario puede tener hasta 4 decimales
+    
     function costoTexto(costo) {
         return '₡' + formatear(costo, 4).replace(/(,\d*?)0+$/, '$1').replace(/,$/, '');
     }
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return Array.prototype.slice.call(listaExtras.querySelectorAll('[data-extra]'));
     }
 
-    // Devuelve los minutos escritos, o 0 si lo escrito no es válido
+    
     function minutosTotales() {
         var horas = campoHoras.value.trim();
         var minutos = campoMinutos.value.trim();
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return parseInt(horas || '0', 10) * 60 + parseInt(minutos || '0', 10);
     }
 
-    // Si el componente va por metro, la cantidad puede venir en centímetros (75 cm = 0,75 m)
+    
     function enCentimetros(linea) {
         var select = linea.querySelector('[data-linea-componente]');
         var opcion = select.options[select.selectedIndex];
