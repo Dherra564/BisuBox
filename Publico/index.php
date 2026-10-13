@@ -5,7 +5,12 @@ use Aplicacion\Nucleo\Enrutador;
 use Aplicacion\Nucleo\ManejadorSesion;
 use Configuracion\Configuracion;
 
-require dirname(__DIR__) . '/vendor/autoload.php';
+spl_autoload_register(function (string $clase): void {
+    $archivo = dirname(__DIR__) . '/' . str_replace('\\', '/', $clase) . '.php';
+    if (is_file($archivo)) {
+        require $archivo;
+    }
+});
 
 try {
     Configuracion::cargar();

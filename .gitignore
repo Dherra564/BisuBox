@@ -1,7 +1,3 @@
-.env
-
-vendor/
-
 Almacenamiento/Fotos/Perfiles/*
 !Almacenamiento/Fotos/Perfiles/.gitkeep
 Almacenamiento/Fotos/Productos/*
