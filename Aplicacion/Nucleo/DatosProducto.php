@@ -14,6 +14,8 @@ class DatosProducto
     public const MAXIMO_COMPONENTES = 50;
     public const MAXIMO_EXTRAS = 20;
     public const GANANCIAS = [20, 30, 50, 70, 100];
+    public const PATRON_DESCRIPCION = '/^[\p{L}0-9 .,;:¡!¿?()"\'\/&%#+-]*$/u';
+    public const MENSAJE_DESCRIPCION = 'La descripción solo puede tener letras, números, espacios y los signos . , ; : ¡ ! ¿ ? ( ) " \' / & % # + -';
 
     public static function leer(): array
     {
@@ -114,11 +116,16 @@ class DatosProducto
 
         $validador->longitud('descripcion', $datos['descripcion'], 1, 300, 'La descripción puede tener hasta 300 caracteres');
 
+        if ($validador->error('descripcion') === null && !preg_match(self::PATRON_DESCRIPCION, $datos['descripcion'])) {
+            $validador->agregarError('descripcion', self::MENSAJE_DESCRIPCION);
+        }
         if ($datos['precioVenta'] === '') {
             $validador->agregarError('precioVenta', 'Escriba en cuánto lo va a vender');
         } else {
             $precio = Numero::leer($datos['precioVenta']);
-            if ($precio === null || $precio > Numero::MAXIMO) {
+            if (str_starts_with($datos['precioVenta'], '-')) {
+                $validador->agregarError('precioVenta', 'No puede ser un número negativo');
+            } elseif ($precio === null || $precio > Numero::MAXIMO) {
                 $validador->agregarError('precioVenta', 'Escriba un monto, por ejemplo 8500 o 8500,50');
             } elseif ($precio <= 0) {
                 $validador->agregarError('precioVenta', 'El precio debe ser mayor que 0');
@@ -133,6 +140,8 @@ class DatosProducto
 
         if ($datos['cantidad'] === '') {
             $validador->agregarError('cantidad', 'Escriba cuántos hizo');
+        } elseif (str_starts_with($datos['cantidad'], '-')) {
+            $validador->agregarError('cantidad', 'No puede ser un número negativo');
         } elseif (!self::esCantidadValida($datos['cantidad'])) {
             $validador->agregarError('cantidad', 'Escriba cuántos hizo, con números enteros desde 1');
         }
@@ -144,13 +153,24 @@ class DatosProducto
             $validador->agregarError('tarifaHora', 'Escriba cuánto cobra por hora de trabajo, o 0 si no cobra mano de obra');
         } else {
             $tarifa = Numero::leer($datos['tarifaHora']);
-            if ($tarifa === null || $tarifa > Numero::MAXIMO) {
+            if (str_starts_with($datos['tarifaHora'], '-')) {
+                $validador->agregarError('tarifaHora', 'No puede ser un número negativo');
+            } elseif ($tarifa === null || $tarifa > Numero::MAXIMO) {
                 $validador->agregarError('tarifaHora', 'Escriba un monto, por ejemplo 2000 o 2000,50');
+            } elseif ($validador->error('tiempo') === null) {
+                $minutos = ((int) $datos['horas']) * 60 + (int) $datos['minutos'];
+                if (round($minutos / 60 * $tarifa, 2) > Numero::MAXIMO) {
+                    $validador->agregarError('tarifaHora', 'Con ese tiempo y esa tarifa, el costo de su trabajo pasa el máximo permitido');
+                }
             }
         }
 
         self::validarComponentes($validador, $datos['componentes'], $componentes, $cantidad);
         self::validarExtras($validador, $datos['extras']);
+
+        if ($validador->esValido() && self::crearProducto($datos, $idVendedor, $componentes)->getCostoTotal() > Numero::MAXIMO) {
+            $validador->agregarError('precioVenta', 'El costo total pasa el máximo permitido; revise las cantidades y los montos');
+        }
     }
 
     public static function esCantidadValida(string $cantidad): bool
@@ -225,7 +245,10 @@ class DatosProducto
     private static function validarTiempo(Validador $validador, string $horas, string $minutos): void
     {
         $mensaje = 'Escriba cuánto tarda en hacer uno, por ejemplo 0 horas y 45 minutos (los minutos van de 0 a 59)';
-
+        if (str_starts_with($horas, '-') || str_starts_with($minutos, '-')) {
+            $validador->agregarError('tiempo', 'El tiempo no puede ser negativo');
+            return;
+        }
         if (
             ($horas !== '' && !preg_match('/^[0-9]{1,3}$/', $horas))
             || ($minutos !== '' && !preg_match('/^[0-9]{1,2}$/', $minutos))
@@ -292,6 +315,10 @@ class DatosProducto
         }
 
         $cantidad = Numero::leer($valor);
+        if (str_starts_with($valor, '-')) {
+            $validador->agregarError($campo, 'No puede ser un número negativo');
+            return;
+        }
         if ($cantidad === null || $cantidad > Numero::MAXIMO) {
             $validador->agregarError($campo, 'Escriba un número, por ejemplo 20 o 1,5');
             return;
@@ -343,7 +370,9 @@ class DatosProducto
                 continue;
             }
             $monto = Numero::leer($extra['monto']);
-            if ($monto === null || $monto > Numero::MAXIMO) {
+            if (str_starts_with($extra['monto'], '-')) {
+                $validador->agregarError($campo . 'monto', 'No puede ser un número negativo');
+            } elseif ($monto === null || $monto > Numero::MAXIMO) {
                 $validador->agregarError($campo . 'monto', 'Escriba un monto, por ejemplo 150 o 150,50');
             } elseif ($monto <= 0) {
                 $validador->agregarError($campo . 'monto', 'El monto debe ser mayor que 0');

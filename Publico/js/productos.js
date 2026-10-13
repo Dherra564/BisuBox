@@ -1,6 +1,24 @@
 document.addEventListener('DOMContentLoaded', function () {
     var patronNumero = /^[0-9]{1,10}([.,][0-9]{1,2})?$/;
+    var patronDescripcion = /^[\p{L}0-9 .,;:¡!¿?()"'\/&%#+-]*$/u;
+    var patronConcepto = /^[\p{L}0-9][\p{L}0-9 .,&'-]*$/u;
 
+    function esNegativo(campo) {
+        return campo.value.trim().charAt(0) === '-';
+    }
+
+    function reemplazarError(campo, mensaje) {
+        var contenedor = campo.closest('.campo');
+        var anterior = contenedor.querySelector('.errorCampo:not(.avisoExistencia)');
+        if (anterior) {
+            anterior.remove();
+        }
+        contenedor.classList.add('campoConError');
+        var error = document.createElement('p');
+        error.className = 'errorCampo';
+        error.textContent = mensaje;
+        contenedor.appendChild(error);
+    }
     function leerNumero(texto) {
         texto = texto.replace(/\s/g, '');
         return patronNumero.test(texto) ? parseFloat(texto.replace(',', '.')) : null;
@@ -39,14 +57,18 @@ document.addEventListener('DOMContentLoaded', function () {
     if (modalHiceMas) {
         var campoCantidadModal = modalHiceMas.querySelector('[data-cantidad]');
         var textoAlcanza = modalHiceMas.querySelector('[data-hice-mas-alcanza]');
+        var errorModal = modalHiceMas.querySelector('[data-hice-mas-error]');
+        var alcanzaModal = null;
 
         document.querySelectorAll('[data-hice-mas]').forEach(function (boton) {
             boton.addEventListener('click', function () {
                 modalHiceMas.querySelector('[data-hice-mas-id]').value = boton.getAttribute('data-id');
                 modalHiceMas.querySelector('[data-hice-mas-nombre]').textContent = '«' + boton.getAttribute('data-nombre') + '»';
                 var alcanza = boton.getAttribute('data-alcanza');
+                alcanzaModal = alcanza !== null ? parseInt(alcanza, 10) : null;
                 textoAlcanza.textContent = alcanza !== null ? 'Le alcanza para ' + alcanza + ' más.' : '';
                 textoAlcanza.hidden = alcanza === null;
+                errorModal.hidden = true;
                 campoCantidadModal.value = '1';
                 modalHiceMas.showModal();
                 campoCantidadModal.select();
@@ -61,9 +83,25 @@ document.addEventListener('DOMContentLoaded', function () {
                 modalHiceMas.close();
             }
         });
+        campoCantidadModal.addEventListener('input', function () {
+            errorModal.hidden = true;
+            textoAlcanza.hidden = alcanzaModal === null;
+        });
         modalHiceMas.querySelector('form').addEventListener('submit', function (evento) {
-            if (leerCantidad(campoCantidadModal) === 0) {
+            var cantidad = leerCantidad(campoCantidadModal);
+            var mensaje = '';
+            if (esNegativo(campoCantidadModal)) {
+                mensaje = 'No puede ser un número negativo';
+            } else if (cantidad === 0) {
+                mensaje = 'Escriba cuántos hizo, con números enteros desde 1';
+            } else if (alcanzaModal !== null && cantidad > alcanzaModal) {
+                mensaje = alcanzaModal === 0 ? 'Ya no le alcanzan los componentes para hacer otro' : 'Solo le alcanza para ' + alcanzaModal + ' más';
+            }
+            if (mensaje !== '') {
                 evento.preventDefault();
+                errorModal.textContent = mensaje;
+                errorModal.hidden = false;
+                textoAlcanza.hidden = alcanzaModal === null || cantidad > alcanzaModal;
                 campoCantidadModal.focus();
             }
         });
@@ -129,6 +167,40 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             mostrarResultado();
         }
+        
+        campoPrecio.form.addEventListener('submit', function (evento) {
+            var yaHabiaErrores = evento.defaultPrevented;
+            var revisiones = [];
+            var descripcion = campoPrecio.form.querySelector('#descripcion');
+            if (descripcion) {
+                var contenedorDescripcion = descripcion.closest('.campo');
+                contenedorDescripcion.classList.remove('campoConError');
+                contenedorDescripcion.querySelectorAll('.errorCampo').forEach(function (error) {
+                    error.remove();
+                });
+            }
+            if (descripcion && !patronDescripcion.test(descripcion.value.replace(/\s+/g, ' ').trim())) {
+                revisiones.push([descripcion, 'La descripción solo puede tener letras, números, espacios y los signos . , ; : ¡ ! ¿ ? ( ) " \' / & % # + -']);
+            }
+            if (esNegativo(campoPrecio)) {
+                revisiones.push([campoPrecio, 'No puede ser un número negativo']);
+            } else if (leerNumero(campoPrecio.value) === 0) {
+                revisiones.push([campoPrecio, 'El precio debe ser mayor que 0']);
+            }
+            revisiones.forEach(function (revision) {
+                reemplazarError(revision[0], revision[1]);
+            });
+            if (revisiones.length > 0) {
+                evento.preventDefault();
+                if (!yaHabiaErrores) {
+                    var opcional = revisiones[0][0].closest('details');
+                    if (opcional) {
+                        opcional.open = true;
+                    }
+                    revisiones[0][0].focus();
+                }
+            }
+        });
     }
 
     var formulario = document.querySelector('[data-receta]');
@@ -360,6 +432,8 @@ document.addEventListener('DOMContentLoaded', function () {
         quitarErrores(campoCantidad.closest('.campo'));
         if (campoCantidad.value.trim() === '') {
             marcar(campoCantidad, 'Escriba cuántos hizo');
+        } else if (esNegativo(campoCantidad)) {
+            marcar(campoCantidad, 'No puede ser un número negativo');
         } else if (leerCantidad(campoCantidad) === 0) {
             marcar(campoCantidad, 'Escriba cuántos hizo, con números enteros desde 1');
         }
@@ -381,6 +455,8 @@ document.addEventListener('DOMContentLoaded', function () {
             var numero = leerNumero(cantidad.value);
             if (cantidad.value.trim() === '') {
                 marcar(cantidad, 'Escriba cuánto lleva');
+            } else if (esNegativo(cantidad)) {
+                marcar(cantidad, 'No puede ser un número negativo');
             } else if (numero === null) {
                 marcar(cantidad, 'Escriba un número, por ejemplo 20 o 1,5');
             } else if (numero <= 0) {
@@ -395,8 +471,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         quitarErrores(campoHoras.closest('.campo'));
-        if (minutosTotales() < 1) {
-            marcar(campoHoras, 'Escriba cuánto tarda en hacer uno, por ejemplo 0 horas y 45 minutos');
+        if (esNegativo(campoHoras) || esNegativo(campoMinutos)) {
+            marcar(campoHoras, 'El tiempo no puede ser negativo');
+        } else if (minutosTotales() < 1) {
+            marcar(campoHoras, 'Escriba cuánto tarda en hacer uno, por ejemplo 0 horas y 45 minutos (los minutos van de 0 a 59)');
+        }
+
+        if (esNegativo(campoTarifa)) {
+            reemplazarError(campoTarifa, 'No puede ser un número negativo');
+            primero = primero || campoTarifa;
         }
 
         extras().forEach(function (extra) {
@@ -406,12 +489,19 @@ document.addEventListener('DOMContentLoaded', function () {
             if (concepto.value.trim() === '' && monto.value.trim() === '') {
                 return;
             }
-            if (concepto.value.trim().length < 2) {
+            var textoConcepto = concepto.value.replace(/\s+/g, ' ').trim();
+            if (textoConcepto === '') {
                 marcar(concepto, 'Escriba para qué fue, por ejemplo Empaque');
+            } else if (textoConcepto.length < 2 || textoConcepto.length > 60) {
+                marcar(concepto, 'El concepto debe tener entre 2 y 60 caracteres');
+            } else if (!patronConcepto.test(textoConcepto)) {
+                marcar(concepto, 'El concepto solo puede tener letras, números, espacios y los signos . , & \' -');
             }
             var numero = leerNumero(monto.value);
             if (monto.value.trim() === '') {
                 marcar(monto, 'Escriba cuánto fue');
+            } else if (esNegativo(monto)) {
+                marcar(monto, 'No puede ser un número negativo');
             } else if (numero === null) {
                 marcar(monto, 'Escriba un monto, por ejemplo 150 o 150,50');
             } else if (numero <= 0) {

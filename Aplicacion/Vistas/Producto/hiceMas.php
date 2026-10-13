@@ -22,6 +22,7 @@ use Aplicacion\Nucleo\Csrf;
                 data-cantidad>
             <button type="button" class="botonCantidad" data-cantidad-mas aria-label="Uno más">+</button>
         </div>
+        <p class="errorCampo" data-hice-mas-error hidden></p>
         <p class="textoAyuda" data-hice-mas-alcanza></p>
         <p class="textoAyuda">Se descuenta del inventario lo que lleva cada uno.</p>
 

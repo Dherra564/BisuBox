@@ -69,11 +69,16 @@ class ProduccionRepositorio
 
             $usados = [];
             $faltantes = [];
+            $desactivados = [];
             foreach ($producto->getComponentes() as $linea) {
                 $necesita = round($linea->getCantidad() * $cantidad, 2);
                 $actual = $this->componenteRepositorio->bloquearExistencia($linea->getIdComponente(), $idVendedor);
                 if ($actual === null) {
                     throw new RuntimeException('El componente ' . $linea->getIdComponente() . ' no existe o es de otro vendedor');
+                }
+                if (!$actual['activo']) {
+                    $desactivados[] = $actual['nombre'];
+                    continue;
                 }
                 if ($actual['existencia'] + 0.001 < $necesita) {
                     $faltantes[] = $actual['nombre'] . ' (necesita ' . Numero::formatear($necesita)
@@ -88,6 +93,9 @@ class ProduccionRepositorio
                     $actual['costo']
                 );
                 $usados[] = new ProduccionComponente(null, null, $linea->getIdComponente(), $necesita, $actual['costo']);
+            }
+            if ($desactivados !== []) {
+                throw new OperacionNoPermitida('Lleva componentes desactivados: ' . implode(', ', $desactivados) . '. Actívelos en el inventario para hacer más.');
             }
             if ($faltantes !== []) {
                 throw new OperacionNoPermitida('No alcanza el inventario para: ' . implode(', ', $faltantes) . '.');

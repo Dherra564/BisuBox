@@ -249,7 +249,7 @@ class ComponenteRepositorio
     public function bloquearExistencia(int $idComponente, int $idVendedor): ?array
     {
         $consulta = $this->conexion->prepare(
-            'SELECT tbcomponenteexistencia, tbcomponentecostounitario, tbcomponentenombre FROM tbcomponente
+            'SELECT tbcomponenteexistencia, tbcomponentecostounitario, tbcomponentenombre, tbcomponenteactivo FROM tbcomponente
              WHERE tbcomponenteid = ? AND tbcomponentevendedorid = ? FOR UPDATE'
         );
         $consulta->execute([$idComponente, $idVendedor]);
@@ -259,6 +259,7 @@ class ComponenteRepositorio
             'existencia' => (float) $fila['tbcomponenteexistencia'],
             'costo' => (float) $fila['tbcomponentecostounitario'],
             'nombre' => (string) $fila['tbcomponentenombre'],
+            'activo' => (bool) $fila['tbcomponenteactivo'],
         ] : null;
     }
 

@@ -3,6 +3,7 @@
  * @var \Aplicacion\Modelos\Producto $producto
  * @var \Aplicacion\Modelos\Produccion[] $producciones
  * @var int $alcanzaPara  cuántos más puede hacer con lo que tiene en el inventario
+ * @var string[] $desactivados
  * @var string $urlBase
  */
 
@@ -53,9 +54,13 @@ $unidadesTexto = fn(int $cantidad): string => $cantidad === 1 ? '1 unidad' : $ca
             <button type="button" class="boton" data-hice-mas data-id="<?= $producto->getIdProducto() ?>"
                     data-nombre="<?= $nombre ?>" data-alcanza="<?= $alcanzaPara ?>">Crear otro</button>
             <p class="textoAyuda">
-                <?= $alcanzaPara > 0
-                    ? 'Con lo que tiene en el inventario le alcanza para hacer ' . $alcanzaPara . ' más.'
-                    : 'Ya no le alcanzan los componentes para hacer otro. Registre una compra.' ?>
+                <?php if ($desactivados !== []): ?>
+                    Lleva componentes desactivados: <?= htmlspecialchars(implode(', ', $desactivados)) ?>. Actívelos en el inventario para hacer más.
+                <?php else: ?>
+                    <?= $alcanzaPara > 0
+                        ? 'Con lo que tiene en el inventario le alcanza para hacer ' . $alcanzaPara . ' más.'
+                        : 'Ya no le alcanzan los componentes para hacer otro. Registre una compra.' ?>
+                <?php endif; ?>
             </p>
         <?php endif; ?>
     </div>
