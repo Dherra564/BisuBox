@@ -12,6 +12,30 @@ require __DIR__ . '/../Plantilla/encabezado.php';
 
 $accesos = [
     [
+        'texto' => 'Carrito',
+        'permiso' => 'carrito.usar',
+        'ruta' => '/carrito',
+        'descripcion' => 'Revise lo que escogió y envíe su pedido a cada tienda.'
+    ],
+    [
+        'texto' => 'Mis pedidos',
+        'permiso' => 'misPedidos.ver',
+        'ruta' => '/mis-pedidos',
+        'descripcion' => 'Vea en qué va cada pedido y cancélelo si la tienda todavía no lo confirma.'
+    ],
+    [
+        'texto' => 'Pedidos',
+        'permiso' => 'pedidos.gestionar',
+        'ruta' => '/pedidos',
+        'descripcion' => 'Confirme los pedidos de sus clientes y márquelos como entregados.'
+    ],
+    [
+        'texto' => 'Clientes',
+        'permiso' => 'clientes.ver',
+        'ruta' => '/clientes',
+        'descripcion' => 'Vea quién le ha comprado, cuántos pedidos le ha hecho y cómo contactarle.'
+    ],
+    [
         'texto' => 'Mi perfil',
         'permiso' => 'perfil.ver',
         'ruta' => '/perfil',

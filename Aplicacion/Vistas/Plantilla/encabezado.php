@@ -1,10 +1,20 @@
 <?php
 
+use Aplicacion\Nucleo\Carrito;
 use Aplicacion\Nucleo\Csrf;
+use Aplicacion\Nucleo\EstadoPedido;
 use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\UsuarioActual;
+use Aplicacion\Repositorios\PedidoRepositorio;
+use Aplicacion\Repositorios\VendedorRepositorio;
 use Configuracion\Configuracion;
+
+// El cliente ve sus páginas (carrito, pedidos, perfil) con el diseño de la tienda donde está comprando
+if (UsuarioActual::esCliente() && Carrito::tiendaActual() !== null) {
+    require __DIR__ . '/encabezadoTienda.php';
+    return;
+}
 
 $urlBase = Configuracion::urlBase();
 $titulo = $titulo ?? 'BisuBox';
@@ -14,20 +24,44 @@ $botonesAccion = $botonesAccion ?? ($botonAccion !== null ? [$botonAccion] : [])
 $volverA = $volverA ?? null;
 $mensajes = $mensajes ?? [];
 
+// Números que se muestran junto al menú: unidades en el carrito (cliente) y pedidos por confirmar (vendedor)
+$numeroMenu = [];
+if (UsuarioActual::esCliente()) {
+    $numeroMenu['carrito'] = Carrito::unidades();
+} elseif (UsuarioActual::esVendedor()) {
+    try {
+        $vendedorMenu = (new VendedorRepositorio())->buscarPorIdUsuario((int) UsuarioActual::id());
+        if ($vendedorMenu !== null) {
+            $numeroMenu['pedidos'] = (new PedidoRepositorio())->contar([
+                'idVendedor' => (int) $vendedorMenu->getIdVendedor(),
+                'estado' => EstadoPedido::PENDIENTE,
+            ]);
+        }
+    } catch (Throwable $error) {
+        error_log('No se pudieron contar los pedidos pendientes: ' . $error->getMessage());
+    }
+}
+
 $opcionesMenu = [
     'inicio' => ['texto' => 'Inicio', 'ruta' => '/', 'permiso' => 'panel.ver'],
-    'perfil' => ['texto' => 'Mi perfil', 'ruta' => '/perfil', 'permiso' => 'perfil.ver'],
-    'tienda' => ['texto' => 'Mi tienda', 'ruta' => '/tienda', 'permiso' => 'tienda.gestionar'],
+    'carrito' => ['texto' => 'Carrito', 'ruta' => '/carrito', 'permiso' => 'carrito.usar'],
+    'misPedidos' => ['texto' => 'Mis pedidos', 'ruta' => '/mis-pedidos', 'permiso' => 'misPedidos.ver'],
+    'pedidos' => ['texto' => 'Pedidos', 'ruta' => '/pedidos', 'permiso' => 'pedidos.gestionar'],
+    'clientes' => ['texto' => 'Clientes', 'ruta' => '/clientes', 'permiso' => 'clientes.ver'],
+    'productos' => ['texto' => 'Productos', 'ruta' => '/productos', 'permiso' => 'productos.gestionar'],
     'inventario' => ['texto' => 'Inventario', 'ruta' => '/inventario', 'permiso' => 'inventario.gestionar'],
     'proveedores' => ['texto' => 'Proveedores', 'ruta' => '/proveedores', 'permiso' => 'proveedores.gestionar'],
+    'tienda' => ['texto' => 'Mi tienda', 'ruta' => '/tienda', 'permiso' => 'tienda.gestionar'],
+    'perfil' => ['texto' => 'Mi perfil', 'ruta' => '/perfil', 'permiso' => 'perfil.ver'],
     'sesiones' => ['texto' => 'Historial de sesiones', 'ruta' => '/sesiones', 'permiso' => 'sesiones.ver'],
-    'productos' => ['texto' => 'Productos', 'ruta' => '/productos', 'permiso' => 'productos.gestionar'],
 ];
+// El cliente ve un enlace a la tienda donde está comprando
+$tiendaCliente = UsuarioActual::esCliente() ? Carrito::tiendaActual() : null;
+if ($tiendaCliente !== null) {
+    $opcionesMenu = ['inicio' => $opcionesMenu['inicio'], 'tiendaCliente' => ['texto' => 'Tienda', 'ruta' => '/tienda/' . $tiendaCliente['enlace'], 'permiso' => 'carrito.usar']] + $opcionesMenu;
+    unset($opcionesMenu['inicio']);
+}
 $opcionesMenu = array_filter($opcionesMenu, fn(array $opcion): bool => Permiso::puede($opcion['permiso']));
-
-$proximasFases = UsuarioActual::esVendedor()
-    ? ['Pedidos']
-    : ['Tiendas', 'Carrito', 'Mis pedidos'];
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -50,17 +84,14 @@ $proximasFases = UsuarioActual::esVendedor()
                         <a href="<?= $urlBase . $opcion['ruta'] ?>" class="<?= $clave === $paginaActual ? 'activo' : '' ?>"
                             <?= $clave === $paginaActual ? 'aria-current="page"' : '' ?>>
                             <?= htmlspecialchars($opcion['texto']) ?>
+                            <?php if (!empty($numeroMenu[$clave])): ?>
+                                <span class="numeroMenu" aria-label="<?= (int) $numeroMenu[$clave] ?> <?= $clave === 'carrito' ? 'en el carrito' : 'por confirmar' ?>"><?= (int) $numeroMenu[$clave] ?></span>
+                            <?php endif; ?>
                         </a>
                     </li>
                 <?php endforeach; ?>
             </ul>
 
-            <p class="menuSeccion">Próximas fases</p>
-            <ul class="menuProximas">
-                <?php foreach ($proximasFases as $modulo): ?>
-                    <li><span><?= htmlspecialchars($modulo) ?></span></li>
-                <?php endforeach; ?>
-            </ul>
         </nav>
 
         <div class="zonaPrincipal">

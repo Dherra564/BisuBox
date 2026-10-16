@@ -1,0 +1,124 @@
+<?php
+/**
+ 
+ * @var array{vendedor: \Aplicacion\Modelos\Vendedor, lineas: array, total: float} $carrito
+ * @var \Aplicacion\Modelos\Cliente $cliente
+ * @var array $datos
+ * @var array $errores
+ * @var string $urlBase
+ */
+
+use Aplicacion\Nucleo\Csrf;
+use Aplicacion\Nucleo\FormaEntrega;
+use Aplicacion\Nucleo\MetodoPago;
+use Aplicacion\Nucleo\Numero;
+
+$vendedor = $carrito['vendedor'];
+$titulo = 'Confirmar pedido';
+$paginaActual = 'carrito';
+$volverA = ['texto' => 'Carrito', 'ruta' => '/carrito'];
+$scriptsExtra = ['pedido.js'];
+require __DIR__ . '/../Plantilla/encabezado.php';
+
+$valor = fn(string $campo): string => htmlspecialchars((string) ($datos[$campo] ?? ''));
+$claseCampo = fn(string $campo, string $extra = ''): string => trim('campo ' . $extra . (isset($errores[$campo]) ? ' campoConError' : ''));
+$mensajeError = fn(string $campo): string => isset($errores[$campo])
+    ? '<p class="errorCampo">' . htmlspecialchars($errores[$campo]) . '</p>'
+    : '';
+$esEnvio = ($datos['entrega'] ?? '') === FormaEntrega::ENVIO;
+$telefono = (string) $cliente->getNumeroTelefonico();
+$telefono = strlen($telefono) === 8 ? substr($telefono, 0, 4) . '-' . substr($telefono, 4) : $telefono;
+?>
+
+<?php if ($errores !== []): ?>
+    <div class="alerta alertaError" role="alert">
+        <span class="alertaIcono" aria-hidden="true">✖</span>
+        <p><strong>Error:</strong> Revise los campos marcados en rojo.</p>
+    </div>
+<?php endif; ?>
+
+<div class="disenoFormulario">
+    <form method="post" action="<?= $urlBase ?>/carrito/confirmar" novalidate class="validarFormulario"
+        data-confirmar="¿Enviar el pedido a <?= htmlspecialchars((string) $vendedor->getTiendaNombre()) ?> por <?= Numero::moneda($carrito['total']) ?>?"
+        data-titulo="Enviar pedido" data-boton="Enviar pedido">
+        <?= Csrf::campo() ?>
+        <input type="hidden" name="tienda" value="<?= (int) $vendedor->getIdVendedor() ?>">
+
+        <section class="formularioSeccion">
+            <h2>¿Cómo lo quiere recibir?</h2>
+            <div class="<?= $claseCampo('entrega') ?>">
+                <span class="etiquetaCampo" id="etiquetaEntrega">Entrega <span class="obligatorio">*</span></span>
+                <div class="opcionesUnidad" role="radiogroup" aria-labelledby="etiquetaEntrega">
+                    <?php foreach (FormaEntrega::todas() as $codigo => $nombre): ?>
+                        <label class="opcionUnidad">
+                            <input type="radio" name="entrega" value="<?= $codigo ?>" data-entrega required
+                                data-mensaje-requerido="Escoja cómo quiere recibir el pedido"
+                                <?= ($datos['entrega'] ?? '') === $codigo ? 'checked' : '' ?>>
+                            <?= htmlspecialchars($nombre) ?>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
+                <?= $mensajeError('entrega') ?>
+            </div>
+
+            <div class="<?= $claseCampo('direccion') ?>" data-campo-direccion <?= $esEnvio ? '' : 'hidden' ?>>
+                <label for="direccion">Dirección de entrega <span class="obligatorio">*</span></label>
+                <textarea id="direccion" name="direccion" rows="3" minlength="10" maxlength="250" data-contador
+                    data-regla="direccion" <?= $esEnvio ? 'required' : '' ?>
+                    data-mensaje-requerido="Escriba la dirección de entrega"
+                    data-mensaje-largo="La dirección debe tener entre 10 y 250 caracteres"><?= $valor('direccion') ?></textarea>
+                <p class="textoAyuda">Provincia, cantón, distrito y señas. Por ejemplo: Heredia, San Pablo, 100 m norte de la iglesia, casa blanca.</p>
+                <?= $mensajeError('direccion') ?>
+            </div>
+        </section>
+
+        <section class="formularioSeccion">
+            <h2>¿Cómo va a pagar?</h2>
+            <div class="<?= $claseCampo('metodoPago') ?>">
+                <label for="metodoPago">Método de pago <span class="obligatorio">*</span></label>
+                <select id="metodoPago" name="metodoPago" required data-mensaje-requerido="Escoja cómo va a pagar">
+                    <option value="">Escoja una opción</option>
+                    <?php foreach (MetodoPago::todos() as $codigo => $nombre): ?>
+                        <option value="<?= $codigo ?>" <?= ($datos['metodoPago'] ?? '') === $codigo ? 'selected' : '' ?>><?= htmlspecialchars($nombre) ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <p class="textoAyuda">El pago se coordina directamente con la tienda.</p>
+                <?= $mensajeError('metodoPago') ?>
+            </div>
+
+            <div class="<?= $claseCampo('nota') ?>">
+                <label for="nota">Nota para la tienda</label>
+                <textarea id="nota" name="nota" rows="2" maxlength="300" data-contador
+                    data-mensaje-largo="La nota puede tener como máximo 300 caracteres"><?= $valor('nota') ?></textarea>
+                <p class="textoAyuda">Opcional. Por ejemplo, el color que prefiere o a qué hora le queda bien.</p>
+                <?= $mensajeError('nota') ?>
+            </div>
+        </section>
+
+        <div class="grupoBotones accionesFormulario">
+            <a href="<?= $urlBase ?>/carrito" class="boton botonSecundario">Volver al carrito</a>
+            <button type="submit" class="boton">Enviar pedido</button>
+        </div>
+    </form>
+
+    <aside class="factura resumenPedido">
+        <h2><?= htmlspecialchars((string) $vendedor->getTiendaNombre()) ?></h2>
+        <ul class="lineasResumen">
+            <?php foreach ($carrito['lineas'] as $linea): ?>
+                <li>
+                    <span><?= $linea['cantidad'] ?> × <?= htmlspecialchars($linea['producto']->getNombre()) ?></span>
+                    <strong><?= Numero::moneda($linea['subtotal']) ?></strong>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+        <div class="totalesCompra">
+            <div class="totalCompra"><span>Total</span><strong><?= Numero::moneda($carrito['total']) ?></strong></div>
+        </div>
+        <p class="textoAyuda">
+            La tienda le contactará al <strong><?= htmlspecialchars($telefono) ?></strong>.
+            Si cambió de número, actualícelo en <a href="<?= $urlBase ?>/perfil">Mi perfil</a>.
+        </p>
+    </aside>
+</div>
+
+<?php require __DIR__ . '/../Plantilla/pie.php'; ?>

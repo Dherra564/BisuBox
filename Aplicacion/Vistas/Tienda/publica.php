@@ -2,6 +2,7 @@
 
 use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\TipoContacto;
+use Aplicacion\Nucleo\UsuarioActual;
 
 $titulo = (string) $vendedor->getTiendaNombre();
 $claseTarjeta = 'tarjetaRegistro';
@@ -31,6 +32,21 @@ $contactos = $vendedor->getContactos();
         </dl>
     <?php endif; ?>
 </section>
+
+<?php require __DIR__ . '/../Plantilla/mensajes.php'; ?>
+
+<?php if (!UsuarioActual::haySesion()): ?>
+    <?php $volverTienda = urlencode('/tienda/' . $vendedor->getTiendaEnlace()); ?>
+    <div class="cajaInformativa cajaPedir">
+        <p><strong>¿Quiere hacer un pedido?</strong> Ingrese con su cuenta de cliente o cree una gratis.</p>
+        <div class="grupoBotones">
+            <a href="<?= $urlBase ?>/ingresar?volver=<?= $volverTienda ?>" class="boton">Ingresar</a>
+            <a href="<?= $urlBase ?>/registro/cliente?volver=<?= $volverTienda ?>" class="boton botonSecundario">Crear cuenta</a>
+        </div>
+    </div>
+<?php elseif (UsuarioActual::esVendedor()): ?>
+    <p class="cajaInformativa">Así ven los clientes esta tienda. Las cuentas de vendedor no pueden hacer pedidos.</p>
+<?php endif; ?>
 
 <section class="formularioSeccion">
     <h2>Productos</h2>

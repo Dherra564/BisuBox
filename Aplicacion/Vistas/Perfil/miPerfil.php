@@ -15,7 +15,8 @@ $titulo = 'Mi perfil';
 $paginaActual = 'perfil';
 require __DIR__ . '/../Plantilla/encabezado.php';
 
-$editando = $errores !== [];
+$editando = $errores !== [] || !empty($seguirEditando);
+$fotoPendiente = $datos['fotoPerfilPendiente'] ?? null;
 
 $valor = fn (string $campo): string => htmlspecialchars((string) ($datos[$campo] ?? ''));
 $claseCampo = fn (string $campo): string => isset($errores[$campo]) ? 'campo campoConError' : 'campo';
@@ -135,14 +136,20 @@ $soloLectura = $editando ? '' : 'readonly';
                 <h2>Foto de perfil</h2>
                 <div class="<?= $claseCampo('fotoPerfil') ?>">
                     <div class="zonaFoto">
-                        <img src="<?= $urlBase ?>/fotos/perfil?archivo=<?= urlencode((string) ($usuario->getFotoPerfil() ?? '')) ?>"
+                        <img src="<?= $urlBase ?>/fotos/perfil?archivo=<?= urlencode((string) ($fotoPendiente ?? $usuario->getFotoPerfil() ?? '')) ?>"
                              alt="Su foto de perfil" class="fotoPerfilGrande">
                         <label for="fotoPerfil" class="boton botonSecundario">
                             <?= $usuario->getFotoPerfil() ? 'Cambiar foto' : 'Elegir foto' ?>
                         </label>
                         <input type="file" id="fotoPerfil" name="fotoPerfil" accept="image/jpeg,image/png"
                                class="campoArchivo" <?= $editando ? '' : 'disabled' ?>>
-                        <span class="nombreArchivo">JPG o PNG, máximo 5 MB</span>
+                        <?php if ($fotoPendiente !== null): ?>
+                            <!-- La foto que ya eligió no se pierde aunque el formulario tenga errores -->
+                            <input type="hidden" name="fotoPerfilPendiente" value="<?= htmlspecialchars($fotoPendiente) ?>">
+                            <span class="nombreArchivo">Ya eligió esta foto. Se guarda con los cambios</span>
+                        <?php else: ?>
+                            <span class="nombreArchivo">JPG o PNG, máximo 5 MB</span>
+                        <?php endif; ?>
                     </div>
                     <?= $mensajeError('fotoPerfil') ?>
                 </div>

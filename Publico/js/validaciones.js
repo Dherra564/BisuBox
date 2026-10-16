@@ -41,6 +41,10 @@ document.addEventListener('DOMContentLoaded', function () {
             patron: /^[\p{L}0-9][\p{L}0-9 .,&'-]*$/u,
             mensaje: 'El nombre solo puede tener letras, números, espacios y los signos . , & \' -'
         },
+        direccion: {
+            patron: /^[\p{L}0-9\s.,#\-\/()°º:;]+$/u,
+            mensaje: 'La dirección solo puede tener letras, números, espacios y los signos . , # - / ( ) °'
+        },
         minutos: {
             prueba: function (valor) {
                 return /^[0-9]{1,4}$/.test(valor) && parseInt(valor, 10) >= 1;
@@ -133,6 +137,18 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function revisarCampo(campo, formulario) {
+        // Un campo escondido (por ejemplo la dirección cuando escoge retiro) no se revisa
+        if (campo.closest('[hidden]')) {
+            return '';
+        }
+
+        // Opciones de radio: basta con que una del grupo esté marcada
+        if (campo.type === 'radio') {
+            var grupo = formulario.querySelectorAll('input[type="radio"][name="' + campo.name + '"]');
+            var marcada = Array.prototype.some.call(grupo, function (opcion) { return opcion.checked; });
+            return !marcada && campo.required ? (campo.getAttribute('data-mensaje-requerido') || 'Escoja una opción') : '';
+        }
+
         var valor = campo.type === 'password' ? campo.value : campo.value.trim();
 
         if (valor === '') {
@@ -187,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     var selectorCampos = 'input[required], input[data-regla], input[minlength], input[data-igual-a], '
-        + 'input[data-distinto-de], select[required], textarea[required]';
+        + 'input[data-distinto-de], select[required], textarea[required], textarea[data-regla]';
 
     document.querySelectorAll('form.validarFormulario').forEach(function (formulario) {
         function camposPorRevisar() {
@@ -224,12 +240,105 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        formulario.addEventListener('input', function (evento) {
-            var campo = evento.target;
-            if (campo.matches(selectorCampos) && campo.closest('.campoConError') && revisarCampo(campo, formulario) === '') {
+        // Revisa un campo y muestra o quita su error en ese mismo momento
+        function revisarYMostrar(campo) {
+            if (!campo.matches(selectorCampos)) {
+                return;
+            }
+            var mensaje = revisarCampo(campo, formulario);
+            if (mensaje === '' && campo.getAttribute('data-igual-a') && campo.value === '') {
+                var otro = formulario.querySelector('#' + campo.getAttribute('data-igual-a'));
+                if (otro && otro.value !== '') {
+                    mensaje = campo.getAttribute('data-mensaje-requerido') || 'Confirme la contraseña';
+                }
+            }
+            if (mensaje !== '') {
+                ponerError(campo, mensaje);
+            } else {
                 quitarError(campo);
             }
+        }
+
+        // Campos que dependen de otro (confirmar contraseña, contraseña nueva distinta a la actual)
+        function revisarDependientes(campo) {
+            if (!campo.id) {
+                return;
+            }
+            formulario.querySelectorAll('[data-igual-a="' + campo.id + '"], [data-distinto-de="' + campo.id + '"]')
+                .forEach(function (dependiente) {
+                    if (dependiente.value !== '' || dependiente.getAttribute('data-tocado') === 'si') {
+                        revisarYMostrar(dependiente);
+                    }
+                });
+        }
+
+        // Mientras escribe: el error aparece o desaparece con cada tecla
+        function alCambiar(evento) {
+            var campo = evento.target;
+            if (!campo.matches('input, select, textarea') || campo.type === 'hidden') {
+                return;
+            }
+            campo.setAttribute('data-tocado', 'si');
+
+            if (campo.matches(selectorCampos)) {
+                revisarYMostrar(campo);
+            } else if (campo.closest('.campoConError')) {
+                // Campos sin regla del navegador (por ejemplo una foto): al cambiarlos se quita el error del servidor
+                quitarError(campo);
+            }
+            revisarDependientes(campo);
+        }
+
+        formulario.addEventListener('input', alCambiar);
+        formulario.addEventListener('change', alCambiar);
+
+        // Al salir de un campo que ya tocó, se revisa aunque lo haya dejado vacío
+        formulario.addEventListener('focusout', function (evento) {
+            var campo = evento.target;
+            if (campo.matches && campo.matches(selectorCampos) && campo.getAttribute('data-tocado') === 'si') {
+                revisarYMostrar(campo);
+            }
         });
+    });
+
+    // Lista de requisitos de la contraseña que se marca mientras escribe
+    var requisitosContrasena = [
+        { texto: 'Entre 8 y 20 caracteres', cumple: function (v) { return v.length >= 8 && v.length <= 20; } },
+        { texto: 'Una letra mayúscula', cumple: function (v) { return /[A-Z]/.test(v); } },
+        { texto: 'Una letra minúscula', cumple: function (v) { return /[a-z]/.test(v); } },
+        { texto: 'Un número', cumple: function (v) { return /\d/.test(v); } },
+        { texto: 'Sin espacios', cumple: function (v) { return v !== '' && !/\s/.test(v); } }
+    ];
+
+    document.querySelectorAll('input[data-regla="contrasena"]').forEach(function (campo) {
+        var lista = document.createElement('ul');
+        lista.className = 'requisitosContrasena';
+        lista.setAttribute('aria-live', 'polite');
+
+        var elementos = requisitosContrasena.map(function (requisito) {
+            var elemento = document.createElement('li');
+            elemento.textContent = requisito.texto;
+            lista.appendChild(elemento);
+            return elemento;
+        });
+
+        // La lista reemplaza el texto de ayuda fijo que estaba debajo del campo
+        var ayuda = campo.parentNode.querySelector('.textoAyuda');
+        if (ayuda) {
+            ayuda.hidden = true;
+        }
+        campo.insertAdjacentElement('afterend', lista);
+
+        function actualizar() {
+            requisitosContrasena.forEach(function (requisito, indice) {
+                var cumple = requisito.cumple(campo.value);
+                elementos[indice].classList.toggle('cumple', cumple);
+                elementos[indice].classList.toggle('falta', campo.value !== '' && !cumple);
+            });
+        }
+
+        campo.addEventListener('input', actualizar);
+        actualizar();
     });
 
     document.querySelectorAll('[data-regla="identificacion"]').forEach(function (campo) {
@@ -284,6 +393,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         formulario.setAttribute('data-enviando', 'si');
+        guardarRespaldo(formulario);
         var boton = evento.submitter;
         if (boton && boton.name) {
             var copia = document.createElement('input');
@@ -296,6 +406,84 @@ document.addEventListener('DOMContentLoaded', function () {
             boton.disabled = true;
         });
     });
+
+    // Respaldo de lo escrito: si al enviar la página expiró o algo falló y el sistema la volvió
+    // a cargar vacía, lo que la persona escribió se vuelve a poner en los campos
+    var CLAVE_RESPALDO = 'bisuboxRespaldoFormulario';
+
+    function camposRespaldables(formulario) {
+        return Array.prototype.filter.call(formulario.elements, function (campo) {
+            return campo.name && !campo.disabled
+                && ['hidden', 'file', 'password', 'submit', 'button'].indexOf(campo.type) === -1
+                && campo.name !== '_csrf';
+        });
+    }
+
+    function guardarRespaldo(formulario) {
+        var campos = camposRespaldables(formulario).map(function (campo) {
+            var marcable = campo.type === 'checkbox' || campo.type === 'radio';
+            return { nombre: campo.name, valor: campo.value, marcable: marcable, marcado: marcable && campo.checked };
+        });
+        if (campos.length === 0) {
+            return;
+        }
+        try {
+            sessionStorage.setItem(CLAVE_RESPALDO, JSON.stringify({ accion: formulario.getAttribute('action'), campos: campos }));
+        } catch (error) {
+            // Sin almacenamiento disponible: simplemente no hay respaldo
+        }
+    }
+
+    function restaurarRespaldo() {
+        var respaldo = null;
+        try {
+            respaldo = JSON.parse(sessionStorage.getItem(CLAVE_RESPALDO) || 'null');
+            sessionStorage.removeItem(CLAVE_RESPALDO);
+        } catch (error) {
+            return;
+        }
+        // Solo cuando la página muestra un error (si se guardó bien, no hay nada que restaurar)
+        if (!respaldo || !document.querySelector('.alertaError')) {
+            return;
+        }
+        var formulario = Array.prototype.find.call(document.forms, function (otro) {
+            return otro.getAttribute('action') === respaldo.accion;
+        });
+        if (!formulario) {
+            return;
+        }
+
+        var campos = camposRespaldables(formulario);
+        var escritos = campos.filter(function (campo) {
+            return campo.type !== 'checkbox' && campo.type !== 'radio' && campo.tagName !== 'SELECT' && campo.value.trim() !== '';
+        });
+        // Si el sistema ya devolvió el formulario lleno, se respeta lo que trae
+        if (escritos.length > 0) {
+            return;
+        }
+
+        // Los campos con el mismo nombre (por ejemplo filas repetidas) se llenan en el mismo orden
+        var usados = {};
+        respaldo.campos.forEach(function (guardado) {
+            var mismos = campos.filter(function (campo) { return campo.name === guardado.nombre; });
+            if (guardado.marcable) {
+                mismos.forEach(function (campo) {
+                    if (campo.value === guardado.valor) {
+                        campo.checked = guardado.marcado;
+                    }
+                });
+                return;
+            }
+            var posicion = usados[guardado.nombre] || 0;
+            usados[guardado.nombre] = posicion + 1;
+            var campo = mismos[posicion];
+            if (campo && (campo.value === '' || campo.tagName === 'SELECT')) {
+                campo.value = guardado.valor;
+            }
+        });
+    }
+
+    restaurarRespaldo();
 
     window.addEventListener('pageshow', function (evento) {
         if (!evento.persisted) {

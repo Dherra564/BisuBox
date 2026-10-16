@@ -105,6 +105,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 campoCantidadModal.focus();
             }
         });
+
+        // Si el intento anterior falló, la ventana se abre sola con la cantidad que escribió y el error
+        var idReabrir = modalHiceMas.getAttribute('data-reabrir-id');
+        if (idReabrir) {
+            var botonReabrir = document.querySelector('[data-hice-mas][data-id="' + idReabrir + '"]');
+            if (botonReabrir) {
+                botonReabrir.click();
+                campoCantidadModal.value = modalHiceMas.getAttribute('data-reabrir-cantidad') || '1';
+                errorModal.textContent = modalHiceMas.getAttribute('data-reabrir-error') || '';
+                errorModal.hidden = errorModal.textContent === '';
+                campoCantidadModal.select();
+            } else if (modalHiceMas.getAttribute('data-reabrir-error')) {
+                // Si el producto ya no tiene el botón (por ejemplo, se desactivó), el error se muestra arriba
+                var aviso = document.createElement('div');
+                aviso.className = 'alerta alertaError';
+                aviso.setAttribute('role', 'alert');
+                var texto = document.createElement('p');
+                texto.textContent = modalHiceMas.getAttribute('data-reabrir-error');
+                aviso.appendChild(texto);
+                var contenido = document.querySelector('.contenido .encabezadoPagina');
+                if (contenido) {
+                    contenido.insertAdjacentElement('afterend', aviso);
+                }
+            }
+        }
     }
 
     var bloquePrecio = document.querySelector('[data-precio]');

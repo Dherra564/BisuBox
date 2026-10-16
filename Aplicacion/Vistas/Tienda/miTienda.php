@@ -14,7 +14,7 @@
     $scriptsExtra = ['tienda.js'];
     require __DIR__ . '/../Plantilla/encabezado.php';
 
-    $editando = $errores !== [];
+    $editando = $errores !== [] || ! empty($seguirEditando);
 
     $valor        = fn(string $campo): string => htmlspecialchars((string) ($datos[$campo] ?? ''));
     $claseCampo   = fn(string $campo): string => isset($errores[$campo]) ? 'campo campoConError' : 'campo';
@@ -26,8 +26,9 @@
     $contactosOriginales  = DatosTienda::contactosParaFormulario($vendedor);
     $contactosSoloLectura = ! $editando;
     $logo                 = $vendedor->getTiendaLogo();
-    $urlLogo              = $logo !== null
-    ? $urlBase . '/fotos/logo?archivo=' . urlencode($logo)
+    $logoPendiente        = $datos['tiendaLogoPendiente'] ?? null;
+    $urlLogo              = ($logoPendiente ?? $logo) !== null
+    ? $urlBase . '/fotos/logo?archivo=' . urlencode($logoPendiente ?? $logo)
     : $urlBase . '/imagenes/logoPorDefecto.svg';
 
     $direccionTienda = preg_replace('#^https?://#', '', $urlBase) . '/tienda/' . $vendedor->getTiendaEnlace();
@@ -92,10 +93,17 @@
                     <label for="tiendaLogo" class="boton botonSecundario"><?php echo $logo !== null ? 'Cambiar logo' : 'Elegir logo' ?></label>
                     <input type="file" id="tiendaLogo" name="tiendaLogo" accept="image/jpeg,image/png"
                            class="campoArchivo" <?php echo $editando ? '' : 'disabled' ?>>
-                    <span class="nombreArchivo">JPG o PNG, máximo 5 MB</span>
+                    <?php if ($logoPendiente !== null): ?>
+                        <!-- El logo que ya eligió no se pierde aunque el formulario tenga errores -->
+                        <input type="hidden" name="tiendaLogoPendiente" value="<?php echo htmlspecialchars($logoPendiente) ?>">
+                        <span class="nombreArchivo">Ya eligió este logo. Se guarda con los cambios</span>
+                    <?php else: ?>
+                        <span class="nombreArchivo">JPG o PNG, máximo 5 MB</span>
+                    <?php endif; ?>
                     <?php if ($logo !== null): ?>
                         <div class="campoCasilla">
                             <input type="checkbox" id="quitarLogo" name="quitarLogo" value="1"
+                                   <?php echo ! empty($datos['quitarLogo']) ? 'checked' : '' ?>
                                    <?php echo $editando ? '' : 'disabled' ?> data-editable data-original="0">
                             <label for="quitarLogo">Quitar el logo</label>
                         </div>

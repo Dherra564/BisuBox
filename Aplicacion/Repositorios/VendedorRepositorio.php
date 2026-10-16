@@ -47,6 +47,52 @@ class VendedorRepositorio
         return $fila ? $this->crearDesdeFila($fila) : null;
     }
 
+    public function buscarPorId(int $idVendedor): ?Vendedor
+    {
+        $consulta = $this->conexion->prepare(
+            'SELECT u.*, v.* FROM tbvendedor v
+             INNER JOIN tbusuario u ON u.tbusuarioid = v.tbvendedorusuarioid
+             WHERE v.tbvendedorid = ?'
+        );
+        $consulta->execute([$idVendedor]);
+        $fila = $consulta->fetch();
+
+        return $fila ? $this->crearDesdeFila($fila) : null;
+    }
+
+    /**
+     * Tiendas que los clientes pueden visitar: la tienda está visible y la cuenta del vendedor activa.
+     * Cada una trae cuántos productos tiene disponibles
+     * @return array<int, array{vendedor: Vendedor, disponibles: int}>
+     */
+    public function listarTiendasVisibles(string $busqueda = ''): array
+    {
+        $condiciones = ['v.tbvendedoractivo = 1', 'u.tbusuarioactivo = 1'];
+        $valores = [];
+        $busqueda = trim($busqueda);
+        if ($busqueda !== '') {
+            $patron = '%' . addcslashes($busqueda, '%_\\') . '%';
+            $condiciones[] = '(v.tbvendedortiendanombre LIKE ? OR v.tbvendedortiendadescripcion LIKE ?)';
+            array_push($valores, $patron, $patron);
+        }
+
+        $consulta = $this->conexion->prepare(
+            'SELECT u.*, v.*,
+                (SELECT COUNT(*) FROM tbproducto p
+                 WHERE p.tbproductovendedorid = v.tbvendedorid AND p.tbproductoactivo = 1 AND p.tbproductoexistencia > 0) AS disponibles
+             FROM tbvendedor v
+             INNER JOIN tbusuario u ON u.tbusuarioid = v.tbvendedorusuarioid
+             WHERE ' . implode(' AND ', $condiciones) . '
+             ORDER BY disponibles > 0 DESC, v.tbvendedortiendanombre ASC'
+        );
+        $consulta->execute($valores);
+
+        return array_map(fn(array $fila): array => [
+            'vendedor' => $this->crearDesdeFila($fila),
+            'disponibles' => (int) $fila['disponibles'],
+        ], $consulta->fetchAll());
+    }
+
     public function existeEnlace(string $enlace, ?int $excluirIdVendedor = null): bool
     {
         $consulta = $this->conexion->prepare(

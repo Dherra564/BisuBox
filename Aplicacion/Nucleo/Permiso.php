@@ -17,6 +17,10 @@ class Permiso
         'proveedores.gestionar' => [Rol::VENDEDOR],
         'productos.gestionar' => [Rol::VENDEDOR],
         'comprasProveedor.gestionar' => [Rol::VENDEDOR],
+        'pedidos.gestionar' => [Rol::VENDEDOR],
+        'clientes.ver' => [Rol::VENDEDOR],
+        'carrito.usar' => [Rol::CLIENTE],
+        'misPedidos.ver' => [Rol::CLIENTE],
     ];
 
     public static function puede(string $permiso): bool

@@ -1,11 +1,15 @@
 <?php
 
 use Aplicacion\Controladores\AutenticacionControlador;
+use Aplicacion\Controladores\CarritoControlador;
+use Aplicacion\Controladores\ClienteControlador;
 use Aplicacion\Controladores\ComponenteControlador;
 use Aplicacion\Controladores\CompraProveedorControlador;
 use Aplicacion\Controladores\FotoControlador;
 use Aplicacion\Controladores\InicioControlador;
 use Aplicacion\Controladores\InventarioControlador;
+use Aplicacion\Controladores\MisPedidosControlador;
+use Aplicacion\Controladores\PedidoControlador;
 use Aplicacion\Controladores\PerfilControlador;
 use Aplicacion\Controladores\ProductoControlador;
 use Aplicacion\Controladores\ProveedorControlador;
@@ -80,6 +84,24 @@ return function (Enrutador $enrutador): void {
     $enrutador->post('/compras-proveedor/nueva', [CompraProveedorControlador::class, 'registrar']);
     $enrutador->get('/compras-proveedor/detalle', [CompraProveedorControlador::class, 'detalle']);
     $enrutador->post('/compras-proveedor/anular', [CompraProveedorControlador::class, 'anular']);
+
+    
+    $enrutador->get('/carrito', [CarritoControlador::class, 'ver']);
+    $enrutador->post('/carrito/agregar', [CarritoControlador::class, 'agregar']);
+    $enrutador->post('/carrito/actualizar', [CarritoControlador::class, 'actualizar']);
+    $enrutador->get('/carrito/confirmar', [CarritoControlador::class, 'confirmar']);
+    $enrutador->post('/carrito/confirmar', [CarritoControlador::class, 'hacerPedido']);
+    $enrutador->get('/mis-pedidos', [MisPedidosControlador::class, 'listar']);
+    $enrutador->get('/mis-pedidos/detalle', [MisPedidosControlador::class, 'detalle']);
+    $enrutador->post('/mis-pedidos/cancelar', [MisPedidosControlador::class, 'cancelar']);
+
+    
+    $enrutador->get('/pedidos', [PedidoControlador::class, 'listar']);
+    $enrutador->get('/pedidos/detalle', [PedidoControlador::class, 'detalle']);
+    $enrutador->post('/pedidos/confirmar', [PedidoControlador::class, 'confirmar']);
+    $enrutador->post('/pedidos/entregar', [PedidoControlador::class, 'entregar']);
+    $enrutador->post('/pedidos/cancelar', [PedidoControlador::class, 'cancelar']);
+    $enrutador->get('/clientes', [ClienteControlador::class, 'listar']);
 
     $enrutador->get('/sesiones', [SesionControlador::class, 'listar']);
     $enrutador->get('/tienda/{enlace}', [TiendaPublicaControlador::class, 'mostrar']);

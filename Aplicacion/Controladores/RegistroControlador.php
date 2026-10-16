@@ -67,9 +67,13 @@ class RegistroControlador
         DatosTienda::validar($validador, $datos);
         $this->validarContrasena($validador, $contrasena, $confirmar);
 
-        $nombreLogo = $this->subirLogo($validador);
+        $nombreLogo = (new SubidaArchivo())->recibir('tiendaLogo', SubidaArchivo::LOGO, $validador);
+        // Si algo falla se vuelve a mostrar todo lo que escribió, incluidas las contraseñas y el logo
+        $datos['tiendaLogoPendiente'] = $nombreLogo;
+        $datos['contrasena'] = $contrasena;
+        $datos['confirmarContrasena'] = $confirmar;
         if (!$validador->esValido()) {
-            SubidaArchivo::eliminarLogo($nombreLogo);
+            SubidaArchivo::recordarPendiente(SubidaArchivo::LOGO, $nombreLogo);
             $this->mostrarVista('Registro/vendedor', ['datos' => $datos, 'errores' => $validador->errores()]);
             return;
         }
@@ -94,12 +98,13 @@ class RegistroControlador
             $vendedorRepositorio->insertar($vendedor);
         } catch (Throwable $error) {
             error_log('Error al registrar vendedor: ' . $error->getMessage());
-            SubidaArchivo::eliminarLogo($nombreLogo);
+            SubidaArchivo::recordarPendiente(SubidaArchivo::LOGO, $nombreLogo);
             Mensaje::error('No se pudo crear la cuenta. Intente de nuevo.');
             $this->mostrarVista('Registro/vendedor', ['datos' => $datos, 'errores' => []]);
             return;
         }
 
+        SubidaArchivo::olvidarPendiente(SubidaArchivo::LOGO, $nombreLogo);
         Acceso::abrirSesion($vendedor);
         Mensaje::exito('Bienvenido a BisuBox. Su cuenta y su tienda quedaron creadas');
         $this->redirigir('/');
@@ -107,6 +112,9 @@ class RegistroControlador
 
     public function mostrarCliente(): void
     {
+        if (isset($_GET['volver'])) {
+            Acceso::guardarDestino($_GET['volver']);
+        }
         $this->mostrarVista('Registro/cliente', ['datos' => [], 'errores' => []]);
     }
 
@@ -120,6 +128,8 @@ class RegistroControlador
 
         $validador = $this->validarDatosPersonales($datos);
         $this->validarContrasena($validador, $contrasena, $confirmar);
+        $datos['contrasena'] = $contrasena;
+        $datos['confirmarContrasena'] = $confirmar;
 
         if (!$validador->esValido()) {
             $this->mostrarVista('Registro/cliente', ['datos' => $datos, 'errores' => $validador->errores()]);
@@ -145,7 +155,8 @@ class RegistroControlador
 
         Acceso::abrirSesion($cliente);
         Mensaje::exito('Bienvenido a BisuBox. Su cuenta quedó creada');
-        $this->redirigir('/');
+        // Si venía de una tienda (por ejemplo para hacer un pedido), vuelve a ella
+        $this->redirigir(Acceso::tomarDestino() ?? '/');
     }
 
     private function leerDatosPersonales(): array
@@ -189,19 +200,6 @@ class RegistroControlador
             ->contrasenaSegura('contrasena', $contrasena);
         $validador->requerido('confirmarContrasena', $confirmar, 'Confirme la contraseña')
             ->coinciden('confirmarContrasena', $confirmar, $contrasena, 'Las contraseñas no coinciden');
-    }
-
-    private function subirLogo(Validador $validador): ?string
-    {
-        if (!SubidaArchivo::seEnvio($_FILES['tiendaLogo'] ?? null)) {
-            return null;
-        }
-        $subida = new SubidaArchivo();
-        $nombre = $subida->guardarLogo($_FILES['tiendaLogo']);
-        if ($nombre === null) {
-            $validador->agregarError('tiendaLogo', $subida->obtenerError());
-        }
-        return $nombre;
     }
 
     private function leer(string $campo): string
