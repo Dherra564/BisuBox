@@ -2,6 +2,7 @@
 namespace Aplicacion\Controladores;
 
 use Aplicacion\Nucleo\Acceso;
+use Aplicacion\Nucleo\Carrito;
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\ManejadorSesion;
 use Aplicacion\Nucleo\Mensaje;
@@ -19,13 +20,15 @@ class AutenticacionControlador
 
     public function iniciarSesion(): void
     {
+        $correo = is_string($_POST['correo'] ?? null) ? strtolower(trim($_POST['correo'])) : '';
+        $contrasena = is_string($_POST['contrasena'] ?? null) ? $_POST['contrasena'] : '';
+
         if (!Csrf::esValido()) {
+            // Aunque la página haya expirado, el correo que escribió no se pierde
+            $this->recordarCorreo($correo);
             Mensaje::error('La página expiró. Recargue e intente de nuevo.');
             $this->redirigir('/ingresar');
         }
-
-        $correo = is_string($_POST['correo'] ?? null) ? strtolower(trim($_POST['correo'])) : '';
-        $contrasena = is_string($_POST['contrasena'] ?? null) ? $_POST['contrasena'] : '';
 
         if ($correo === '') {
             Mensaje::error('Ingrese su correo');
@@ -57,11 +60,16 @@ class AutenticacionControlador
         unset($_SESSION[self::CLAVE_CORREO_INTENTO]);
         Acceso::abrirSesion($usuario);
 
-        $this->redirigir('/');
+        $destino = Acceso::tomarDestino();
+        $this->redirigir($destino !== null && $usuario->getRol() === Rol::CLIENTE ? $destino : '/');
     }
 
     public function cerrarSesion(): void
     {
+        // El cliente vuelve a la página de la tienda donde estaba comprando; el vendedor, a /ingresar
+        $tienda = UsuarioActual::esCliente() ? Carrito::tiendaActual() : null;
+        $volver = $tienda !== null ? '/tienda/' . $tienda['enlace'] : '/ingresar';
+
         if (!Csrf::esValido()) {
             Mensaje::error('La página expiró. Recargue e intente de nuevo.');
             $this->redirigir('/');
@@ -77,13 +85,16 @@ class AutenticacionControlador
         ManejadorSesion::arrancar();
         ManejadorSesion::regenerarId();
         Mensaje::exito('Sesión cerrada correctamente');
-        $this->redirigir('/ingresar');
+        $this->redirigir($volver);
     }
 
     public function mostrarLogin(): void
     {
         if (UsuarioActual::haySesion()) {
             $this->redirigir('/');
+        }
+        if (isset($_GET['volver'])) {
+            Acceso::guardarDestino($_GET['volver']);
         }
 
         $correoIntento = (string) ($_SESSION[self::CLAVE_CORREO_INTENTO] ?? '');

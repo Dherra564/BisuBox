@@ -304,6 +304,30 @@ class ProductoRepositorio
         );
     }
 
+    /**
+     * Productos de una tienda para el carrito del cliente, por su id. Solo los de ese vendedor
+     * @param int[] $ids
+     * @return array<int, Producto>
+     */
+    public function buscarVarios(int $idVendedor, array $ids): array
+    {
+        $ids = array_values(array_unique(array_map('intval', $ids)));
+        if ($ids === []) {
+            return [];
+        }
+        $marcas = implode(', ', array_fill(0, count($ids), '?'));
+        $consulta = $this->conexion->prepare(
+            "SELECT * FROM tbproducto WHERE tbproductovendedorid = ? AND tbproductoid IN ({$marcas})"
+        );
+        $consulta->execute(array_merge([$idVendedor], $ids));
+
+        $productos = [];
+        foreach ($consulta->fetchAll() as $fila) {
+            $productos[(int) $fila['tbproductoid']] = $this->crearDesdeFila($fila);
+        }
+        return $productos;
+    }
+
     public function listarActivos(int $idVendedor): array
     {
         $consulta = $this->conexion->prepare(

@@ -123,14 +123,23 @@ $contactos = $datos['contactos'] ?? [];
                     <?= $mensajeError('tiendaDescripcion') ?>
                 </div>
             </div>
+            <?php $logoPendiente = $datos['tiendaLogoPendiente'] ?? null; ?>
             <div class="<?= $claseCampo('tiendaLogo') ?>">
                 <div class="zonaFoto">
-                    <img src="<?= $urlBase ?>/imagenes/logoPorDefecto.svg" alt="Vista previa del logo"
+                    <img src="<?= $logoPendiente !== null
+                        ? $urlBase . '/fotos/logo?archivo=' . urlencode($logoPendiente)
+                        : $urlBase . '/imagenes/logoPorDefecto.svg' ?>" alt="Vista previa del logo"
                         class="fotoPerfilGrande">
-                    <label for="tiendaLogo" class="boton botonSecundario">Elegir logo</label>
+                    <label for="tiendaLogo" class="boton botonSecundario"><?= $logoPendiente !== null ? 'Cambiar logo' : 'Elegir logo' ?></label>
                     <input type="file" id="tiendaLogo" name="tiendaLogo" accept="image/jpeg,image/png"
                         class="campoArchivo">
-                    <span class="nombreArchivo">JPG o PNG, máximo 5 MB. Opcional</span>
+                    <?php if ($logoPendiente !== null): ?>
+                        <!-- El logo que ya eligió no se pierde aunque el formulario tenga errores -->
+                        <input type="hidden" name="tiendaLogoPendiente" value="<?= htmlspecialchars($logoPendiente) ?>">
+                        <span class="nombreArchivo">Ya eligió este logo. Se guarda al crear la cuenta</span>
+                    <?php else: ?>
+                        <span class="nombreArchivo">JPG o PNG, máximo 5 MB. Opcional</span>
+                    <?php endif; ?>
                 </div>
                 <?= $mensajeError('tiendaLogo') ?>
             </div>
@@ -144,14 +153,14 @@ $contactos = $datos['contactos'] ?? [];
         <div class="filaCampos">
             <div class="<?= $claseCampo('contrasena') ?>">
                 <label for="contrasena">Contraseña <span class="obligatorio">*</span></label>
-                <input type="password" id="contrasena" name="contrasena" maxlength="20" required data-regla="contrasena"
+                <input type="password" id="contrasena" name="contrasena" maxlength="20" required data-regla="contrasena" value="<?= $valor('contrasena') ?>"
                     autocomplete="new-password" data-mensaje-requerido="Ingrese una contraseña">
                 <p class="textoAyuda">De 8 a 20 caracteres, con mayúscula, minúscula y número</p>
                 <?= $mensajeError('contrasena') ?>
             </div>
             <div class="<?= $claseCampo('confirmarContrasena') ?>">
                 <label for="confirmarContrasena">Confirmar contraseña <span class="obligatorio">*</span></label>
-                <input type="password" id="confirmarContrasena" name="confirmarContrasena" maxlength="20" required
+                <input type="password" id="confirmarContrasena" name="confirmarContrasena" maxlength="20" required value="<?= $valor('confirmarContrasena') ?>"
                     data-igual-a="contrasena" autocomplete="new-password"
                     data-mensaje-requerido="Confirme la contraseña">
                 <?= $mensajeError('confirmarContrasena') ?>

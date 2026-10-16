@@ -11,6 +11,8 @@ $titulo = 'Cambiar contraseña';
 $paginaActual = 'perfil';
 require __DIR__ . '/../Plantilla/encabezado.php';
 
+$datos = $datos ?? [];
+$valor = fn(string $campo): string => htmlspecialchars((string) ($datos[$campo] ?? ''));
 $claseCampo = fn(string $campo): string => isset($errores[$campo]) ? 'campo campoConError' : 'campo';
 $mensajeError = fn(string $campo): string => isset($errores[$campo])
     ? '<p class="errorCampo">' . htmlspecialchars($errores[$campo]) . '</p>'
@@ -34,14 +36,14 @@ $mensajeError = fn(string $campo): string => isset($errores[$campo])
 
         <div class="<?= $claseCampo('contrasenaActual') ?>">
             <label for="contrasenaActual">Contraseña actual <span class="obligatorio">*</span></label>
-            <input type="password" id="contrasenaActual" name="contrasenaActual" maxlength="20" required
+            <input type="password" id="contrasenaActual" name="contrasenaActual" maxlength="20" required value="<?= $valor('contrasenaActual') ?>"
                 autocomplete="current-password" data-mensaje-requerido="Ingrese su contraseña actual">
             <?= $mensajeError('contrasenaActual') ?>
         </div>
 
         <div class="<?= $claseCampo('contrasenaNueva') ?>">
             <label for="contrasenaNueva">Contraseña nueva <span class="obligatorio">*</span></label>
-            <input type="password" id="contrasenaNueva" name="contrasenaNueva" maxlength="20" required
+            <input type="password" id="contrasenaNueva" name="contrasenaNueva" maxlength="20" required value="<?= $valor('contrasenaNueva') ?>"
                 data-regla="contrasena" data-distinto-de="contrasenaActual" autocomplete="new-password"
                 data-mensaje-requerido="Ingrese la contraseña nueva">
             <p class="textoAyuda">Entre 8 y 20 caracteres, con mayúscula, minúscula y número, sin espacios</p>
@@ -50,7 +52,7 @@ $mensajeError = fn(string $campo): string => isset($errores[$campo])
 
         <div class="<?= $claseCampo('confirmarContrasena') ?>">
             <label for="confirmarContrasena">Confirmar contraseña nueva <span class="obligatorio">*</span></label>
-            <input type="password" id="confirmarContrasena" name="confirmarContrasena" maxlength="20" required
+            <input type="password" id="confirmarContrasena" name="confirmarContrasena" maxlength="20" required value="<?= $valor('confirmarContrasena') ?>"
                 data-igual-a="contrasenaNueva" autocomplete="new-password"
                 data-mensaje-requerido="Confirme la contraseña nueva">
             <?= $mensajeError('confirmarContrasena') ?>

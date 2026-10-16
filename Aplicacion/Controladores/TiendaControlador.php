@@ -50,13 +50,16 @@ class TiendaControlador
         $datos = DatosTienda::leer();
         $datos['tiendaActiva'] = ($_POST['tiendaActiva'] ?? '') === '1';
         $quitarLogo = ($_POST['quitarLogo'] ?? '') === '1';
+        $datos['quitarLogo'] = $quitarLogo;
 
         $validador = new Validador();
         DatosTienda::validar($validador, $datos, $this->vendedor->getIdVendedor());
 
-        $nombreLogo = $this->subirLogo($validador);
+        $nombreLogo = (new SubidaArchivo())->recibir('tiendaLogo', SubidaArchivo::LOGO, $validador);
+        // El logo que eligió no se pierde aunque el formulario tenga errores
+        $datos['tiendaLogoPendiente'] = $nombreLogo;
         if (!$validador->esValido()) {
-            SubidaArchivo::eliminarLogo($nombreLogo);
+            SubidaArchivo::recordarPendiente(SubidaArchivo::LOGO, $nombreLogo);
             $this->mostrarTienda($datos, $validador->errores());
             return;
         }
@@ -76,10 +79,14 @@ class TiendaControlador
             $this->vendedorRepositorio->actualizarTienda($this->vendedor);
         } catch (Throwable $error) {
             error_log('Error al actualizar la tienda: ' . $error->getMessage());
-            SubidaArchivo::eliminarLogo($nombreLogo);
+            SubidaArchivo::recordarPendiente(SubidaArchivo::LOGO, $nombreLogo);
             Mensaje::error('No se pudo guardar. Intente de nuevo.');
-            $this->redirigir('/tienda');
+            // Se vuelve a mostrar el formulario con lo que escribió, para no perder los cambios
+            $this->vendedor = $this->vendedorRepositorio->buscarPorIdUsuario((int) UsuarioActual::id()) ?? $this->vendedor;
+            $this->mostrarTienda($datos, [], true);
+            return;
         }
+        SubidaArchivo::olvidarPendiente(SubidaArchivo::LOGO, $nombreLogo);
 
         if ($logoAnterior !== null && $logoAnterior !== $this->vendedor->getTiendaLogo()) {
             SubidaArchivo::eliminarLogo($logoAnterior);
@@ -89,22 +96,10 @@ class TiendaControlador
         $this->redirigir('/tienda');
     }
 
-    private function subirLogo(Validador $validador): ?string
-    {
-        if (!SubidaArchivo::seEnvio($_FILES['tiendaLogo'] ?? null)) {
-            return null;
-        }
-        $subida = new SubidaArchivo();
-        $nombre = $subida->guardarLogo($_FILES['tiendaLogo']);
-        if ($nombre === null) {
-            $validador->agregarError('tiendaLogo', $subida->obtenerError());
-        }
-        return $nombre;
-    }
-
-    private function mostrarTienda(array $datos, array $errores): void
+    private function mostrarTienda(array $datos, array $errores, bool $seguirEditando = false): void
     {
         $this->mostrarVista('Tienda/miTienda', [
+            'seguirEditando' => $seguirEditando,
             'vendedor' => $this->vendedor,
             'datos' => $datos,
             'errores' => $errores,

@@ -1,10 +1,22 @@
+# Configuración local de cada compu
+.env
+
+# Dependencias de Composer (cada uno corre composer install)
+/vendor/
+
+# Archivos que suben los usuarios
 Almacenamiento/Fotos/Perfiles/*
 !Almacenamiento/Fotos/Perfiles/.gitkeep
+Almacenamiento/Fotos/Logos/*
+!Almacenamiento/Fotos/Logos/.gitkeep
 Almacenamiento/Fotos/Productos/*
 !Almacenamiento/Fotos/Productos/.gitkeep
+
+# Registros de errores
 Almacenamiento/Registros/*
 !Almacenamiento/Registros/.gitkeep
 
+# Editores y sistema
 .vscode/
 .idea/
 .DS_Store

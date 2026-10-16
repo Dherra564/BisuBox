@@ -48,13 +48,20 @@ $productoCostos = $producto;
                 <div class="encabezadoProducto">
                     <div class="<?= $claseCampo('foto', 'campoFotoProducto') ?>">
                         <div class="zonaFoto zonaFotoProducto">
-                            <img src="<?= htmlspecialchars($urlFoto) ?>" alt="" class="fotoPerfilGrande fotoProducto">
-                            <label for="foto" class="enlaceFoto"><?= $foto !== null ? 'Cambiar foto' : 'Agregar foto' ?></label>
+                            <?php $fotoPendiente = $datos['fotoPendiente'] ?? null; ?>
+                            <img src="<?= htmlspecialchars($fotoPendiente !== null ? $urlBase . '/fotos/producto?archivo=' . urlencode($fotoPendiente) : $urlFoto) ?>" alt="" class="fotoPerfilGrande fotoProducto">
+                            <label for="foto" class="enlaceFoto"><?= $foto !== null || $fotoPendiente !== null ? 'Cambiar foto' : 'Agregar foto' ?></label>
                             <input type="file" id="foto" name="foto" accept="image/jpeg,image/png" class="campoArchivo">
-                            <span class="nombreArchivo">JPG o PNG</span>
+                            <?php if ($fotoPendiente !== null): ?>
+                                <!-- La foto nueva que ya eligió no se pierde aunque el formulario tenga errores -->
+                                <input type="hidden" name="fotoPendiente" value="<?= htmlspecialchars($fotoPendiente) ?>">
+                                <span class="nombreArchivo">Foto nueva elegida</span>
+                            <?php else: ?>
+                                <span class="nombreArchivo">JPG o PNG</span>
+                            <?php endif; ?>
                             <?php if ($foto !== null): ?>
                                 <div class="campoCasilla">
-                                    <input type="checkbox" id="quitarFoto" name="quitarFoto" value="1">
+                                    <input type="checkbox" id="quitarFoto" name="quitarFoto" value="1" <?= !empty($datos['quitarFoto']) ? 'checked' : '' ?>>
                                     <label for="quitarFoto">Quitar</label>
                                 </div>
                             <?php endif; ?>

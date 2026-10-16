@@ -57,6 +57,7 @@ class ProductoControlador
         $pagina = min(max(1, (int) ($_GET['pagina'] ?? 1)), $totalPaginas);
 
         $this->mostrarVista('Producto/lista', [
+            'hiceMasFallido' => $this->tomarHiceMasFallido(),
             'productos' => $this->productoRepositorio->listar($this->idVendedor, $filtros, $pagina),
             'resumen' => $this->productoRepositorio->resumen($this->idVendedor),
             'busqueda' => $busqueda,
@@ -80,14 +81,17 @@ class ProductoControlador
     public function insertar(): void
     {
         $this->verificarCsrf('/productos/nuevo');
-        $componentes = $this->componentesDisponibles();
+        // Aquí no se redirige aunque ya no haya componentes: se vuelve a mostrar lo que escribió
+        $componentes = $this->componentesDisponibles(false);
 
         $datos = DatosProducto::leer();
         $validador = new Validador();
         DatosProducto::validar($validador, $datos, $componentes, $this->idVendedor);
-        $foto = $this->subirFoto($validador);
+        $foto = (new SubidaArchivo())->recibir('foto', SubidaArchivo::FOTO_PRODUCTO, $validador);
+        // La foto que eligió no se pierde aunque el formulario tenga errores
+        $datos['fotoPendiente'] = $foto;
         if (!$validador->esValido()) {
-            SubidaArchivo::eliminarFotoProducto($foto);
+            SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_PRODUCTO, $foto);
             $this->mostrarFormulario($datos, $validador->errores(), $componentes);
             return;
         }
@@ -98,17 +102,18 @@ class ProductoControlador
         try {
             $idProducto = $this->produccionRepositorio->crearProducto($producto, $cantidad);
         } catch (OperacionNoPermitida $error) {
-            SubidaArchivo::eliminarFotoProducto($foto);
+            SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_PRODUCTO, $foto);
             Mensaje::error($error->getMessage());
-            $this->mostrarFormulario($datos, [], $this->componentesDisponibles());
+            $this->mostrarFormulario($datos, [], $this->componentesDisponibles(false));
             return;
         } catch (Throwable $error) {
             error_log('Error al crear el producto: ' . $error->getMessage());
-            SubidaArchivo::eliminarFotoProducto($foto);
+            SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_PRODUCTO, $foto);
             Mensaje::error('No se pudo guardar. No se cambió nada en el inventario; intente de nuevo.');
             $this->mostrarFormulario($datos, [], $componentes);
             return;
         }
+        SubidaArchivo::olvidarPendiente(SubidaArchivo::FOTO_PRODUCTO, $foto);
 
         Mensaje::exito('«' . $producto->getNombre() . '» listo: ' . ($cantidad === 1 ? 'hizo 1' : 'hizo ' . $cantidad)
             . ' y se descontó del inventario lo que llevan.');
@@ -131,6 +136,7 @@ class ProductoControlador
         }
 
         $this->mostrarVista('Producto/detalle', [
+            'hiceMasFallido' => $this->tomarHiceMasFallido(),
             'producto' => $producto,
             'producciones' => $this->produccionRepositorio->listarPorProducto((int) $producto->getIdProducto(), $this->idVendedor),
             'alcanzaPara' => $this->alcanzaPara($producto, $existencias),
@@ -152,9 +158,12 @@ class ProductoControlador
         $datos = DatosProducto::leerDatosComunes();
         $validador = new Validador();
         DatosProducto::validarDatosComunes($validador, $datos, $this->idVendedor, $producto);
-        $foto = $this->subirFoto($validador);
+        $foto = (new SubidaArchivo())->recibir('foto', SubidaArchivo::FOTO_PRODUCTO, $validador);
+        // La foto nueva y la casilla "Quitar" no se pierden aunque el formulario tenga errores
+        $datos['fotoPendiente'] = $foto;
+        $datos['quitarFoto'] = ($_POST['quitarFoto'] ?? '') === '1';
         if (!$validador->esValido()) {
-            SubidaArchivo::eliminarFotoProducto($foto);
+            SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_PRODUCTO, $foto);
             $this->mostrarEdicion($datos, $validador->errores(), $producto);
             return;
         }
@@ -173,13 +182,14 @@ class ProductoControlador
             $this->productoRepositorio->actualizar($producto);
         } catch (Throwable $error) {
             error_log('Error al actualizar el producto: ' . $error->getMessage());
-            SubidaArchivo::eliminarFotoProducto($foto);
+            SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_PRODUCTO, $foto);
             $producto->setFoto($fotoAnterior);
             Mensaje::error('No se pudo guardar. Intente de nuevo.');
             $this->mostrarEdicion($datos, [], $producto);
             return;
         }
 
+        SubidaArchivo::olvidarPendiente(SubidaArchivo::FOTO_PRODUCTO, $foto);
         if ($fotoAnterior !== null && $fotoAnterior !== $producto->getFoto()) {
             SubidaArchivo::eliminarFotoProducto($fotoAnterior);
         }
@@ -219,19 +229,16 @@ class ProductoControlador
 
         $cantidad = is_string($_POST['cantidad'] ?? null) ? trim($_POST['cantidad']) : '';
         if (!DatosProducto::esCantidadValida($cantidad)) {
-            Mensaje::error(str_starts_with($cantidad, '-') ? 'No puede ser un número negativo.' : 'Escriba cuántos hizo, con números enteros desde 1.');
-            $this->redirigir($volver);
+            $this->fallarHiceMas($producto, $cantidad, str_starts_with($cantidad, '-') ? 'No puede ser un número negativo.' : 'Escriba cuántos hizo, con números enteros desde 1.', $volver);
         }
 
         try {
             $this->produccionRepositorio->producir($producto, (int) $cantidad);
         } catch (OperacionNoPermitida $error) {
-            Mensaje::error($error->getMessage());
-            $this->redirigir($volver);
+            $this->fallarHiceMas($producto, $cantidad, $error->getMessage(), $volver);
         } catch (Throwable $error) {
             error_log('Error al registrar la producción: ' . $error->getMessage());
-            Mensaje::error('No se pudo registrar. No se cambió nada en el inventario; intente de nuevo.');
-            $this->redirigir($volver);
+            $this->fallarHiceMas($producto, $cantidad, 'No se pudo registrar. No se cambió nada en el inventario; intente de nuevo.', $volver);
         }
 
         Mensaje::exito(((int) $cantidad === 1 ? 'Se sumó 1' : 'Se sumaron ' . (int) $cantidad) . ' a «' . $producto->getNombre() . '» y se descontó del inventario lo que llevan.');
@@ -267,7 +274,25 @@ class ProductoControlador
         $this->redirigir($volver);
     }
 
-    private function componentesDisponibles(): array
+    // Si "Hice más" falla, la ventana se vuelve a abrir con la cantidad que escribió y el error
+    private function fallarHiceMas(Producto $producto, string $cantidad, string $error, string $volver): never
+    {
+        $_SESSION['hiceMasFallido'] = [
+            'id' => (int) $producto->getIdProducto(),
+            'cantidad' => mb_substr($cantidad, 0, 4, 'UTF-8'),
+            'error' => $error,
+        ];
+        $this->redirigir($volver);
+    }
+
+    private function tomarHiceMasFallido(): ?array
+    {
+        $fallido = $_SESSION['hiceMasFallido'] ?? null;
+        unset($_SESSION['hiceMasFallido']);
+        return is_array($fallido) ? $fallido : null;
+    }
+
+    private function componentesDisponibles(bool $redirigirSiNoHay = true): array
     {
         $componentes = [];
         foreach ((new ComponenteRepositorio())->listarActivos($this->idVendedor) as $componente) {
@@ -275,7 +300,7 @@ class ProductoControlador
         }
 
         $hayExistencia = array_filter($componentes, fn($componente): bool => $componente->getExistencia() > 0) !== [];
-        if (!$hayExistencia) {
+        if (!$hayExistencia && $redirigirSiNoHay) {
             Mensaje::advertencia('Para hacer un producto necesita componentes en el inventario. Regístrelos con una compra a proveedores.');
             $this->redirigir('/compras-proveedor/nueva');
         }
@@ -294,19 +319,6 @@ class ProductoControlador
         }
 
         return $alcanza ?? 0;
-    }
-
-    private function subirFoto(Validador $validador): ?string
-    {
-        if (!SubidaArchivo::seEnvio($_FILES['foto'] ?? null)) {
-            return null;
-        }
-        $subida = new SubidaArchivo();
-        $nombre = $subida->guardarFotoProducto($_FILES['foto']);
-        if ($nombre === null) {
-            $validador->agregarError('foto', $subida->obtenerError());
-        }
-        return $nombre;
     }
 
     private function buscarProducto(mixed $id): Producto

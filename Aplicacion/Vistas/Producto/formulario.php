@@ -44,7 +44,8 @@ $filaComponente = function (string $clave, array $linea) use ($claseCampo, $mens
             $agotado = $componente->getExistencia() <= 0;
             $opciones .= '<option value="' . $componente->getIdComponente() . '"'
                 . ((string) $componente->getIdComponente() === $linea['componente'] ? ' selected' : '')
-                . ($agotado ? ' disabled' : '')
+                // El que ya estaba elegido no se bloquea, para que no se pierda si se agotó mientras tanto
+                . ($agotado && (string) $componente->getIdComponente() !== $linea['componente'] ? ' disabled' : '')
                 . ' data-existencia="' . $componente->getExistencia() . '"'
                 . ' data-costo="' . $componente->getCostoUnitario() . '"'
                 . ' data-plural="' . $unidad['plural'] . '"'
@@ -135,12 +136,21 @@ $hayErrorExtras = array_filter(array_keys($errores), fn(string $campo): bool => 
 
             <div class="encabezadoProducto">
                 <div class="<?= $claseCampo('foto', 'campoFotoProducto') ?>">
+                    <?php $fotoPendiente = $datos['fotoPendiente'] ?? null; ?>
                     <div class="zonaFoto zonaFotoProducto">
-                        <img src="<?= $urlBase ?>/imagenes/productoPorDefecto.svg" alt=""
+                        <img src="<?= $fotoPendiente !== null
+                            ? $urlBase . '/fotos/producto?archivo=' . urlencode($fotoPendiente)
+                            : $urlBase . '/imagenes/productoPorDefecto.svg' ?>" alt=""
                             class="fotoPerfilGrande fotoProducto">
-                        <label for="foto" class="enlaceFoto">Agregar foto</label>
+                        <label for="foto" class="enlaceFoto"><?= $fotoPendiente !== null ? 'Cambiar foto' : 'Agregar foto' ?></label>
                         <input type="file" id="foto" name="foto" accept="image/jpeg,image/png" class="campoArchivo">
-                        <span class="nombreArchivo">JPG o PNG</span>
+                        <?php if ($fotoPendiente !== null): ?>
+                            <!-- La foto que ya eligió no se pierde aunque el formulario tenga errores -->
+                            <input type="hidden" name="fotoPendiente" value="<?= htmlspecialchars($fotoPendiente) ?>">
+                            <span class="nombreArchivo">Foto elegida</span>
+                        <?php else: ?>
+                            <span class="nombreArchivo">JPG o PNG</span>
+                        <?php endif; ?>
                     </div>
                     <?= $mensajeError('foto') ?>
                 </div>

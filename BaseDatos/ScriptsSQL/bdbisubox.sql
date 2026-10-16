@@ -1,5 +1,8 @@
 -- Base de datos de BisuBox
 
+-- Para que las tildes y la ñ se guarden bien aunque se cargue desde la consola
+SET NAMES utf8mb4;
+
 DROP DATABASE IF EXISTS `bdbisubox`;
 
 CREATE DATABASE `bdbisubox` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -318,6 +321,47 @@ CREATE TABLE `tbfoto` (
     `tbfotodatos` mediumblob DEFAULT NULL,
     `tbfotoregistrofecha` datetime DEFAULT NULL,
     PRIMARY KEY (`tbfotoid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tbpedido`
+-- Un pedido es de un solo cliente a una sola tienda
+--
+
+CREATE TABLE `tbpedido` (
+    `tbpedidoid` int(11) NOT NULL,
+    `tbpedidovendedorid` int(11) DEFAULT NULL,
+    `tbpedidoclienteid` int(11) DEFAULT NULL,
+    `tbpedidofecha` datetime DEFAULT NULL,
+    `tbpedidoentrega` varchar(20) DEFAULT NULL,
+    `tbpedidodireccion` varchar(250) DEFAULT NULL,
+    `tbpedidometodopago` varchar(20) DEFAULT NULL,
+    `tbpedidonota` varchar(300) DEFAULT NULL,
+    `tbpedidototal` decimal(12, 2) DEFAULT NULL,
+    `tbpedidoestado` varchar(20) DEFAULT NULL,
+    `tbpedidocanceladopor` varchar(20) DEFAULT NULL,
+    `tbpedidoactualizacionfecha` datetime DEFAULT NULL,
+    PRIMARY KEY (`tbpedidoid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tbpedidodetalle`
+-- Se guarda el nombre y el precio del momento, por si el producto cambia después
+--
+
+CREATE TABLE `tbpedidodetalle` (
+    `tbpedidodetalleid` int(11) NOT NULL,
+    `tbpedidodetallepedidoid` int(11) DEFAULT NULL,
+    `tbpedidodetalleproductoid` int(11) DEFAULT NULL,
+    `tbpedidodetallenombre` varchar(60) DEFAULT NULL,
+    `tbpedidodetallecantidad` int(11) DEFAULT NULL,
+    `tbpedidodetalleprecio` decimal(12, 2) DEFAULT NULL,
+    `tbpedidodetallesubtotal` decimal(12, 2) DEFAULT NULL,
+    PRIMARY KEY (`tbpedidodetalleid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------

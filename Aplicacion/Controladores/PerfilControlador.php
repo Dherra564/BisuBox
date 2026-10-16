@@ -57,12 +57,15 @@ class PerfilControlador
         ];
 
         $validador = $this->validarDatos($datos, $tieneIdentificacion);
-        $nombreFoto = $this->subirFoto($validador);
+        $fotoNueva = (new SubidaArchivo())->recibir('fotoPerfil', SubidaArchivo::FOTO_PERFIL, $validador);
+        // La foto que eligió no se pierde aunque el formulario tenga errores
+        $datos['fotoPerfilPendiente'] = $fotoNueva;
         if (!$validador->esValido()) {
-            SubidaArchivo::eliminarFotoPerfil($nombreFoto);
+            SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_PERFIL, $fotoNueva);
             $this->mostrarPerfil($datos, $validador->errores());
             return;
         }
+        $nombreFoto = $fotoNueva;
 
         $fotoAnterior = $this->usuario->getFotoPerfil();
         $this->usuario->setTipoIdentificacion($datos['tipoIdentificacion']);
@@ -78,10 +81,14 @@ class PerfilControlador
             $this->usuarioRepositorio->actualizar($this->usuario);
         } catch (Throwable $error) {
             error_log('Error al actualizar perfil: ' . $error->getMessage());
-            SubidaArchivo::eliminarFotoPerfil($nombreFoto);
+            SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_PERFIL, $nombreFoto);
             Mensaje::error('No se pudo guardar. Intente de nuevo.');
-            $this->redirigir('/perfil');
+            // Se vuelve a mostrar el formulario con lo que escribió, para no perder los cambios
+            $this->usuario = $this->cargarUsuarioActual();
+            $this->mostrarPerfil($datos, [], true);
+            return;
         }
+        SubidaArchivo::olvidarPendiente(SubidaArchivo::FOTO_PERFIL, $nombreFoto);
 
         if ($nombreFoto !== null && $fotoAnterior !== null) {
             SubidaArchivo::eliminarFotoPerfil($fotoAnterior);
@@ -95,7 +102,7 @@ class PerfilControlador
 
     public function formularioContrasena(): void
     {
-        $this->mostrarVista('Perfil/cambiarContrasena', ['errores' => []]);
+        $this->mostrarVista('Perfil/cambiarContrasena', ['datos' => [], 'errores' => []]);
     }
 
     public function cambiarContrasena(): void
@@ -125,8 +132,10 @@ class PerfilControlador
             $validador->agregarError('contrasenaNueva', 'La contraseña nueva debe ser diferente a la actual');
         }
 
+        // Lo que escribió se vuelve a mostrar si hay algún error
+        $datos = ['contrasenaActual' => $actual, 'contrasenaNueva' => $nueva, 'confirmarContrasena' => $confirmar];
         if (!$validador->esValido()) {
-            $this->mostrarVista('Perfil/cambiarContrasena', ['errores' => $validador->errores()]);
+            $this->mostrarVista('Perfil/cambiarContrasena', ['datos' => $datos, 'errores' => $validador->errores()]);
             return;
         }
 
@@ -135,7 +144,8 @@ class PerfilControlador
         } catch (Throwable $error) {
             error_log('Error al cambiar contraseña: ' . $error->getMessage());
             Mensaje::error('No se pudo cambiar la contraseña. Intente de nuevo.');
-            $this->redirigir('/perfil/contrasena');
+            $this->mostrarVista('Perfil/cambiarContrasena', ['datos' => $datos, 'errores' => []]);
+            return;
         }
 
         Mensaje::exito('Contraseña cambiada correctamente');
@@ -207,22 +217,10 @@ class PerfilControlador
         return $validador;
     }
 
-    private function subirFoto(Validador $validador): ?string
-    {
-        if (!SubidaArchivo::seEnvio($_FILES['fotoPerfil'] ?? null)) {
-            return null;
-        }
-        $subida = new SubidaArchivo();
-        $nombre = $subida->guardarFotoPerfil($_FILES['fotoPerfil']);
-        if ($nombre === null) {
-            $validador->agregarError('fotoPerfil', $subida->obtenerError());
-        }
-        return $nombre;
-    }
-
-    private function mostrarPerfil(array $datos, array $errores): void
+    private function mostrarPerfil(array $datos, array $errores, bool $seguirEditando = false): void
     {
         $this->mostrarVista('Perfil/miPerfil', [
+            'seguirEditando' => $seguirEditando,
             'usuario' => $this->usuario,
             'rol' => Rol::nombre($this->usuario->getRol()),
             'tieneIdentificacion' => $this->usuario->esVendedor(),

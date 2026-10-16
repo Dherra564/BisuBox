@@ -137,6 +137,15 @@ class Validador
         return $this;
     }
 
+    // Dirección de entrega: letras, números, espacios, saltos de línea y los signos comunes de una dirección
+    public function direccion(string $campo, ?string $valor, string $mensaje = 'La dirección solo puede tener letras, números, espacios y los signos . , # - / ( ) °'): self
+    {
+        if ($this->debeRevisar($campo, $valor) && !preg_match('/^[\p{L}0-9\s.,#\-\/()°º:;]+$/u', trim($valor))) {
+            $this->agregarError($campo, $mensaje);
+        }
+        return $this;
+    }
+
     public function contrasenaSegura(string $campo, ?string $valor, string $mensaje = 'La contraseña debe tener entre 8 y 20 caracteres, una mayúscula, una minúscula y un número, sin espacios'): self
     {
         if ($this->debeRevisar($campo, $valor)) {

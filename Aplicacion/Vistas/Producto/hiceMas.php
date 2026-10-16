@@ -1,13 +1,20 @@
 <?php
 /**
- * Ventana para sumar más de un producto que ya existe ("Hice más")
+ 
  * @var string $urlBase
  * @var string $volverHiceMas  'lista' o 'detalle'
+ * @var array|null $hiceMasFallido  si el intento anterior falló: id, cantidad y error
  */
 
 use Aplicacion\Nucleo\Csrf;
 ?>
-<dialog class="modal modalHiceMas" id="modalHiceMas" aria-labelledby="hiceMasTitulo">
+<?php $hiceMasFallido = $hiceMasFallido ?? null; ?>
+<dialog class="modal modalHiceMas" id="modalHiceMas" aria-labelledby="hiceMasTitulo"
+    <?php if ($hiceMasFallido !== null): ?>
+        data-reabrir-id="<?= (int) $hiceMasFallido['id'] ?>"
+        data-reabrir-cantidad="<?= htmlspecialchars((string) $hiceMasFallido['cantidad']) ?>"
+        data-reabrir-error="<?= htmlspecialchars((string) $hiceMasFallido['error']) ?>"
+    <?php endif; ?>>
     <form method="post" action="<?= $urlBase ?>/productos/producir" class="modalContenido">
         <?= Csrf::campo() ?>
         <input type="hidden" name="id" value="" data-hice-mas-id>

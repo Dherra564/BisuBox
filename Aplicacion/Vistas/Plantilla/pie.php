@@ -6,6 +6,12 @@
 
 use Configuracion\Configuracion;
 
+// Si la página usó el diseño de la tienda, también usa su pie
+if (!empty($usaDisenoTienda)) {
+    require __DIR__ . '/pieTienda.php';
+    return;
+}
+
 $scriptsExtra = $scriptsExtra ?? [];
 ?>
             </main>
