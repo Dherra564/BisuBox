@@ -326,6 +326,24 @@ CREATE TABLE `tbfoto` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `tbcarrito`
+-- Lo que cada cliente tiene en el carrito. Se guarda aquí para que no se pierda
+-- al cerrar sesión o cambiar de computadora
+--
+
+CREATE TABLE `tbcarrito` (
+    `tbcarritoid` int(11) NOT NULL,
+    `tbcarritoclienteid` int(11) DEFAULT NULL,
+    `tbcarritovendedorid` int(11) DEFAULT NULL,
+    `tbcarritoproductoid` int(11) DEFAULT NULL,
+    `tbcarritocantidad` int(11) DEFAULT NULL,
+    `tbcarritoagregadofecha` datetime DEFAULT NULL,
+    PRIMARY KEY (`tbcarritoid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `tbpedido`
 -- Un pedido es de un solo cliente a una sola tienda
 --
