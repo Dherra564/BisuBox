@@ -1,66 +1,112 @@
 <?php
-/**
- * Portada de la tienda: lo que ve cualquier persona que abre el enlace de la tienda
- * @var \Aplicacion\Modelos\Vendedor $tienda
- * @var \Aplicacion\Modelos\Producto[] $productos
- * @var string $busqueda
- * @var array<int, int> $enCarrito  lo que el cliente ya tiene en el carrito
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\Carrito;
 use Aplicacion\Nucleo\Csrf;
+use Aplicacion\Nucleo\Icono;
 use Aplicacion\Nucleo\Numero;
-use Aplicacion\Nucleo\UsuarioActual;
+use Aplicacion\Nucleo\TipoContacto;
+use Aplicacion\Nucleo\WhatsApp;
 
-$titulo = (string) $tienda->getTiendaNombre();
-$paginaActual = 'tienda';
+$titulo = (string) $tiendaVista->getTiendaNombre();
+$paginaActual = 'inicio';
 $ocultarTitulo = true;
 $scriptsExtra = ['pedido.js'];
-require __DIR__ . '/../Plantilla/encabezadoTienda.php';
+require __DIR__ . '/../Plantilla/encabezado.php';
 
 $disponibles = array_values(array_filter($productos, fn($producto): bool => $producto->getExistencia() > 0));
-$agotados = array_values(array_filter($productos, fn($producto): bool => $producto->getExistencia() <= 0));
-$esDuenio = UsuarioActual::esVendedor() && UsuarioActual::id() === $tienda->getIdUsuario();
+$sinExistencia = array_values(array_filter($productos, fn($producto): bool => $producto->getExistencia() <= 0));
+$logo = $tiendaVista->getTiendaLogo();
+$urlLogo = $logo !== null ? $urlBase . '/fotos/logo?archivo=' . urlencode($logo) : null;
+$iconosContacto = [
+    TipoContacto::WHATSAPP => 'whatsapp',
+    TipoContacto::INSTAGRAM => 'instagram',
+    TipoContacto::FACEBOOK => 'facebook',
+    TipoContacto::TIKTOK => 'tiktok',
+];
 ?>
+
+<?php if ($esDuenio): ?>
+    <?php if (!$tiendaVista->getTiendaActiva()): ?>
+        <div class="alerta alertaAdvertencia" role="status">
+            <span class="alertaIcono" aria-hidden="true">⚠</span>
+            <p><strong>Atención:</strong> Su tienda está oculta y sus clientes no la pueden ver. Actívela en <a
+                    href="<?= $urlBase ?>/tienda">Mi tienda</a>.</p>
+        </div>
+    <?php endif; ?>
+    <div class="resumenDuenio">
+        <a href="<?= $urlBase ?>/pedidos?estado=Pendiente"
+            class="tarjetaResumen <?= $pedidosPendientes > 0 ? 'tarjetaResumenAviso' : '' ?>">
+            <span>Pedidos pendientes</span>
+            <strong><?= (int) $pedidosPendientes ?></strong>
+        </a>
+        <a href="<?= $urlBase ?>/productos" class="tarjetaResumen">
+            <span>Productos agotados</span>
+            <strong><?= (int) $agotados ?></strong>
+        </a>
+    </div>
+<?php endif; ?>
 
 <?php if ($busqueda === ''): ?>
     <section class="tiendaPortada">
         <div class="tiendaPortadaTexto">
             <p class="tiendaPortadaEtiqueta">Bisutería</p>
-            <h1 class="tiendaPortadaTitulo"><?= htmlspecialchars((string) $tienda->getTiendaNombre()) ?></h1>
-            <?php if ((string) $tienda->getTiendaDescripcion() !== ''): ?>
-                <p class="tiendaPortadaDescripcion"><?= htmlspecialchars((string) $tienda->getTiendaDescripcion()) ?></p>
+            <h1 class="tiendaPortadaTitulo"><?= htmlspecialchars((string) $tiendaVista->getTiendaNombre()) ?></h1>
+            <?php if ((string) $tiendaVista->getTiendaDescripcion() !== ''): ?>
+                <p class="tiendaPortadaDescripcion"><?= htmlspecialchars((string) $tiendaVista->getTiendaDescripcion()) ?></p>
             <?php endif; ?>
-            <a href="#productos" class="boton">Ver productos</a>
+            <?php if ($tiendaVista->getContactos() !== []): ?>
+                <ul class="tiendaPortadaContactos">
+                    <?php foreach ($tiendaVista->getContactos() as $contacto): ?>
+                        <?php
+                        $tipo = $contacto->getTipo();
+                        $texto = TipoContacto::formatear($tipo, $contacto->getValor());
+                        $enlaceWhatsApp = $tipo === TipoContacto::WHATSAPP ? WhatsApp::enlace($contacto->getValor()) : null;
+                        ?>
+                        <li>
+                            <?php if ($enlaceWhatsApp !== null): ?>
+                                <a href="<?= htmlspecialchars($enlaceWhatsApp) ?>" target="_blank" rel="noopener">
+                                    <?= Icono::svg($iconosContacto[$tipo] ?? 'web') ?>                 <?= htmlspecialchars($texto) ?>
+                                </a>
+                            <?php else: ?>
+                                <span title="<?= htmlspecialchars(TipoContacto::nombre($tipo)) ?>">
+                                    <?= Icono::svg($iconosContacto[$tipo] ?? 'web') ?>                 <?= htmlspecialchars($texto) ?>
+                                </span>
+                            <?php endif; ?>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
         </div>
         <?php if ($urlLogo !== null): ?>
-            <img src="<?= htmlspecialchars($urlLogo) ?>" alt="Logo de <?= htmlspecialchars((string) $tienda->getTiendaNombre()) ?>" class="tiendaPortadaLogo">
+            <img src="<?= htmlspecialchars($urlLogo) ?>"
+                alt="Logo de <?= htmlspecialchars((string) $tiendaVista->getTiendaNombre()) ?>" class="tiendaPortadaLogo">
         <?php endif; ?>
     </section>
 <?php endif; ?>
 
-<?php if ($esDuenio): ?>
-    <p class="cajaInformativa">Así ven sus clientes su tienda. Compártales este enlace para que le compren.</p>
-<?php elseif (UsuarioActual::esVendedor()): ?>
-    <p class="cajaInformativa">Las cuentas de vendedor no pueden hacer pedidos.</p>
-<?php endif; ?>
-
 <section id="productos" class="tiendaSeccion">
     <div class="tiendaSeccionEncabezado">
-        <h2><?= $busqueda !== '' ? 'Resultados para «' . htmlspecialchars($busqueda) . '»' : 'Nuestros productos' ?></h2>
+        <h2><?= $busqueda !== '' ? 'Resultados para «' . htmlspecialchars($busqueda) . '»' : 'Nuestros productos' ?>
+        </h2>
         <?php if ($busqueda !== ''): ?>
-            <a href="<?= $rutaTienda ?>#productos">Ver todos</a>
+            <a href="<?= $urlBase ?>/tienda/<?= htmlspecialchars((string) $tiendaVista->getTiendaEnlace()) ?>#productos">Ver
+                todos</a>
+        <?php else: ?>
+            <span class="textoAyuda"><?= count($productos) === 1 ? '1 producto' : count($productos) . ' productos' ?></span>
         <?php endif; ?>
     </div>
 
     <?php if ($productos === []): ?>
         <div class="estadoVacio">
-            <p><?= $busqueda !== '' ? 'No encontramos productos con esa búsqueda.' : 'Esta tienda todavía no tiene productos.' ?></p>
+            <p><?= $busqueda !== '' ? 'No encontramos productos con esa búsqueda.' : 'Esta tienda todavía no tiene productos.' ?>
+            </p>
+            <?php if ($esDuenio && $busqueda === ''): ?>
+                <p><a href="<?= $urlBase ?>/productos/nuevo" class="boton">Agregar mi primer producto</a></p>
+            <?php endif; ?>
         </div>
     <?php else: ?>
         <div class="gridProductos">
-            <?php foreach (array_merge($disponibles, $agotados) as $producto): ?>
+            <?php foreach (array_merge($disponibles, $sinExistencia) as $producto): ?>
                 <?php
                 $idProducto = (int) $producto->getIdProducto();
                 $foto = $producto->getFoto();
@@ -74,7 +120,8 @@ $esDuenio = UsuarioActual::esVendedor() && UsuarioActual::id() === $tienda->getI
                 <article class="tarjetaProducto <?= $hay <= 0 ? 'tarjetaProductoAgotada' : '' ?>">
                     <div class="fotoTarjetaMarco">
                         <img src="<?= htmlspecialchars($urlFoto) ?>" alt="" class="fotoTarjetaProducto" loading="lazy">
-                        <?php if ($hay <= 0): ?><span class="sello">Agotado</span><?php elseif ($hay <= 2): ?><span class="sello selloPocos"><?= $hay === 1 ? 'Último' : 'Últimos ' . $hay ?></span><?php endif; ?>
+                        <?php if ($hay <= 0): ?><span class="sello">Agotado</span><?php elseif ($hay <= 2): ?><span
+                                class="sello selloPocos"><?= $hay === 1 ? 'Último' : 'Últimos ' . $hay ?></span><?php endif; ?>
                     </div>
                     <div class="tarjetaProductoTexto">
                         <h3><?= htmlspecialchars($producto->getNombre()) ?></h3>
@@ -87,12 +134,17 @@ $esDuenio = UsuarioActual::esVendedor() && UsuarioActual::id() === $tienda->getI
                         <?php endif; ?>
                     </div>
 
-                    <?php if ($hay <= 0): ?>
+                    <?php if ($esDuenio): ?>
+                        <p class="textoAyuda tarjetaProductoPie">
+                            <?= $hay > 0 ? 'Quedan ' . $hay : 'Agotado' ?> ·
+                            <a href="<?= $urlBase ?>/productos/detalle?id=<?= $idProducto ?>">Ver producto</a>
+                        </p>
+                    <?php elseif ($hay <= 0): ?>
                         <p class="textoAyuda tarjetaProductoPie">Pronto vuelve a estar disponible.</p>
-                    <?php elseif ($esClienteAqui && $puedeAgregar > 0): ?>
+                    <?php elseif ($puedeAgregar > 0): ?>
                         <form method="post" action="<?= $urlBase ?>/carrito/agregar" class="formularioAgregar">
                             <?= Csrf::campo() ?>
-                            <input type="hidden" name="tienda" value="<?= (int) $tienda->getIdVendedor() ?>">
+                            <input type="hidden" name="tienda" value="<?= (int) $tiendaVista->getIdVendedor() ?>">
                             <input type="hidden" name="producto" value="<?= $idProducto ?>">
                             <div class="selectorCantidad" data-selector-cantidad data-maximo="<?= $puedeAgregar ?>">
                                 <button type="button" class="botonCantidad" data-menos aria-label="Uno menos">−</button>
@@ -102,12 +154,8 @@ $esDuenio = UsuarioActual::esVendedor() && UsuarioActual::id() === $tienda->getI
                             </div>
                             <button type="submit" class="boton">Agregar</button>
                         </form>
-                    <?php elseif ($esClienteAqui): ?>
+                    <?php else: ?>
                         <p class="textoAyuda tarjetaProductoPie">Ya tiene en el carrito todo lo disponible.</p>
-                    <?php elseif (!$haySesion): ?>
-                        <div class="tarjetaProductoPie">
-                            <a href="<?= $urlBase ?>/ingresar?volver=<?= $volverAqui ?>" class="boton botonSecundario botonCompleto">Ingresar para comprar</a>
-                        </div>
                     <?php endif; ?>
                 </article>
             <?php endforeach; ?>
@@ -115,4 +163,4 @@ $esDuenio = UsuarioActual::esVendedor() && UsuarioActual::id() === $tienda->getI
     <?php endif; ?>
 </section>
 
-<?php require __DIR__ . '/../Plantilla/pieTienda.php'; ?>
+<?php require __DIR__ . '/../Plantilla/pie.php'; ?>

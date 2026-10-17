@@ -2,7 +2,6 @@
 
 namespace Aplicacion\Controladores;
 
-use Aplicacion\Modelos\Cliente;
 use Aplicacion\Modelos\Pedido;
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\EstadoPedido;
@@ -20,25 +19,18 @@ use Throwable;
 class MisPedidosControlador
 {
     private PedidoRepositorio $pedidoRepositorio;
-    private Cliente $cliente;
+    private int $idCliente;
 
     public function __construct()
     {
         Permiso::exigir('misPedidos.ver');
         $this->pedidoRepositorio = new PedidoRepositorio();
-
-        $cliente = (new ClienteRepositorio())->buscarPorIdUsuario((int) UsuarioActual::id());
-        if ($cliente === null) {
-            error_log('El usuario ' . UsuarioActual::id() . ' tiene rol Cliente pero no tiene registro de cliente');
-            Mensaje::error('No se encontró su cuenta de cliente.');
-            $this->redirigir('/');
-        }
-        $this->cliente = $cliente;
+        $this->idCliente = (new ClienteRepositorio())->asegurar((int) UsuarioActual::id());
     }
 
     public function listar(): void
     {
-        $idCliente = (int) $this->cliente->getIdCliente();
+        $idCliente = $this->idCliente;
         $estado = EstadoPedido::existe($_GET['estado'] ?? null) ? $_GET['estado'] : '';
 
         $conteos = ['' => $this->pedidoRepositorio->contar(['idCliente' => $idCliente])];
@@ -73,7 +65,6 @@ class MisPedidosControlador
         ]);
     }
 
-    
     public function cancelar(): void
     {
         $this->verificarCsrf('/mis-pedidos');
@@ -95,11 +86,10 @@ class MisPedidosControlador
         $this->redirigir($volver);
     }
 
-    
     private function buscarPedido(mixed $id): Pedido
     {
         $pedido = is_string($id) && ctype_digit($id)
-            ? $this->pedidoRepositorio->buscarParaCliente((int) $id, (int) $this->cliente->getIdCliente())
+            ? $this->pedidoRepositorio->buscarParaCliente((int) $id, $this->idCliente)
             : null;
 
         if ($pedido === null) {

@@ -32,6 +32,34 @@ class ClienteRepositorio
         return $fila ? $this->crearDesdeFila($fila) : null;
     }
 
+    public function asegurar(int $idUsuario): int
+    {
+        $consulta = $this->conexion->prepare('SELECT tbclienteid FROM tbcliente WHERE tbclienteusuarioid = ?');
+        $consulta->execute([$idUsuario]);
+        $idCliente = $consulta->fetchColumn();
+        if ($idCliente !== false) {
+            return (int) $idCliente;
+        }
+
+        $transaccionPropia = BaseDatos::iniciarTransaccion();
+        try {
+            $idCliente = BaseDatos::generarId('tbcliente', 'tbclienteid');
+            $consulta = $this->conexion->prepare('INSERT INTO tbcliente (tbclienteid, tbclienteusuarioid) VALUES (?, ?)');
+            $consulta->execute([$idCliente, $idUsuario]);
+
+            if ($transaccionPropia) {
+                BaseDatos::confirmarTransaccion();
+            }
+        } catch (Throwable $error) {
+            if ($transaccionPropia) {
+                BaseDatos::revertirTransaccion();
+            }
+            throw $error;
+        }
+
+        return $idCliente;
+    }
+
     public function insertar(Cliente $cliente): int
     {
         $transaccionPropia = BaseDatos::iniciarTransaccion();

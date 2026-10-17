@@ -6,15 +6,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    var botonMenu = document.getElementById('botonMenu');
-    var menuLateral = document.getElementById('menuLateral');
-    if (botonMenu && menuLateral) {
-        botonMenu.addEventListener('click', function () {
-            var abierto = menuLateral.classList.toggle('abierto');
-            botonMenu.setAttribute('aria-expanded', abierto ? 'true' : 'false');
-        });
-    }
-
     var modal = document.getElementById('modalConfirmacion');
     var formularioPendiente = null;
 

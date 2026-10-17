@@ -1,6 +1,5 @@
 <?php
 /**
- * Pedidos del cliente
  * @var \Aplicacion\Modelos\Pedido[] $pedidos
  * @var string $estado
  * @var array<string, int> $conteos
@@ -13,8 +12,9 @@
 
 use Aplicacion\Nucleo\EstadoPedido;
 use Aplicacion\Nucleo\Numero;
+use Aplicacion\Nucleo\UsuarioActual;
 
-$titulo = 'Mis pedidos';
+$titulo = UsuarioActual::esVendedor() ? 'Mis compras' : 'Mis pedidos';
 $paginaActual = 'misPedidos';
 require __DIR__ . '/../Plantilla/encabezado.php';
 
@@ -60,10 +60,13 @@ $pestanas = ['' => 'Todos'] + array_combine(EstadoPedido::todos(), ['Pendientes'
                                         <span class="textoAyuda"><?= $pedido->getFecha()->format('d/m/Y H:i') ?></span></span>
                                 </td>
                                 <td data-etiqueta="Tienda"><?= htmlspecialchars($pedido->getNombreTienda()) ?></td>
-                                <td data-etiqueta="Productos"><?= $pedido->getUnidades() === 1 ? '1 producto' : $pedido->getUnidades() . ' productos' ?></td>
-                                <td data-etiqueta="Total" class="numero"><strong><?= Numero::moneda($pedido->getTotal()) ?></strong></td>
+                                <td data-etiqueta="Productos">
+                                    <?= $pedido->getUnidades() === 1 ? '1 producto' : $pedido->getUnidades() . ' productos' ?></td>
+                                <td data-etiqueta="Total" class="numero"><strong><?= Numero::moneda($pedido->getTotal()) ?></strong>
+                                </td>
                                 <td data-etiqueta="Estado">
-                                    <span class="etiqueta <?= EstadoPedido::claseEtiqueta($pedido->getEstado()) ?>"><?= $pedido->getEstado() ?></span>
+                                    <span
+                                        class="etiqueta <?= EstadoPedido::claseEtiqueta($pedido->getEstado()) ?>"><?= $pedido->getEstado() ?></span>
                                 </td>
                                 <td data-etiqueta="" class="acciones">
                                     <a href="<?= $urlBase ?>/mis-pedidos/detalle?id=<?= $pedido->getIdPedido() ?>">Ver</a>

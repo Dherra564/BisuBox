@@ -51,6 +51,13 @@ class UsuarioActual
         }
     }
 
+    public static function cambiarRol(string $rol): void
+    {
+        if (self::haySesion()) {
+            $_SESSION[self::CLAVE_ROL] = $rol;
+        }
+    }
+
     public static function foto(): ?string
     {
         return $_SESSION[self::CLAVE_FOTO] ?? null;

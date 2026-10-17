@@ -10,6 +10,7 @@ use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Repositorios\SesionRepositorio;
 use Aplicacion\Repositorios\UsuarioRepositorio;
+use Aplicacion\Repositorios\VendedorRepositorio;
 use Configuracion\Configuracion;
 
 class AutenticacionControlador
@@ -24,7 +25,6 @@ class AutenticacionControlador
         $contrasena = is_string($_POST['contrasena'] ?? null) ? $_POST['contrasena'] : '';
 
         if (!Csrf::esValido()) {
-            // Aunque la página haya expirado, el correo que escribió no se pierde
             $this->recordarCorreo($correo);
             Mensaje::error('La página expiró. Recargue e intente de nuevo.');
             $this->redirigir('/ingresar');
@@ -59,16 +59,22 @@ class AutenticacionControlador
 
         unset($_SESSION[self::CLAVE_CORREO_INTENTO]);
         Acceso::abrirSesion($usuario);
+        Carrito::pasarALaCuenta();
 
-        $destino = Acceso::tomarDestino();
-        $this->redirigir($destino !== null && $usuario->getRol() === Rol::CLIENTE ? $destino : '/');
+        $this->redirigir(Acceso::tomarDestino() ?? '/');
     }
 
     public function cerrarSesion(): void
     {
-        // El cliente vuelve a la página de la tienda donde estaba comprando; el vendedor, a /ingresar
-        $tienda = UsuarioActual::esCliente() ? Carrito::tiendaActual() : null;
-        $volver = $tienda !== null ? '/tienda/' . $tienda['enlace'] : '/ingresar';
+        $propia = UsuarioActual::esVendedor()
+            ? (new VendedorRepositorio())->buscarPorIdUsuario((int) UsuarioActual::id())
+            : null;
+        $tienda = $propia === null ? Carrito::tiendaActual() : null;
+        $volver = match (true) {
+            $propia !== null && $propia->getTiendaActiva() => '/tienda/' . $propia->getTiendaEnlace(),
+            $propia === null && $tienda !== null => '/tienda/' . $tienda['enlace'],
+            default => '/ingresar',
+        };
 
         if (!Csrf::esValido()) {
             Mensaje::error('La página expiró. Recargue e intente de nuevo.');

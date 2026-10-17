@@ -5,6 +5,7 @@ use Aplicacion\Controladores\CarritoControlador;
 use Aplicacion\Controladores\ClienteControlador;
 use Aplicacion\Controladores\ComponenteControlador;
 use Aplicacion\Controladores\CompraProveedorControlador;
+use Aplicacion\Controladores\EmprenderControlador;
 use Aplicacion\Controladores\FotoControlador;
 use Aplicacion\Controladores\InicioControlador;
 use Aplicacion\Controladores\InventarioControlador;
@@ -29,10 +30,11 @@ return function (Enrutador $enrutador): void {
     $enrutador->post('/ingresar', [AutenticacionControlador::class, 'iniciarSesion']);
     $enrutador->post('/salir', [AutenticacionControlador::class, 'cerrarSesion']);
 
-    $enrutador->get('/registro/vendedor', [RegistroControlador::class, 'mostrarVendedor']);
-    $enrutador->post('/registro/vendedor', [RegistroControlador::class, 'registrarVendedor']);
-    $enrutador->get('/registro/cliente', [RegistroControlador::class, 'mostrarCliente']);
-    $enrutador->post('/registro/cliente', [RegistroControlador::class, 'registrarCliente']);
+    $enrutador->get('/registro', [RegistroControlador::class, 'mostrar']);
+    $enrutador->post('/registro', [RegistroControlador::class, 'registrar']);
+
+    $enrutador->get('/emprender', [EmprenderControlador::class, 'mostrar']);
+    $enrutador->post('/emprender', [EmprenderControlador::class, 'guardar']);
 
     $enrutador->get('/perfil', [PerfilControlador::class, 'mostrar']);
     $enrutador->post('/perfil/actualizar', [PerfilControlador::class, 'actualizar']);
@@ -85,7 +87,7 @@ return function (Enrutador $enrutador): void {
     $enrutador->get('/compras-proveedor/detalle', [CompraProveedorControlador::class, 'detalle']);
     $enrutador->post('/compras-proveedor/anular', [CompraProveedorControlador::class, 'anular']);
 
-    
+
     $enrutador->get('/carrito', [CarritoControlador::class, 'ver']);
     $enrutador->post('/carrito/agregar', [CarritoControlador::class, 'agregar']);
     $enrutador->post('/carrito/actualizar', [CarritoControlador::class, 'actualizar']);
@@ -95,7 +97,7 @@ return function (Enrutador $enrutador): void {
     $enrutador->get('/mis-pedidos/detalle', [MisPedidosControlador::class, 'detalle']);
     $enrutador->post('/mis-pedidos/cancelar', [MisPedidosControlador::class, 'cancelar']);
 
-    
+
     $enrutador->get('/pedidos', [PedidoControlador::class, 'listar']);
     $enrutador->get('/pedidos/detalle', [PedidoControlador::class, 'detalle']);
     $enrutador->post('/pedidos/confirmar', [PedidoControlador::class, 'confirmar']);

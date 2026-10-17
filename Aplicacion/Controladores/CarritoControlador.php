@@ -2,10 +2,10 @@
 
 namespace Aplicacion\Controladores;
 
-use Aplicacion\Modelos\Cliente;
 use Aplicacion\Modelos\Pedido;
 use Aplicacion\Modelos\PedidoDetalle;
 use Aplicacion\Modelos\Vendedor;
+use Aplicacion\Nucleo\Acceso;
 use Aplicacion\Nucleo\Carrito;
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\EstadoPedido;
@@ -23,30 +23,20 @@ use Configuracion\Configuracion;
 use DateTime;
 use Throwable;
 
-// Carrito del cliente y envío del pedido. El carrito va separado por tienda:
-// cada tienda se pide por aparte
 class CarritoControlador
 {
-    private Cliente $cliente;
     private VendedorRepositorio $vendedorRepositorio;
     private ProductoRepositorio $productoRepositorio;
 
     public function __construct()
     {
-        Permiso::exigir('carrito.usar');
+        if (UsuarioActual::haySesion()) {
+            Permiso::exigir('carrito.usar');
+        }
         $this->vendedorRepositorio = new VendedorRepositorio();
         $this->productoRepositorio = new ProductoRepositorio();
-
-        $cliente = (new ClienteRepositorio())->buscarPorIdUsuario((int) UsuarioActual::id());
-        if ($cliente === null) {
-            error_log('El usuario ' . UsuarioActual::id() . ' tiene rol Cliente pero no tiene registro de cliente');
-            Mensaje::error('No se encontró su cuenta de cliente.');
-            $this->redirigir('/');
-        }
-        $this->cliente = $cliente;
     }
 
-    // Muestra solo el carrito de la tienda donde está comprando
     public function ver(): void
     {
         $tienda = Carrito::tiendaActual();
@@ -64,6 +54,10 @@ class CarritoControlador
         }
         $volver = '/tienda/' . $vendedor->getTiendaEnlace();
         $this->verificarCsrf($volver);
+        if (Carrito::esPropia($vendedor)) {
+            Mensaje::error('No puede comprar en su propia tienda.');
+            $this->redirigir($volver);
+        }
 
         $idProducto = $this->leerId($_POST['producto'] ?? null);
         $producto = $this->productoRepositorio->buscarVarios($idVendedor, [$idProducto])[$idProducto] ?? null;
@@ -96,7 +90,6 @@ class CarritoControlador
         $this->redirigir($volver);
     }
 
-    // Cambia las cantidades de una tienda o quita un producto
     public function actualizar(): void
     {
         $this->verificarCsrf('/carrito');
@@ -147,10 +140,11 @@ class CarritoControlador
         $this->redirigir('/carrito');
     }
 
-    // Formulario para enviar el pedido de una tienda
     public function confirmar(): void
     {
-        $carrito = $this->carritoListoParaPedir($this->leerId($_GET['tienda'] ?? null));
+        $idVendedor = $this->leerId($_GET['tienda'] ?? null);
+        $this->exigirCuenta($idVendedor);
+        $carrito = $this->carritoListoParaPedir($idVendedor);
 
         $this->mostrarConfirmacion($carrito, [
             'entrega' => '',
@@ -163,8 +157,10 @@ class CarritoControlador
     public function hacerPedido(): void
     {
         $idVendedor = $this->leerId($_POST['tienda'] ?? null);
+        $this->exigirCuenta($idVendedor);
         $this->verificarCsrf('/carrito/confirmar?tienda=' . $idVendedor);
         $carrito = $this->carritoListoParaPedir($idVendedor);
+        $idCliente = (new ClienteRepositorio())->asegurar((int) UsuarioActual::id());
 
         $datos = $this->leerDatos();
         $validador = $this->validarDatos($datos);
@@ -185,7 +181,7 @@ class CarritoControlador
         $pedido = new Pedido(
             null,
             $idVendedor,
-            (int) $this->cliente->getIdCliente(),
+            $idCliente,
             new DateTime(),
             $datos['entrega'],
             $datos['entrega'] === FormaEntrega::ENVIO ? $datos['direccion'] : null,
@@ -213,11 +209,6 @@ class CarritoControlador
         $this->redirigir('/mis-pedidos/detalle?id=' . $idPedido);
     }
 
-    /**
-     * Arma lo que hay en el carrito con los datos actuales de cada producto.
-     * Quita lo que ya no existe y marca lo que no alcanza
-     * @return array<int, array{vendedor: Vendedor, lineas: array, total: float, problemas: bool}>
-     */
     private function armarCarrito(?int $soloTienda = null): array
     {
         $tiendas = [];
@@ -228,7 +219,7 @@ class CarritoControlador
             }
 
             $vendedor = $this->tiendaVisible($idVendedor);
-            if ($vendedor === null) {
+            if ($vendedor === null || Carrito::esPropia($vendedor)) {
                 Carrito::vaciarTienda($idVendedor);
                 Mensaje::advertencia('Se quitaron del carrito los productos de una tienda que ya no está disponible.');
                 continue;
@@ -281,6 +272,16 @@ class CarritoControlador
         return $carrito;
     }
 
+    private function exigirCuenta(int $idVendedor): void
+    {
+        if (UsuarioActual::haySesion()) {
+            return;
+        }
+        Acceso::guardarDestino('/carrito/confirmar?tienda=' . $idVendedor);
+        Mensaje::advertencia('Para enviar su pedido, ingrese o cree su cuenta. Su carrito se guardó.');
+        $this->redirigir('/ingresar');
+    }
+
     private function tiendaVisible(int $idVendedor): ?Vendedor
     {
         $vendedor = $this->vendedorRepositorio->buscarPorId($idVendedor);
@@ -321,9 +322,12 @@ class CarritoControlador
 
     private function mostrarConfirmacion(array $carrito, array $datos, array $errores): void
     {
+        $clienteRepositorio = new ClienteRepositorio();
+        $clienteRepositorio->asegurar((int) UsuarioActual::id());
+
         $this->mostrarVista('Carrito/confirmar', [
             'carrito' => $carrito,
-            'cliente' => $this->cliente,
+            'cliente' => $clienteRepositorio->buscarPorIdUsuario((int) UsuarioActual::id()),
             'datos' => $datos,
             'errores' => $errores,
         ]);
