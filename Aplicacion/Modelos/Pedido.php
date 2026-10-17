@@ -1,10 +1,9 @@
 <?php
-
 namespace Aplicacion\Modelos;
 
 use Aplicacion\Nucleo\EstadoPedido;
+use Aplicacion\Nucleo\TipoPedido;
 use DateTime;
-
 
 class Pedido
 {
@@ -23,12 +22,12 @@ class Pedido
     /** @var PedidoDetalle[] */
     private array $detalles;
 
-    
-    private string $nombreTienda = '';
-    private string $enlaceTienda = '';
-    private string $nombreCliente = '';
+    private string $nombreTienda    = '';
+    private string $enlaceTienda    = '';
+    private string $nombreCliente   = '';
     private string $telefonoCliente = '';
-    private string $correoCliente = '';
+    private string $correoCliente   = '';
+    private string $tipo            = TipoPedido::NORMAL;
 
     /** @param PedidoDetalle[] $detalles */
     public function __construct(
@@ -46,19 +45,19 @@ class Pedido
         ?DateTime $fechaActualizacion = null,
         array $detalles = []
     ) {
-        $this->idPedido = $idPedido;
-        $this->idVendedor = $idVendedor;
-        $this->idCliente = $idCliente;
-        $this->fecha = $fecha;
-        $this->entrega = $entrega;
-        $this->direccion = $direccion;
-        $this->metodoPago = $metodoPago;
-        $this->nota = $nota;
-        $this->total = $total;
-        $this->estado = $estado;
-        $this->canceladoPor = $canceladoPor;
+        $this->idPedido           = $idPedido;
+        $this->idVendedor         = $idVendedor;
+        $this->idCliente          = $idCliente;
+        $this->fecha              = $fecha;
+        $this->entrega            = $entrega;
+        $this->direccion          = $direccion;
+        $this->metodoPago         = $metodoPago;
+        $this->nota               = $nota;
+        $this->total              = $total;
+        $this->estado             = $estado;
+        $this->canceladoPor       = $canceladoPor;
         $this->fechaActualizacion = $fechaActualizacion;
-        $this->detalles = $detalles;
+        $this->detalles           = $detalles;
     }
 
     public function getIdPedido(): ?int
@@ -157,6 +156,16 @@ class Pedido
         return $this->correoCliente;
     }
 
+    public function getTipo(): string
+    {
+        return $this->tipo;
+    }
+
+    public function esPersonalizado(): bool
+    {
+        return $this->tipo === TipoPedido::PERSONALIZADO;
+    }
+
     public function estaPendiente(): bool
     {
         return $this->estado === EstadoPedido::PENDIENTE;
@@ -174,8 +183,8 @@ class Pedido
 
     public function setEstado(string $estado, ?string $canceladoPor = null): void
     {
-        $this->estado = $estado;
-        $this->canceladoPor = $canceladoPor;
+        $this->estado             = $estado;
+        $this->canceladoPor       = $canceladoPor;
         $this->fechaActualizacion = new DateTime();
     }
 
@@ -193,8 +202,13 @@ class Pedido
 
     public function setDatosCliente(string $nombre, string $telefono, string $correo): void
     {
-        $this->nombreCliente = $nombre;
+        $this->nombreCliente   = $nombre;
         $this->telefonoCliente = $telefono;
-        $this->correoCliente = $correo;
+        $this->correoCliente   = $correo;
+    }
+
+    public function setTipo(string $tipo): void
+    {
+        $this->tipo = $tipo;
     }
 }

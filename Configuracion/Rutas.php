@@ -11,6 +11,7 @@ use Aplicacion\Controladores\InicioControlador;
 use Aplicacion\Controladores\InventarioControlador;
 use Aplicacion\Controladores\MisPedidosControlador;
 use Aplicacion\Controladores\PedidoControlador;
+use Aplicacion\Controladores\PedidoPersonalizadoControlador;
 use Aplicacion\Controladores\PerfilControlador;
 use Aplicacion\Controladores\ProductoControlador;
 use Aplicacion\Controladores\ProveedorControlador;
@@ -96,11 +97,13 @@ return function (Enrutador $enrutador): void {
     $enrutador->post('/carrito/confirmar', [CarritoControlador::class, 'hacerPedido']);
     $enrutador->get('/mis-pedidos', [MisPedidosControlador::class, 'listar']);
     $enrutador->get('/mis-pedidos/detalle', [MisPedidosControlador::class, 'detalle']);
+    $enrutador->post('/mis-pedidos/aceptar', [MisPedidosControlador::class, 'aceptarCotizacion']);
     $enrutador->post('/mis-pedidos/cancelar', [MisPedidosControlador::class, 'cancelar']);
 
 
     $enrutador->get('/pedidos', [PedidoControlador::class, 'listar']);
     $enrutador->get('/pedidos/detalle', [PedidoControlador::class, 'detalle']);
+    $enrutador->post('/pedidos/cotizar', [PedidoControlador::class, 'cotizar']);
     $enrutador->post('/pedidos/confirmar', [PedidoControlador::class, 'confirmar']);
     $enrutador->post('/pedidos/entregar', [PedidoControlador::class, 'entregar']);
     $enrutador->post('/pedidos/cancelar', [PedidoControlador::class, 'cancelar']);
@@ -108,4 +111,6 @@ return function (Enrutador $enrutador): void {
 
     $enrutador->get('/sesiones', [SesionControlador::class, 'listar']);
     $enrutador->get('/tienda/{enlace}', [TiendaPublicaControlador::class, 'mostrar']);
+    $enrutador->get('/tienda/{enlace}/personalizado', [PedidoPersonalizadoControlador::class, 'nuevo']);
+    $enrutador->post('/tienda/{enlace}/personalizado', [PedidoPersonalizadoControlador::class, 'crear']);
 };

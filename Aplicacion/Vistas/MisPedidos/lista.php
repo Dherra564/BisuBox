@@ -1,6 +1,6 @@
 <?php
 /**
- * @var \Aplicacion\Modelos\Pedido[] $pedidos
+
  * @var string $estado
  * @var array<string, int> $conteos
  * @var int $pagina
@@ -18,7 +18,15 @@ $titulo = UsuarioActual::esVendedor() ? 'Mis compras' : 'Mis pedidos';
 $paginaActual = 'misPedidos';
 require __DIR__ . '/../Plantilla/encabezado.php';
 
-$pestanas = ['' => 'Todos'] + array_combine(EstadoPedido::todos(), ['Pendientes', 'Confirmados', 'Entregados', 'Cancelados']);
+$pestanas = [
+    '' => 'Todos',
+    EstadoPedido::SOLICITADO => 'Solicitados',
+    EstadoPedido::COTIZADO => 'Cotizados',
+    EstadoPedido::PENDIENTE => 'Pendientes',
+    EstadoPedido::CONFIRMADO => 'Confirmados',
+    EstadoPedido::ENTREGADO => 'Entregados',
+    EstadoPedido::CANCELADO => 'Cancelados',
+];
 ?>
 
 <?php if ($conteos[''] === 0): ?>
@@ -61,8 +69,10 @@ $pestanas = ['' => 'Todos'] + array_combine(EstadoPedido::todos(), ['Pendientes'
                                 </td>
                                 <td data-etiqueta="Tienda"><?= htmlspecialchars($pedido->getNombreTienda()) ?></td>
                                 <td data-etiqueta="Productos">
-                                    <?= $pedido->getUnidades() === 1 ? '1 producto' : $pedido->getUnidades() . ' productos' ?></td>
-                                <td data-etiqueta="Total" class="numero"><strong><?= Numero::moneda($pedido->getTotal()) ?></strong>
+                                    <?= $pedido->esPersonalizado() ? 'Personalizado' : ($pedido->getUnidades() === 1 ? '1 producto' : $pedido->getUnidades() . ' productos') ?>
+                                </td>
+                                <td data-etiqueta="Total" class="numero">
+                                    <strong><?= $pedido->esPersonalizado() && $pedido->getTotal() <= 0 ? 'Por cotizar' : Numero::moneda($pedido->getTotal()) ?></strong>
                                 </td>
                                 <td data-etiqueta="Estado">
                                     <span

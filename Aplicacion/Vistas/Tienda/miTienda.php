@@ -1,5 +1,5 @@
 <?php
-/**
+    /**
  * @var \Aplicacion\Modelos\Vendedor $vendedor
  * @var array $datos
  * @var array $errores
@@ -31,7 +31,9 @@
     ? $urlBase . '/fotos/logo?archivo=' . urlencode($logoPendiente ?? $logo)
     : $urlBase . '/imagenes/logoPorDefecto.svg';
 
-    $direccionTienda = preg_replace('#^https?://#', '', $urlBase) . '/tienda/' . $vendedor->getTiendaEnlace();
+    $esquemaTienda   = (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $direccionTienda = $esquemaTienda . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost')
+    . $urlBase . '/tienda/' . $vendedor->getTiendaEnlace();
 ?>
 <?php if ($errores !== []): ?>
     <div class="alerta alertaError alertaFormulario" role="alert">

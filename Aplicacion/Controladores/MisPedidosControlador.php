@@ -62,7 +62,36 @@ class MisPedidosControlador
         $this->mostrarVista('MisPedidos/detalle', [
             'pedido' => $pedido,
             'contactos' => $vendedor !== null ? $vendedor->getContactos() : [],
+            'personalizado' => $pedido->esPersonalizado()
+                ? $this->pedidoRepositorio->buscarDatosPersonalizado((int) $pedido->getIdPedido())
+                : null,
         ]);
+    }
+
+    public function aceptarCotizacion(): void
+    {
+        $this->verificarCsrf('/mis-pedidos');
+        $pedido = $this->buscarPedido($_POST['id'] ?? null);
+        $volver = '/mis-pedidos/detalle?id=' . $pedido->getIdPedido();
+
+        $precioVisto = is_string($_POST['precio'] ?? null) && is_numeric($_POST['precio'])
+            ? (float) $_POST['precio']
+            : -1.0;
+
+        try {
+            $this->pedidoRepositorio->aceptarCotizacion($pedido, $precioVisto);
+        } catch (OperacionNoPermitida $error) {
+            Mensaje::error($error->getMessage());
+            $this->redirigir($volver);
+        } catch (Throwable $error) {
+            error_log('Error al aceptar la cotización: ' . $error->getMessage());
+            Mensaje::error('No se pudo aceptar la cotización. Intente de nuevo.');
+            $this->redirigir($volver);
+        }
+
+        Mensaje::exito('Aceptó la cotización del pedido #' . $pedido->getIdPedido()
+            . '. La tienda lo confirmará cuando empiece a elaborarlo.');
+        $this->redirigir($volver);
     }
 
     public function cancelar(): void

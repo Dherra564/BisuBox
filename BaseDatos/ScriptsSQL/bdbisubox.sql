@@ -384,6 +384,22 @@ CREATE TABLE `tbpedidodetalle` (
     PRIMARY KEY (`tbpedidodetalleid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
+ALTER TABLE `tbpedido`
+    ADD COLUMN `tbpedidotipo` varchar(20) DEFAULT 'Normal' AFTER `tbpedidoclienteid`;
+
+UPDATE `tbpedido` SET `tbpedidotipo` = 'Normal' WHERE `tbpedidotipo` IS NULL;
+
+CREATE TABLE `tbpedidopersonalizado` (
+    `tbpedidopersonalizadoid` int(11) NOT NULL,
+    `tbpedidopersonalizadopedidoid` int(11) DEFAULT NULL,
+    `tbpedidopersonalizadotitulo` varchar(60) DEFAULT NULL,
+    `tbpedidopersonalizadodescripcion` varchar(500) DEFAULT NULL,
+    `tbpedidopersonalizadofechadeseada` date DEFAULT NULL,
+    `tbpedidopersonalizadocotizacionmensaje` varchar(300) DEFAULT NULL,
+    `tbpedidopersonalizadocotizacionfecha` datetime DEFAULT NULL,
+    PRIMARY KEY (`tbpedidopersonalizadoid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
 -- --------------------------------------------------------
 --
 -- Datos iniciales: un vendedor con su tienda y un cliente

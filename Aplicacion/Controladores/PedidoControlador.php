@@ -75,9 +75,9 @@ class PedidoControlador
     {
         $pedido = $this->buscarPedido($_GET['id'] ?? null);
 
-    
+
         $existencias = [];
-        if ($pedido->estaPendiente()) {
+        if ($pedido->estaPendiente() && $pedido->getDetalles() !== []) {
             $ids = array_map(fn($detalle): int => $detalle->getIdProducto(), $pedido->getDetalles());
             foreach ((new ProductoRepositorio())->buscarVarios($this->idVendedor, $ids) as $idProducto => $producto) {
                 $existencias[$idProducto] = $producto->getExistencia();
@@ -87,13 +87,55 @@ class PedidoControlador
         $this->mostrarVista('Pedido/detalle', [
             'pedido' => $pedido,
             'existencias' => $existencias,
+            'personalizado' => $pedido->esPersonalizado()
+                ? $this->pedidoRepositorio->buscarDatosPersonalizado((int) $pedido->getIdPedido())
+                : null,
         ]);
+    }
+
+    public function cotizar(): void
+    {
+        $this->verificarCsrf('/pedidos');
+        $pedido = $this->buscarPedido($_POST['id'] ?? null);
+        $volver = '/pedidos/detalle?id=' . $pedido->getIdPedido();
+
+        $precio = $this->leerPrecio($_POST['precio'] ?? null);
+        $mensaje = is_string($_POST['mensaje'] ?? null) ? trim($_POST['mensaje']) : '';
+
+        if (!$pedido->esPersonalizado()) {
+            Mensaje::error('Solo los pedidos personalizados se cotizan.');
+            $this->redirigir($volver);
+        }
+        if ($precio === null) {
+            Mensaje::error('Escriba un precio válido, mayor que cero (por ejemplo 15000 o 15000.50).');
+            $this->redirigir($volver);
+        }
+        if (mb_strlen($mensaje, 'UTF-8') > 300) {
+            Mensaje::error('El mensaje puede tener como máximo 300 caracteres.');
+            $this->redirigir($volver);
+        }
+
+        try {
+            $this->pedidoRepositorio->cotizar($pedido, $precio, $mensaje !== '' ? $mensaje : null);
+        } catch (OperacionNoPermitida $error) {
+            Mensaje::error($error->getMessage());
+            $this->redirigir($volver);
+        } catch (Throwable $error) {
+            error_log('Error al cotizar el pedido: ' . $error->getMessage());
+            Mensaje::error('No se pudo enviar la cotización. No se cambió nada; intente de nuevo.');
+            $this->redirigir($volver);
+        }
+
+        Mensaje::exito('Cotización enviada. El cliente la verá en su pedido y podrá aceptarla.');
+        $this->redirigir($volver);
     }
 
     public function confirmar(): void
     {
         $pedido = $this->accion(fn(Pedido $pedido) => $this->pedidoRepositorio->confirmar($pedido), 'confirmar');
-        Mensaje::exito('Pedido #' . $pedido->getIdPedido() . ' confirmado. Se rebajó de la existencia lo que lleva.');
+        Mensaje::exito($pedido->esPersonalizado()
+            ? 'Pedido #' . $pedido->getIdPedido() . ' confirmado. Ya puede empezar a elaborarlo.'
+            : 'Pedido #' . $pedido->getIdPedido() . ' confirmado. Se rebajó de la existencia lo que lleva.');
         $this->redirigir('/pedidos/detalle?id=' . $pedido->getIdPedido());
     }
 
@@ -106,17 +148,17 @@ class PedidoControlador
 
     public function cancelar(): void
     {
-        $estabaConfirmado = false;
-        $pedido = $this->accion(function (Pedido $pedido) use (&$estabaConfirmado) {
-            $estabaConfirmado = $pedido->estaConfirmado();
+        $devuelveExistencia = false;
+        $pedido = $this->accion(function (Pedido $pedido) use (&$devuelveExistencia) {
+            $devuelveExistencia = $pedido->estaConfirmado() && !$pedido->esPersonalizado();
             $this->pedidoRepositorio->cancelar($pedido, Rol::VENDEDOR);
         }, 'cancelar');
         Mensaje::exito('Pedido #' . $pedido->getIdPedido() . ' cancelado.'
-            . ($estabaConfirmado ? ' Los productos volvieron a la existencia.' : ''));
+            . ($devuelveExistencia ? ' Los productos volvieron a la existencia.' : ''));
         $this->redirigir('/pedidos/detalle?id=' . $pedido->getIdPedido());
     }
 
-    
+
     private function accion(callable $hacer, string $queSeHace): Pedido
     {
         $this->verificarCsrf('/pedidos');
@@ -137,7 +179,28 @@ class PedidoControlador
         return $pedido;
     }
 
-    
+    /**
+     * Lee un precio escrito por la persona: acepta "15000", "15 000", "15000.50" o "15000,50".
+     * Devuelve null si no es válido o no es mayor que cero.
+     */
+    private function leerPrecio(mixed $valor): ?float
+    {
+        if (!is_string($valor)) {
+            return null;
+        }
+        $texto = str_replace(' ', '', trim($valor));
+        if (!str_contains($texto, '.')) {
+            $texto = str_replace(',', '.', $texto);
+        }
+        if (preg_match('/^\d{1,8}(\.\d{1,2})?$/', $texto) !== 1) {
+            return null;
+        }
+
+        $precio = round((float) $texto, 2);
+        return $precio > 0 ? $precio : null;
+    }
+
+
     private function buscarPedido(mixed $id): Pedido
     {
         $pedido = is_string($id) && ctype_digit($id)
