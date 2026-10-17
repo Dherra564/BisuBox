@@ -3,18 +3,14 @@
 namespace Aplicacion\Controladores;
 
 use Aplicacion\Modelos\Cliente;
-use Aplicacion\Modelos\Vendedor;
 use Aplicacion\Nucleo\Acceso;
+use Aplicacion\Nucleo\Carrito;
 use Aplicacion\Nucleo\Csrf;
-use Aplicacion\Nucleo\DatosTienda;
 use Aplicacion\Nucleo\Mensaje;
-use Aplicacion\Nucleo\SubidaArchivo;
-use Aplicacion\Nucleo\TipoIdentificacion;
 use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Nucleo\Validador;
 use Aplicacion\Repositorios\ClienteRepositorio;
 use Aplicacion\Repositorios\UsuarioRepositorio;
-use Aplicacion\Repositorios\VendedorRepositorio;
 use Configuracion\Configuracion;
 use DateTime;
 use Throwable;
@@ -31,108 +27,32 @@ class RegistroControlador
         $this->usuarioRepositorio = new UsuarioRepositorio();
     }
 
-    public function mostrarVendedor(): void
-    {
-        $this->mostrarVista('Registro/vendedor', [
-            'datos' => [
-                'tipoIdentificacion' => TipoIdentificacion::CEDULA,
-                'contactos' => [],
-            ],
-            'errores' => [],
-        ]);
-    }
-
-    public function registrarVendedor(): void
-    {
-        $this->verificarCsrf('/registro/vendedor');
-
-        $datos = $this->leerDatosPersonales() + DatosTienda::leer();
-        $datos['tipoIdentificacion'] = $this->leer('tipoIdentificacion');
-        $datos['numeroIdentificacion'] = TipoIdentificacion::limpiar($this->leer('numeroIdentificacion'));
-        $contrasena = $this->leerContrasena('contrasena');
-        $confirmar = $this->leerContrasena('confirmarContrasena');
-
-        $validador = $this->validarDatosPersonales($datos);
-
-        $validador->tipoIdentificacion('tipoIdentificacion', $datos['tipoIdentificacion']);
-        $validador->requerido('numeroIdentificacion', $datos['numeroIdentificacion'], 'Ingrese la identificación')
-            ->identificacion('numeroIdentificacion', $datos['tipoIdentificacion'], $datos['numeroIdentificacion']);
-        if (
-            $validador->error('numeroIdentificacion') === null
-            && $this->usuarioRepositorio->existeIdentificacion($datos['numeroIdentificacion'])
-        ) {
-            $validador->agregarError('numeroIdentificacion', 'Ya existe una cuenta con esta identificación');
-        }
-
-        DatosTienda::validar($validador, $datos);
-        $this->validarContrasena($validador, $contrasena, $confirmar);
-
-        $nombreLogo = (new SubidaArchivo())->recibir('tiendaLogo', SubidaArchivo::LOGO, $validador);
-        // Si algo falla se vuelve a mostrar todo lo que escribió, incluidas las contraseñas y el logo
-        $datos['tiendaLogoPendiente'] = $nombreLogo;
-        $datos['contrasena'] = $contrasena;
-        $datos['confirmarContrasena'] = $confirmar;
-        if (!$validador->esValido()) {
-            SubidaArchivo::recordarPendiente(SubidaArchivo::LOGO, $nombreLogo);
-            $this->mostrarVista('Registro/vendedor', ['datos' => $datos, 'errores' => $validador->errores()]);
-            return;
-        }
-
-        $vendedorRepositorio = new VendedorRepositorio();
-        $vendedor = new Vendedor(
-            tipoIdentificacion: $datos['tipoIdentificacion'],
-            numeroIdentificacion: $datos['numeroIdentificacion'],
-            nombreCompleto: UsuarioRepositorio::limpiarEspacios($datos['nombreCompleto']),
-            correoUsuario: $datos['correoUsuario'],
-            numeroTelefonico: Validador::limpiarTelefono($datos['numeroTelefonico']),
-            contrasena: $contrasena,
-            fechaRegistro: new DateTime(),
-            tiendaNombre: $datos['tiendaNombre'],
-            tiendaEnlace: $vendedorRepositorio->generarEnlace($datos['tiendaNombre']),
-            tiendaDescripcion: $datos['tiendaDescripcion'],
-            tiendaLogo: $nombreLogo,
-            contactos: DatosTienda::crearContactos($datos['contactos'])
-        );
-
-        try {
-            $vendedorRepositorio->insertar($vendedor);
-        } catch (Throwable $error) {
-            error_log('Error al registrar vendedor: ' . $error->getMessage());
-            SubidaArchivo::recordarPendiente(SubidaArchivo::LOGO, $nombreLogo);
-            Mensaje::error('No se pudo crear la cuenta. Intente de nuevo.');
-            $this->mostrarVista('Registro/vendedor', ['datos' => $datos, 'errores' => []]);
-            return;
-        }
-
-        SubidaArchivo::olvidarPendiente(SubidaArchivo::LOGO, $nombreLogo);
-        Acceso::abrirSesion($vendedor);
-        Mensaje::exito('Bienvenido a BisuBox. Su cuenta y su tienda quedaron creadas');
-        $this->redirigir('/');
-    }
-
-    public function mostrarCliente(): void
+    public function mostrar(): void
     {
         if (isset($_GET['volver'])) {
             Acceso::guardarDestino($_GET['volver']);
         }
-        $this->mostrarVista('Registro/cliente', ['datos' => [], 'errores' => []]);
+        $this->mostrarVista('Registro/crearCuenta', ['datos' => [], 'errores' => []]);
     }
 
-    public function registrarCliente(): void
+    public function registrar(): void
     {
-        $this->verificarCsrf('/registro/cliente');
+        $this->verificarCsrf('/registro');
 
-        $datos = $this->leerDatosPersonales();
+        $datos = [
+            'nombreCompleto' => $this->leer('nombreCompleto'),
+            'correoUsuario' => mb_strtolower($this->leer('correoUsuario'), 'UTF-8'),
+            'numeroTelefonico' => $this->leer('numeroTelefonico'),
+        ];
         $contrasena = $this->leerContrasena('contrasena');
         $confirmar = $this->leerContrasena('confirmarContrasena');
 
-        $validador = $this->validarDatosPersonales($datos);
-        $this->validarContrasena($validador, $contrasena, $confirmar);
+        $validador = $this->validarDatos($datos, $contrasena, $confirmar);
         $datos['contrasena'] = $contrasena;
         $datos['confirmarContrasena'] = $confirmar;
 
         if (!$validador->esValido()) {
-            $this->mostrarVista('Registro/cliente', ['datos' => $datos, 'errores' => $validador->errores()]);
+            $this->mostrarVista('Registro/crearCuenta', ['datos' => $datos, 'errores' => $validador->errores()]);
             return;
         }
 
@@ -149,26 +69,17 @@ class RegistroControlador
         } catch (Throwable $error) {
             error_log('Error al registrar cliente: ' . $error->getMessage());
             Mensaje::error('No se pudo crear la cuenta. Intente de nuevo.');
-            $this->mostrarVista('Registro/cliente', ['datos' => $datos, 'errores' => []]);
+            $this->mostrarVista('Registro/crearCuenta', ['datos' => $datos, 'errores' => []]);
             return;
         }
 
         Acceso::abrirSesion($cliente);
+        Carrito::pasarALaCuenta();
         Mensaje::exito('Bienvenido a BisuBox. Su cuenta quedó creada');
-        // Si venía de una tienda (por ejemplo para hacer un pedido), vuelve a ella
         $this->redirigir(Acceso::tomarDestino() ?? '/');
     }
 
-    private function leerDatosPersonales(): array
-    {
-        return [
-            'nombreCompleto' => $this->leer('nombreCompleto'),
-            'correoUsuario' => mb_strtolower($this->leer('correoUsuario'), 'UTF-8'),
-            'numeroTelefonico' => $this->leer('numeroTelefonico'),
-        ];
-    }
-
-    private function validarDatosPersonales(array $datos): Validador
+    private function validarDatos(array $datos, string $contrasena, string $confirmar): Validador
     {
         $validador = new Validador();
 
@@ -191,15 +102,12 @@ class RegistroControlador
             $validador->agregarError('numeroTelefonico', 'Este teléfono ya lo usa otra cuenta');
         }
 
-        return $validador;
-    }
-
-    private function validarContrasena(Validador $validador, string $contrasena, string $confirmar): void
-    {
         $validador->requerido('contrasena', $contrasena, 'Ingrese una contraseña')
             ->contrasenaSegura('contrasena', $contrasena);
         $validador->requerido('confirmarContrasena', $confirmar, 'Confirme la contraseña')
             ->coinciden('confirmarContrasena', $confirmar, $contrasena, 'Las contraseñas no coinciden');
+
+        return $validador;
     }
 
     private function leer(string $campo): string

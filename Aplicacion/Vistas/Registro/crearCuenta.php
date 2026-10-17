@@ -1,13 +1,8 @@
 <?php
-/**
- * @var array $datos
- * @var array $errores
- * @var array $mensajes
- */
 
 use Aplicacion\Nucleo\Csrf;
 
-$titulo = 'Crear cuenta de cliente';
+$titulo = 'Crear cuenta';
 require __DIR__ . '/../Plantilla/encabezadoAcceso.php';
 
 $valor = fn(string $campo): string => htmlspecialchars((string) ($datos[$campo] ?? ''));
@@ -16,14 +11,12 @@ $mensajeError = fn(string $campo): string => isset($errores[$campo])
     ? '<p class="errorCampo">' . htmlspecialchars($errores[$campo]) . '</p>'
     : '';
 ?>
-<h1 class="tituloPagina">Crear cuenta de cliente</h1>
-<p class="subtitulo">
-    Con una sola cuenta puede comprar en cualquier tienda. La dirección de entrega se pide cuando hace un pedido.
-</p>
+<h1 class="tituloPagina">Crear cuenta</h1>
+<p class="subtitulo">Le toma un minuto. Con su cuenta puede seguir sus pedidos y, si quiere, abrir su propia tienda.</p>
 
 <?php require __DIR__ . '/../Plantilla/mensajes.php'; ?>
 
-<form method="post" action="<?= $urlBase ?>/registro/cliente" novalidate class="validarFormulario">
+<form method="post" action="<?= $urlBase ?>/registro" novalidate class="validarFormulario">
     <?= Csrf::campo() ?>
 
     <div class="<?= $claseCampo('nombreCompleto') ?>">
@@ -54,16 +47,18 @@ $mensajeError = fn(string $campo): string => isset($errores[$campo])
 
     <div class="<?= $claseCampo('contrasena') ?>">
         <label for="contrasena">Contraseña <span class="obligatorio">*</span></label>
-        <input type="password" id="contrasena" name="contrasena" maxlength="20" required data-regla="contrasena" value="<?= $valor('contrasena') ?>"
-            autocomplete="new-password" data-mensaje-requerido="Ingrese una contraseña">
+        <input type="password" id="contrasena" name="contrasena" maxlength="20" required data-regla="contrasena"
+            value="<?= $valor('contrasena') ?>" autocomplete="new-password"
+            data-mensaje-requerido="Ingrese una contraseña">
         <p class="textoAyuda">De 8 a 20 caracteres, con mayúscula, minúscula y número</p>
         <?= $mensajeError('contrasena') ?>
     </div>
 
     <div class="<?= $claseCampo('confirmarContrasena') ?>">
         <label for="confirmarContrasena">Confirmar contraseña <span class="obligatorio">*</span></label>
-        <input type="password" id="confirmarContrasena" name="confirmarContrasena" maxlength="20" required value="<?= $valor('confirmarContrasena') ?>"
-            data-igual-a="contrasena" autocomplete="new-password" data-mensaje-requerido="Confirme la contraseña">
+        <input type="password" id="confirmarContrasena" name="confirmarContrasena" maxlength="20" required
+            value="<?= $valor('confirmarContrasena') ?>" data-igual-a="contrasena" autocomplete="new-password"
+            data-mensaje-requerido="Confirme la contraseña">
         <?= $mensajeError('confirmarContrasena') ?>
     </div>
 
@@ -71,6 +66,6 @@ $mensajeError = fn(string $campo): string => isset($errores[$campo])
 </form>
 
 <p class="textoCentrado registroPie">
-    ¿Ya tiene cuenta? <a href="<?= $urlBase ?>/ingresar">Iniciar sesión</a>
+    ¿Ya tiene cuenta? <a href="<?= $urlBase ?>/ingresar">Ingresar</a>
 </p>
 <?php require __DIR__ . '/../Plantilla/pieAcceso.php'; ?>

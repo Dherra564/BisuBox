@@ -10,11 +10,12 @@ use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\EstadoPedido;
 use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\TipoContacto;
+use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Nucleo\WhatsApp;
 
 $titulo = 'Pedido #' . $pedido->getIdPedido();
 $paginaActual = 'misPedidos';
-$volverA = ['texto' => 'Mis pedidos', 'ruta' => '/mis-pedidos'];
+$volverA = ['texto' => UsuarioActual::esVendedor() ? 'Mis compras' : 'Mis pedidos', 'ruta' => '/mis-pedidos'];
 require __DIR__ . '/../Plantilla/encabezado.php';
 
 $enlaceTienda = '<a href="' . $urlBase . '/tienda/' . htmlspecialchars($pedido->getEnlaceTienda()) . '" class="facturaProveedor">'

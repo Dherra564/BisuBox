@@ -1,20 +1,12 @@
 <?php
 
-use Aplicacion\Nucleo\Carrito;
 use Aplicacion\Nucleo\Csrf;
-use Aplicacion\Nucleo\EstadoPedido;
-use Aplicacion\Nucleo\Permiso;
+use Aplicacion\Nucleo\Icono;
+use Aplicacion\Nucleo\Navegacion;
+use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\UsuarioActual;
-use Aplicacion\Repositorios\PedidoRepositorio;
-use Aplicacion\Repositorios\VendedorRepositorio;
 use Configuracion\Configuracion;
-
-// El cliente ve sus páginas (carrito, pedidos, perfil) con el diseño de la tienda donde está comprando
-if (UsuarioActual::esCliente() && Carrito::tiendaActual() !== null) {
-    require __DIR__ . '/encabezadoTienda.php';
-    return;
-}
 
 $urlBase = Configuracion::urlBase();
 $titulo = $titulo ?? 'BisuBox';
@@ -23,45 +15,22 @@ $botonAccion = $botonAccion ?? null;
 $botonesAccion = $botonesAccion ?? ($botonAccion !== null ? [$botonAccion] : []);
 $volverA = $volverA ?? null;
 $mensajes = $mensajes ?? [];
+$busqueda = $busqueda ?? '';
+$ocultarTitulo = $ocultarTitulo ?? false;
 
-// Números que se muestran junto al menú: unidades en el carrito (cliente) y pedidos por confirmar (vendedor)
-$numeroMenu = [];
-if (UsuarioActual::esCliente()) {
-    $numeroMenu['carrito'] = Carrito::unidades();
-} elseif (UsuarioActual::esVendedor()) {
-    try {
-        $vendedorMenu = (new VendedorRepositorio())->buscarPorIdUsuario((int) UsuarioActual::id());
-        if ($vendedorMenu !== null) {
-            $numeroMenu['pedidos'] = (new PedidoRepositorio())->contar([
-                'idVendedor' => (int) $vendedorMenu->getIdVendedor(),
-                'estado' => EstadoPedido::PENDIENTE,
-            ]);
-        }
-    } catch (Throwable $error) {
-        error_log('No se pudieron contar los pedidos pendientes: ' . $error->getMessage());
-    }
+$navegacion = Navegacion::armar($tiendaVista ?? null, $paginaActual);
+$tiendaSitio = $navegacion['tienda'];
+$nombreSitio = $tiendaSitio !== null ? (string) $tiendaSitio->getTiendaNombre() : 'BisuBox';
+$rutaMarca = $urlBase . ($navegacion['rutaTienda'] ?? '/');
+$haySesion = UsuarioActual::haySesion();
+$nombreCorto = $haySesion ? explode(' ', trim((string) UsuarioActual::nombre()))[0] : '';
+$rolTexto = $haySesion ? ($navegacion['esDuenio'] ? 'Dueño de esta tienda' : Rol::nombre(UsuarioActual::rol())) : '';
+$volverAqui = urlencode($navegacion['rutaTienda'] ?? '/');
+$enlaceCompartir = null;
+if ($navegacion['esDuenio']) {
+    $esquema = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $enlaceCompartir = $esquema . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $urlBase . $navegacion['rutaTienda'];
 }
-
-$opcionesMenu = [
-    'inicio' => ['texto' => 'Inicio', 'ruta' => '/', 'permiso' => 'panel.ver'],
-    'carrito' => ['texto' => 'Carrito', 'ruta' => '/carrito', 'permiso' => 'carrito.usar'],
-    'misPedidos' => ['texto' => 'Mis pedidos', 'ruta' => '/mis-pedidos', 'permiso' => 'misPedidos.ver'],
-    'pedidos' => ['texto' => 'Pedidos', 'ruta' => '/pedidos', 'permiso' => 'pedidos.gestionar'],
-    'clientes' => ['texto' => 'Clientes', 'ruta' => '/clientes', 'permiso' => 'clientes.ver'],
-    'productos' => ['texto' => 'Productos', 'ruta' => '/productos', 'permiso' => 'productos.gestionar'],
-    'inventario' => ['texto' => 'Inventario', 'ruta' => '/inventario', 'permiso' => 'inventario.gestionar'],
-    'proveedores' => ['texto' => 'Proveedores', 'ruta' => '/proveedores', 'permiso' => 'proveedores.gestionar'],
-    'tienda' => ['texto' => 'Mi tienda', 'ruta' => '/tienda', 'permiso' => 'tienda.gestionar'],
-    'perfil' => ['texto' => 'Mi perfil', 'ruta' => '/perfil', 'permiso' => 'perfil.ver'],
-    'sesiones' => ['texto' => 'Historial de sesiones', 'ruta' => '/sesiones', 'permiso' => 'sesiones.ver'],
-];
-// El cliente ve un enlace a la tienda donde está comprando
-$tiendaCliente = UsuarioActual::esCliente() ? Carrito::tiendaActual() : null;
-if ($tiendaCliente !== null) {
-    $opcionesMenu = ['inicio' => $opcionesMenu['inicio'], 'tiendaCliente' => ['texto' => 'Tienda', 'ruta' => '/tienda/' . $tiendaCliente['enlace'], 'permiso' => 'carrito.usar']] + $opcionesMenu;
-    unset($opcionesMenu['inicio']);
-}
-$opcionesMenu = array_filter($opcionesMenu, fn(array $opcion): bool => Permiso::puede($opcion['permiso']));
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -69,59 +38,135 @@ $opcionesMenu = array_filter($opcionesMenu, fn(array $opcion): bool => Permiso::
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= htmlspecialchars($titulo) ?> | BisuBox</title>
+    <title><?= htmlspecialchars($titulo === $nombreSitio ? $nombreSitio : $titulo . ' | ' . $nombreSitio) ?></title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="<?= Configuracion::recurso('css/estilos.css') ?>">
+    <script>
+        try {
+            if (localStorage.getItem('bisuboxMenuCerrado') === 'si' && window.matchMedia('(min-width: 901px)').matches) {
+                document.documentElement.classList.add('menuCerrado');
+            }
+        } catch (error) {
+        }
+    </script>
 </head>
 
-<body>
-    <div class="aplicacion">
-        <nav class="menuLateral" id="menuLateral" aria-label="Menú principal">
-            <a href="<?= $urlBase ?>/" class="logo">BisuBox</a>
+<body class="sitio">
+    <header class="barraSitio">
+        <div class="barraSitioIzquierda">
+            <button type="button" class="botonMenuSitio" id="botonMenu" aria-controls="menuSitio" aria-expanded="true"
+                aria-label="Cerrar menú" title="Cerrar menú"><?= Icono::svg('menu') ?></button>
+            <?php if ($tiendaSitio !== null): ?>
+                <form method="get" action="<?= $rutaMarca ?>" class="tiendaBuscador" role="search">
+                    <label for="buscarProducto" class="soloLectores">Buscar productos</label>
+                    <input type="search" id="buscarProducto" name="buscar" maxlength="60" placeholder="Buscar productos"
+                        value="<?= htmlspecialchars($busqueda) ?>">
+                    <button type="submit" aria-label="Buscar"><?= Icono::svg('buscar') ?></button>
+                </form>
+            <?php endif; ?>
+        </div>
+
+        <a href="<?= $rutaMarca ?>" class="tiendaMarca">
+            <span class="tiendaMarcaNombre"><?= htmlspecialchars($nombreSitio) ?></span>
+        </a>
+
+        <nav class="tiendaIconos" aria-label="Su cuenta">
+            <div class="menuCuenta">
+                <button type="button" class="tiendaIcono" id="botonCuenta" aria-expanded="false"
+                    aria-controls="panelCuenta" aria-label="<?= $haySesion ? 'Mi cuenta' : 'Ingresar o crear cuenta' ?>"
+                    title="<?= $haySesion ? 'Mi cuenta' : 'Ingresar o crear cuenta' ?>">
+                    <?= Icono::svg('perfil') ?>
+                    <?php if ($haySesion): ?><span
+                            class="nombreCuenta"><?= htmlspecialchars($nombreCorto) ?></span><?php endif; ?>
+                </button>
+                <div class="panelCuenta" id="panelCuenta" hidden>
+                    <?php if ($haySesion): ?>
+                        <div class="panelCuentaUsuario">
+                            <strong><?= htmlspecialchars((string) UsuarioActual::nombre()) ?></strong>
+                            <span><?= htmlspecialchars($rolTexto) ?></span>
+                        </div>
+                        <a href="<?= $urlBase ?>/perfil"><?= Icono::svg('perfil') ?> Mi perfil</a>
+                        <form method="post" action="<?= $urlBase ?>/salir" data-confirmar="¿Desea cerrar sesión?"
+                            data-titulo="Cerrar sesión" data-boton="Cerrar sesión">
+                            <?= Csrf::campo() ?>
+                            <button type="submit" class="opcionSalir"><?= Icono::svg('salir') ?> Cerrar sesión</button>
+                        </form>
+                    <?php else: ?>
+                        <a href="<?= $urlBase ?>/ingresar?volver=<?= $volverAqui ?>"
+                            class="opcionPrincipal"><?= Icono::svg('ingresar') ?> Ingresar</a>
+                        <a href="<?= $urlBase ?>/registro?volver=<?= $volverAqui ?>"><?= Icono::svg('perfil') ?> Crear
+                            cuenta</a>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <a href="<?= $urlBase . $navegacion['rutaPedidos'] ?>"
+                class="tiendaIcono <?= in_array($paginaActual, ['misPedidos', 'pedidos'], true) ? 'tiendaIconoActivo' : '' ?>"
+                aria-label="<?= $navegacion['textoPedidos'] ?>"
+                title="<?= $navegacion['textoPedidos'] ?>"><?= Icono::svg('bolsa') ?></a>
+            <?php if ($navegacion['puedeComprar']): ?>
+                <a href="<?= $urlBase ?>/carrito"
+                    class="tiendaIcono tiendaCarrito <?= $paginaActual === 'carrito' ? 'tiendaIconoActivo' : '' ?>"
+                    aria-label="Carrito, <?= (int) $navegacion['unidadesCarrito'] ?> productos" title="Carrito">
+                    <?= Icono::svg('carrito') ?>
+                    <?php if ($navegacion['unidadesCarrito'] > 0): ?><span
+                            class="tiendaCarritoNumero"><?= (int) $navegacion['unidadesCarrito'] ?></span><?php endif; ?>
+                    <span class="tiendaCarritoTotal"><?= Numero::moneda($navegacion['totalCarrito']) ?></span>
+                </a>
+            <?php endif; ?>
+            <?php if ($enlaceCompartir !== null): ?>
+                <button type="button" class="botonCopiarEnlace" data-copiar="<?= htmlspecialchars($enlaceCompartir) ?>"
+                    title="Copiar el enlace de su tienda"><?= Icono::svg('enlace') ?> <span>Copiar enlace</span></button>
+            <?php endif; ?>
+        </nav>
+    </header>
+
+    <div class="cuerpoSitio">
+        <nav class="menuSitio" id="menuSitio" aria-label="Menú principal">
             <ul>
-                <?php foreach ($opcionesMenu as $clave => $opcion): ?>
+                <?php foreach ($navegacion['menu'] as $opcion): ?>
+                    <?php if (isset($opcion['separador'])): ?>
+                        <li class="menuSeparador" aria-hidden="true"><span><?= htmlspecialchars($opcion['separador']) ?></span>
+                        </li>
+                        <?php continue; ?>
+                    <?php endif; ?>
                     <li>
-                        <a href="<?= $urlBase . $opcion['ruta'] ?>" class="<?= $clave === $paginaActual ? 'activo' : '' ?>"
-                            <?= $clave === $paginaActual ? 'aria-current="page"' : '' ?>>
-                            <?= htmlspecialchars($opcion['texto']) ?>
-                            <?php if (!empty($numeroMenu[$clave])): ?>
-                                <span class="numeroMenu" aria-label="<?= (int) $numeroMenu[$clave] ?> <?= $clave === 'carrito' ? 'en el carrito' : 'por confirmar' ?>"><?= (int) $numeroMenu[$clave] ?></span>
+                        <a href="<?= $urlBase . htmlspecialchars($opcion['ruta']) ?>"
+                            title="<?= htmlspecialchars($opcion['texto']) ?>"
+                            class="<?= $opcion['activo'] ? 'activo' : '' ?> <?= $opcion['clave'] === 'emprender' ? 'opcionEmprender' : '' ?>"
+                            <?= $opcion['activo'] ? 'aria-current="page"' : '' ?>>
+                            <?= Icono::svg($opcion['icono']) ?>
+                            <span class="textoMenu"><?= htmlspecialchars($opcion['texto']) ?></span>
+                            <?php if ($opcion['numero'] > 0): ?>
+                                <span class="numeroMenu <?= $opcion['clave'] === 'pedidos' ? 'numeroMenuAviso' : '' ?>"
+                                    aria-label="<?= (int) $opcion['numero'] ?> <?= $opcion['clave'] === 'carrito' ? 'en el carrito' : 'por confirmar' ?>"><?= (int) $opcion['numero'] ?></span>
                             <?php endif; ?>
                         </a>
                     </li>
                 <?php endforeach; ?>
             </ul>
 
-        </nav>
-
-        <div class="zonaPrincipal">
-            <header class="barraSuperior">
-                <button type="button" class="botonMenu" id="botonMenu" aria-label="Abrir menú"
-                    aria-expanded="false">☰</button>
-                <span class="nombreNegocio">Negocio de bisutería</span>
-                <a href="<?= $urlBase ?>/" class="logoCelular">BisuBox</a>
-                <div class="usuarioActual">
-                    <?php if (UsuarioActual::haySesion()): ?>
-                        <img src="<?= $urlBase ?>/fotos/perfil?archivo=<?= urlencode((string) UsuarioActual::foto()) ?>"
-                            alt="" class="fotoUsuario">
-                        <a href="<?= $urlBase ?>/perfil"
-                            class="nombreUsuario"><?= htmlspecialchars((string) UsuarioActual::nombre()) ?></a>
-                        <span class="etiqueta etiquetaRol"><?= htmlspecialchars(Rol::nombre(UsuarioActual::rol())) ?></span>
-                        <form method="post" action="<?= $urlBase ?>/salir" class="formularioSalir"
-                            data-confirmar="¿Desea cerrar sesión?" data-titulo="Cerrar sesión" data-boton="Cerrar sesión">
-                            <?= Csrf::campo() ?>
-                            <button type="submit" class="boton botonSecundario botonPequeno">Cerrar sesión</button>
-                        </form>
-                    <?php else: ?>
-                        <span class="etiqueta etiquetaInactivo">Sin sesión</span>
-                    <?php endif; ?>
+            <?php if (UsuarioActual::esCliente() && $paginaActual !== 'emprender'): ?>
+                <div class="tarjetaMenu">
+                    <strong>¿Le gustaría comenzar a emprender?</strong>
+                    <span>Abra su tienda con los datos de su cuenta.</span>
+                    <a href="<?= $urlBase ?>/emprender" class="boton botonPequeno">Quiero mi tienda</a>
                 </div>
-            </header>
+            <?php elseif (!$haySesion): ?>
+                <div class="tarjetaMenu">
+                    <strong>¿Ya tiene cuenta?</strong>
+                    <a href="<?= $urlBase ?>/ingresar?volver=<?= $volverAqui ?>" class="boton botonPequeno">Ingresar</a>
+                    <a href="<?= $urlBase ?>/registro?volver=<?= $volverAqui ?>">Crear cuenta</a>
+                </div>
+            <?php endif; ?>
+        </nav>
+        <div class="veloMenu" id="veloMenu" hidden></div>
 
-            <main class="contenido">
-                <?php if ($volverA !== null): ?>
-                    <a href="<?= $urlBase . $volverA['ruta'] ?>" class="enlaceVolver">← <?= htmlspecialchars($volverA['texto']) ?></a>
-                <?php endif; ?>
+        <main class="contenido">
+            <?php if ($volverA !== null): ?>
+                <a href="<?= $urlBase . $volverA['ruta'] ?>" class="enlaceVolver">←
+                    <?= htmlspecialchars($volverA['texto']) ?></a>
+            <?php endif; ?>
+            <?php if (!$ocultarTitulo): ?>
                 <div class="encabezadoPagina">
                     <h1 class="tituloPagina"><?= htmlspecialchars($titulo) ?></h1>
                     <?php if ($botonesAccion !== []): ?>
@@ -133,4 +178,5 @@ $opcionesMenu = array_filter($opcionesMenu, fn(array $opcion): bool => Permiso::
                         </div>
                     <?php endif; ?>
                 </div>
-                <?php require __DIR__ . '/mensajes.php'; ?>
+            <?php endif; ?>
+            <?php require __DIR__ . '/mensajes.php'; ?>

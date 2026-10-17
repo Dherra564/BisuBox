@@ -3,6 +3,7 @@
 namespace Aplicacion\Repositorios;
 
 use Aplicacion\Modelos\Vendedor;
+use Aplicacion\Nucleo\Rol;
 use Configuracion\BaseDatos;
 use DateTime;
 use PDO;
@@ -60,39 +61,6 @@ class VendedorRepositorio
         return $fila ? $this->crearDesdeFila($fila) : null;
     }
 
-    /**
-     * Tiendas que los clientes pueden visitar: la tienda está visible y la cuenta del vendedor activa.
-     * Cada una trae cuántos productos tiene disponibles
-     * @return array<int, array{vendedor: Vendedor, disponibles: int}>
-     */
-    public function listarTiendasVisibles(string $busqueda = ''): array
-    {
-        $condiciones = ['v.tbvendedoractivo = 1', 'u.tbusuarioactivo = 1'];
-        $valores = [];
-        $busqueda = trim($busqueda);
-        if ($busqueda !== '') {
-            $patron = '%' . addcslashes($busqueda, '%_\\') . '%';
-            $condiciones[] = '(v.tbvendedortiendanombre LIKE ? OR v.tbvendedortiendadescripcion LIKE ?)';
-            array_push($valores, $patron, $patron);
-        }
-
-        $consulta = $this->conexion->prepare(
-            'SELECT u.*, v.*,
-                (SELECT COUNT(*) FROM tbproducto p
-                 WHERE p.tbproductovendedorid = v.tbvendedorid AND p.tbproductoactivo = 1 AND p.tbproductoexistencia > 0) AS disponibles
-             FROM tbvendedor v
-             INNER JOIN tbusuario u ON u.tbusuarioid = v.tbvendedorusuarioid
-             WHERE ' . implode(' AND ', $condiciones) . '
-             ORDER BY disponibles > 0 DESC, v.tbvendedortiendanombre ASC'
-        );
-        $consulta->execute($valores);
-
-        return array_map(fn(array $fila): array => [
-            'vendedor' => $this->crearDesdeFila($fila),
-            'disponibles' => (int) $fila['disponibles'],
-        ], $consulta->fetchAll());
-    }
-
     public function existeEnlace(string $enlace, ?int $excluirIdVendedor = null): bool
     {
         $consulta = $this->conexion->prepare(
@@ -124,6 +92,55 @@ class VendedorRepositorio
                 self::descripcionOVacio($vendedor->getTiendaDescripcion()),
                 $vendedor->getTiendaLogo(),
                 $vendedor->getTiendaActiva() ? 1 : 0,
+            ]);
+
+            $this->contactoRepositorio->reemplazar($idVendedor, $vendedor->getContactos());
+
+            if ($transaccionPropia) {
+                BaseDatos::confirmarTransaccion();
+            }
+        } catch (Throwable $error) {
+            if ($transaccionPropia) {
+                BaseDatos::revertirTransaccion();
+            }
+            throw $error;
+        }
+
+        $vendedor->setIdVendedor($idVendedor);
+
+        return $idVendedor;
+    }
+
+    public function abrirTienda(Vendedor $vendedor): int
+    {
+        $transaccionPropia = BaseDatos::iniciarTransaccion();
+
+        try {
+            $consulta = $this->conexion->prepare(
+                'UPDATE tbusuario SET tbusuarioidentificaciontipo = ?, tbusuarioidentificacionnumero = ?, tbusuariorol = ?
+                 WHERE tbusuarioid = ?'
+            );
+            $consulta->execute([
+                $vendedor->getTipoIdentificacion(),
+                trim((string) $vendedor->getNumeroIdentificacion()),
+                Rol::VENDEDOR,
+                $vendedor->getIdUsuario(),
+            ]);
+
+            $idVendedor = BaseDatos::generarId('tbvendedor', 'tbvendedorid');
+            $consulta = $this->conexion->prepare(
+                'INSERT INTO tbvendedor (tbvendedorid, tbvendedorusuarioid, tbvendedortiendanombre, tbvendedortiendaenlace,
+                    tbvendedortiendadescripcion, tbvendedortiendalogo, tbvendedoractivo)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)'
+            );
+            $consulta->execute([
+                $idVendedor,
+                $vendedor->getIdUsuario(),
+                UsuarioRepositorio::limpiarEspacios((string) $vendedor->getTiendaNombre()),
+                self::normalizarEnlace((string) $vendedor->getTiendaEnlace()),
+                self::descripcionOVacio($vendedor->getTiendaDescripcion()),
+                $vendedor->getTiendaLogo(),
+                1,
             ]);
 
             $this->contactoRepositorio->reemplazar($idVendedor, $vendedor->getContactos());
@@ -192,20 +209,32 @@ class VendedorRepositorio
         return $enlace;
     }
 
-    
+
     public static function convertirEnEnlace(string $nombreTienda): string
     {
         $texto = strtr(mb_strtolower(trim($nombreTienda), 'UTF-8'), [
-            'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u', 'ñ' => 'n',
-            'à' => 'a', 'è' => 'e', 'ì' => 'i', 'ò' => 'o', 'ù' => 'u', 'ç' => 'c',
-            '&' => ' y ', "'" => '',
+            'á' => 'a',
+            'é' => 'e',
+            'í' => 'i',
+            'ó' => 'o',
+            'ú' => 'u',
+            'ü' => 'u',
+            'ñ' => 'n',
+            'à' => 'a',
+            'è' => 'e',
+            'ì' => 'i',
+            'ò' => 'o',
+            'ù' => 'u',
+            'ç' => 'c',
+            '&' => ' y ',
+            "'" => '',
         ]);
         $texto = trim((string) preg_replace('/[^a-z0-9]+/', '-', $texto), '-');
         $texto = rtrim(substr($texto, 0, 50), '-');
 
         return strlen($texto) >= 3 ? $texto : trim('tienda-' . $texto, '-');
     }
-    
+
     private static function descripcionOVacio(?string $descripcion): ?string
     {
         $descripcion = trim((string) $descripcion);

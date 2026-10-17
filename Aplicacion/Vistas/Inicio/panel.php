@@ -66,6 +66,12 @@ $accesos = [
         'descripcion' => 'Consulte cuándo ha ingresado al sistema.'
     ],
     [
+        'texto' => 'Comenzar a emprender',
+        'permiso' => 'emprender',
+        'ruta' => '/emprender',
+        'descripcion' => 'Abra su propia tienda con los datos de su cuenta.'
+    ],
+    [
         'texto' => 'Productos',
         'permiso' => 'productos.gestionar',
         'ruta' => '/productos',

@@ -1,17 +1,13 @@
 <?php
-/**
- * @var array $datos
- * @var array $errores
- * @var array $mensajes
- */
 
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\TipoIdentificacion;
+use Aplicacion\Nucleo\Validador;
 
-$titulo = 'Crear cuenta de vendedor';
-$claseTarjeta = 'tarjetaRegistro';
+$titulo = 'Abra su tienda';
+$paginaActual = 'emprender';
 $scriptsExtra = ['tienda.js'];
-require __DIR__ . '/../Plantilla/encabezadoAcceso.php';
+require __DIR__ . '/../Plantilla/encabezado.php';
 
 $valor = fn(string $campo): string => htmlspecialchars((string) ($datos[$campo] ?? ''));
 $claseCampo = fn(string $campo): string => isset($errores[$campo]) ? 'campo campoConError' : 'campo';
@@ -20,39 +16,46 @@ $mensajeError = fn(string $campo): string => isset($errores[$campo])
     : '';
 $tipoElegido = $datos['tipoIdentificacion'] ?? '';
 $contactos = $datos['contactos'] ?? [];
+$logoPendiente = $datos['tiendaLogoPendiente'] ?? null;
+$telefono = Validador::limpiarTelefono((string) $usuario->getNumeroTelefonico());
 ?>
-<div class="encabezadoRegistro">
-    <h1 class="tituloPagina">Crear cuenta de vendedor</h1>
-    <p class="subtitulo">
-        Sus datos, los de su tienda y una contraseña. Los campos con <span class="obligatorio">*</span> son
-        obligatorios.
-    </p>
-</div>
 
-<?php require __DIR__ . '/../Plantilla/mensajes.php'; ?>
+<p class="subtitulo">Usamos los datos de su cuenta. Solo falta contarnos de su tienda.</p>
 
 <?php if ($errores !== []): ?>
-    <div class="alerta alertaError alertaFormulario" role="alert">
+    <div class="alerta alertaError" role="alert">
         <span class="alertaIcono" aria-hidden="true">✖</span>
         <p><strong>Error:</strong> Revise los campos marcados en rojo.</p>
     </div>
 <?php endif; ?>
 
-<form method="post" action="<?= $urlBase ?>/registro/vendedor" enctype="multipart/form-data" novalidate
-    class="validarFormulario">
+<form method="post" action="<?= $urlBase ?>/emprender" enctype="multipart/form-data" novalidate
+    class="validarFormulario" data-confirmar="¿Abrir su tienda? Su cuenta pasará a ser de vendedor."
+    data-titulo="Abrir mi tienda" data-boton="Abrir mi tienda">
     <?= Csrf::campo() ?>
 
     <section class="formularioSeccion">
-        <h2>Datos personales</h2>
-        <div class="<?= $claseCampo('nombreCompleto') ?>">
-            <label for="nombreCompleto">Nombre completo <span class="obligatorio">*</span></label>
-            <input type="text" id="nombreCompleto" name="nombreCompleto" minlength="3" maxlength="100" required
-                data-regla="soloLetras" autocomplete="name" data-mensaje-requerido="Ingrese su nombre completo"
-                data-mensaje-regla="El nombre solo puede tener letras y espacios"
-                data-mensaje-largo="El nombre debe tener entre 3 y 100 caracteres"
-                value="<?= $valor('nombreCompleto') ?>">
-            <?= $mensajeError('nombreCompleto') ?>
+        <div class="encabezadoSeccion">
+            <h2>Sus datos</h2>
+            <span class="textoAyuda">Se toman de su cuenta · <a href="<?= $urlBase ?>/perfil">cambiarlos en Mi
+                    perfil</a></span>
         </div>
+        <dl class="datosCuenta">
+            <div>
+                <dt>Nombre</dt>
+                <dd><?= htmlspecialchars((string) $usuario->getNombreCompleto()) ?></dd>
+            </div>
+            <div>
+                <dt>Correo</dt>
+                <dd><?= htmlspecialchars((string) $usuario->getCorreoUsuario()) ?></dd>
+            </div>
+            <div>
+                <dt>Teléfono</dt>
+                <dd><?= strlen($telefono) === 8 ? substr($telefono, 0, 4) . '-' . substr($telefono, 4) : htmlspecialchars($telefono) ?>
+                </dd>
+            </div>
+        </dl>
+
         <div class="filaCampos">
             <div class="<?= $claseCampo('tipoIdentificacion') ?>">
                 <label for="tipoIdentificacion">Tipo de identificación <span class="obligatorio">*</span></label>
@@ -83,24 +86,6 @@ $contactos = $datos['contactos'] ?? [];
                 <?= $mensajeError('numeroIdentificacion') ?>
             </div>
         </div>
-        <div class="filaCampos">
-            <div class="<?= $claseCampo('correoUsuario') ?>">
-                <label for="correoUsuario">Correo <span class="obligatorio">*</span></label>
-                <input type="email" id="correoUsuario" name="correoUsuario" maxlength="150" required data-regla="correo"
-                    autocomplete="email" data-mensaje-requerido="Ingrese su correo"
-                    value="<?= $valor('correoUsuario') ?>">
-                <p class="textoAyuda">Con este correo inicia sesión</p>
-                <?= $mensajeError('correoUsuario') ?>
-            </div>
-            <div class="<?= $claseCampo('numeroTelefonico') ?>">
-                <label for="numeroTelefonico">Teléfono personal <span class="obligatorio">*</span></label>
-                <input type="tel" id="numeroTelefonico" name="numeroTelefonico" maxlength="15" required
-                    data-regla="telefono" inputmode="tel" autocomplete="tel"
-                    data-mensaje-requerido="Ingrese su teléfono" value="<?= $valor('numeroTelefonico') ?>">
-                <p class="textoAyuda">8 dígitos. No se muestra en la tienda</p>
-                <?= $mensajeError('numeroTelefonico') ?>
-            </div>
-        </div>
     </section>
 
     <section class="formularioSeccion">
@@ -113,9 +98,9 @@ $contactos = $datos['contactos'] ?? [];
                         data-regla="nombreTienda" data-mensaje-requerido="Ingrese el nombre de la tienda"
                         data-mensaje-largo="El nombre debe tener entre 3 y 100 caracteres"
                         value="<?= $valor('tiendaNombre') ?>">
+                    <p class="textoAyuda">Con este nombre se arma el enlace de su tienda</p>
                     <?= $mensajeError('tiendaNombre') ?>
                 </div>
-              
                 <div class="<?= $claseCampo('tiendaDescripcion') ?>">
                     <label for="tiendaDescripcion">Descripción</label>
                     <textarea id="tiendaDescripcion" name="tiendaDescripcion" rows="3" maxlength="300"
@@ -123,20 +108,19 @@ $contactos = $datos['contactos'] ?? [];
                     <?= $mensajeError('tiendaDescripcion') ?>
                 </div>
             </div>
-            <?php $logoPendiente = $datos['tiendaLogoPendiente'] ?? null; ?>
             <div class="<?= $claseCampo('tiendaLogo') ?>">
                 <div class="zonaFoto">
                     <img src="<?= $logoPendiente !== null
                         ? $urlBase . '/fotos/logo?archivo=' . urlencode($logoPendiente)
                         : $urlBase . '/imagenes/logoPorDefecto.svg' ?>" alt="Vista previa del logo"
                         class="fotoPerfilGrande">
-                    <label for="tiendaLogo" class="boton botonSecundario"><?= $logoPendiente !== null ? 'Cambiar logo' : 'Elegir logo' ?></label>
+                    <label for="tiendaLogo"
+                        class="boton botonSecundario"><?= $logoPendiente !== null ? 'Cambiar logo' : 'Elegir logo' ?></label>
                     <input type="file" id="tiendaLogo" name="tiendaLogo" accept="image/jpeg,image/png"
                         class="campoArchivo">
                     <?php if ($logoPendiente !== null): ?>
-                        <!-- El logo que ya eligió no se pierde aunque el formulario tenga errores -->
                         <input type="hidden" name="tiendaLogoPendiente" value="<?= htmlspecialchars($logoPendiente) ?>">
-                        <span class="nombreArchivo">Ya eligió este logo. Se guarda al crear la cuenta</span>
+                        <span class="nombreArchivo">Ya eligió este logo. Se guarda al abrir su tienda</span>
                     <?php else: ?>
                         <span class="nombreArchivo">JPG o PNG, máximo 5 MB. Opcional</span>
                     <?php endif; ?>
@@ -148,33 +132,16 @@ $contactos = $datos['contactos'] ?? [];
 
     <?php require __DIR__ . '/../Plantilla/contactos.php'; ?>
 
-    <section class="formularioSeccion">
-        <h2>Contraseña</h2>
-        <div class="filaCampos">
-            <div class="<?= $claseCampo('contrasena') ?>">
-                <label for="contrasena">Contraseña <span class="obligatorio">*</span></label>
-                <input type="password" id="contrasena" name="contrasena" maxlength="20" required data-regla="contrasena" value="<?= $valor('contrasena') ?>"
-                    autocomplete="new-password" data-mensaje-requerido="Ingrese una contraseña">
-                <p class="textoAyuda">De 8 a 20 caracteres, con mayúscula, minúscula y número</p>
-                <?= $mensajeError('contrasena') ?>
-            </div>
-            <div class="<?= $claseCampo('confirmarContrasena') ?>">
-                <label for="confirmarContrasena">Confirmar contraseña <span class="obligatorio">*</span></label>
-                <input type="password" id="confirmarContrasena" name="confirmarContrasena" maxlength="20" required value="<?= $valor('confirmarContrasena') ?>"
-                    data-igual-a="contrasena" autocomplete="new-password"
-                    data-mensaje-requerido="Confirme la contraseña">
-                <?= $mensajeError('confirmarContrasena') ?>
-            </div>
-        </div>
-    </section>
+    <div class="alerta alertaAdvertencia" role="note">
+        <span class="alertaIcono" aria-hidden="true">⚠</span>
+        <p>Al abrir su tienda, su cuenta pasa a ser de <strong>vendedor</strong>. Sigue entrando con el mismo correo y
+            contraseña, y puede seguir comprando en otras tiendas.</p>
+    </div>
 
     <div class="grupoBotones accionesFormulario">
-        <a href="<?= $urlBase ?>/ingresar" class="boton botonSecundario">Cancelar</a>
-        <button type="submit" class="boton">Crear mi cuenta</button>
+        <a href="<?= $urlBase ?>/" class="boton botonSecundario">Cancelar</a>
+        <button type="submit" class="boton">Abrir mi tienda</button>
     </div>
 </form>
 
-<p class="textoCentrado registroPie">
-    ¿Ya tiene cuenta? <a href="<?= $urlBase ?>/ingresar">Iniciar sesión</a>
-</p>
-<?php require __DIR__ . '/../Plantilla/pieAcceso.php'; ?>
+<?php require __DIR__ . '/../Plantilla/pie.php'; ?>
