@@ -38,6 +38,24 @@ class FotoControlador
         $this->mostrarPublica(SubidaArchivo::obtenerFotoProducto($nombre));
     }
 
+    public function mostrarComponente(): void
+    {
+        Permiso::exigirSesion();
+
+        $nombre = is_string($_GET['archivo'] ?? null) ? $_GET['archivo'] : '';
+        $foto = SubidaArchivo::obtenerFotoComponente($nombre);
+
+        header('X-Content-Type-Options: nosniff');
+
+        if ($foto === null) {
+            http_response_code(404);
+            return;
+        }
+
+        header('Cache-Control: private, max-age=86400');
+        $this->enviar($foto);
+    }
+
     private function mostrarPublica(?array $foto): void
     {
         header('X-Content-Type-Options: nosniff');

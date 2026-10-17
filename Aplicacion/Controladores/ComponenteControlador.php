@@ -8,6 +8,7 @@ use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\DatosComponente;
 use Aplicacion\Nucleo\Mensaje;
 use Aplicacion\Nucleo\Permiso;
+use Aplicacion\Nucleo\SubidaArchivo;
 use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Nucleo\Validador;
 use Aplicacion\Repositorios\ComponenteRepositorio;
@@ -66,19 +67,26 @@ class ComponenteControlador
         $datos = DatosComponente::leer($tipo);
         $validador = new Validador();
         DatosComponente::validar($validador, $datos, $tipo, $this->idVendedor());
+        $foto = (new SubidaArchivo())->recibir('foto', SubidaArchivo::FOTO_COMPONENTE, $validador);
+        $datos['fotoPendiente'] = $foto;
         if (!$validador->esValido()) {
+            SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_COMPONENTE, $foto);
             $this->mostrarFormulario($datos, $validador->errores(), $tipo, null);
             return;
         }
 
+        $componente = DatosComponente::crearComponente($datos, $tipo, $this->idVendedor());
+        $componente->setFoto($foto);
         try {
-            $this->componenteRepositorio->insertar(DatosComponente::crearComponente($datos, $tipo, $this->idVendedor()));
+            $this->componenteRepositorio->insertar($componente);
         } catch (Throwable $error) {
             error_log('Error al crear el componente: ' . $error->getMessage());
+            SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_COMPONENTE, $foto);
             Mensaje::error('No se pudo guardar. Intente de nuevo.');
             $this->mostrarFormulario($datos, [], $tipo, null);
             return;
         }
+        SubidaArchivo::olvidarPendiente(SubidaArchivo::FOTO_COMPONENTE, $foto);
 
         Mensaje::exito('Componente "' . $datos['nombre'] . '" agregado al inventario');
         $this->redirigir(($_POST['siguiente'] ?? '') === 'otro'
@@ -102,21 +110,39 @@ class ComponenteControlador
         $datos = DatosComponente::leer($tipo);
         $validador = new Validador();
         DatosComponente::validar($validador, $datos, $tipo, $this->idVendedor(), $componente);
+        $foto = (new SubidaArchivo())->recibir('foto', SubidaArchivo::FOTO_COMPONENTE, $validador);
+        $datos['fotoPendiente'] = $foto;
+        $datos['quitarFoto'] = ($_POST['quitarFoto'] ?? '') === '1';
         if (!$validador->esValido()) {
+            SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_COMPONENTE, $foto);
             $this->mostrarFormulario($datos, $validador->errores(), $tipo, $componente);
             return;
         }
 
+        $fotoAnterior = $componente->getFoto();
+        $cambiado = DatosComponente::crearComponente($datos, $tipo, $this->idVendedor(), $componente);
+        if ($foto !== null) {
+            $cambiado->setFoto($foto);
+        } elseif (!$datos['quitarFoto']) {
+            $cambiado->setFoto($fotoAnterior);
+        }
+
         try {
             $this->componenteRepositorio->actualizar(
-                DatosComponente::crearComponente($datos, $tipo, $this->idVendedor(), $componente),
+                $cambiado,
                 array_map(fn($atributo): int => (int) $atributo->getIdAtributo(), $tipo->getAtributosActivos())
             );
         } catch (Throwable $error) {
             error_log('Error al actualizar el componente: ' . $error->getMessage());
+            SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_COMPONENTE, $foto);
             Mensaje::error('No se pudo guardar. Intente de nuevo.');
             $this->mostrarFormulario($datos, [], $tipo, $componente);
             return;
+        }
+
+        SubidaArchivo::olvidarPendiente(SubidaArchivo::FOTO_COMPONENTE, $foto);
+        if ($fotoAnterior !== null && $fotoAnterior !== $cambiado->getFoto()) {
+            SubidaArchivo::eliminarFotoComponente($fotoAnterior);
         }
 
         Mensaje::exito('Componente "' . $datos['nombre'] . '" guardado');

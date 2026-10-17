@@ -1,11 +1,4 @@
 <?php
-/**
- * @var \Aplicacion\Modelos\TipoComponente $tipoComponente
- * @var \Aplicacion\Modelos\Componente|null $componente
- * @var array $datos
- * @var array $errores
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\ClaseDato;
 use Aplicacion\Nucleo\Csrf;
@@ -30,6 +23,12 @@ $plural = $unidades[$datos['unidad']]['plural'] ?? 'unidades';
 $esMetro = $datos['unidad'] === UnidadMedida::METRO;
 $enCentimetros = ($datos['medida'] ?? '') === DatosComponente::CENTIMETROS;
 $atributos = $tipoComponente->getAtributosActivos();
+$fotoActual = $editando ? $componente->getFoto() : null;
+$fotoPendiente = $datos['fotoPendiente'] ?? null;
+$fotoMostrada = $fotoPendiente ?? $fotoActual;
+$urlFoto = $fotoMostrada !== null
+    ? $urlBase . '/fotos/componente?archivo=' . urlencode($fotoMostrada)
+    : $urlBase . '/imagenes/productoPorDefecto.svg';
 ?>
 
 <?php if ($errores !== []): ?>
@@ -46,8 +45,8 @@ $atributos = $tipoComponente->getAtributosActivos();
     <?php endif; ?>
 </div>
 
-<form method="post" action="<?= $urlBase ?>/componentes/<?= $editando ? 'editar' : 'nuevo' ?>" novalidate
-    class="validarFormulario formularioComponente">
+<form method="post" action="<?= $urlBase ?>/componentes/<?= $editando ? 'editar' : 'nuevo' ?>"
+    enctype="multipart/form-data" novalidate class="validarFormulario formularioComponente">
     <?= Csrf::campo() ?>
     <?php if ($editando): ?>
         <input type="hidden" name="id" value="<?= $componente->getIdComponente() ?>">
@@ -57,41 +56,71 @@ $atributos = $tipoComponente->getAtributosActivos();
 
     <section class="formularioSeccion">
         <h2>Datos comunes</h2>
-        <div class="<?= $claseCampo('nombre') ?>">
-            <label for="nombre">Nombre del componente <span class="obligatorio">*</span></label>
-            <input type="text" id="nombre" name="nombre" minlength="2" maxlength="100" required
-                placeholder="Por ejemplo: Perla de vidrio rosada 8 mm"
-                data-mensaje-requerido="Escriba el nombre del componente, por ejemplo Perla rosada 8 mm"
-                data-mensaje-largo="El nombre debe tener entre 2 y 100 caracteres" value="<?= $valor('nombre') ?>">
-            <?= $mensajeError('nombre') ?>
-        </div>
+        <div class="encabezadoProducto">
+            <div class="<?= $claseCampo('foto') ?>">
+                <div class="zonaFoto zonaFotoProducto">
+                    <img src="<?= htmlspecialchars($urlFoto) ?>" alt="" class="fotoPerfilGrande fotoProducto">
+                    <label for="foto"
+                        class="enlaceFoto"><?= $fotoMostrada !== null ? 'Cambiar foto' : 'Agregar foto' ?></label>
+                    <input type="file" id="foto" name="foto" accept="image/jpeg,image/png" class="campoArchivo">
+                    <?php if ($fotoPendiente !== null): ?>
+                        <input type="hidden" name="fotoPendiente" value="<?= htmlspecialchars($fotoPendiente) ?>">
+                        <span class="nombreArchivo">Foto elegida</span>
+                    <?php else: ?>
+                        <span class="nombreArchivo">JPG o PNG</span>
+                    <?php endif; ?>
+                    <?php if ($fotoActual !== null): ?>
+                        <div class="campoCasilla">
+                            <input type="checkbox" id="quitarFoto" name="quitarFoto" value="1"
+                                <?= !empty($datos['quitarFoto']) ? 'checked' : '' ?>>
+                            <label for="quitarFoto">Quitar</label>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <?= $mensajeError('foto') ?>
+            </div>
 
-        <div class="filaCampos">
-            <fieldset class="<?= $claseCampo('unidad', 'opcionesUnidad') ?>">
-                <legend class="etiquetaCampo">¿Cómo se calcula el precio? <span class="obligatorio">*</span></legend>
-                <div class="opcionesUnidadLista">
-                    <?php foreach ($unidades as $codigo => $unidad): ?>
-                        <label class="opcionUnidad">
-                            <input type="radio" name="unidad" value="<?= $codigo ?>" data-unidad
-                                data-plural="<?= $unidad['plural'] ?>"
-                                data-ayuda="<?= htmlspecialchars($unidad['ayuda']) ?>"
-                                data-costo="<?= htmlspecialchars($unidad['costo']) ?>" <?= $datos['unidad'] === $codigo ? 'checked' : '' ?>>
-                            Por <?= mb_strtolower($unidad['nombre'], 'UTF-8') ?>
-                        </label>
-                    <?php endforeach; ?>
+            <div>
+                <div class="<?= $claseCampo('nombre') ?>">
+                    <label for="nombre">Nombre del componente <span class="obligatorio">*</span></label>
+                    <input type="text" id="nombre" name="nombre" minlength="2" maxlength="100" required
+                        placeholder="Por ejemplo: Perla de vidrio rosada 8 mm"
+                        data-mensaje-requerido="Escriba el nombre del componente, por ejemplo Perla rosada 8 mm"
+                        data-mensaje-largo="El nombre debe tener entre 2 y 100 caracteres"
+                        value="<?= $valor('nombre') ?>">
+                    <?= $mensajeError('nombre') ?>
                 </div>
-                <?= $mensajeError('unidad') ?>
-            </fieldset>
-            <div class="<?= $claseCampo('existenciaMinima') ?>">
-                <label for="existenciaMinima">Avisarme cuando solo queden</label>
-                <div class="campoConUnidad">
-                    <input type="text" id="existenciaMinima" name="existenciaMinima" maxlength="13" inputmode="decimal"
-                        data-regla="cantidad" data-mensaje-regla="Escriba un número con hasta 2 decimales, por ejemplo 12 o 12,50"
-                        placeholder="0" value="<?= $valor('existenciaMinima') ?>">
-                    <span class="unidadCampo" data-unidad-plural><?= $plural ?></span>
+
+                <div class="filaCampos">
+                    <fieldset class="<?= $claseCampo('unidad', 'opcionesUnidad') ?>">
+                        <legend class="etiquetaCampo">¿Cómo se calcula el precio? <span class="obligatorio">*</span>
+                        </legend>
+                        <div class="opcionesUnidadLista">
+                            <?php foreach ($unidades as $codigo => $unidad): ?>
+                                <label class="opcionUnidad">
+                                    <input type="radio" name="unidad" value="<?= $codigo ?>" data-unidad
+                                        data-plural="<?= $unidad['plural'] ?>"
+                                        data-ayuda="<?= htmlspecialchars($unidad['ayuda']) ?>"
+                                        data-costo="<?= htmlspecialchars($unidad['costo']) ?>" <?= $datos['unidad'] === $codigo ? 'checked' : '' ?>>
+                                    Por <?= mb_strtolower($unidad['nombre'], 'UTF-8') ?>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
+                        <?= $mensajeError('unidad') ?>
+                    </fieldset>
+                    <div class="<?= $claseCampo('existenciaMinima') ?>">
+                        <label for="existenciaMinima">Avisarme cuando solo queden</label>
+                        <div class="campoConUnidad">
+                            <input type="text" id="existenciaMinima" name="existenciaMinima" maxlength="13"
+                                inputmode="decimal" data-regla="cantidad"
+                                data-mensaje-regla="Escriba un número con hasta 2 decimales, por ejemplo 12 o 12,50"
+                                placeholder="0" value="<?= $valor('existenciaMinima') ?>">
+                            <span class="unidadCampo" data-unidad-plural><?= $plural ?></span>
+                        </div>
+                        <p class="textoAyuda">Opcional. Con esa cantidad o menos, se marca como "Por acabarse".</p>
+                        <?= $mensajeError('existenciaMinima') ?>
+                    </div>
                 </div>
-                <p class="textoAyuda">Opcional. Con esa cantidad o menos, se marca como "Por acabarse".</p>
-                <?= $mensajeError('existenciaMinima') ?>
             </div>
         </div>
 
@@ -101,7 +130,8 @@ $atributos = $tipoComponente->getAtributosActivos();
                     <label for="existencia">¿Cuántas tiene ahora?</label>
                     <div class="campoConUnidad">
                         <input type="text" id="existencia" name="existencia" maxlength="13" inputmode="decimal"
-                            data-regla="cantidad" data-mensaje-regla="Escriba un número con hasta 2 decimales, por ejemplo 12 o 12,50"
+                            data-regla="cantidad"
+                            data-mensaje-regla="Escriba un número con hasta 2 decimales, por ejemplo 12 o 12,50"
                             placeholder="0" value="<?= $valor('existencia') ?>">
                         <select name="medida" class="selectorMedida" aria-label="Metros o centímetros" data-medida
                             <?= $esMetro ? '' : 'hidden' ?>>
@@ -121,7 +151,8 @@ $atributos = $tipoComponente->getAtributosActivos();
                     <div class="campoConUnidad campoConMoneda">
                         <span class="unidadCampo">₡</span>
                         <input type="text" id="costoTotal" name="costoTotal" maxlength="13" inputmode="decimal"
-                            data-regla="cantidad" data-mensaje-regla="Escriba un número con hasta 2 decimales, por ejemplo 12 o 12,50"
+                            data-regla="cantidad"
+                            data-mensaje-regla="Escriba un número con hasta 2 decimales, por ejemplo 12 o 12,50"
                             placeholder="0" data-costo-total value="<?= $valor('costoTotal') ?>">
                     </div>
                     <p class="costoCalculadoComponente" data-costo-calculado aria-live="polite"></p>
@@ -180,14 +211,16 @@ $atributos = $tipoComponente->getAtributosActivos();
                                     <input type="text" id="<?= $idCampo ?>" name="<?= $nombreCampo ?>" maxlength="13"
                                         inputmode="decimal" data-regla="cantidad"
                                         data-mensaje-regla="Escriba un número, por ejemplo 8 o 8,5" data-atributo-numero
-                                        data-mensaje-requerido="<?= htmlspecialchars($mensajeRequerido) ?>" required value="<?= htmlspecialchars($valorActual) ?>">
+                                        data-mensaje-requerido="<?= htmlspecialchars($mensajeRequerido) ?>" required
+                                        value="<?= htmlspecialchars($valorActual) ?>">
                                     <?php if ($atributo->getUnidad()): ?>
                                         <span class="unidadCampo"><?= htmlspecialchars($atributo->getUnidad()) ?></span>
                                     <?php endif; ?>
                                 </div>
                             <?php else: ?>
                                 <input type="text" id="<?= $idCampo ?>" name="<?= $nombreCampo ?>" maxlength="300" data-atributo-texto
-                                    data-mensaje-requerido="<?= htmlspecialchars($mensajeRequerido) ?>" required value="<?= htmlspecialchars($valorActual) ?>">
+                                    data-mensaje-requerido="<?= htmlspecialchars($mensajeRequerido) ?>" required
+                                    value="<?= htmlspecialchars($valorActual) ?>">
                             <?php endif; ?>
                             <?= $mensajeError($campo) ?>
                         </div>

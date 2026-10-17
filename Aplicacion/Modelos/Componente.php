@@ -18,6 +18,7 @@ class Componente
     /** @var array<int, string>*/
     private array $valores;
     private string $nombreTipo;
+    private ?string $foto;
 
     /** @param array<int, string> $valores */
     public function __construct(
@@ -31,7 +32,8 @@ class Componente
         float $existenciaMinima = 0,
         bool $activo = true,
         array $valores = [],
-        string $nombreTipo = ''
+        string $nombreTipo = '',
+        ?string $foto = null
     ) {
         $this->idComponente = $idComponente;
         $this->idVendedor = $idVendedor;
@@ -44,6 +46,7 @@ class Componente
         $this->activo = $activo;
         $this->valores = $valores;
         $this->nombreTipo = $nombreTipo;
+        $this->foto = $foto;
     }
 
     public function getIdComponente(): ?int
@@ -107,6 +110,11 @@ class Componente
         return $this->nombreTipo;
     }
 
+    public function getFoto(): ?string
+    {
+        return $this->foto;
+    }
+
     public function getValorTotal(): float
     {
         return $this->existencia * $this->costoUnitario;
@@ -140,6 +148,11 @@ class Componente
     public function setActivo(bool $activo): void
     {
         $this->activo = $activo;
+    }
+
+    public function setFoto(?string $foto): void
+    {
+        $this->foto = $foto;
     }
 
     /** @param array<int, string> $valores */

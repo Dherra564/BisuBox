@@ -158,14 +158,16 @@ class ComponenteRepositorio
             $idComponente = BaseDatos::generarId('tbcomponente', 'tbcomponenteid');
             $consulta = $this->conexion->prepare(
                 'INSERT INTO tbcomponente (tbcomponenteid, tbcomponentevendedorid, tbcomponentetipocomponenteid, tbcomponentenombre,
-                    tbcomponenteunidad, tbcomponenteexistencia, tbcomponentecostounitario, tbcomponenteexistenciaminima, tbcomponenteactivo)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                    tbcomponentefoto, tbcomponenteunidad, tbcomponenteexistencia, tbcomponentecostounitario, tbcomponenteexistenciaminima,
+                    tbcomponenteactivo)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
             );
             $consulta->execute([
                 $idComponente,
                 $componente->getIdVendedor(),
                 $componente->getIdTipoComponente(),
                 UsuarioRepositorio::limpiarEspacios($componente->getNombre()),
+                $componente->getFoto(),
                 $componente->getUnidad(),
                 $componente->getExistencia(),
                 $componente->getCostoUnitario(),
@@ -197,11 +199,12 @@ class ComponenteRepositorio
 
         try {
             $consulta = $this->conexion->prepare(
-                'UPDATE tbcomponente SET tbcomponentenombre = ?, tbcomponenteunidad = ?, tbcomponenteexistenciaminima = ?
+                'UPDATE tbcomponente SET tbcomponentenombre = ?, tbcomponentefoto = ?, tbcomponenteunidad = ?, tbcomponenteexistenciaminima = ?
                  WHERE tbcomponenteid = ? AND tbcomponentevendedorid = ?'
             );
             $consulta->execute([
                 UsuarioRepositorio::limpiarEspacios($componente->getNombre()),
+                $componente->getFoto(),
                 $componente->getUnidad(),
                 $componente->getExistenciaMinima(),
                 $componente->getIdComponente(),
@@ -332,7 +335,8 @@ class ComponenteRepositorio
             (float) $fila['tbcomponenteexistenciaminima'],
             (bool) $fila['tbcomponenteactivo'],
             $valores,
-            (string) ($fila['tbtipocomponentenombre'] ?? '')
+            (string) ($fila['tbtipocomponentenombre'] ?? ''),
+            $fila['tbcomponentefoto'] ?? null
         );
     }
 }

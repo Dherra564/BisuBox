@@ -23,16 +23,18 @@ class SubidaArchivo
     private const CARPETA_PERFILES = 'Perfiles';
     private const CARPETA_LOGOS = 'Logos';
     private const CARPETA_PRODUCTOS = 'Productos';
+    private const CARPETA_COMPONENTES = 'Componentes';
 
-    // Fotos ya subidas en un intento que tuvo errores; se guardan para no pedirlas otra vez
     private const CLAVE_PENDIENTES = 'fotosPendientes';
     public const FOTO_PERFIL = 'perfil';
     public const LOGO = 'logo';
     public const FOTO_PRODUCTO = 'producto';
+    public const FOTO_COMPONENTE = 'componente';
     private const CARPETAS = [
         self::FOTO_PERFIL => self::CARPETA_PERFILES,
         self::LOGO => self::CARPETA_LOGOS,
         self::FOTO_PRODUCTO => self::CARPETA_PRODUCTOS,
+        self::FOTO_COMPONENTE => self::CARPETA_COMPONENTES,
     ];
 
     private string $error = '';
@@ -138,6 +140,11 @@ class SubidaArchivo
         self::eliminar($nombre, self::CARPETA_PRODUCTOS);
     }
 
+    public static function eliminarFotoComponente(?string $nombre): void
+    {
+        self::eliminar($nombre, self::CARPETA_COMPONENTES);
+    }
+
     public static function obtenerFotoPerfil(string $nombre): ?array
     {
         return self::obtener($nombre, self::CARPETA_PERFILES);
@@ -151,6 +158,11 @@ class SubidaArchivo
     public static function obtenerFotoProducto(string $nombre): ?array
     {
         return self::obtener($nombre, self::CARPETA_PRODUCTOS);
+    }
+
+    public static function obtenerFotoComponente(string $nombre): ?array
+    {
+        return self::obtener($nombre, self::CARPETA_COMPONENTES);
     }
 
     private function guardarImagen(array $archivo, string $carpeta, string $queEs): ?string

@@ -1356,6 +1356,21 @@ h3 {
     color: var(--colorTextoSuave);
 }
 
+.componenteConFoto {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.miniaturaComponente {
+    flex: none;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radioCampo);
+    object-fit: cover;
+    background: var(--colorVerdeClaro);
+}
+
 .celdaExistencia {
     white-space: nowrap;
 }

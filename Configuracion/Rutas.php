@@ -62,6 +62,7 @@ return function (Enrutador $enrutador): void {
     $enrutador->get('/fotos/perfil', [FotoControlador::class, 'mostrarPerfil']);
     $enrutador->get('/fotos/logo', [FotoControlador::class, 'mostrarLogo']);
     $enrutador->get('/fotos/producto', [FotoControlador::class, 'mostrarProducto']);
+    $enrutador->get('/fotos/componente', [FotoControlador::class, 'mostrarComponente']);
 
     $enrutador->get('/proveedores', [ProveedorControlador::class, 'listar']);
     $enrutador->get('/proveedores/detalle', [ProveedorControlador::class, 'detalle']);

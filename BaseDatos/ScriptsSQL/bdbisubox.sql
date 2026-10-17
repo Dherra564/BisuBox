@@ -1,6 +1,5 @@
 -- Base de datos de BisuBox
 
--- Para que las tildes y la ñ se guarden bien aunque se cargue desde la consola
 SET NAMES utf8mb4;
 
 DROP DATABASE IF EXISTS `bdbisubox`;
@@ -132,7 +131,9 @@ CREATE TABLE `tbtipocomponenteatributoopcion` (
     `tbtipocomponenteatributoopciontipocomponenteatributoid` int(11) DEFAULT NULL,
     `tbtipocomponenteatributoopcionvalor` varchar(60) DEFAULT NULL,
     `tbtipocomponenteatributoopcionactivo` tinyint(4) DEFAULT NULL,
-    PRIMARY KEY (`tbtipocomponenteatributoopcionid`)
+    PRIMARY KEY (
+        `tbtipocomponenteatributoopcionid`
+    )
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -146,6 +147,7 @@ CREATE TABLE `tbcomponente` (
     `tbcomponentevendedorid` int(11) DEFAULT NULL,
     `tbcomponentetipocomponenteid` int(11) DEFAULT NULL,
     `tbcomponentenombre` varchar(100) DEFAULT NULL,
+    `tbcomponentefoto` varchar(500) DEFAULT NULL,
     `tbcomponenteunidad` varchar(20) DEFAULT NULL,
     `tbcomponenteexistencia` decimal(12, 2) DEFAULT NULL,
     `tbcomponentecostounitario` decimal(14, 4) DEFAULT NULL,
@@ -387,20 +389,114 @@ CREATE TABLE `tbpedidodetalle` (
 -- Datos iniciales: un vendedor con su tienda y un cliente
 --
 
-INSERT INTO `tbusuario` (`tbusuarioid`, `tbusuarioidentificaciontipo`, `tbusuarioidentificacionnumero`, `tbusuarionombrecompleto`, `tbusuarioperfilimagen`, `tbusuariocorreo`, `tbusuariotelefono`, `tbusuariocontrasena`, `tbusuariorol`, `tbusuarioregistrofecha`, `tbusuarioactivo`) VALUES
-(1, 'Cedula', '200000002', 'Vendedor de Prueba', NULL, 'vendedor.bisubox@gmail.com', '77777777', '$2y$12$cy7xzNTAn0Gl/Ymia8TU1evpuuyjzp4UfwlBRIY0ocJvWYYVhAdzm', 'Vendedor', '2026-10-01 00:00:00', 1),
-(2, NULL, NULL, 'Cliente de Prueba', NULL, 'cliente.bisubox@gmail.com', '66666666', '$2y$12$Kag4xPDKWvZgDtsJ8uYUqu71BQoosc2NilsEK4OWX/rr7K0vpYkdK', 'Cliente', '2026-10-01 00:00:00', 1);
+INSERT INTO
+    `tbusuario` (
+        `tbusuarioid`,
+        `tbusuarioidentificaciontipo`,
+        `tbusuarioidentificacionnumero`,
+        `tbusuarionombrecompleto`,
+        `tbusuarioperfilimagen`,
+        `tbusuariocorreo`,
+        `tbusuariotelefono`,
+        `tbusuariocontrasena`,
+        `tbusuariorol`,
+        `tbusuarioregistrofecha`,
+        `tbusuarioactivo`
+    )
+VALUES (
+        1,
+        'Cedula',
+        '200000002',
+        'Vendedor de Prueba',
+        NULL,
+        'vendedor.bisubox@gmail.com',
+        '77777777',
+        '$2y$12$cy7xzNTAn0Gl/Ymia8TU1evpuuyjzp4UfwlBRIY0ocJvWYYVhAdzm',
+        'Vendedor',
+        '2026-10-01 00:00:00',
+        1
+    ),
+    (
+        2,
+        NULL,
+        NULL,
+        'Cliente de Prueba',
+        NULL,
+        'cliente.bisubox@gmail.com',
+        '66666666',
+        '$2y$12$Kag4xPDKWvZgDtsJ8uYUqu71BQoosc2NilsEK4OWX/rr7K0vpYkdK',
+        'Cliente',
+        '2026-10-01 00:00:00',
+        1
+    );
 
-INSERT INTO `tbvendedor` (`tbvendedorid`, `tbvendedorusuarioid`, `tbvendedortiendanombre`, `tbvendedortiendaenlace`, `tbvendedortiendadescripcion`, `tbvendedortiendalogo`, `tbvendedoractivo`) VALUES
-(1, 1, 'Tienda de Prueba', 'tienda-de-prueba', 'Bisutería hecha a mano para probar el sistema', NULL, 1);
+INSERT INTO
+    `tbvendedor` (
+        `tbvendedorid`,
+        `tbvendedorusuarioid`,
+        `tbvendedortiendanombre`,
+        `tbvendedortiendaenlace`,
+        `tbvendedortiendadescripcion`,
+        `tbvendedortiendalogo`,
+        `tbvendedoractivo`
+    )
+VALUES (
+        1,
+        1,
+        'Tienda de Prueba',
+        'tienda-de-prueba',
+        'Bisutería hecha a mano para probar el sistema',
+        NULL,
+        1
+    );
 
-INSERT INTO `tbvendedorcontacto` (`tbvendedorcontactoid`, `tbvendedorcontactovendedorid`, `tbvendedorcontactotipo`, `tbvendedorcontactovalor`) VALUES
-(1, 1, 'WhatsApp', '88451290'),
-(2, 1, 'Instagram', 'tiendadeprueba');
+INSERT INTO
+    `tbvendedorcontacto` (
+        `tbvendedorcontactoid`,
+        `tbvendedorcontactovendedorid`,
+        `tbvendedorcontactotipo`,
+        `tbvendedorcontactovalor`
+    )
+VALUES (1, 1, 'WhatsApp', '88451290'),
+    (
+        2,
+        1,
+        'Instagram',
+        'tiendadeprueba'
+    );
 
-INSERT INTO `tbcliente` (`tbclienteid`, `tbclienteusuarioid`) VALUES
-(1, 2);
+INSERT INTO
+    `tbcliente` (
+        `tbclienteid`,
+        `tbclienteusuarioid`
+    )
+VALUES (1, 2);
 
-INSERT INTO `tbproveedor` (`tbproveedorid`, `tbproveedorvendedorid`, `tbproveedornombre`, `tbproveedortelefono`, `tbproveedorcorreo`, `tbproveedorregistrofecha`, `tbproveedoractivo`) VALUES
-(1, 1, 'Perlas del Valle S.A.', '22345678', 'ventas@perlasdelvalle.com', '2026-10-01 00:00:00', 1),
-(2, 1, 'Ana Rojas Mora', '87654321', 'anarojas@gmail.com', '2026-10-01 00:00:00', 1);
+INSERT INTO
+    `tbproveedor` (
+        `tbproveedorid`,
+        `tbproveedorvendedorid`,
+        `tbproveedornombre`,
+        `tbproveedortelefono`,
+        `tbproveedorcorreo`,
+        `tbproveedorregistrofecha`,
+        `tbproveedoractivo`
+    )
+VALUES (
+        1,
+        1,
+        'Perlas del Valle S.A.',
+        '22345678',
+        'ventas@perlasdelvalle.com',
+        '2026-10-01 00:00:00',
+        1
+    ),
+    (
+        2,
+        1,
+        'Ana Rojas Mora',
+        '87654321',
+        'anarojas@gmail.com',
+        '2026-10-01 00:00:00',
+        1
+    );
