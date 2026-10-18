@@ -1,14 +1,4 @@
 <?php
-/**
- * @var \Aplicacion\Modelos\Pedido[] $pedidos
- * @var string $estado
- * @var array<string, int> $conteos
- * @var int $pagina
- * @var int $totalPaginas
- * @var int $total
- * @var int $porPagina
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\EstadoPedido;
 use Aplicacion\Nucleo\Numero;
@@ -20,6 +10,16 @@ require __DIR__ . '/../Plantilla/encabezado.php';
 
 $pestanas = ['' => 'Todos'] + array_combine(EstadoPedido::todos(), ['Pendientes', 'Confirmados', 'Entregados', 'Cancelados']);
 ?>
+
+<nav class="cambioVista" aria-label="Tipo de pedido">
+    <a href="<?= $urlBase ?>/mis-pedidos" class="cambioVistaActivo" aria-current="page">Pedidos</a>
+    <a href="<?= $urlBase ?>/mis-pedidos/personalizados">
+        Personalizados
+        <?php if ($porDecidir > 0): ?>
+            <span class="numeroMenu"><?= $porDecidir ?></span>
+        <?php endif; ?>
+    </a>
+</nav>
 
 <?php if ($conteos[''] === 0): ?>
     <div class="estadoVacio">
@@ -60,13 +60,10 @@ $pestanas = ['' => 'Todos'] + array_combine(EstadoPedido::todos(), ['Pendientes'
                                         <span class="textoAyuda"><?= $pedido->getFecha()->format('d/m/Y H:i') ?></span></span>
                                 </td>
                                 <td data-etiqueta="Tienda"><?= htmlspecialchars($pedido->getNombreTienda()) ?></td>
-                                <td data-etiqueta="Productos">
-                                    <?= $pedido->getUnidades() === 1 ? '1 producto' : $pedido->getUnidades() . ' productos' ?></td>
-                                <td data-etiqueta="Total" class="numero"><strong><?= Numero::moneda($pedido->getTotal()) ?></strong>
-                                </td>
+                                <td data-etiqueta="Productos"><?= $pedido->getUnidades() === 1 ? '1 producto' : $pedido->getUnidades() . ' productos' ?></td>
+                                <td data-etiqueta="Total" class="numero"><strong><?= Numero::moneda($pedido->getTotal()) ?></strong></td>
                                 <td data-etiqueta="Estado">
-                                    <span
-                                        class="etiqueta <?= EstadoPedido::claseEtiqueta($pedido->getEstado()) ?>"><?= $pedido->getEstado() ?></span>
+                                    <span class="etiqueta <?= EstadoPedido::claseEtiqueta($pedido->getEstado()) ?>"><?= $pedido->getEstado() ?></span>
                                 </td>
                                 <td data-etiqueta="" class="acciones">
                                     <a href="<?= $urlBase ?>/mis-pedidos/detalle?id=<?= $pedido->getIdPedido() ?>">Ver</a>

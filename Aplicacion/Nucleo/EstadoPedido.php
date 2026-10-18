@@ -2,7 +2,6 @@
 
 namespace Aplicacion\Nucleo;
 
-
 class EstadoPedido
 {
     public const PENDIENTE = 'Pendiente';
@@ -17,7 +16,6 @@ class EstadoPedido
         self::CANCELADO => 'etiquetaCancelado',
     ];
 
-    /** @return string[] */
     public static function todos(): array
     {
         return array_keys(self::CLASES);
@@ -28,7 +26,6 @@ class EstadoPedido
         return $estado !== null && isset(self::CLASES[$estado]);
     }
 
-    
     public static function claseEtiqueta(string $estado): string
     {
         return self::CLASES[$estado] ?? 'etiquetaInactivo';

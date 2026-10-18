@@ -4290,3 +4290,828 @@ h3 {
         padding: 24px 16px 40px;
     }
 }
+
+    .cambioVista {
+    display: inline-flex;
+    gap: 4px;
+    margin-bottom: 18px;
+    padding: 4px;
+    border-radius: 999px;
+    background: var(--colorVerdeClaro);
+}
+
+.cambioVista a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 0 18px;
+    border-radius: 999px;
+    color: var(--colorTexto);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.cambioVista a:hover {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.cambioVista .cambioVistaActivo {
+    background: var(--colorSuperficie);
+    color: var(--colorTitulo);
+    box-shadow: 0 1px 4px rgba(38, 64, 54, 0.12);
+}
+
+.cambioVista .numeroMenu {
+    margin: 0;
+}
+
+.enlacePersonalizar {
+    display: block;
+    margin: 0 16px 16px;
+    padding: 9px 12px;
+    border: 1px dashed var(--colorBordeFoto);
+    border-radius: var(--radioCampo);
+    color: var(--colorTitulo);
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+}
+
+.enlacePersonalizar:hover {
+    background: var(--colorVerdeClaro);
+}
+
+.formularioPersonalizar {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.personalizarArriba {
+    display: grid;
+    grid-template-columns: minmax(220px, 290px) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.tarjetaBase {
+    overflow: hidden;
+    border: 1px solid var(--colorBorde);
+    border-radius: 16px;
+    background: var(--colorSuperficie);
+}
+
+.fotoBase {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 4 / 3.4;
+    background: var(--colorVerdeClaro);
+}
+
+.fotoBase img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.fotoBase .fotoBaseVacia {
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
+}
+
+.textoBase {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 18px 4px;
+}
+
+.etiquetaBase {
+    color: var(--colorTextoSuave);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.nombreBase {
+    font-size: 1.15rem;
+}
+
+.textoBase .campo {
+    margin-top: 10px;
+}
+
+.piezasPersonalizar h2,
+.galeriaEncabezado h2,
+.resumenPersonalizado h2,
+.llevaPersonalizado h2,
+.franjaPrecio h2 {
+    margin: 0;
+    font-size: 1.15rem;
+}
+
+.gridPiezas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 14px;
+}
+
+.tarjetaPieza {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+    border: 1px solid var(--colorBorde);
+    border-radius: 16px;
+    background: var(--colorSuperficie);
+    color: var(--colorTexto);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.tarjetaPieza:hover {
+    border-color: var(--colorBordeFoto);
+}
+
+.tarjetaPieza:focus-visible,
+.opcionComponente:has(input:focus-visible) {
+    outline: 2px solid var(--colorFoco);
+    outline-offset: 2px;
+}
+
+.tarjetaPiezaActiva {
+    border: 3px solid var(--colorTitulo);
+    box-shadow: 0 8px 22px rgba(43, 115, 88, 0.18);
+}
+
+.tarjetaPiezaError {
+    border-color: var(--colorError);
+}
+
+.tarjetaPiezaActiva.tarjetaPiezaError {
+    border-color: var(--colorError);
+    box-shadow: 0 8px 22px rgba(165, 48, 42, 0.16);
+}
+
+.fotoPieza,
+.fotoOpcion {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 160px;
+    background: var(--colorVerdeClaro);
+}
+
+.fotoPieza {
+    border-bottom: 1px solid var(--colorBorde);
+}
+
+.fotoPieza img,
+.fotoOpcion img {
+    width: 112px;
+    height: 112px;
+    border: 4px solid var(--colorSuperficie);
+    border-radius: 14px;
+    object-fit: cover;
+    background: var(--colorSuperficie);
+    box-shadow: 0 4px 14px rgba(38, 64, 54, 0.15);
+}
+
+.fotoOpcion img {
+    width: 124px;
+    height: 124px;
+}
+
+.selloPieza {
+    position: absolute;
+    top: 10px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    color: var(--colorTextoClaro);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.selloCambiado {
+    left: 10px;
+    background: var(--colorTitulo);
+}
+
+.selloFalta {
+    right: 10px;
+    background: var(--colorError);
+}
+
+.cantidadPieza {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.textoPieza,
+.textoOpcion {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 12px 12px;
+}
+
+.tipoPieza {
+    color: var(--colorTitulo);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.nombrePieza {
+    font-weight: 600;
+}
+
+.galeriaPieza {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 22px 24px;
+    border-radius: 18px;
+    background: var(--colorFondo);
+}
+
+.galeriaPieza > .errorCampo {
+    margin: 0;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--colorErrorFondo);
+    font-weight: 600;
+}
+
+.galeriaEncabezado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 20px;
+}
+
+.galeriaEncabezado .textoAyuda {
+    margin: 4px 0 0;
+}
+
+.galeriaAcciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+}
+
+.chipLleva {
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--colorSuperficie);
+    font-weight: 600;
+}
+
+.gridOpciones {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 16px;
+}
+
+.opcionComponente {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--colorBorde);
+    border-radius: 16px;
+    background: var(--colorSuperficie);
+    cursor: pointer;
+    transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.opcionComponente:hover {
+    border-color: var(--colorBordeFoto);
+}
+
+.opcionComponente input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.opcionComponente:has(input:checked) {
+    border: 3px solid var(--colorTitulo);
+    box-shadow: 0 8px 22px rgba(43, 115, 88, 0.18);
+}
+
+.marcaElegida {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--colorTitulo);
+    color: var(--colorTextoClaro);
+    font-weight: 700;
+}
+
+.opcionComponente:has(input:checked) .marcaElegida {
+    display: flex;
+}
+
+.opcionAgotada {
+    cursor: not-allowed;
+}
+
+.tapaAgotado {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.tapaAgotado span {
+    padding: 5px 14px;
+    border-radius: 999px;
+    background: var(--colorInactivo);
+    color: var(--colorTextoClaro);
+    font-weight: 700;
+}
+
+.textoOpcion .errorCampo,
+.textoOpcion .textoAyuda {
+    margin: 0;
+    font-weight: 600;
+}
+
+.resumenPersonalizado,
+.franjaCotizar {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(260px, 0.9fr);
+    gap: 28px;
+    align-items: start;
+    padding: 22px 24px;
+    border: 1px solid var(--colorBorde);
+    border-top: 4px solid var(--colorTitulo);
+    border-radius: 16px;
+    background: var(--colorSuperficie);
+}
+
+.resumenPersonalizado .campo {
+    margin: 0;
+}
+
+.resumenPersonalizadoPedido p {
+    margin: 10px 0 0;
+}
+
+.listaCambios {
+    display: grid;
+    gap: 6px;
+    margin: 10px 0 0;
+    padding-left: 18px;
+}
+
+.resumenPersonalizadoTotal,
+.franjaCotizarTotal {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.resumenPersonalizadoTotal p {
+    margin: 0;
+}
+
+.totalComponentes,
+.precioFinal {
+    font-family: var(--fuenteTitulos);
+    font-size: 2.2rem;
+    line-height: 1.1;
+    color: var(--colorTitulo);
+}
+
+.alertaInventario {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: var(--radioCampo);
+    background: var(--colorErrorFondo);
+    color: var(--colorError);
+    font-weight: 600;
+}
+
+.listaPersonalizados {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px 20px;
+}
+
+.tarjetaPersonalizado,
+.clientePersonalizado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 18px;
+    padding: 18px 20px;
+    border: 1px solid var(--colorBorde);
+    border-radius: 14px;
+    background: var(--colorSuperficie);
+}
+
+.tarjetaPersonalizadoCotizado {
+    border: 2px solid #b9d3f0;
+    background: #f7fbff;
+}
+
+.fotoPersonalizado {
+    flex: none;
+    width: 76px;
+    height: 76px;
+    border-radius: 12px;
+    object-fit: cover;
+    background: var(--colorVerdeClaro);
+}
+
+.textoPersonalizado,
+.clientePersonalizadoTexto {
+    flex: 1 1 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.tituloPersonalizado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.05rem;
+}
+
+.precioPersonalizado {
+    color: var(--colorTitulo);
+    font-size: 1.15rem;
+}
+
+.estadoPersonalizado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 24px;
+    margin-bottom: 20px;
+}
+
+.avancePersonalizado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 28px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--colorTextoSuave);
+    font-weight: 600;
+}
+
+.avancePersonalizado li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.avancePersonalizado li span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border: 2px solid var(--colorBordeCampo);
+    border-radius: 50%;
+    font-size: 0.8rem;
+}
+
+.avancePersonalizado .pasoHecho {
+    color: var(--colorExito);
+}
+
+.avancePersonalizado .pasoHecho span {
+    border-color: var(--colorExito);
+    background: var(--colorExito);
+    color: var(--colorTextoClaro);
+}
+
+.avancePersonalizado .pasoActualAvance {
+    color: var(--colorTitulo);
+}
+
+.avancePersonalizado .pasoActualAvance span {
+    border-color: var(--colorTitulo);
+}
+
+.detallePersonalizado {
+    display: grid;
+    grid-template-columns: minmax(220px, 290px) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+    margin-bottom: 24px;
+}
+
+.detallePersonalizado .textoBase {
+    padding-bottom: 16px;
+}
+
+.llevaPersonalizado {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.listaLlevaPersonalizado {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.listaLlevaPersonalizado li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--colorBorde);
+    border-radius: 12px;
+}
+
+.listaLlevaPersonalizado .lineaCambiada {
+    border-color: var(--colorExitoBorde);
+    background: #f6fbf8;
+}
+
+.listaLlevaPersonalizado img {
+    flex: none;
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: var(--colorVerdeClaro);
+}
+
+.lineaTexto {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.lineaCantidad {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.notaPersonalizado {
+    flex-basis: 100%;
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--colorFondo);
+}
+
+.franjaPrecio {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px 40px;
+    padding: 22px 24px;
+    border: 1px solid var(--colorBorde);
+    border-top: 4px solid var(--colorTitulo);
+    border-radius: 16px;
+    background: var(--colorSuperficie);
+}
+
+.franjaPrecioCotizado {
+    border-color: #b9d3f0;
+    border-top-color: #1f4f86;
+}
+
+.franjaPrecioCotizado h2 {
+    color: #1f4f86;
+}
+
+.franjaPrecioTexto {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 28px;
+}
+
+.franjaPrecioTexto > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.franjaPrecioTexto p {
+    max-width: 420px;
+    margin: 0;
+}
+
+.productoConFoto {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+}
+
+.encabezadoPanel {
+    margin: 0;
+    padding: 16px 20px;
+}
+
+.textoCambio {
+    color: var(--colorAdvertencia);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.totalComponentesCotizar {
+    margin: 0 20px 18px auto;
+}
+
+.clientePersonalizado {
+    margin-bottom: 18px;
+    background: var(--colorFondo);
+}
+
+.formularioCotizar {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.columnasCotizar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 18px;
+    align-items: start;
+}
+
+.columnasCotizar .formularioSeccion {
+    margin: 0;
+}
+
+.chipBloqueado {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--colorInactivoFondo);
+    color: var(--colorInactivo);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.listaExtrasCotizar {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.listaExtrasCotizar:empty {
+    display: none;
+}
+
+.filaExtraCotizar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 150px 44px;
+    gap: 10px;
+    align-items: start;
+}
+
+.filaExtraCotizar .campo {
+    margin: 0;
+}
+
+.franjaCotizar h2 {
+    margin: 0 0 12px;
+    font-size: 1.15rem;
+}
+
+.franjaCotizar .opcionesGanancia {
+    margin-top: 0;
+}
+
+.franjaCotizarTotal .campo {
+    margin: 0;
+}
+
+.cajaRechazar {
+    align-items: flex-end;
+    margin-top: 24px;
+}
+
+.cajaRechazar .campo {
+    flex: 1 1 320px;
+    margin: 0;
+}
+
+@media (max-width: 1100px) {
+    .resumenPersonalizado,
+    .franjaCotizar {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    .resumenPersonalizadoTotal,
+    .franjaCotizarTotal {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 760px) {
+    .personalizarArriba,
+    .detallePersonalizado,
+    .resumenPersonalizado,
+    .franjaCotizar {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .tarjetaBase {
+        display: grid;
+        grid-template-columns: 120px minmax(0, 1fr);
+        align-items: center;
+    }
+
+    .fotoBase {
+        height: 100%;
+        aspect-ratio: auto;
+    }
+
+    .gridPiezas,
+    .gridOpciones {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .fotoPieza,
+    .fotoOpcion {
+        height: 130px;
+    }
+
+    .fotoPieza img,
+    .fotoOpcion img {
+        width: 92px;
+        height: 92px;
+    }
+
+    .galeriaPieza {
+        padding: 16px;
+    }
+
+    .filaExtraCotizar {
+        grid-template-columns: minmax(0, 1fr) 44px;
+    }
+
+    .filaExtraCotizar .campo:first-child {
+        grid-column: 1 / -1;
+    }
+
+    .franjaPrecio .grupoBotones {
+        width: 100%;
+    }
+
+    .franjaPrecio .grupoBotones > * {
+        flex: 1;
+    }
+
+    .franjaPrecio .grupoBotones .boton {
+        width: 100%;
+    }
+
+    .cambioVista {
+        display: flex;
+    }
+
+    .cambioVista a {
+        flex: 1;
+        justify-content: center;
+    }
+}

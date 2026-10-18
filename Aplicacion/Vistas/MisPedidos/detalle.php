@@ -1,10 +1,4 @@
 <?php
-/**
- 
- * @var \Aplicacion\Modelos\Pedido $pedido
- * @var \Aplicacion\Modelos\VendedorContacto[] $contactos
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\EstadoPedido;

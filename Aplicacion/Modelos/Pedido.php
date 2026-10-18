@@ -5,7 +5,6 @@ namespace Aplicacion\Modelos;
 use Aplicacion\Nucleo\EstadoPedido;
 use DateTime;
 
-
 class Pedido
 {
     private ?int $idPedido;
@@ -20,17 +19,14 @@ class Pedido
     private string $estado;
     private ?string $canceladoPor;
     private ?DateTime $fechaActualizacion;
-    /** @var PedidoDetalle[] */
     private array $detalles;
 
-    
     private string $nombreTienda = '';
     private string $enlaceTienda = '';
     private string $nombreCliente = '';
     private string $telefonoCliente = '';
     private string $correoCliente = '';
 
-    /** @param PedidoDetalle[] $detalles */
     public function __construct(
         ?int $idPedido,
         int $idVendedor,
@@ -121,7 +117,6 @@ class Pedido
         return $this->fechaActualizacion;
     }
 
-    /** @return PedidoDetalle[] */
     public function getDetalles(): array
     {
         return $this->detalles;
@@ -179,7 +174,6 @@ class Pedido
         $this->fechaActualizacion = new DateTime();
     }
 
-    /** @param PedidoDetalle[] $detalles */
     public function setDetalles(array $detalles): void
     {
         $this->detalles = $detalles;

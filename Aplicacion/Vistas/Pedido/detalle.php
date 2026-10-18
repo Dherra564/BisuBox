@@ -1,10 +1,4 @@
 <?php
-/**
- 
- * @var \Aplicacion\Modelos\Pedido $pedido
- * @var array<int, int> $existencias
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\EstadoPedido;
@@ -26,8 +20,9 @@ $datosEncabezado = [
 ];
 
 $faltaExistencia = false;
+$rutaPersonalizado = '/pedidos/personalizado?id=';
 foreach ($pedido->getDetalles() as $detalle) {
-    if (($existencias[$detalle->getIdProducto()] ?? 0) < $detalle->getCantidad()) {
+    if (!$detalle->esPersonalizado() && ($existencias[$detalle->getIdProducto()] ?? 0) < $detalle->getCantidad()) {
         $faltaExistencia = true;
     }
 }

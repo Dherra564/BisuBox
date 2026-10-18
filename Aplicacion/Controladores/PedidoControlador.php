@@ -5,17 +5,18 @@ namespace Aplicacion\Controladores;
 use Aplicacion\Modelos\Pedido;
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\EstadoPedido;
+use Aplicacion\Nucleo\EstadoPersonalizado;
 use Aplicacion\Nucleo\Mensaje;
 use Aplicacion\Nucleo\OperacionNoPermitida;
 use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Repositorios\PedidoRepositorio;
+use Aplicacion\Repositorios\PersonalizadoRepositorio;
 use Aplicacion\Repositorios\ProductoRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
 use Configuracion\Configuracion;
 use Throwable;
-
 
 class PedidoControlador
 {
@@ -56,6 +57,7 @@ class PedidoControlador
         $totalPaginas = max(1, (int) ceil($total / PedidoRepositorio::POR_PAGINA));
         $pagina = min(max(1, (int) ($_GET['pagina'] ?? 1)), $totalPaginas);
 
+        $personalizadoRepositorio = new PersonalizadoRepositorio();
         $this->mostrarVista('Pedido/lista', [
             'pedidos' => $this->pedidoRepositorio->listar($base + ['estado' => $estado], $pagina),
             'estado' => $estado,
@@ -68,6 +70,8 @@ class PedidoControlador
             'total' => $total,
             'porPagina' => PedidoRepositorio::POR_PAGINA,
             'hayPedidos' => $this->pedidoRepositorio->contar(['idVendedor' => $this->idVendedor]) > 0,
+            'porCotizar' => $personalizadoRepositorio->contar(['idVendedor' => $this->idVendedor, 'estado' => EstadoPersonalizado::EN_REVISION]),
+            'avisosPersonalizados' => $personalizadoRepositorio->contarAvisosSinVer($this->idVendedor),
         ]);
     }
 
@@ -75,10 +79,9 @@ class PedidoControlador
     {
         $pedido = $this->buscarPedido($_GET['id'] ?? null);
 
-    
         $existencias = [];
         if ($pedido->estaPendiente()) {
-            $ids = array_map(fn($detalle): int => $detalle->getIdProducto(), $pedido->getDetalles());
+            $ids = array_map(fn($detalle): int => $detalle->getIdProducto(), array_filter($pedido->getDetalles(), fn($detalle): bool => !$detalle->esPersonalizado()));
             foreach ((new ProductoRepositorio())->buscarVarios($this->idVendedor, $ids) as $idProducto => $producto) {
                 $existencias[$idProducto] = $producto->getExistencia();
             }
@@ -116,7 +119,6 @@ class PedidoControlador
         $this->redirigir('/pedidos/detalle?id=' . $pedido->getIdPedido());
     }
 
-    
     private function accion(callable $hacer, string $queSeHace): Pedido
     {
         $this->verificarCsrf('/pedidos');
@@ -137,7 +139,6 @@ class PedidoControlador
         return $pedido;
     }
 
-    
     private function buscarPedido(mixed $id): Pedido
     {
         $pedido = is_string($id) && ctype_digit($id)

@@ -381,7 +381,72 @@ CREATE TABLE `tbpedidodetalle` (
     `tbpedidodetallecantidad` int(11) DEFAULT NULL,
     `tbpedidodetalleprecio` decimal(12, 2) DEFAULT NULL,
     `tbpedidodetallesubtotal` decimal(12, 2) DEFAULT NULL,
+    `tbpedidodetallepersonalizadoid` int(11) DEFAULT NULL,
     PRIMARY KEY (`tbpedidodetalleid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tbpersonalizado`
+--
+
+CREATE TABLE `tbpersonalizado` (
+    `tbpersonalizadoid` int(11) NOT NULL,
+    `tbpersonalizadovendedorid` int(11) DEFAULT NULL,
+    `tbpersonalizadoclienteid` int(11) DEFAULT NULL,
+    `tbpersonalizadoproductoid` int(11) DEFAULT NULL,
+    `tbpersonalizadonombre` varchar(60) DEFAULT NULL,
+    `tbpersonalizadopiezas` int(11) DEFAULT NULL,
+    `tbpersonalizadonotacliente` varchar(300) DEFAULT NULL,
+    `tbpersonalizadoestado` varchar(20) DEFAULT NULL,
+    `tbpersonalizadominutos` int(11) DEFAULT NULL,
+    `tbpersonalizadotarifahora` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadocostocomponentes` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadocostomanoobra` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadocostoextras` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadocostototal` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadoganancia` int(11) DEFAULT NULL,
+    `tbpersonalizadoprecio` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadototal` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadonotatienda` varchar(300) DEFAULT NULL,
+    `tbpersonalizadocanceladopor` varchar(20) DEFAULT NULL,
+    `tbpersonalizadoavisovisto` tinyint(4) DEFAULT NULL,
+    `tbpersonalizadopedidoid` int(11) DEFAULT NULL,
+    `tbpersonalizadoregistrofecha` datetime DEFAULT NULL,
+    `tbpersonalizadocotizadofecha` datetime DEFAULT NULL,
+    `tbpersonalizadorespuestafecha` datetime DEFAULT NULL,
+    PRIMARY KEY (`tbpersonalizadoid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tbpersonalizadocomponente`
+--
+
+CREATE TABLE `tbpersonalizadocomponente` (
+    `tbpersonalizadocomponenteid` int(11) NOT NULL,
+    `tbpersonalizadocomponentepersonalizadoid` int(11) DEFAULT NULL,
+    `tbpersonalizadocomponentecomponenteid` int(11) DEFAULT NULL,
+    `tbpersonalizadocomponenteoriginalid` int(11) DEFAULT NULL,
+    `tbpersonalizadocomponentecantidad` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadocomponentecostounitario` decimal(14, 4) DEFAULT NULL,
+    PRIMARY KEY (`tbpersonalizadocomponenteid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tbpersonalizadoextra`
+--
+
+CREATE TABLE `tbpersonalizadoextra` (
+    `tbpersonalizadoextraid` int(11) NOT NULL,
+    `tbpersonalizadoextrapersonalizadoid` int(11) DEFAULT NULL,
+    `tbpersonalizadoextraconcepto` varchar(60) DEFAULT NULL,
+    `tbpersonalizadoextramonto` decimal(12, 2) DEFAULT NULL,
+    PRIMARY KEY (`tbpersonalizadoextraid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------

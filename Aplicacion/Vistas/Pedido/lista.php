@@ -1,19 +1,4 @@
 <?php
-/**
- 
- * @var \Aplicacion\Modelos\Pedido[] $pedidos
- * @var string $estado
- * @var string $busqueda
- * @var int|null $idCliente
- * @var string|null $nombreCliente
- * @var array<string, int> $conteos
- * @var bool $hayPedidos
- * @var int $pagina
- * @var int $totalPaginas
- * @var int $total
- * @var int $porPagina
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\EstadoPedido;
 use Aplicacion\Nucleo\Numero;
@@ -27,6 +12,23 @@ $parametros = array_filter(['busqueda' => $busqueda, 'cliente' => $idCliente], f
 $enlace = fn(array $cambios): string => htmlspecialchars($urlBase . '/pedidos'
     . (($consulta = array_filter(array_merge($parametros, $cambios), fn($valor): bool => $valor !== '' && $valor !== null)) !== [] ? '?' . http_build_query($consulta) : ''));
 ?>
+
+<nav class="cambioVista" aria-label="Tipo de pedido">
+    <a href="<?= $urlBase ?>/pedidos" class="cambioVistaActivo" aria-current="page">Pedidos</a>
+    <a href="<?= $urlBase ?>/pedidos/personalizados">
+        Personalizados
+        <?php if ($porCotizar + $avisosPersonalizados > 0): ?>
+            <span class="numeroMenu numeroMenuAviso"><?= $porCotizar + $avisosPersonalizados ?></span>
+        <?php endif; ?>
+    </a>
+</nav>
+
+<?php if ($avisosPersonalizados > 0): ?>
+    <p class="cajaInformativa cajaAdvertencia">
+        <?= $avisosPersonalizados === 1 ? 'Un cliente canceló un pedido personalizado.' : $avisosPersonalizados . ' clientes cancelaron pedidos personalizados.' ?>
+        <a href="<?= $urlBase ?>/pedidos/personalizados">Ver cuáles</a>
+    </p>
+<?php endif; ?>
 
 <?php if (!$hayPedidos): ?>
     <div class="estadoVacio">

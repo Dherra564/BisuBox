@@ -5,6 +5,7 @@ namespace Aplicacion\Controladores;
 use Aplicacion\Modelos\Pedido;
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\EstadoPedido;
+use Aplicacion\Nucleo\EstadoPersonalizado;
 use Aplicacion\Nucleo\Mensaje;
 use Aplicacion\Nucleo\OperacionNoPermitida;
 use Aplicacion\Nucleo\Permiso;
@@ -12,6 +13,7 @@ use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Repositorios\ClienteRepositorio;
 use Aplicacion\Repositorios\PedidoRepositorio;
+use Aplicacion\Repositorios\PersonalizadoRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
 use Configuracion\Configuracion;
 use Throwable;
@@ -51,6 +53,7 @@ class MisPedidosControlador
             'totalPaginas' => $totalPaginas,
             'total' => $total,
             'porPagina' => PedidoRepositorio::POR_PAGINA,
+            'porDecidir' => (new PersonalizadoRepositorio())->contar(['idCliente' => $idCliente, 'estado' => EstadoPersonalizado::COTIZADO]),
         ]);
     }
 

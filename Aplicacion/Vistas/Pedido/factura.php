@@ -1,10 +1,4 @@
 <?php
-/**
- 
- * @var \Aplicacion\Modelos\Pedido $pedido
- * @var array $datosEncabezado  [['titulo' => ..., 'valor' => ..., 'html' => bool]]
- * @var array<int, int> $existencias  (opcional) existencia actual de cada producto
- */
 
 use Aplicacion\Nucleo\EstadoPedido;
 use Aplicacion\Nucleo\FormaEntrega;
@@ -12,6 +6,7 @@ use Aplicacion\Nucleo\MetodoPago;
 use Aplicacion\Nucleo\Numero;
 
 $existencias = $existencias ?? [];
+$rutaPersonalizado = $rutaPersonalizado ?? '/mis-pedidos/personalizado?id=';
 $cancelado = $pedido->getEstado() === EstadoPedido::CANCELADO;
 ?>
 <article class="factura <?= $cancelado ? 'facturaAnulada' : '' ?>">
@@ -49,7 +44,9 @@ $cancelado = $pedido->getEstado() === EstadoPedido::CANCELADO;
                         <td data-etiqueta="Producto">
                             <span>
                                 <?= htmlspecialchars($detalle->getNombreProducto()) ?>
-                                <?php if ($pedido->estaPendiente() && $existencias !== []): ?>
+                                <?php if ($detalle->esPersonalizado()): ?>
+                                    <br><a href="<?= $urlBase . $rutaPersonalizado . $detalle->getIdPersonalizado() ?>" class="textoAyuda">Ver las piezas que escogió</a>
+                                <?php elseif ($pedido->estaPendiente() && $existencias !== []): ?>
                                     <br><span class="<?= $hay !== null && $hay >= $detalle->getCantidad() ? 'textoAyuda' : 'errorCampo' ?>">
                                         <?= $hay === null ? 'Este producto ya no existe' : 'Tiene ' . $hay . ' en existencia' ?>
                                     </span>

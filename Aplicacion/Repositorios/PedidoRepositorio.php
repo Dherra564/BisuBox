@@ -5,13 +5,16 @@ namespace Aplicacion\Repositorios;
 use Aplicacion\Modelos\Pedido;
 use Aplicacion\Modelos\PedidoDetalle;
 use Aplicacion\Nucleo\EstadoPedido;
+use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\OperacionNoPermitida;
 use Aplicacion\Nucleo\Rol;
+use Aplicacion\Repositorios\ComponenteRepositorio;
+use Aplicacion\Repositorios\PersonalizadoRepositorio;
+use Aplicacion\Repositorios\ProductoRepositorio;
 use Configuracion\BaseDatos;
 use DateTime;
 use PDO;
 use Throwable;
-
 
 class PedidoRepositorio
 {
@@ -62,8 +65,9 @@ class PedidoRepositorio
 
             $insertarDetalle = $this->conexion->prepare(
                 'INSERT INTO tbpedidodetalle (tbpedidodetalleid, tbpedidodetallepedidoid, tbpedidodetalleproductoid,
-                    tbpedidodetallenombre, tbpedidodetallecantidad, tbpedidodetalleprecio, tbpedidodetallesubtotal)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)'
+                    tbpedidodetallenombre, tbpedidodetallecantidad, tbpedidodetalleprecio, tbpedidodetallesubtotal,
+                    tbpedidodetallepersonalizadoid)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
             );
             foreach ($pedido->getDetalles() as $detalle) {
                 $idDetalle = BaseDatos::generarId('tbpedidodetalle', 'tbpedidodetalleid');
@@ -75,6 +79,7 @@ class PedidoRepositorio
                     $detalle->getCantidad(),
                     $detalle->getPrecio(),
                     $detalle->getSubtotal(),
+                    $detalle->getIdPersonalizado(),
                 ]);
                 $detalle->setIdPedidoDetalle($idDetalle);
                 $detalle->setIdPedido($idPedido);
@@ -105,9 +110,6 @@ class PedidoRepositorio
         return $this->buscar('p.tbpedidoid = ? AND p.tbpedidoclienteid = ?', [$idPedido, $idCliente]);
     }
 
-    /**
-     * @return Pedido[]
-     */
     public function listar(array $filtros, int $pagina = 1): array
     {
         [$condiciones, $valores] = $this->construirFiltros($filtros);
@@ -140,7 +142,6 @@ class PedidoRepositorio
         return (int) $consulta->fetchColumn();
     }
 
-    
     public function confirmar(Pedido $pedido): void
     {
         BaseDatos::iniciarTransaccion();
@@ -150,7 +151,21 @@ class PedidoRepositorio
 
             $faltantes = [];
             $nuevasExistencias = [];
+            $componentes = [];
             foreach ($pedido->getDetalles() as $detalle) {
+                if ($detalle->esPersonalizado()) {
+                    foreach ((new PersonalizadoRepositorio())->necesidades((int) $detalle->getIdPersonalizado()) as $idComponente => $necesidad) {
+                        $componente = $componentes[$idComponente] ?? (new ComponenteRepositorio())->bloquearExistencia($idComponente, $pedido->getIdVendedor());
+                        if ($componente === null || !$componente['activo'] || $componente['existencia'] < $necesidad['cantidad']) {
+                            $faltantes[] = '«' . $necesidad['nombre'] . '» (tiene ' . Numero::formatear(max(0, $componente['existencia'] ?? 0))
+                                . ', el pedido personalizado lleva ' . Numero::formatear($necesidad['cantidad']) . ')';
+                            continue;
+                        }
+                        $componente['existencia'] -= $necesidad['cantidad'];
+                        $componentes[$idComponente] = $componente;
+                    }
+                    continue;
+                }
                 $producto = $this->productoRepositorio->bloquearExistencia($detalle->getIdProducto(), $pedido->getIdVendedor());
                 $hay = $producto['existencia'] ?? 0;
                 $yaApartado = $nuevasExistencias[$detalle->getIdProducto()] ?? $hay;
@@ -166,12 +181,15 @@ class PedidoRepositorio
             if ($faltantes !== []) {
                 throw new OperacionNoPermitida(
                     'No hay suficiente existencia de ' . implode(', ', $faltantes)
-                    . '. Registre lo que hizo en Productos con «Hice más» o cancele el pedido.'
+                    . '. Registre lo que hizo en Productos con «Hice más», compre lo que falta o cancele el pedido.'
                 );
             }
 
             foreach ($nuevasExistencias as $idProducto => $existencia) {
                 $this->productoRepositorio->actualizarExistencia($idProducto, $pedido->getIdVendedor(), $existencia);
+            }
+            foreach ($componentes as $idComponente => $componente) {
+                (new ComponenteRepositorio())->actualizarExistencia($idComponente, $pedido->getIdVendedor(), $componente['existencia'], $componente['costo']);
             }
             $this->guardarEstado($pedido, EstadoPedido::CONFIRMADO, null);
 
@@ -182,7 +200,6 @@ class PedidoRepositorio
         }
     }
 
-    
     public function cancelar(Pedido $pedido, string $canceladoPor): void
     {
         $permitidos = $canceladoPor === Rol::CLIENTE
@@ -199,6 +216,21 @@ class PedidoRepositorio
 
             if ($estadoAnterior === EstadoPedido::CONFIRMADO) {
                 foreach ($pedido->getDetalles() as $detalle) {
+                    if ($detalle->esPersonalizado()) {
+                        $componenteRepositorio = new ComponenteRepositorio();
+                        foreach ((new PersonalizadoRepositorio())->necesidades((int) $detalle->getIdPersonalizado()) as $idComponente => $necesidad) {
+                            $componente = $componenteRepositorio->bloquearExistencia($idComponente, $pedido->getIdVendedor());
+                            if ($componente !== null) {
+                                $componenteRepositorio->actualizarExistencia(
+                                    $idComponente,
+                                    $pedido->getIdVendedor(),
+                                    $componente['existencia'] + $necesidad['cantidad'],
+                                    $componente['costo']
+                                );
+                            }
+                        }
+                        continue;
+                    }
                     $producto = $this->productoRepositorio->bloquearExistencia($detalle->getIdProducto(), $pedido->getIdVendedor());
                     if ($producto !== null) {
                         $this->productoRepositorio->actualizarExistencia(
@@ -233,10 +265,6 @@ class PedidoRepositorio
         }
     }
 
-    /**
-     
-     * @return array<int, array{idCliente: int, nombre: string, telefono: string, correo: string, pedidos: int, entregados: int, totalComprado: float, ultimoPedido: DateTime}>
-     */
     public function listarClientes(int $idVendedor, string $busqueda, int $pagina = 1): array
     {
         [$condiciones, $valores] = $this->filtrosClientes($idVendedor, $busqueda);
@@ -283,7 +311,6 @@ class PedidoRepositorio
         return (int) $consulta->fetchColumn();
     }
 
-    
     public function nombreClienteDeVendedor(int $idCliente, int $idVendedor): ?string
     {
         $consulta = $this->conexion->prepare(
@@ -313,7 +340,6 @@ class PedidoRepositorio
         return $pedido;
     }
 
-    /** @param Pedido[] $pedidos */
     private function cargarDetalles(array $pedidos): void
     {
         if ($pedidos === []) {
@@ -336,7 +362,8 @@ class PedidoRepositorio
                 (string) $fila['tbpedidodetallenombre'],
                 (int) $fila['tbpedidodetallecantidad'],
                 (float) $fila['tbpedidodetalleprecio'],
-                (float) $fila['tbpedidodetallesubtotal']
+                (float) $fila['tbpedidodetallesubtotal'],
+                $fila['tbpedidodetallepersonalizadoid'] !== null ? (int) $fila['tbpedidodetallepersonalizadoid'] : null
             );
         }
 
@@ -344,7 +371,6 @@ class PedidoRepositorio
             $pedido->setDetalles($porPedido[(int) $pedido->getIdPedido()] ?? []);
         }
     }
-
 
     private function exigirEstado(Pedido $pedido, array $permitidos, string $mensaje): string
     {
@@ -389,7 +415,6 @@ class PedidoRepositorio
             $valores[] = (int) $filtros['idCliente'];
         }
         if ($condiciones === []) {
-            
             $condiciones[] = '1 = 0';
         }
 

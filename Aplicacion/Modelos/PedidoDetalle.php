@@ -2,7 +2,6 @@
 
 namespace Aplicacion\Modelos;
 
-
 class PedidoDetalle
 {
     private ?int $idPedidoDetalle;
@@ -12,6 +11,7 @@ class PedidoDetalle
     private int $cantidad;
     private float $precio;
     private float $subtotal;
+    private ?int $idPersonalizado;
 
     public function __construct(
         ?int $idPedidoDetalle,
@@ -20,7 +20,8 @@ class PedidoDetalle
         string $nombreProducto,
         int $cantidad,
         float $precio,
-        ?float $subtotal = null
+        ?float $subtotal = null,
+        ?int $idPersonalizado = null
     ) {
         $this->idPedidoDetalle = $idPedidoDetalle;
         $this->idPedido = $idPedido;
@@ -29,6 +30,7 @@ class PedidoDetalle
         $this->cantidad = $cantidad;
         $this->precio = $precio;
         $this->subtotal = $subtotal ?? round($cantidad * $precio, 2);
+        $this->idPersonalizado = $idPersonalizado;
     }
 
     public function getIdPedidoDetalle(): ?int
@@ -64,6 +66,16 @@ class PedidoDetalle
     public function getSubtotal(): float
     {
         return $this->subtotal;
+    }
+
+    public function getIdPersonalizado(): ?int
+    {
+        return $this->idPersonalizado;
+    }
+
+    public function esPersonalizado(): bool
+    {
+        return $this->idPersonalizado !== null;
     }
 
     public function setIdPedidoDetalle(?int $idPedidoDetalle): void
