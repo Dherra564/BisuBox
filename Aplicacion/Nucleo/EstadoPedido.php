@@ -5,20 +5,16 @@ namespace Aplicacion\Nucleo;
 
 class EstadoPedido
 {
-    public const SOLICITADO = 'Solicitado';
-    public const COTIZADO   = 'Cotizado';
-    public const PENDIENTE  = 'Pendiente';
+    public const PENDIENTE = 'Pendiente';
     public const CONFIRMADO = 'Confirmado';
-    public const ENTREGADO  = 'Entregado';
-    public const CANCELADO  = 'Cancelado';
+    public const ENTREGADO = 'Entregado';
+    public const CANCELADO = 'Cancelado';
 
     private const CLASES = [
-        self::SOLICITADO => 'etiquetaBajo',
-        self::COTIZADO   => 'etiquetaInfo',
-        self::PENDIENTE  => 'etiquetaBajo',
+        self::PENDIENTE => 'etiquetaBajo',
         self::CONFIRMADO => 'etiquetaInfo',
-        self::ENTREGADO  => 'etiquetaActivo',
-        self::CANCELADO  => 'etiquetaCancelado',
+        self::ENTREGADO => 'etiquetaActivo',
+        self::CANCELADO => 'etiquetaCancelado',
     ];
 
     /** @return string[] */
@@ -32,7 +28,7 @@ class EstadoPedido
         return $estado !== null && isset(self::CLASES[$estado]);
     }
 
-
+    
     public static function claseEtiqueta(string $estado): string
     {
         return self::CLASES[$estado] ?? 'etiquetaInactivo';

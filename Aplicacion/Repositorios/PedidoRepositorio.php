@@ -7,7 +7,6 @@ use Aplicacion\Modelos\PedidoDetalle;
 use Aplicacion\Nucleo\EstadoPedido;
 use Aplicacion\Nucleo\OperacionNoPermitida;
 use Aplicacion\Nucleo\Rol;
-use Aplicacion\Nucleo\TipoPedido;
 use Configuracion\BaseDatos;
 use DateTime;
 use PDO;
@@ -43,16 +42,15 @@ class PedidoRepositorio
             $idPedido = BaseDatos::generarId('tbpedido', 'tbpedidoid');
 
             $consulta = $this->conexion->prepare(
-                'INSERT INTO tbpedido (tbpedidoid, tbpedidovendedorid, tbpedidoclienteid, tbpedidotipo, tbpedidofecha,
-                    tbpedidoentrega, tbpedidodireccion, tbpedidometodopago, tbpedidonota, tbpedidototal,
-                    tbpedidoestado, tbpedidocanceladopor, tbpedidoactualizacionfecha)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL)'
+                'INSERT INTO tbpedido (tbpedidoid, tbpedidovendedorid, tbpedidoclienteid, tbpedidofecha, tbpedidoentrega,
+                    tbpedidodireccion, tbpedidometodopago, tbpedidonota, tbpedidototal, tbpedidoestado,
+                    tbpedidocanceladopor, tbpedidoactualizacionfecha)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL)'
             );
             $consulta->execute([
                 $idPedido,
                 $pedido->getIdVendedor(),
                 $pedido->getIdCliente(),
-                $pedido->getTipo(),
                 $pedido->getFecha()->format('Y-m-d H:i:s'),
                 $pedido->getEntrega(),
                 $pedido->getDireccion(),
@@ -95,136 +93,6 @@ class PedidoRepositorio
         $pedido->setIdPedido($idPedido);
 
         return $idPedido;
-    }
-
-    /**
-     * Crea un pedido personalizado: el pedido (sin productos, total en 0) y los datos de lo que el cliente pidió.
-     */
-    public function crearPersonalizado(Pedido $pedido, string $titulo, string $descripcion, ?string $fechaDeseada): int
-    {
-        $transaccionPropia = BaseDatos::iniciarTransaccion();
-
-        try {
-            $idPedido = $this->crear($pedido);
-            $idPersonalizado = BaseDatos::generarId('tbpedidopersonalizado', 'tbpedidopersonalizadoid');
-
-            $consulta = $this->conexion->prepare(
-                'INSERT INTO tbpedidopersonalizado (tbpedidopersonalizadoid, tbpedidopersonalizadopedidoid,
-                    tbpedidopersonalizadotitulo, tbpedidopersonalizadodescripcion, tbpedidopersonalizadofechadeseada,
-                    tbpedidopersonalizadocotizacionmensaje, tbpedidopersonalizadocotizacionfecha)
-                 VALUES (?, ?, ?, ?, ?, NULL, NULL)'
-            );
-            $consulta->execute([$idPersonalizado, $idPedido, $titulo, $descripcion, $fechaDeseada]);
-
-            if ($transaccionPropia) {
-                BaseDatos::confirmarTransaccion();
-            }
-        } catch (Throwable $error) {
-            if ($transaccionPropia) {
-                BaseDatos::revertirTransaccion();
-            }
-            throw $error;
-        }
-
-        return $idPedido;
-    }
-
-    /**
-     * Datos de lo que pidió el cliente y de la cotización. Devuelve null si el pedido no es personalizado.
-     *
-     * @return array{titulo: string, descripcion: string, fechaDeseada: ?DateTime, cotizacionMensaje: ?string, cotizacionFecha: ?DateTime}|null
-     */
-    public function buscarDatosPersonalizado(int $idPedido): ?array
-    {
-        $consulta = $this->conexion->prepare(
-            'SELECT * FROM tbpedidopersonalizado WHERE tbpedidopersonalizadopedidoid = ?'
-        );
-        $consulta->execute([$idPedido]);
-        $fila = $consulta->fetch();
-        if (!$fila) {
-            return null;
-        }
-
-        return [
-            'titulo' => (string) $fila['tbpedidopersonalizadotitulo'],
-            'descripcion' => (string) $fila['tbpedidopersonalizadodescripcion'],
-            'fechaDeseada' => $fila['tbpedidopersonalizadofechadeseada'] !== null
-                ? new DateTime($fila['tbpedidopersonalizadofechadeseada'])
-                : null,
-            'cotizacionMensaje' => $fila['tbpedidopersonalizadocotizacionmensaje'],
-            'cotizacionFecha' => $fila['tbpedidopersonalizadocotizacionfecha'] !== null
-                ? new DateTime($fila['tbpedidopersonalizadocotizacionfecha'])
-                : null,
-        ];
-    }
-
-    /**
-     * La tienda le pone precio al pedido personalizado. Puede volver a cotizar mientras el cliente no haya aceptado.
-     */
-    public function cotizar(Pedido $pedido, float $precio, ?string $mensaje): void
-    {
-        if (!$pedido->esPersonalizado()) {
-            throw new OperacionNoPermitida('Solo los pedidos personalizados se cotizan.');
-        }
-
-        BaseDatos::iniciarTransaccion();
-
-        try {
-            $this->exigirEstado(
-                $pedido,
-                [EstadoPedido::SOLICITADO, EstadoPedido::COTIZADO],
-                'Este pedido ya no se puede cotizar.'
-            );
-
-            $consulta = $this->conexion->prepare(
-                'UPDATE tbpedidopersonalizado
-                 SET tbpedidopersonalizadocotizacionmensaje = ?, tbpedidopersonalizadocotizacionfecha = ?
-                 WHERE tbpedidopersonalizadopedidoid = ?'
-            );
-            $consulta->execute([$mensaje, date('Y-m-d H:i:s'), $pedido->getIdPedido()]);
-
-            $consulta = $this->conexion->prepare('UPDATE tbpedido SET tbpedidototal = ? WHERE tbpedidoid = ?');
-            $consulta->execute([$precio, $pedido->getIdPedido()]);
-
-            $this->guardarEstado($pedido, EstadoPedido::COTIZADO, null);
-
-            BaseDatos::confirmarTransaccion();
-        } catch (Throwable $error) {
-            BaseDatos::revertirTransaccion();
-            throw $error;
-        }
-    }
-
-    /**
-     * El cliente acepta la cotización. Desde aquí el pedido sigue el flujo normal (Pendiente, Confirmado, Entregado).
-     * Se compara el precio que el cliente vio con el actual, por si la tienda lo cambió justo antes.
-     */
-    public function aceptarCotizacion(Pedido $pedido, float $precioAceptado): void
-    {
-        if (!$pedido->esPersonalizado()) {
-            throw new OperacionNoPermitida('Solo los pedidos personalizados tienen cotización.');
-        }
-
-        BaseDatos::iniciarTransaccion();
-
-        try {
-            $this->exigirEstado($pedido, [EstadoPedido::COTIZADO], 'Este pedido no tiene una cotización por aceptar.');
-
-            $consulta = $this->conexion->prepare('SELECT tbpedidototal FROM tbpedido WHERE tbpedidoid = ?');
-            $consulta->execute([$pedido->getIdPedido()]);
-            $precioActual = (float) $consulta->fetchColumn();
-
-            if (abs($precioActual - $precioAceptado) > 0.001) {
-                throw new OperacionNoPermitida('La tienda cambió el precio. Revise la nueva cotización antes de aceptarla.');
-            }
-
-            $this->guardarEstado($pedido, EstadoPedido::PENDIENTE, null);
-
-            BaseDatos::confirmarTransaccion();
-        } catch (Throwable $error) {
-            BaseDatos::revertirTransaccion();
-            throw $error;
-        }
     }
 
     public function buscarParaVendedor(int $idPedido, int $idVendedor): ?Pedido
@@ -272,7 +140,7 @@ class PedidoRepositorio
         return (int) $consulta->fetchColumn();
     }
 
-
+    
     public function confirmar(Pedido $pedido): void
     {
         BaseDatos::iniciarTransaccion();
@@ -314,12 +182,12 @@ class PedidoRepositorio
         }
     }
 
-
+    
     public function cancelar(Pedido $pedido, string $canceladoPor): void
     {
         $permitidos = $canceladoPor === Rol::CLIENTE
-            ? [EstadoPedido::SOLICITADO, EstadoPedido::COTIZADO, EstadoPedido::PENDIENTE]
-            : [EstadoPedido::SOLICITADO, EstadoPedido::COTIZADO, EstadoPedido::PENDIENTE, EstadoPedido::CONFIRMADO];
+            ? [EstadoPedido::PENDIENTE]
+            : [EstadoPedido::PENDIENTE, EstadoPedido::CONFIRMADO];
         $mensaje = $canceladoPor === Rol::CLIENTE
             ? 'Solo puede cancelar pedidos que la tienda todavía no ha confirmado. Escríbale a la tienda.'
             : 'Este pedido ya no se puede cancelar.';
@@ -366,6 +234,7 @@ class PedidoRepositorio
     }
 
     /**
+     
      * @return array<int, array{idCliente: int, nombre: string, telefono: string, correo: string, pedidos: int, entregados: int, totalComprado: float, ultimoPedido: DateTime}>
      */
     public function listarClientes(int $idVendedor, string $busqueda, int $pagina = 1): array
@@ -414,7 +283,7 @@ class PedidoRepositorio
         return (int) $consulta->fetchColumn();
     }
 
-
+    
     public function nombreClienteDeVendedor(int $idCliente, int $idVendedor): ?string
     {
         $consulta = $this->conexion->prepare(
@@ -520,7 +389,7 @@ class PedidoRepositorio
             $valores[] = (int) $filtros['idCliente'];
         }
         if ($condiciones === []) {
-
+            
             $condiciones[] = '1 = 0';
         }
 
@@ -576,7 +445,6 @@ class PedidoRepositorio
             $fila['tbpedidocanceladopor'],
             $fila['tbpedidoactualizacionfecha'] !== null ? new DateTime($fila['tbpedidoactualizacionfecha']) : null
         );
-        $pedido->setTipo($fila['tbpedidotipo'] ?: TipoPedido::NORMAL);
         $pedido->setDatosTienda((string) $fila['tbvendedortiendanombre'], (string) $fila['tbvendedortiendaenlace']);
         $pedido->setDatosCliente(
             (string) $fila['tbusuarionombrecompleto'],
