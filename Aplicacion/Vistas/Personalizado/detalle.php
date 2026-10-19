@@ -61,12 +61,15 @@ $filaExtra = function (string $clave, array $extra) use ($claseCampo, $mensajeEr
 <?php if ($errores !== []): ?>
     <div class="alerta alertaError" role="alert">
         <span class="alertaIcono" aria-hidden="true">✖</span>
-        <p><strong>Error:</strong> <?= isset($errores['inventario']) ? htmlspecialchars($errores['inventario']) : 'Revise los campos marcados en rojo.' ?></p>
+        <p><strong>Error:</strong>
+            <?= isset($errores['inventario']) ? htmlspecialchars($errores['inventario']) : 'Revise los campos marcados en rojo.' ?>
+        </p>
     </div>
 <?php endif; ?>
 
 <section class="clientePersonalizado" aria-label="Cliente">
-    <img src="<?= $foto !== null ? $urlBase . '/fotos/producto?archivo=' . urlencode($foto) : $urlBase . '/imagenes/productoPorDefecto.svg' ?>" alt="" class="fotoPersonalizado">
+    <img src="<?= $foto !== null ? $urlBase . '/fotos/producto?archivo=' . urlencode($foto) : $urlBase . '/imagenes/productoPorDefecto.svg' ?>"
+        alt="" class="fotoPersonalizado">
     <div class="clientePersonalizadoTexto">
         <div class="tituloPersonalizado">
             <strong><?= htmlspecialchars($personalizado->getNombre()) ?>, personalizado</strong>
@@ -82,22 +85,32 @@ $filaExtra = function (string $clave, array $extra) use ($claseCampo, $mensajeEr
         <?php endif; ?>
     </div>
     <?php if ($personalizado->getNotaCliente() !== null): ?>
-        <p class="notaPersonalizado"><strong>Nota de <?= htmlspecialchars($nombreCorto) ?>:</strong> «<?= htmlspecialchars($personalizado->getNotaCliente()) ?>»</p>
+        <p class="notaPersonalizado"><strong>Nota de <?= htmlspecialchars($nombreCorto) ?>:</strong>
+            «<?= htmlspecialchars($personalizado->getNotaCliente()) ?>»</p>
     <?php endif; ?>
 </section>
 
 <?php if ($personalizado->estaCotizado()): ?>
     <p class="cajaInformativa">
-        Le mandó la cotización el <?= $personalizado->getFechaCotizado()?->format('d/m/Y H:i') ?>. Está esperando que <?= htmlspecialchars($nombreCorto) ?> decida si lo compra.
+        Le mandó la cotización el <?= $personalizado->getFechaCotizado()?->format('d/m/Y H:i') ?>. Está esperando que
+        <?= htmlspecialchars($nombreCorto) ?> decida si lo compra.
     </p>
 <?php elseif ($estado === EstadoPersonalizado::COMPRADO): ?>
     <p class="cajaInformativa">
-        <?= htmlspecialchars($nombreCorto) ?> lo compró. Atiéndalo en <a href="<?= $urlBase ?>/pedidos/detalle?id=<?= $personalizado->getIdPedido() ?>">el pedido #<?= $personalizado->getIdPedido() ?></a>;
-        al confirmarlo se rebajan del inventario los componentes que lleva.
+        <?= htmlspecialchars($nombreCorto) ?> lo compró y ya se rebajaron del inventario los componentes que lleva.
+        Atiéndalo en <a href="<?= $urlBase ?>/pedidos/detalle?id=<?= $personalizado->getIdPedido() ?>">el pedido
+            #<?= $personalizado->getIdPedido() ?></a>.
+    </p>
+<?php elseif ($estado === EstadoPersonalizado::CANCELADO && $personalizado->getIdPedido() !== null): ?>
+    <p class="cajaInformativa">
+        <?= $personalizado->getCanceladoPor() === Rol::CLIENTE ? htmlspecialchars($nombreCorto) . ' canceló' : 'Usted canceló' ?>
+        <a href="<?= $urlBase ?>/pedidos/detalle?id=<?= $personalizado->getIdPedido() ?>">el pedido
+            #<?= $personalizado->getIdPedido() ?></a> de esta pieza.
     </p>
 <?php elseif ($estado === EstadoPersonalizado::CANCELADO): ?>
     <div class="cajaInformativa">
-        <p><strong><?= $personalizado->getCanceladoPor() === Rol::CLIENTE ? 'El cliente canceló este pedido.' : 'Usted canceló este pedido.' ?></strong></p>
+        <p><strong><?= $personalizado->getCanceladoPor() === Rol::CLIENTE ? 'El cliente canceló este pedido.' : 'Usted canceló este pedido.' ?></strong>
+        </p>
         <?php if ($personalizado->getCanceladoPor() === Rol::VENDEDOR && $personalizado->getNotaTienda() !== null): ?>
             <p>Motivo: «<?= htmlspecialchars($personalizado->getNotaTienda()) ?>»</p>
         <?php endif; ?>
@@ -107,7 +120,8 @@ $filaExtra = function (string $clave, array $extra) use ($claseCampo, $mensajeEr
 <section class="panelCompras" aria-labelledby="tituloEscogio">
     <div class="encabezadoSeccion encabezadoPanel">
         <h2 id="tituloEscogio">Lo que escogió</h2>
-        <span class="textoAyuda"><?= $enRevision ? 'Se suma solo con el costo unitario de cada componente' : 'Con el costo del día en que cotizó' ?></span>
+        <span
+            class="textoAyuda"><?= $enRevision ? 'Se suma solo con el costo unitario de cada componente' : 'Con el costo del día en que cotizó' ?></span>
     </div>
     <div class="tablaContenedor">
         <table class="tabla">
@@ -130,41 +144,50 @@ $filaExtra = function (string $clave, array $extra) use ($claseCampo, $mensajeEr
                     <tr>
                         <td data-etiqueta="Componente">
                             <span class="productoConFoto">
-                                <img src="<?= htmlspecialchars($fotoComponente($linea->getFoto())) ?>" alt="" class="miniaturaComponente" loading="lazy">
+                                <img src="<?= htmlspecialchars($fotoComponente($linea->getFoto())) ?>" alt=""
+                                    class="miniaturaComponente" loading="lazy">
                                 <span>
                                     <span class="tipoPieza"><?= htmlspecialchars($linea->getNombreTipo()) ?></span><br>
                                     <strong><?= htmlspecialchars($linea->getNombre()) ?></strong>
                                     <?php if ($linea->fueCambiado()): ?>
-                                        <br><span class="textoCambio">Cambió: antes <?= htmlspecialchars($linea->getNombreOriginal()) ?></span>
+                                        <br><span class="textoCambio">Cambió: antes
+                                            <?= htmlspecialchars($linea->getNombreOriginal()) ?></span>
                                     <?php endif; ?>
                                 </span>
                             </span>
                         </td>
-                        <td data-etiqueta="Por pieza"><?= htmlspecialchars(UnidadMedida::cantidad($linea->getCantidad(), $linea->getUnidad())) ?></td>
+                        <td data-etiqueta="Por pieza">
+                            <?= htmlspecialchars(UnidadMedida::cantidad($linea->getCantidad(), $linea->getUnidad())) ?>
+                        </td>
                         <td data-etiqueta="Inventario">
                             <?php if ($enRevision): ?>
                                 <span class="<?= $alcanza ? 'textoAyuda' : 'errorCampo' ?>">
-                                    Necesita <?= Numero::formatear($necesita) ?>, quedan <?= Numero::formatear(max(0, $linea->getExistencia())) ?>
+                                    Necesita <?= Numero::formatear($necesita) ?>, quedan
+                                    <?= Numero::formatear(max(0, $linea->getExistencia())) ?>
                                 </span>
                             <?php else: ?>
                                 <span class="textoAyuda">Necesita <?= Numero::formatear($necesita) ?></span>
                             <?php endif; ?>
                         </td>
                         <td data-etiqueta="Costo unitario" class="numero"><?= Numero::moneda(round($costo, 2)) ?></td>
-                        <td data-etiqueta="Subtotal" class="numero"><strong><?= Numero::moneda(round($costo * $linea->getCantidad(), 2)) ?></strong></td>
+                        <td data-etiqueta="Subtotal" class="numero">
+                            <strong><?= Numero::moneda(round($costo * $linea->getCantidad(), 2)) ?></strong>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
     </div>
     <div class="totalesCompra totalComponentesCotizar">
-        <div class="totalCompra"><span>Total de componentes por pieza</span><strong><?= Numero::moneda($costoComponentes) ?></strong></div>
+        <div class="totalCompra"><span>Total de componentes por
+                pieza</span><strong><?= Numero::moneda($costoComponentes) ?></strong></div>
     </div>
 </section>
 
 <?php if ($enRevision): ?>
-    <form method="post" action="<?= $urlBase ?>/pedidos/personalizado/cotizar" novalidate class="formularioCotizar" data-cotizar
-        data-componentes="<?= $costoComponentes ?>" data-mano-obra="<?= $personalizado->getCostoManoObra() ?>" data-piezas="<?= $piezas ?>"
+    <form method="post" action="<?= $urlBase ?>/pedidos/personalizado/cotizar" novalidate class="formularioCotizar"
+        data-cotizar data-componentes="<?= $costoComponentes ?>" data-mano-obra="<?= $personalizado->getCostoManoObra() ?>"
+        data-piezas="<?= $piezas ?>"
         data-confirmar="¿Enviarle la cotización a <?= htmlspecialchars($nombreCorto) ?>? Después ya no la puede cambiar."
         data-titulo="Enviar cotización" data-boton="Enviar cotización">
         <?= Csrf::campo() ?>
@@ -177,9 +200,18 @@ $filaExtra = function (string $clave, array $extra) use ($claseCampo, $mensajeEr
                     <span class="chipBloqueado">Del producto original</span>
                 </div>
                 <dl class="cuentaPrecio">
-                    <div><dt>Tiempo</dt><dd><?= Numero::duracion($personalizado->getMinutos()) ?></dd></div>
-                    <div><dt>Tarifa por hora</dt><dd><?= Numero::moneda($personalizado->getTarifaHora()) ?></dd></div>
-                    <div class="cuentaTotal"><dt>Por pieza</dt><dd><?= Numero::moneda($personalizado->getCostoManoObra()) ?></dd></div>
+                    <div>
+                        <dt>Tiempo</dt>
+                        <dd><?= Numero::duracion($personalizado->getMinutos()) ?></dd>
+                    </div>
+                    <div>
+                        <dt>Tarifa por hora</dt>
+                        <dd><?= Numero::moneda($personalizado->getTarifaHora()) ?></dd>
+                    </div>
+                    <div class="cuentaTotal">
+                        <dt>Por pieza</dt>
+                        <dd><?= Numero::moneda($personalizado->getCostoManoObra()) ?></dd>
+                    </div>
                 </dl>
             </section>
 
@@ -200,10 +232,22 @@ $filaExtra = function (string $clave, array $extra) use ($claseCampo, $mensajeEr
             <div>
                 <h2 id="tituloPrecio">Precio para <?= htmlspecialchars($nombreCorto) ?></h2>
                 <dl class="cuentaPrecio">
-                    <div><dt>Componentes</dt><dd><?= Numero::moneda($costoComponentes) ?></dd></div>
-                    <div><dt>Mano de obra</dt><dd><?= Numero::moneda($personalizado->getCostoManoObra()) ?></dd></div>
-                    <div><dt>Tarifas extra</dt><dd data-total-extras>₡0</dd></div>
-                    <div class="cuentaTotal"><dt>Le cuesta hacer cada pieza</dt><dd data-costo>₡0</dd></div>
+                    <div>
+                        <dt>Componentes</dt>
+                        <dd><?= Numero::moneda($costoComponentes) ?></dd>
+                    </div>
+                    <div>
+                        <dt>Mano de obra</dt>
+                        <dd><?= Numero::moneda($personalizado->getCostoManoObra()) ?></dd>
+                    </div>
+                    <div>
+                        <dt>Tarifas extra</dt>
+                        <dd data-total-extras>₡0</dd>
+                    </div>
+                    <div class="cuentaTotal">
+                        <dt>Le cuesta hacer cada pieza</dt>
+                        <dd data-costo>₡0</dd>
+                    </div>
                 </dl>
             </div>
 
@@ -224,7 +268,8 @@ $filaExtra = function (string $clave, array $extra) use ($claseCampo, $mensajeEr
                     <label for="precio">Precio de cada pieza <span class="obligatorio">*</span></label>
                     <div class="campoConUnidad campoConMoneda">
                         <span class="unidadCampo">₡</span>
-                        <input type="text" id="precio" name="precio" maxlength="13" inputmode="decimal" data-precio value="<?= htmlspecialchars($datos['precio']) ?>">
+                        <input type="text" id="precio" name="precio" maxlength="13" inputmode="decimal" data-precio
+                            value="<?= htmlspecialchars($datos['precio']) ?>">
                     </div>
                     <?= $mensajeError('precio') ?>
                 </div>
@@ -232,7 +277,8 @@ $filaExtra = function (string $clave, array $extra) use ($claseCampo, $mensajeEr
             </div>
 
             <div class="franjaCotizarTotal">
-                <span class="textoAyuda"><strong>Total (<?= $piezas === 1 ? '1 pieza' : $piezas . ' piezas' ?>)</strong></span>
+                <span class="textoAyuda"><strong>Total
+                        (<?= $piezas === 1 ? '1 pieza' : $piezas . ' piezas' ?>)</strong></span>
                 <strong class="precioFinal" data-total>₡0</strong>
                 <div class="<?= $claseCampo('notaTienda') ?>">
                     <label for="notaTienda">Mensaje para <?= htmlspecialchars($nombreCorto) ?></label>
@@ -249,21 +295,41 @@ $filaExtra = function (string $clave, array $extra) use ($claseCampo, $mensajeEr
         <div>
             <h2 id="tituloPrecio">Cotización</h2>
             <dl class="cuentaPrecio">
-                <div><dt>Componentes</dt><dd><?= Numero::moneda($personalizado->getCostoComponentes()) ?></dd></div>
-                <div><dt>Mano de obra</dt><dd><?= Numero::moneda($personalizado->getCostoManoObra()) ?></dd></div>
+                <div>
+                    <dt>Componentes</dt>
+                    <dd><?= Numero::moneda($personalizado->getCostoComponentes()) ?></dd>
+                </div>
+                <div>
+                    <dt>Mano de obra</dt>
+                    <dd><?= Numero::moneda($personalizado->getCostoManoObra()) ?></dd>
+                </div>
                 <?php foreach ($personalizado->getExtras() as $extra): ?>
-                    <div><dt><?= htmlspecialchars($extra->getConcepto()) ?></dt><dd><?= Numero::moneda($extra->getMonto()) ?></dd></div>
+                    <div>
+                        <dt><?= htmlspecialchars($extra->getConcepto()) ?></dt>
+                        <dd><?= Numero::moneda($extra->getMonto()) ?></dd>
+                    </div>
                 <?php endforeach; ?>
-                <div class="cuentaTotal"><dt>Le cuesta cada pieza</dt><dd><?= Numero::moneda($personalizado->getCostoTotal()) ?></dd></div>
+                <div class="cuentaTotal">
+                    <dt>Le cuesta cada pieza</dt>
+                    <dd><?= Numero::moneda($personalizado->getCostoTotal()) ?></dd>
+                </div>
             </dl>
         </div>
         <div>
             <dl class="cuentaPrecio">
-                <div><dt>Precio por pieza</dt><dd><?= Numero::moneda((float) $personalizado->getPrecio()) ?></dd></div>
-                <div><dt>Gana por pieza</dt><dd><?= Numero::moneda(round((float) $personalizado->getPrecio() - $personalizado->getCostoTotal(), 2)) ?></dd></div>
+                <div>
+                    <dt>Precio por pieza</dt>
+                    <dd><?= Numero::moneda((float) $personalizado->getPrecio()) ?></dd>
+                </div>
+                <div>
+                    <dt>Gana por pieza</dt>
+                    <dd><?= Numero::moneda(round((float) $personalizado->getPrecio() - $personalizado->getCostoTotal(), 2)) ?>
+                    </dd>
+                </div>
             </dl>
             <?php if ($personalizado->getNotaTienda() !== null && $estado !== EstadoPersonalizado::CANCELADO): ?>
-                <p class="notaPersonalizado"><strong>Su mensaje:</strong> «<?= htmlspecialchars($personalizado->getNotaTienda()) ?>»</p>
+                <p class="notaPersonalizado"><strong>Su mensaje:</strong>
+                    «<?= htmlspecialchars($personalizado->getNotaTienda()) ?>»</p>
             <?php endif; ?>
         </div>
         <div class="franjaCotizarTotal">
@@ -281,7 +347,8 @@ $filaExtra = function (string $clave, array $extra) use ($claseCampo, $mensajeEr
         <input type="hidden" name="id" value="<?= $numero ?>">
         <div class="campo">
             <label for="motivo">¿No puede hacerlo? Dígale por qué a <?= htmlspecialchars($nombreCorto) ?></label>
-            <textarea id="motivo" name="motivo" rows="2" maxlength="300" placeholder="Opcional. Por ejemplo: ya no me queda ese charm"></textarea>
+            <textarea id="motivo" name="motivo" rows="2" maxlength="300"
+                placeholder="Opcional. Por ejemplo: ya no me queda ese charm"></textarea>
         </div>
         <button type="submit" class="boton botonPeligro">No puedo hacerlo</button>
     </form>

@@ -33,9 +33,9 @@ $iconosContacto = [
         </div>
     <?php endif; ?>
     <div class="resumenDuenio">
-        <a href="<?= $urlBase ?>/pedidos?estado=Pendiente" class="tarjetaResumen <?= $pedidosPendientes > 0 ? 'tarjetaResumenAviso' : '' ?>">
-            <span>Pedidos pendientes</span>
-            <strong><?= (int) $pedidosPendientes ?></strong>
+            <a href="<?= $urlBase ?>/pedidos?estado=Confirmado" class="tarjetaResumen <?= $pedidosPorEntregar > 0 ? 'tarjetaResumenAviso' : '' ?>">
+            <span>Pedidos por entregar</span>
+            <strong><?= (int) $pedidosPorEntregar ?></strong>
         </a>
         <a href="<?= $urlBase ?>/productos" class="tarjetaResumen">
             <span>Productos agotados</span>
@@ -145,7 +145,7 @@ $iconosContacto = [
                                     aria-label="Cantidad de <?= htmlspecialchars($producto->getNombre()) ?>">
                                 <button type="button" class="botonCantidad" data-mas aria-label="Uno más">+</button>
                             </div>
-                            <button type="submit" class="boton">Agregar</button>
+                            <button type="submit" class="boton">Agregar al carrito</button>
                         </form>
                     <?php else: ?>
                         <p class="textoAyuda tarjetaProductoPie">Ya tiene en el carrito todo lo disponible.</p>

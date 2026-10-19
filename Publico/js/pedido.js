@@ -68,4 +68,63 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         mostrarDireccion();
     }
+
+    var opcionesPago = document.querySelectorAll('[data-metodo-pago]');
+    var pasosSinpe = document.querySelector('[data-pago-sinpe]');
+    if (opcionesPago.length > 0 && pasosSinpe) {
+        function mostrarSinpe() {
+            var escogida = document.querySelector('[data-metodo-pago]:checked');
+            pasosSinpe.hidden = !(escogida !== null && escogida.value === 'SinpeMovil');
+        }
+
+        opcionesPago.forEach(function (opcion) {
+            opcion.addEventListener('change', mostrarSinpe);
+        });
+        mostrarSinpe();
+    }
+
+    document.querySelectorAll('[data-copiar-codigo]').forEach(function (boton) {
+        var original = boton.textContent;
+
+        function avisar(texto) {
+            boton.textContent = texto;
+            setTimeout(function () {
+                boton.textContent = original;
+            }, 2000);
+        }
+
+        boton.addEventListener('click', function () {
+            var codigo = boton.getAttribute('data-copiar-codigo');
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(codigo).then(function () {
+                    avisar('¡Copiado!');
+                }, function () {
+                    window.prompt('Copie el código:', codigo);
+                });
+            } else {
+                window.prompt('Copie el código:', codigo);
+            }
+        });
+    });
+
+    document.querySelectorAll('[data-comprobante]').forEach(function (campo) {
+        var texto = campo.parentElement.querySelector('[data-nombre-comprobante]');
+        campo.addEventListener('change', function () {
+            if (texto && campo.files.length > 0) {
+                texto.textContent = campo.files[0].name;
+            }
+        });
+    });
+
+    document.querySelectorAll('.campoReferencia').forEach(function (campo) {
+        campo.addEventListener('input', function () {
+            campo.value = campo.value.replace(/\D/g, '').slice(0, 4);
+        });
+    });
+
+    document.querySelectorAll('.campoCodigoRetiro').forEach(function (campo) {
+        campo.addEventListener('input', function () {
+            campo.value = campo.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+        });
+    });
 });

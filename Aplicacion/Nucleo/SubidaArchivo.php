@@ -24,17 +24,20 @@ class SubidaArchivo
     private const CARPETA_LOGOS = 'Logos';
     private const CARPETA_PRODUCTOS = 'Productos';
     private const CARPETA_COMPONENTES = 'Componentes';
+    private const CARPETA_COMPROBANTES = 'Comprobantes';
 
     private const CLAVE_PENDIENTES = 'fotosPendientes';
     public const FOTO_PERFIL = 'perfil';
     public const LOGO = 'logo';
     public const FOTO_PRODUCTO = 'producto';
     public const FOTO_COMPONENTE = 'componente';
+    public const FOTO_COMPROBANTE = 'comprobante';
     private const CARPETAS = [
         self::FOTO_PERFIL => self::CARPETA_PERFILES,
         self::LOGO => self::CARPETA_LOGOS,
         self::FOTO_PRODUCTO => self::CARPETA_PRODUCTOS,
         self::FOTO_COMPONENTE => self::CARPETA_COMPONENTES,
+        self::FOTO_COMPROBANTE => self::CARPETA_COMPROBANTES,
     ];
 
     private string $error = '';
@@ -72,7 +75,11 @@ class SubidaArchivo
             return $pendiente;
         }
 
-        $queEs = $tipo === self::LOGO ? 'El logo' : 'La foto';
+        $queEs = match ($tipo) {
+            self::LOGO => 'El logo',
+            self::FOTO_COMPROBANTE => 'El comprobante',
+            default => 'La foto',
+        };
         $nombre = $this->guardarImagen($_FILES[$campo], self::CARPETAS[$tipo], $queEs);
         if ($nombre === null) {
             $validador->agregarError($campo, $this->error);
@@ -163,6 +170,16 @@ class SubidaArchivo
     public static function obtenerFotoComponente(string $nombre): ?array
     {
         return self::obtener($nombre, self::CARPETA_COMPONENTES);
+    }
+
+    public static function obtenerComprobante(string $nombre): ?array
+    {
+        return self::obtener($nombre, self::CARPETA_COMPROBANTES);
+    }
+
+    public static function eliminarComprobante(?string $nombre): void
+    {
+        self::eliminar($nombre, self::CARPETA_COMPROBANTES);
     }
 
     private function guardarImagen(array $archivo, string $carpeta, string $queEs): ?string

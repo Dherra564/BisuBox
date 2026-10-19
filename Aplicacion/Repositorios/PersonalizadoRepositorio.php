@@ -3,6 +3,7 @@
 namespace Aplicacion\Repositorios;
 
 use Aplicacion\Modelos\Pedido;
+use Aplicacion\Modelos\PedidoPago;
 use Aplicacion\Modelos\Personalizado;
 use Aplicacion\Modelos\PersonalizadoComponente;
 use Aplicacion\Modelos\PersonalizadoExtra;
@@ -261,14 +262,14 @@ class PersonalizadoRepositorio
         }
     }
 
-    public function comprar(Personalizado $personalizado, Pedido $pedido): int
+    public function comprar(Personalizado $personalizado, Pedido $pedido, ?PedidoPago $pago = null): int
     {
         BaseDatos::iniciarTransaccion();
 
         try {
             $this->exigirEstado($personalizado, [EstadoPersonalizado::COTIZADO], 'Este pedido ya no está esperando su respuesta.');
 
-            $idPedido = (new PedidoRepositorio())->crear($pedido);
+            $idPedido = (new PedidoRepositorio())->crear($pedido, $pago);
             $personalizado->setEstado(EstadoPersonalizado::COMPRADO);
             $personalizado->setIdPedido($idPedido);
 
@@ -290,6 +291,22 @@ class PersonalizadoRepositorio
         }
 
         return $idPedido;
+    }
+
+    public function cancelarPorPedido(int $idPersonalizado, string $canceladoPor): void
+    {
+        $consulta = $this->conexion->prepare(
+            'UPDATE tbpersonalizado SET tbpersonalizadoestado = ?, tbpersonalizadocanceladopor = ?,
+                tbpersonalizadoavisovisto = 1, tbpersonalizadorespuestafecha = ?
+             WHERE tbpersonalizadoid = ? AND tbpersonalizadoestado = ?'
+        );
+        $consulta->execute([
+            EstadoPersonalizado::CANCELADO,
+            $canceladoPor,
+            (new DateTime())->format('Y-m-d H:i:s'),
+            $idPersonalizado,
+            EstadoPersonalizado::COMPRADO,
+        ]);
     }
 
     public function necesidades(int $idPersonalizado): array

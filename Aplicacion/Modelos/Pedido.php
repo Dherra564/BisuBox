@@ -20,6 +20,8 @@ class Pedido
     private ?string $canceladoPor;
     private ?DateTime $fechaActualizacion;
     private array $detalles;
+    private ?string $retiroCodigo = null;
+    private ?PedidoPago $pago = null;
 
     private string $nombreTienda = '';
     private string $enlaceTienda = '';
@@ -37,7 +39,7 @@ class Pedido
         string $metodoPago,
         ?string $nota,
         float $total,
-        string $estado = EstadoPedido::PENDIENTE,
+        string $estado = EstadoPedido::CONFIRMADO,
         ?string $canceladoPor = null,
         ?DateTime $fechaActualizacion = null,
         array $detalles = []
@@ -127,6 +129,21 @@ class Pedido
         return array_sum(array_map(fn(PedidoDetalle $detalle): int => $detalle->getCantidad(), $this->detalles));
     }
 
+    public function getRetiroCodigo(): ?string
+    {
+        return $this->retiroCodigo;
+    }
+
+    public function getPago(): ?PedidoPago
+    {
+        return $this->pago;
+    }
+
+    public function pagoPendiente(): bool
+    {
+        return $this->pago !== null && !$this->pago->estaRecibido();
+    }
+
     public function getNombreTienda(): string
     {
         return $this->nombreTienda;
@@ -152,11 +169,6 @@ class Pedido
         return $this->correoCliente;
     }
 
-    public function estaPendiente(): bool
-    {
-        return $this->estado === EstadoPedido::PENDIENTE;
-    }
-
     public function estaConfirmado(): bool
     {
         return $this->estado === EstadoPedido::CONFIRMADO;
@@ -172,6 +184,16 @@ class Pedido
         $this->estado = $estado;
         $this->canceladoPor = $canceladoPor;
         $this->fechaActualizacion = new DateTime();
+    }
+
+    public function setRetiroCodigo(?string $retiroCodigo): void
+    {
+        $this->retiroCodigo = $retiroCodigo;
+    }
+
+    public function setPago(?PedidoPago $pago): void
+    {
+        $this->pago = $pago;
     }
 
     public function setDetalles(array $detalles): void

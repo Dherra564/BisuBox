@@ -27,10 +27,10 @@ class TiendaPublicaControlador
             mb_stripos($producto->getNombre() . ' ' . $producto->getDescripcion(), $busqueda, 0, 'UTF-8') !== false));
 
         $enCarrito = [];
-        $pedidosPendientes = 0;
+        $pedidosPorEntregar = 0;
         $agotados = 0;
         if ($esDuenio) {
-            $pedidosPendientes = (new PedidoRepositorio())->contar(['idVendedor' => $idVendedor, 'estado' => EstadoPedido::PENDIENTE]);
+            $pedidosPorEntregar = (new PedidoRepositorio())->contar(['idVendedor' => $idVendedor, 'estado' => EstadoPedido::CONFIRMADO]);
             $agotados = count(array_filter($todos, fn($producto): bool => $producto->getExistencia() <= 0));
         } else {
             Carrito::elegirTienda($idVendedor, (string) $vendedor->getTiendaEnlace());

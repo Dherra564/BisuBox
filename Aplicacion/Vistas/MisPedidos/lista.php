@@ -8,7 +8,7 @@ $titulo = UsuarioActual::esVendedor() ? 'Mis compras' : 'Mis pedidos';
 $paginaActual = 'misPedidos';
 require __DIR__ . '/../Plantilla/encabezado.php';
 
-$pestanas = ['' => 'Todos'] + array_combine(EstadoPedido::todos(), ['Pendientes', 'Confirmados', 'Entregados', 'Cancelados']);
+$pestanas = ['' => 'Todos'] + array_combine(EstadoPedido::todos(), ['Confirmados', 'Entregados', 'Cancelados']);
 ?>
 
 <nav class="cambioVista" aria-label="Tipo de pedido">

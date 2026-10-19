@@ -11,6 +11,7 @@ use Aplicacion\Modelos\Vendedor;
 use Aplicacion\Nucleo\Acceso;
 use Aplicacion\Nucleo\Carrito;
 use Aplicacion\Nucleo\Csrf;
+use Aplicacion\Nucleo\DatosPago;
 use Aplicacion\Nucleo\EstadoPedido;
 use Aplicacion\Nucleo\EstadoPersonalizado;
 use Aplicacion\Nucleo\FormaEntrega;
@@ -20,6 +21,7 @@ use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\OperacionNoPermitida;
 use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\Rol;
+use Aplicacion\Nucleo\SubidaArchivo;
 use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Nucleo\Validador;
 use Aplicacion\Repositorios\ClienteRepositorio;
@@ -213,7 +215,7 @@ class PersonalizarControlador
     public function comprar(): void
     {
         $personalizado = $this->personalizadoListoParaComprar($_GET['id'] ?? null);
-        $this->mostrarCompra($personalizado, ['entrega' => '', 'direccion' => '', 'metodoPago' => '', 'nota' => ''], []);
+        $this->mostrarCompra($personalizado, ['entrega' => '', 'direccion' => '', 'metodoPago' => '', 'nota' => '', 'referencia' => '', 'comprobantePendiente' => null], []);
     }
 
     public function hacerCompra(): void
@@ -221,9 +223,17 @@ class PersonalizarControlador
         $this->verificarCsrf('/mis-pedidos/personalizados');
         $personalizado = $this->personalizadoListoParaComprar($_POST['id'] ?? null);
 
+        $tienda = $this->tiendaDe($personalizado);
         $datos = $this->leerDatosEntrega();
-        $validador = $this->validarDatosEntrega($datos);
+        $validador = $this->validarDatosEntrega($datos, $tienda);
+        $leidoPago = null;
+        if ($datos['metodoPago'] === MetodoPago::SINPE && $validador->error('metodoPago') === null) {
+            $leidoPago = DatosPago::recibir($tienda, $validador);
+            $datos['referencia'] = $leidoPago['referencia'];
+            $datos['comprobantePendiente'] = $leidoPago['comprobante'];
+        }
         if (!$validador->esValido()) {
+            SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_COMPROBANTE, $datos['comprobantePendiente']);
             $this->mostrarCompra($personalizado, $datos, $validador->errores());
             return;
         }
@@ -248,26 +258,32 @@ class PersonalizarControlador
             $datos['metodoPago'],
             $datos['nota'] !== '' ? $datos['nota'] : null,
             (float) $personalizado->getTotal(),
-            EstadoPedido::PENDIENTE,
+            EstadoPedido::CONFIRMADO,
             null,
             null,
             [$detalle]
         );
 
+        $pago = $leidoPago !== null ? DatosPago::crearPago($tienda, $pedido->getTotal(), $leidoPago) : null;
+
         try {
-            $idPedido = $this->personalizadoRepositorio->comprar($personalizado, $pedido);
+            $idPedido = $this->personalizadoRepositorio->comprar($personalizado, $pedido, $pago);
         } catch (OperacionNoPermitida $error) {
+            SubidaArchivo::eliminarComprobante($datos['comprobantePendiente']);
             Mensaje::error($error->getMessage());
             $this->redirigir('/mis-pedidos/personalizado?id=' . $personalizado->getIdPersonalizado());
         } catch (Throwable $error) {
             error_log('Error al comprar el pedido personalizado: ' . $error->getMessage());
+            SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_COMPROBANTE, $datos['comprobantePendiente']);
             Mensaje::error('No se pudo enviar el pedido. Intente de nuevo.');
             $this->mostrarCompra($personalizado, $datos, []);
             return;
         }
 
-        Mensaje::exito('Su pieza personalizada quedó pedida a ' . $personalizado->getNombreTienda()
-            . '. Cuando la tienda lo confirme, lo verá aquí.');
+        SubidaArchivo::olvidarPendiente(SubidaArchivo::FOTO_COMPROBANTE, $datos['comprobantePendiente']);
+        DatosPago::olvidarCodigoPago($personalizado->getIdVendedor());
+        Mensaje::exito('Su compra a ' . $personalizado->getNombreTienda() . ' quedó confirmada.'
+            . ($pago !== null ? ' La tienda va a revisar que le llegó su SINPE.' : ' La tienda ya está preparando su pieza.'));
         $this->redirigir('/mis-pedidos/detalle?id=' . $idPedido);
     }
 
@@ -369,11 +385,25 @@ class PersonalizarControlador
         ]);
     }
 
+    private function tiendaDe(Personalizado $personalizado): Vendedor
+    {
+        $tienda = (new VendedorRepositorio())->buscarPorId($personalizado->getIdVendedor());
+        if ($tienda === null || !$tienda->getTiendaActiva() || !$tienda->getEstado()) {
+            Mensaje::error('Esa tienda ya no está disponible.');
+            $this->redirigir('/mis-pedidos/personalizados');
+        }
+        return $tienda;
+    }
+
     private function mostrarCompra(Personalizado $personalizado, array $datos, array $errores): void
     {
+        $tienda = $this->tiendaDe($personalizado);
         $this->mostrarVista('Personalizar/comprar', [
             'personalizado' => $personalizado,
-            'tiendaVista' => (new VendedorRepositorio())->buscarPorId($personalizado->getIdVendedor()),
+            'tiendaVista' => $tienda,
+            'tiendaPago' => $tienda,
+            'metodos' => DatosPago::metodosPara($tienda),
+            'codigoPago' => $tienda->tieneSinpe() ? DatosPago::codigoPago((int) $tienda->getIdVendedor()) : null,
             'cliente' => (new ClienteRepositorio())->buscarPorIdUsuario((int) UsuarioActual::id()),
             'datos' => $datos,
             'errores' => $errores,
@@ -389,10 +419,12 @@ class PersonalizarControlador
             'direccion' => (string) preg_replace('/[ \t]+/', ' ', $leer('direccion')),
             'metodoPago' => $leer('metodoPago'),
             'nota' => $leer('nota'),
+            'referencia' => '',
+            'comprobantePendiente' => null,
         ];
     }
 
-    private function validarDatosEntrega(array $datos): Validador
+    private function validarDatosEntrega(array $datos, Vendedor $tienda): Validador
     {
         $validador = new Validador();
 
@@ -404,7 +436,7 @@ class PersonalizarControlador
                 ->longitud('direccion', $datos['direccion'], 10, 250, 'La dirección debe tener entre 10 y 250 caracteres')
                 ->direccion('direccion', $datos['direccion']);
         }
-        if (!MetodoPago::existe($datos['metodoPago'])) {
+        if (!isset(DatosPago::metodosPara($tienda)[$datos['metodoPago']])) {
             $validador->agregarError('metodoPago', 'Escoja cómo va a pagar');
         }
         $validador->longitud('nota', $datos['nota'], 0, 300, 'La nota puede tener como máximo 300 caracteres');

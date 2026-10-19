@@ -34,22 +34,34 @@ $incluye = count($partes) > 1 ? implode(', ', array_slice($partes, 0, -1)) . ' y
     <?php if (!$cancelado): ?>
         <ol class="avancePersonalizado" aria-label="Avance">
             <li class="pasoHecho"><span aria-hidden="true">✓</span>Enviado</li>
-            <li class="<?= $paso > 2 ? 'pasoHecho' : 'pasoActualAvance' ?>"><span aria-hidden="true"><?= $paso > 2 ? '✓' : '2' ?></span>La tienda cotiza</li>
-            <li class="<?= $paso > 3 ? 'pasoHecho' : ($paso === 3 ? 'pasoActualAvance' : '') ?>"><span aria-hidden="true"><?= $paso > 3 ? '✓' : '3' ?></span><?= $comprado ? 'Comprado' : 'Usted decide' ?></li>
+            <li class="<?= $paso > 2 ? 'pasoHecho' : 'pasoActualAvance' ?>"><span
+                    aria-hidden="true"><?= $paso > 2 ? '✓' : '2' ?></span>La tienda cotiza</li>
+            <li class="<?= $paso > 3 ? 'pasoHecho' : ($paso === 3 ? 'pasoActualAvance' : '') ?>"><span
+                    aria-hidden="true"><?= $paso > 3 ? '✓' : '3' ?></span><?= $comprado ? 'Comprado' : 'Usted decide' ?>
+            </li>
         </ol>
     <?php endif; ?>
 </div>
 
-<?php if ($cancelado): ?>
+<?php if ($cancelado && $personalizado->getIdPedido() !== null): ?>
+    <p class="cajaInformativa">
+        <?= $personalizado->getCanceladoPor() === Rol::CLIENTE ? 'Usted canceló' : 'La tienda canceló' ?>
+        <a href="<?= $urlBase ?>/mis-pedidos/detalle?id=<?= $personalizado->getIdPedido() ?>">el pedido
+            #<?= $personalizado->getIdPedido() ?></a> de esta pieza.
+    </p>
+<?php elseif ($cancelado): ?>
     <div class="cajaInformativa">
-        <p><strong><?= $personalizado->getCanceladoPor() === Rol::CLIENTE ? 'Usted canceló este pedido.' : 'La tienda no puede hacer este pedido.' ?></strong></p>
+        <p><strong><?= $personalizado->getCanceladoPor() === Rol::CLIENTE ? 'Usted canceló este pedido.' : 'La tienda no puede hacer este pedido.' ?></strong>
+        </p>
         <?php if ($personalizado->getCanceladoPor() === Rol::VENDEDOR && $personalizado->getNotaTienda() !== null): ?>
             <p>«<?= htmlspecialchars($personalizado->getNotaTienda()) ?>»</p>
         <?php endif; ?>
     </div>
 <?php elseif ($comprado): ?>
     <p class="cajaInformativa">
-        Ya lo compró. Siga su pedido en <a href="<?= $urlBase ?>/mis-pedidos/detalle?id=<?= $personalizado->getIdPedido() ?>">el pedido #<?= $personalizado->getIdPedido() ?></a>.
+        Ya lo compró. Siga su pedido en <a
+            href="<?= $urlBase ?>/mis-pedidos/detalle?id=<?= $personalizado->getIdPedido() ?>">el pedido
+            #<?= $personalizado->getIdPedido() ?></a>.
     </p>
 <?php endif; ?>
 
@@ -62,7 +74,9 @@ $incluye = count($partes) > 1 ? implode(', ', array_slice($partes, 0, -1)) . ' y
         <div class="textoBase">
             <strong class="nombreBase"><?= htmlspecialchars($personalizado->getNombre()) ?>, a su gusto</strong>
             <span class="textoAyuda"><?= htmlspecialchars($personalizado->getNombreTienda()) ?></span>
-            <span class="textoAyuda"><?= $personalizado->getPiezas() === 1 ? '1 pieza' : $personalizado->getPiezas() . ' piezas' ?> · enviado el <?= $personalizado->getFechaRegistro()->format('d/m/Y H:i') ?></span>
+            <span
+                class="textoAyuda"><?= $personalizado->getPiezas() === 1 ? '1 pieza' : $personalizado->getPiezas() . ' piezas' ?>
+                · enviado el <?= $personalizado->getFechaRegistro()->format('d/m/Y H:i') ?></span>
         </div>
     </div>
 
@@ -73,21 +87,25 @@ $incluye = count($partes) > 1 ? implode(', ', array_slice($partes, 0, -1)) . ' y
                 <li class="<?= $linea->fueCambiado() ? 'lineaCambiada' : '' ?>">
                     <img src="<?= htmlspecialchars($fotoComponente($linea->getFoto())) ?>" alt="" loading="lazy">
                     <span class="lineaTexto">
-                        <span class="tipoPieza"><?= htmlspecialchars($linea->getNombreTipo()) ?><?= $linea->fueCambiado() ? ' · su cambio' : '' ?></span>
+                        <span
+                            class="tipoPieza"><?= htmlspecialchars($linea->getNombreTipo()) ?><?= $linea->fueCambiado() ? ' · su cambio' : '' ?></span>
                         <strong><?= htmlspecialchars($linea->getNombre()) ?></strong>
                         <?php if ($linea->fueCambiado()): ?>
                             <span class="textoAyuda">Antes: <?= htmlspecialchars($linea->getNombreOriginal()) ?></span>
                         <?php endif; ?>
                     </span>
-                    <span class="lineaCantidad"><?= htmlspecialchars(UnidadMedida::cantidad($linea->getCantidad(), $linea->getUnidad())) ?></span>
+                    <span
+                        class="lineaCantidad"><?= htmlspecialchars(UnidadMedida::cantidad($linea->getCantidad(), $linea->getUnidad())) ?></span>
                 </li>
             <?php endforeach; ?>
         </ul>
         <?php if ($personalizado->getNotaCliente() !== null): ?>
-            <p class="notaPersonalizado"><strong>Su nota:</strong> «<?= htmlspecialchars($personalizado->getNotaCliente()) ?>»</p>
+            <p class="notaPersonalizado"><strong>Su nota:</strong>
+                «<?= htmlspecialchars($personalizado->getNotaCliente()) ?>»</p>
         <?php endif; ?>
         <?php if (!$cancelado && $personalizado->getNotaTienda() !== null): ?>
-            <p class="notaPersonalizado"><strong>La tienda le dice:</strong> «<?= htmlspecialchars($personalizado->getNotaTienda()) ?>»</p>
+            <p class="notaPersonalizado"><strong>La tienda le dice:</strong>
+                «<?= htmlspecialchars($personalizado->getNotaTienda()) ?>»</p>
         <?php endif; ?>
     </section>
 </div>
@@ -99,7 +117,8 @@ $incluye = count($partes) > 1 ? implode(', ', array_slice($partes, 0, -1)) . ' y
                 <span class="textoAyuda"><strong>Total de componentes</strong></span>
                 <strong class="totalComponentes"><?= Numero::moneda($personalizado->getTotalComponentes()) ?></strong>
             </div>
-            <p class="textoAyuda">Es solo lo de los materiales. La tienda le suma la mano de obra y le avisamos aquí cuando le mande el precio final.</p>
+            <p class="textoAyuda">Es solo lo de los materiales. La tienda le suma la mano de obra y le avisamos aquí cuando
+                le mande el precio final.</p>
         </div>
         <form method="post" action="<?= $urlBase ?>/mis-pedidos/personalizado/cancelar" class="formularioEnLinea"
             data-titulo="Cancelar pedido" data-boton="Sí, cancelar" data-peligro
@@ -130,7 +149,8 @@ $incluye = count($partes) > 1 ? implode(', ', array_slice($partes, 0, -1)) . ' y
                 <input type="hidden" name="id" value="<?= $numero ?>">
                 <button type="submit" class="boton botonSecundario botonRegistrar">No, gracias</button>
             </form>
-            <a href="<?= $urlBase ?>/mis-pedidos/personalizado/comprar?id=<?= $numero ?>" class="boton botonRegistrar">Comprar</a>
+            <a href="<?= $urlBase ?>/mis-pedidos/personalizado/comprar?id=<?= $numero ?>"
+                class="boton botonRegistrar">Comprar</a>
         </div>
     </section>
 <?php endif; ?>

@@ -114,6 +114,26 @@
         </div>
     </section>
 
+        <section class="formularioSeccion">
+        <h2>Cobros por SINPE Móvil</h2>
+        <div class="disenoFormulario">
+            <div class="<?php echo $claseCampo('tiendaSinpe') ?>">
+                <label for="tiendaSinpe">Número SINPE Móvil</label>
+                <input type="text" id="tiendaSinpe" name="tiendaSinpe" maxlength="9" inputmode="numeric" placeholder="8888-8888"
+                       data-regla="sinpe" <?php echo $soloLectura ?>
+                       data-editable data-original="<?php echo htmlspecialchars($vendedor->getSinpeBonito()) ?>"
+                       value="<?php echo $valor('tiendaSinpe') ?>">
+                <p class="textoAyuda">Aquí le pagan sus clientes. Si lo deja vacío, al comprar no les aparece la opción SINPE Móvil.</p>
+                <?php echo $mensajeError('tiendaSinpe') ?>
+            </div>
+            <div class="campo">
+                <span class="etiquetaCampo">A nombre de</span>
+                <p class="valorSoloLectura"><?php echo htmlspecialchars((string) $vendedor->getNombreCompleto()) ?></p>
+                <p class="textoAyuda">Se toma de su perfil. Debe ser el dueño de ese número.</p>
+            </div>
+        </div>
+    </section>
+
     <?php require __DIR__ . '/../Plantilla/contactos.php'; ?>
 
     <div class="grupoBotones accionesFormulario">

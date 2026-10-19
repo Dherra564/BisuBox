@@ -2,7 +2,6 @@
 
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\FormaEntrega;
-use Aplicacion\Nucleo\MetodoPago;
 use Aplicacion\Nucleo\Numero;
 
 $titulo = 'Comprar pieza personalizada';
@@ -11,6 +10,7 @@ $volverA = ['texto' => 'Pedido personalizado #' . $personalizado->getIdPersonali
 $scriptsExtra = ['pedido.js'];
 require __DIR__ . '/../Plantilla/encabezado.php';
 
+$total = (float) $personalizado->getTotal();
 $valor = fn(string $campo): string => htmlspecialchars((string) ($datos[$campo] ?? ''));
 $claseCampo = fn(string $campo, string $extra = ''): string => trim('campo ' . $extra . (isset($errores[$campo]) ? ' campoConError' : ''));
 $mensajeError = fn(string $campo): string => isset($errores[$campo])
@@ -29,8 +29,8 @@ $telefono = strlen($telefono) === 8 ? substr($telefono, 0, 4) . '-' . substr($te
 <?php endif; ?>
 
 <div class="disenoFormulario">
-    <form method="post" action="<?= $urlBase ?>/mis-pedidos/personalizado/comprar" novalidate class="validarFormulario"
-        data-confirmar="¿Comprar su pieza personalizada a <?= htmlspecialchars($personalizado->getNombreTienda()) ?> por <?= Numero::moneda((float) $personalizado->getTotal()) ?>?"
+    <form method="post" action="<?= $urlBase ?>/mis-pedidos/personalizado/comprar" enctype="multipart/form-data" novalidate class="validarFormulario"
+        data-confirmar="¿Comprar su pieza personalizada a <?= htmlspecialchars($personalizado->getNombreTienda()) ?> por <?= Numero::moneda($total) ?>? La compra queda confirmada de una vez."
         data-titulo="Comprar" data-boton="Comprar">
         <?= Csrf::campo() ?>
         <input type="hidden" name="id" value="<?= (int) $personalizado->getIdPersonalizado() ?>">
@@ -63,28 +63,7 @@ $telefono = strlen($telefono) === 8 ? substr($telefono, 0, 4) . '-' . substr($te
             </div>
         </section>
 
-        <section class="formularioSeccion">
-            <h2>¿Cómo va a pagar?</h2>
-            <div class="<?= $claseCampo('metodoPago') ?>">
-                <label for="metodoPago">Método de pago <span class="obligatorio">*</span></label>
-                <select id="metodoPago" name="metodoPago" required data-mensaje-requerido="Escoja cómo va a pagar">
-                    <option value="">Escoja una opción</option>
-                    <?php foreach (MetodoPago::todos() as $codigo => $nombre): ?>
-                        <option value="<?= $codigo ?>" <?= ($datos['metodoPago'] ?? '') === $codigo ? 'selected' : '' ?>><?= htmlspecialchars($nombre) ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <p class="textoAyuda">El pago se coordina directamente con la tienda.</p>
-                <?= $mensajeError('metodoPago') ?>
-            </div>
-
-            <div class="<?= $claseCampo('nota') ?>">
-                <label for="nota">Nota para la tienda</label>
-                <textarea id="nota" name="nota" rows="2" maxlength="300" data-contador
-                    data-mensaje-largo="La nota puede tener como máximo 300 caracteres"><?= $valor('nota') ?></textarea>
-                <p class="textoAyuda">Opcional. Por ejemplo, a qué hora le queda bien recibirlo.</p>
-                <?= $mensajeError('nota') ?>
-            </div>
-        </section>
+        <?php require __DIR__ . '/../Pedido/formularioPago.php'; ?>
 
         <div class="grupoBotones accionesFormulario">
             <a href="<?= $urlBase ?>/mis-pedidos/personalizado?id=<?= (int) $personalizado->getIdPersonalizado() ?>" class="boton botonSecundario">Volver</a>
@@ -97,11 +76,11 @@ $telefono = strlen($telefono) === 8 ? substr($telefono, 0, 4) . '-' . substr($te
         <ul class="lineasResumen">
             <li>
                 <span><?= $personalizado->getPiezas() ?> × <?= htmlspecialchars($personalizado->getNombre()) ?>, personalizado</span>
-                <strong><?= Numero::moneda((float) $personalizado->getTotal()) ?></strong>
+                <strong><?= Numero::moneda($total) ?></strong>
             </li>
         </ul>
         <div class="totalesCompra">
-            <div class="totalCompra"><span>Total</span><strong><?= Numero::moneda((float) $personalizado->getTotal()) ?></strong></div>
+            <div class="totalCompra"><span>Total</span><strong><?= Numero::moneda($total) ?></strong></div>
         </div>
         <?php if ($telefono !== ''): ?>
             <p class="textoAyuda">

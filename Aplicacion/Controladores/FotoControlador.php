@@ -4,6 +4,8 @@ namespace Aplicacion\Controladores;
 
 use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\SubidaArchivo;
+use Aplicacion\Nucleo\UsuarioActual;
+use Aplicacion\Repositorios\PedidoPagoRepositorio;
 use Configuracion\Configuracion;
 
 class FotoControlador
@@ -44,6 +46,26 @@ class FotoControlador
 
         $nombre = is_string($_GET['archivo'] ?? null) ? $_GET['archivo'] : '';
         $foto = SubidaArchivo::obtenerFotoComponente($nombre);
+
+        header('X-Content-Type-Options: nosniff');
+
+        if ($foto === null) {
+            http_response_code(404);
+            return;
+        }
+
+        header('Cache-Control: private, max-age=86400');
+        $this->enviar($foto);
+    }
+
+    public function mostrarComprobante(): void
+    {
+        Permiso::exigirSesion();
+
+        $nombre = is_string($_GET['archivo'] ?? null) ? $_GET['archivo'] : '';
+        $foto = (new PedidoPagoRepositorio())->puedeVerComprobante($nombre, (int) UsuarioActual::id())
+            ? SubidaArchivo::obtenerComprobante($nombre)
+            : null;
 
         header('X-Content-Type-Options: nosniff');
 

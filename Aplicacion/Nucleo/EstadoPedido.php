@@ -4,13 +4,11 @@ namespace Aplicacion\Nucleo;
 
 class EstadoPedido
 {
-    public const PENDIENTE = 'Pendiente';
     public const CONFIRMADO = 'Confirmado';
     public const ENTREGADO = 'Entregado';
     public const CANCELADO = 'Cancelado';
 
     private const CLASES = [
-        self::PENDIENTE => 'etiquetaBajo',
         self::CONFIRMADO => 'etiquetaInfo',
         self::ENTREGADO => 'etiquetaActivo',
         self::CANCELADO => 'etiquetaCancelado',

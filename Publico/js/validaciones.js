@@ -45,6 +45,20 @@ document.addEventListener('DOMContentLoaded', function () {
             patron: /^[\p{L}0-9\s.,#\-\/()°º:;]+$/u,
             mensaje: 'La dirección solo puede tener letras, números, espacios y los signos . , # - / ( ) °'
         },
+        referencia: {
+            patron: /^[0-9]{4}$/,
+            mensaje: 'La referencia debe ser de 4 números, los últimos del comprobante'
+        },
+        sinpe: {
+            prueba: function (valor) {
+                return /^[5-8][0-9]{7}$/.test(limpiarTelefono(valor));
+            },
+            mensaje: 'El número SINPE Móvil debe tener 8 dígitos y empezar con 5, 6, 7 u 8'
+        },
+        codigoRetiro: {
+            patron: /^[A-Za-z0-9]{6}$/,
+            mensaje: 'El código de retiro tiene 6 letras y números'
+        },
         minutos: {
             prueba: function (valor) {
                 return /^[0-9]{1,4}$/.test(valor) && parseInt(valor, 10) >= 1;

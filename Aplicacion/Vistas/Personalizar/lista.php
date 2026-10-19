@@ -9,8 +9,13 @@ $titulo = UsuarioActual::esVendedor() ? 'Mis compras' : 'Mis pedidos';
 $paginaActual = 'misPedidos';
 require __DIR__ . '/../Plantilla/encabezado.php';
 
-$pestanas = ['' => 'Todos', EstadoPersonalizado::EN_REVISION => 'En revisión', EstadoPersonalizado::COTIZADO => 'Por decidir',
-    EstadoPersonalizado::COMPRADO => 'Comprados', EstadoPersonalizado::CANCELADO => 'Cancelados'];
+$pestanas = [
+    '' => 'Todos',
+    EstadoPersonalizado::EN_REVISION => 'En revisión',
+    EstadoPersonalizado::COTIZADO => 'Por decidir',
+    EstadoPersonalizado::COMPRADO => 'Comprados',
+    EstadoPersonalizado::CANCELADO => 'Cancelados'
+];
 ?>
 
 <nav class="cambioVista" aria-label="Tipo de pedido">
@@ -49,16 +54,19 @@ $pestanas = ['' => 'Todos', EstadoPersonalizado::EN_REVISION => 'En revisión', 
                     $cambios = array_map(fn($linea): string => $linea->getNombre(), $personalizado->getCambios());
                     $enlace = $urlBase . '/mis-pedidos/personalizado?id=' . $personalizado->getIdPersonalizado();
                     ?>
-                    <article class="tarjetaPersonalizado <?= $personalizado->estaCotizado() ? 'tarjetaPersonalizadoCotizado' : '' ?>">
+                    <article
+                        class="tarjetaPersonalizado <?= $personalizado->estaCotizado() ? 'tarjetaPersonalizadoCotizado' : '' ?>">
                         <img src="<?= $foto !== null ? $urlBase . '/fotos/producto?archivo=' . urlencode($foto) : $urlBase . '/imagenes/productoPorDefecto.svg' ?>"
                             alt="" class="fotoPersonalizado" loading="lazy">
                         <div class="textoPersonalizado">
                             <div class="tituloPersonalizado">
                                 <strong><?= htmlspecialchars($personalizado->getNombre()) ?>, personalizado</strong>
-                                <span class="etiqueta <?= EstadoPersonalizado::claseEtiqueta($personalizado->getEstado()) ?>"><?= $personalizado->getEstado() ?></span>
+                                <span
+                                    class="etiqueta <?= EstadoPersonalizado::claseEtiqueta($personalizado->getEstado()) ?>"><?= $personalizado->getEstado() ?></span>
                             </div>
                             <span class="textoAyuda">
-                                #<?= $personalizado->getIdPersonalizado() ?> · <?= htmlspecialchars($personalizado->getNombreTienda()) ?> ·
+                                #<?= $personalizado->getIdPersonalizado() ?> ·
+                                <?= htmlspecialchars($personalizado->getNombreTienda()) ?> ·
                                 <?= $personalizado->getPiezas() === 1 ? '1 pieza' : $personalizado->getPiezas() . ' piezas' ?> ·
                                 <?= $personalizado->getFechaRegistro()->format('d/m/Y H:i') ?>
                             </span>
@@ -67,12 +75,19 @@ $pestanas = ['' => 'Todos', EstadoPersonalizado::EN_REVISION => 'En revisión', 
                             <?php endif; ?>
 
                             <?php if ($personalizado->estaCotizado()): ?>
-                                <span>La tienda ya le mandó el precio: <strong class="precioPersonalizado"><?= Numero::moneda((float) $personalizado->getTotal()) ?></strong></span>
+                                <span>La tienda ya le mandó el precio: <strong
+                                        class="precioPersonalizado"><?= Numero::moneda((float) $personalizado->getTotal()) ?></strong></span>
                             <?php elseif ($personalizado->estaEnRevision()): ?>
                                 <span>La tienda está revisando su pedido para darle el precio.</span>
                             <?php elseif ($personalizado->getEstado() === EstadoPersonalizado::COMPRADO): ?>
                                 <span>Lo compró por <?= Numero::moneda((float) $personalizado->getTotal()) ?>.
-                                    <a href="<?= $urlBase ?>/mis-pedidos/detalle?id=<?= $personalizado->getIdPedido() ?>">Ver el pedido #<?= $personalizado->getIdPedido() ?></a></span>
+                                    <a href="<?= $urlBase ?>/mis-pedidos/detalle?id=<?= $personalizado->getIdPedido() ?>">Ver el pedido
+                                        #<?= $personalizado->getIdPedido() ?></a></span>
+                            <?php elseif ($personalizado->getIdPedido() !== null): ?>
+                                <span><?= $personalizado->getCanceladoPor() === Rol::CLIENTE ? 'Usted canceló' : 'La tienda canceló' ?>
+                                    el pedido
+                                    <a
+                                        href="<?= $urlBase ?>/mis-pedidos/detalle?id=<?= $personalizado->getIdPedido() ?>">#<?= $personalizado->getIdPedido() ?></a>.</span>
                             <?php else: ?>
                                 <span><?= $personalizado->getCanceladoPor() === Rol::CLIENTE ? 'Usted lo canceló.' : 'La tienda no puede hacerlo.' ?></span>
                             <?php endif; ?>

@@ -47,7 +47,7 @@ class Navegacion
                 $personalizadoRepositorio = new PersonalizadoRepositorio();
                 $pendientes = (new PedidoRepositorio())->contar([
                     'idVendedor' => (int) $propia->getIdVendedor(),
-                    'estado' => EstadoPedido::PENDIENTE,
+                    'estado' => EstadoPedido::CONFIRMADO,
                 ]) + $personalizadoRepositorio->contar([
                     'idVendedor' => (int) $propia->getIdVendedor(),
                     'estado' => EstadoPersonalizado::EN_REVISION,

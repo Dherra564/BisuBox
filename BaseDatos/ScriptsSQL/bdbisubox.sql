@@ -42,6 +42,7 @@ CREATE TABLE `tbvendedor` (
     `tbvendedortiendaenlace` varchar(60) DEFAULT NULL,
     `tbvendedortiendadescripcion` varchar(300) DEFAULT NULL,
     `tbvendedortiendalogo` varchar(500) DEFAULT NULL,
+    `tbvendedorsinpe` varchar(8) DEFAULT NULL,
     `tbvendedoractivo` tinyint(4) DEFAULT NULL,
     PRIMARY KEY (`tbvendedorid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
@@ -329,8 +330,6 @@ CREATE TABLE `tbfoto` (
 
 --
 -- Estructura de tabla para la tabla `tbcarrito`
--- Lo que cada cliente tiene en el carrito. Se guarda aquí para que no se pierda
--- al cerrar sesión o cambiar de computadora
 --
 
 CREATE TABLE `tbcarrito` (
@@ -347,7 +346,6 @@ CREATE TABLE `tbcarrito` (
 
 --
 -- Estructura de tabla para la tabla `tbpedido`
--- Un pedido es de un solo cliente a una sola tienda
 --
 
 CREATE TABLE `tbpedido` (
@@ -363,6 +361,7 @@ CREATE TABLE `tbpedido` (
     `tbpedidoestado` varchar(20) DEFAULT NULL,
     `tbpedidocanceladopor` varchar(20) DEFAULT NULL,
     `tbpedidoactualizacionfecha` datetime DEFAULT NULL,
+    `tbpedidoretirocodigo` varchar(6) DEFAULT NULL,
     PRIMARY KEY (`tbpedidoid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
@@ -370,7 +369,6 @@ CREATE TABLE `tbpedido` (
 
 --
 -- Estructura de tabla para la tabla `tbpedidodetalle`
--- Se guarda el nombre y el precio del momento, por si el producto cambia después
 --
 
 CREATE TABLE `tbpedidodetalle` (
@@ -383,6 +381,28 @@ CREATE TABLE `tbpedidodetalle` (
     `tbpedidodetallesubtotal` decimal(12, 2) DEFAULT NULL,
     `tbpedidodetallepersonalizadoid` int(11) DEFAULT NULL,
     PRIMARY KEY (`tbpedidodetalleid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tbpedidopago`
+--
+
+CREATE TABLE `tbpedidopago` (
+    `tbpedidopagoid` int(11) NOT NULL,
+    `tbpedidopagopedidoid` int(11) DEFAULT NULL,
+    `tbpedidopagonumerosinpe` varchar(8) DEFAULT NULL,
+    `tbpedidopagocodigo` varchar(10) DEFAULT NULL,
+    `tbpedidopagoreferencia` varchar(4) DEFAULT NULL,
+    `tbpedidopagocomprobante` varchar(40) DEFAULT NULL,
+    `tbpedidopagomonto` decimal(12, 2) DEFAULT NULL,
+    `tbpedidopagoestado` varchar(20) DEFAULT NULL,
+    `tbpedidopagomotivo` varchar(300) DEFAULT NULL,
+    `tbpedidopagointentos` int(11) DEFAULT NULL,
+    `tbpedidopagoregistrofecha` datetime DEFAULT NULL,
+    `tbpedidopagorevisionfecha` datetime DEFAULT NULL,
+    PRIMARY KEY (`tbpedidopagoid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -454,114 +474,20 @@ CREATE TABLE `tbpersonalizadoextra` (
 -- Datos iniciales: un vendedor con su tienda y un cliente
 --
 
-INSERT INTO
-    `tbusuario` (
-        `tbusuarioid`,
-        `tbusuarioidentificaciontipo`,
-        `tbusuarioidentificacionnumero`,
-        `tbusuarionombrecompleto`,
-        `tbusuarioperfilimagen`,
-        `tbusuariocorreo`,
-        `tbusuariotelefono`,
-        `tbusuariocontrasena`,
-        `tbusuariorol`,
-        `tbusuarioregistrofecha`,
-        `tbusuarioactivo`
-    )
-VALUES (
-        1,
-        'Cedula',
-        '200000002',
-        'Vendedor de Prueba',
-        NULL,
-        'vendedor.bisubox@gmail.com',
-        '77777777',
-        '$2y$12$cy7xzNTAn0Gl/Ymia8TU1evpuuyjzp4UfwlBRIY0ocJvWYYVhAdzm',
-        'Vendedor',
-        '2026-10-01 00:00:00',
-        1
-    ),
-    (
-        2,
-        NULL,
-        NULL,
-        'Cliente de Prueba',
-        NULL,
-        'cliente.bisubox@gmail.com',
-        '66666666',
-        '$2y$12$Kag4xPDKWvZgDtsJ8uYUqu71BQoosc2NilsEK4OWX/rr7K0vpYkdK',
-        'Cliente',
-        '2026-10-01 00:00:00',
-        1
-    );
+INSERT INTO `tbusuario` (`tbusuarioid`, `tbusuarioidentificaciontipo`, `tbusuarioidentificacionnumero`, `tbusuarionombrecompleto`, `tbusuarioperfilimagen`, `tbusuariocorreo`, `tbusuariotelefono`, `tbusuariocontrasena`, `tbusuariorol`, `tbusuarioregistrofecha`, `tbusuarioactivo`) VALUES
+(1, 'Cedula', '200000002', 'Vendedor de Prueba', NULL, 'vendedor.bisubox@gmail.com', '77777777', '$2y$12$cy7xzNTAn0Gl/Ymia8TU1evpuuyjzp4UfwlBRIY0ocJvWYYVhAdzm', 'Vendedor', '2026-10-01 00:00:00', 1),
+(2, NULL, NULL, 'Cliente de Prueba', NULL, 'cliente.bisubox@gmail.com', '66666666', '$2y$12$Kag4xPDKWvZgDtsJ8uYUqu71BQoosc2NilsEK4OWX/rr7K0vpYkdK', 'Cliente', '2026-10-01 00:00:00', 1);
 
-INSERT INTO
-    `tbvendedor` (
-        `tbvendedorid`,
-        `tbvendedorusuarioid`,
-        `tbvendedortiendanombre`,
-        `tbvendedortiendaenlace`,
-        `tbvendedortiendadescripcion`,
-        `tbvendedortiendalogo`,
-        `tbvendedoractivo`
-    )
-VALUES (
-        1,
-        1,
-        'Tienda de Prueba',
-        'tienda-de-prueba',
-        'Bisutería hecha a mano para probar el sistema',
-        NULL,
-        1
-    );
+INSERT INTO `tbvendedor` (`tbvendedorid`, `tbvendedorusuarioid`, `tbvendedortiendanombre`, `tbvendedortiendaenlace`, `tbvendedortiendadescripcion`, `tbvendedortiendalogo`, `tbvendedorsinpe`, `tbvendedoractivo`) VALUES
+(1, 1, 'Tienda de Prueba', 'tienda-de-prueba', 'Bisutería hecha a mano para probar el sistema', NULL, '88451290', 1);
 
-INSERT INTO
-    `tbvendedorcontacto` (
-        `tbvendedorcontactoid`,
-        `tbvendedorcontactovendedorid`,
-        `tbvendedorcontactotipo`,
-        `tbvendedorcontactovalor`
-    )
-VALUES (1, 1, 'WhatsApp', '88451290'),
-    (
-        2,
-        1,
-        'Instagram',
-        'tiendadeprueba'
-    );
+INSERT INTO `tbvendedorcontacto` (`tbvendedorcontactoid`, `tbvendedorcontactovendedorid`, `tbvendedorcontactotipo`, `tbvendedorcontactovalor`) VALUES
+(1, 1, 'WhatsApp', '88451290'),
+(2, 1, 'Instagram', 'tiendadeprueba');
 
-INSERT INTO
-    `tbcliente` (
-        `tbclienteid`,
-        `tbclienteusuarioid`
-    )
-VALUES (1, 2);
+INSERT INTO `tbcliente` (`tbclienteid`, `tbclienteusuarioid`) VALUES
+(1, 2);
 
-INSERT INTO
-    `tbproveedor` (
-        `tbproveedorid`,
-        `tbproveedorvendedorid`,
-        `tbproveedornombre`,
-        `tbproveedortelefono`,
-        `tbproveedorcorreo`,
-        `tbproveedorregistrofecha`,
-        `tbproveedoractivo`
-    )
-VALUES (
-        1,
-        1,
-        'Perlas del Valle S.A.',
-        '22345678',
-        'ventas@perlasdelvalle.com',
-        '2026-10-01 00:00:00',
-        1
-    ),
-    (
-        2,
-        1,
-        'Ana Rojas Mora',
-        '87654321',
-        'anarojas@gmail.com',
-        '2026-10-01 00:00:00',
-        1
-    );
+INSERT INTO `tbproveedor` (`tbproveedorid`, `tbproveedorvendedorid`, `tbproveedornombre`, `tbproveedortelefono`, `tbproveedorcorreo`, `tbproveedorregistrofecha`, `tbproveedoractivo`) VALUES
+(1, 1, 'Perlas del Valle S.A.', '22345678', 'ventas@perlasdelvalle.com', '2026-10-01 00:00:00', 1),
+(2, 1, 'Ana Rojas Mora', '87654321', 'anarojas@gmail.com', '2026-10-01 00:00:00', 1);

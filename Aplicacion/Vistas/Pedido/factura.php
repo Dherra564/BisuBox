@@ -5,7 +5,6 @@ use Aplicacion\Nucleo\FormaEntrega;
 use Aplicacion\Nucleo\MetodoPago;
 use Aplicacion\Nucleo\Numero;
 
-$existencias = $existencias ?? [];
 $rutaPersonalizado = $rutaPersonalizado ?? '/mis-pedidos/personalizado?id=';
 $cancelado = $pedido->getEstado() === EstadoPedido::CANCELADO;
 ?>
@@ -39,17 +38,12 @@ $cancelado = $pedido->getEstado() === EstadoPedido::CANCELADO;
             </thead>
             <tbody>
                 <?php foreach ($pedido->getDetalles() as $detalle): ?>
-                    <?php $hay = $existencias[$detalle->getIdProducto()] ?? null; ?>
                     <tr>
                         <td data-etiqueta="Producto">
                             <span>
                                 <?= htmlspecialchars($detalle->getNombreProducto()) ?>
                                 <?php if ($detalle->esPersonalizado()): ?>
                                     <br><a href="<?= $urlBase . $rutaPersonalizado . $detalle->getIdPersonalizado() ?>" class="textoAyuda">Ver las piezas que escogió</a>
-                                <?php elseif ($pedido->estaPendiente() && $existencias !== []): ?>
-                                    <br><span class="<?= $hay !== null && $hay >= $detalle->getCantidad() ? 'textoAyuda' : 'errorCampo' ?>">
-                                        <?= $hay === null ? 'Este producto ya no existe' : 'Tiene ' . $hay . ' en existencia' ?>
-                                    </span>
                                 <?php endif; ?>
                             </span>
                         </td>

@@ -4,6 +4,7 @@ namespace Aplicacion\Controladores;
 
 use Aplicacion\Modelos\Vendedor;
 use Aplicacion\Nucleo\Csrf;
+use Aplicacion\Nucleo\DatosPago;
 use Aplicacion\Nucleo\DatosTienda;
 use Aplicacion\Nucleo\Mensaje;
 use Aplicacion\Nucleo\Permiso;
@@ -39,6 +40,7 @@ class TiendaControlador
             'tiendaNombre' => $this->vendedor->getTiendaNombre(),
             'tiendaDescripcion' => $this->vendedor->getTiendaDescripcion(),
             'tiendaActiva' => $this->vendedor->getTiendaActiva(),
+            'tiendaSinpe' => $this->vendedor->getSinpeBonito(),
             'contactos' => DatosTienda::contactosParaFormulario($this->vendedor),
         ], []);
     }
@@ -52,11 +54,16 @@ class TiendaControlador
         $quitarLogo = ($_POST['quitarLogo'] ?? '') === '1';
         $datos['quitarLogo'] = $quitarLogo;
 
+        $datos['tiendaSinpe'] = is_string($_POST['tiendaSinpe'] ?? null) ? trim($_POST['tiendaSinpe']) : '';
+        $sinpe = DatosPago::limpiarSinpe($datos['tiendaSinpe']);
+
         $validador = new Validador();
         DatosTienda::validar($validador, $datos, $this->vendedor->getIdVendedor());
+        if ($datos['tiendaSinpe'] !== '' && !DatosPago::esSinpe($sinpe)) {
+            $validador->agregarError('tiendaSinpe', 'El número SINPE Móvil debe tener 8 dígitos y empezar con 5, 6, 7 u 8');
+        }
 
         $nombreLogo = (new SubidaArchivo())->recibir('tiendaLogo', SubidaArchivo::LOGO, $validador);
-        // El logo que eligió no se pierde aunque el formulario tenga errores
         $datos['tiendaLogoPendiente'] = $nombreLogo;
         if (!$validador->esValido()) {
             SubidaArchivo::recordarPendiente(SubidaArchivo::LOGO, $nombreLogo);
@@ -68,6 +75,7 @@ class TiendaControlador
         $this->vendedor->setTiendaNombre($datos['tiendaNombre']);
         $this->vendedor->setTiendaDescripcion($datos['tiendaDescripcion']);
         $this->vendedor->setTiendaActiva($datos['tiendaActiva']);
+        $this->vendedor->setSinpe($datos['tiendaSinpe'] !== '' ? $sinpe : null);
         $this->vendedor->setContactos(DatosTienda::crearContactos($datos['contactos']));
         if ($nombreLogo !== null) {
             $this->vendedor->setTiendaLogo($nombreLogo);
@@ -81,7 +89,6 @@ class TiendaControlador
             error_log('Error al actualizar la tienda: ' . $error->getMessage());
             SubidaArchivo::recordarPendiente(SubidaArchivo::LOGO, $nombreLogo);
             Mensaje::error('No se pudo guardar. Intente de nuevo.');
-            // Se vuelve a mostrar el formulario con lo que escribió, para no perder los cambios
             $this->vendedor = $this->vendedorRepositorio->buscarPorIdUsuario((int) UsuarioActual::id()) ?? $this->vendedor;
             $this->mostrarTienda($datos, [], true);
             return;

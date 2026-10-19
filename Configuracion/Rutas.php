@@ -64,6 +64,7 @@ return function (Enrutador $enrutador): void {
     $enrutador->get('/fotos/logo', [FotoControlador::class, 'mostrarLogo']);
     $enrutador->get('/fotos/producto', [FotoControlador::class, 'mostrarProducto']);
     $enrutador->get('/fotos/componente', [FotoControlador::class, 'mostrarComponente']);
+    $enrutador->get('/fotos/comprobante', [FotoControlador::class, 'mostrarComprobante']);
 
     $enrutador->get('/proveedores', [ProveedorControlador::class, 'listar']);
     $enrutador->get('/proveedores/detalle', [ProveedorControlador::class, 'detalle']);
@@ -97,6 +98,7 @@ return function (Enrutador $enrutador): void {
     $enrutador->get('/mis-pedidos', [MisPedidosControlador::class, 'listar']);
     $enrutador->get('/mis-pedidos/detalle', [MisPedidosControlador::class, 'detalle']);
     $enrutador->post('/mis-pedidos/cancelar', [MisPedidosControlador::class, 'cancelar']);
+    $enrutador->post('/mis-pedidos/pago', [MisPedidosControlador::class, 'reenviarPago']);
 
     $enrutador->get('/personalizar', [PersonalizarControlador::class, 'mostrar']);
     $enrutador->post('/personalizar', [PersonalizarControlador::class, 'enviar']);
@@ -108,9 +110,10 @@ return function (Enrutador $enrutador): void {
 
     $enrutador->get('/pedidos', [PedidoControlador::class, 'listar']);
     $enrutador->get('/pedidos/detalle', [PedidoControlador::class, 'detalle']);
-    $enrutador->post('/pedidos/confirmar', [PedidoControlador::class, 'confirmar']);
     $enrutador->post('/pedidos/entregar', [PedidoControlador::class, 'entregar']);
     $enrutador->post('/pedidos/cancelar', [PedidoControlador::class, 'cancelar']);
+    $enrutador->post('/pedidos/pago/recibido', [PedidoControlador::class, 'pagoRecibido']);
+    $enrutador->post('/pedidos/pago/problema', [PedidoControlador::class, 'pagoConProblema']);
     $enrutador->get('/pedidos/personalizados', [PersonalizadoControlador::class, 'listar']);
     $enrutador->get('/pedidos/personalizado', [PersonalizadoControlador::class, 'detalle']);
     $enrutador->post('/pedidos/personalizado/cotizar', [PersonalizadoControlador::class, 'cotizar']);

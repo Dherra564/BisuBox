@@ -1,20 +1,12 @@
 <?php
-/**
- 
- * @var array{vendedor: \Aplicacion\Modelos\Vendedor, lineas: array, total: float} $carrito
- * @var \Aplicacion\Modelos\Cliente $cliente
- * @var array $datos
- * @var array $errores
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\FormaEntrega;
-use Aplicacion\Nucleo\MetodoPago;
 use Aplicacion\Nucleo\Numero;
 
 $vendedor = $carrito['vendedor'];
-$titulo = 'Confirmar pedido';
+$total = $carrito['total'];
+$titulo = 'Confirmar compra';
 $paginaActual = 'carrito';
 $volverA = ['texto' => 'Carrito', 'ruta' => '/carrito'];
 $scriptsExtra = ['pedido.js'];
@@ -38,9 +30,9 @@ $telefono = strlen($telefono) === 8 ? substr($telefono, 0, 4) . '-' . substr($te
 <?php endif; ?>
 
 <div class="disenoFormulario">
-    <form method="post" action="<?= $urlBase ?>/carrito/confirmar" novalidate class="validarFormulario"
-        data-confirmar="¿Enviar el pedido a <?= htmlspecialchars((string) $vendedor->getTiendaNombre()) ?> por <?= Numero::moneda($carrito['total']) ?>?"
-        data-titulo="Enviar pedido" data-boton="Enviar pedido">
+    <form method="post" action="<?= $urlBase ?>/carrito/confirmar" enctype="multipart/form-data" novalidate class="validarFormulario"
+        data-confirmar="¿Comprar en <?= htmlspecialchars((string) $vendedor->getTiendaNombre()) ?> por <?= Numero::moneda($total) ?>? La compra queda confirmada de una vez."
+        data-titulo="Comprar" data-boton="Comprar">
         <?= Csrf::campo() ?>
         <input type="hidden" name="tienda" value="<?= (int) $vendedor->getIdVendedor() ?>">
 
@@ -72,32 +64,11 @@ $telefono = strlen($telefono) === 8 ? substr($telefono, 0, 4) . '-' . substr($te
             </div>
         </section>
 
-        <section class="formularioSeccion">
-            <h2>¿Cómo va a pagar?</h2>
-            <div class="<?= $claseCampo('metodoPago') ?>">
-                <label for="metodoPago">Método de pago <span class="obligatorio">*</span></label>
-                <select id="metodoPago" name="metodoPago" required data-mensaje-requerido="Escoja cómo va a pagar">
-                    <option value="">Escoja una opción</option>
-                    <?php foreach (MetodoPago::todos() as $codigo => $nombre): ?>
-                        <option value="<?= $codigo ?>" <?= ($datos['metodoPago'] ?? '') === $codigo ? 'selected' : '' ?>><?= htmlspecialchars($nombre) ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <p class="textoAyuda">El pago se coordina directamente con la tienda.</p>
-                <?= $mensajeError('metodoPago') ?>
-            </div>
-
-            <div class="<?= $claseCampo('nota') ?>">
-                <label for="nota">Nota para la tienda</label>
-                <textarea id="nota" name="nota" rows="2" maxlength="300" data-contador
-                    data-mensaje-largo="La nota puede tener como máximo 300 caracteres"><?= $valor('nota') ?></textarea>
-                <p class="textoAyuda">Opcional. Por ejemplo, el color que prefiere o a qué hora le queda bien.</p>
-                <?= $mensajeError('nota') ?>
-            </div>
-        </section>
+        <?php require __DIR__ . '/../Pedido/formularioPago.php'; ?>
 
         <div class="grupoBotones accionesFormulario">
             <a href="<?= $urlBase ?>/carrito" class="boton botonSecundario">Volver al carrito</a>
-            <button type="submit" class="boton">Enviar pedido</button>
+            <button type="submit" class="boton">Comprar</button>
         </div>
     </form>
 
@@ -112,7 +83,7 @@ $telefono = strlen($telefono) === 8 ? substr($telefono, 0, 4) . '-' . substr($te
             <?php endforeach; ?>
         </ul>
         <div class="totalesCompra">
-            <div class="totalCompra"><span>Total</span><strong><?= Numero::moneda($carrito['total']) ?></strong></div>
+            <div class="totalCompra"><span>Total</span><strong><?= Numero::moneda($total) ?></strong></div>
         </div>
         <p class="textoAyuda">
             La tienda le contactará al <strong><?= htmlspecialchars($telefono) ?></strong>.

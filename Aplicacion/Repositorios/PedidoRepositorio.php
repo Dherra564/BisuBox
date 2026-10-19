@@ -4,13 +4,14 @@ namespace Aplicacion\Repositorios;
 
 use Aplicacion\Modelos\Pedido;
 use Aplicacion\Modelos\PedidoDetalle;
+use Aplicacion\Modelos\PedidoPago;
+use Aplicacion\Nucleo\DatosPago;
+use Aplicacion\Nucleo\EstadoPago;
 use Aplicacion\Nucleo\EstadoPedido;
+use Aplicacion\Nucleo\FormaEntrega;
 use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\OperacionNoPermitida;
 use Aplicacion\Nucleo\Rol;
-use Aplicacion\Repositorios\ComponenteRepositorio;
-use Aplicacion\Repositorios\PersonalizadoRepositorio;
-use Aplicacion\Repositorios\ProductoRepositorio;
 use Configuracion\BaseDatos;
 use DateTime;
 use PDO;
@@ -30,25 +31,29 @@ class PedidoRepositorio
 
     private PDO $conexion;
     private ProductoRepositorio $productoRepositorio;
+    private PedidoPagoRepositorio $pagoRepositorio;
 
     public function __construct()
     {
         $this->conexion = BaseDatos::obtenerConexion();
         $this->productoRepositorio = new ProductoRepositorio();
+        $this->pagoRepositorio = new PedidoPagoRepositorio();
     }
 
-    public function crear(Pedido $pedido): int
+    public function crear(Pedido $pedido, ?PedidoPago $pago = null): int
     {
         $transaccionPropia = BaseDatos::iniciarTransaccion();
 
         try {
+            $this->rebajarExistencias($pedido);
             $idPedido = BaseDatos::generarId('tbpedido', 'tbpedidoid');
+            $pedido->setRetiroCodigo($pedido->getEntrega() === FormaEntrega::RETIRO ? DatosPago::generarCodigoRetiro() : null);
 
             $consulta = $this->conexion->prepare(
                 'INSERT INTO tbpedido (tbpedidoid, tbpedidovendedorid, tbpedidoclienteid, tbpedidofecha, tbpedidoentrega,
                     tbpedidodireccion, tbpedidometodopago, tbpedidonota, tbpedidototal, tbpedidoestado,
-                    tbpedidocanceladopor, tbpedidoactualizacionfecha)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL)'
+                    tbpedidocanceladopor, tbpedidoactualizacionfecha, tbpedidoretirocodigo)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?)'
             );
             $consulta->execute([
                 $idPedido,
@@ -61,6 +66,7 @@ class PedidoRepositorio
                 $pedido->getNota(),
                 $pedido->getTotal(),
                 $pedido->getEstado(),
+                $pedido->getRetiroCodigo(),
             ]);
 
             $insertarDetalle = $this->conexion->prepare(
@@ -83,6 +89,12 @@ class PedidoRepositorio
                 ]);
                 $detalle->setIdPedidoDetalle($idDetalle);
                 $detalle->setIdPedido($idPedido);
+            }
+
+            if ($pago !== null) {
+                $pago->setIdPedido($idPedido);
+                $this->pagoRepositorio->insertar($pago);
+                $pedido->setPago($pago);
             }
 
             if ($transaccionPropia) {
@@ -142,105 +154,22 @@ class PedidoRepositorio
         return (int) $consulta->fetchColumn();
     }
 
-    public function confirmar(Pedido $pedido): void
-    {
-        BaseDatos::iniciarTransaccion();
-
-        try {
-            $this->exigirEstado($pedido, [EstadoPedido::PENDIENTE], 'Este pedido ya no está pendiente.');
-
-            $faltantes = [];
-            $nuevasExistencias = [];
-            $componentes = [];
-            foreach ($pedido->getDetalles() as $detalle) {
-                if ($detalle->esPersonalizado()) {
-                    foreach ((new PersonalizadoRepositorio())->necesidades((int) $detalle->getIdPersonalizado()) as $idComponente => $necesidad) {
-                        $componente = $componentes[$idComponente] ?? (new ComponenteRepositorio())->bloquearExistencia($idComponente, $pedido->getIdVendedor());
-                        if ($componente === null || !$componente['activo'] || $componente['existencia'] < $necesidad['cantidad']) {
-                            $faltantes[] = '«' . $necesidad['nombre'] . '» (tiene ' . Numero::formatear(max(0, $componente['existencia'] ?? 0))
-                                . ', el pedido personalizado lleva ' . Numero::formatear($necesidad['cantidad']) . ')';
-                            continue;
-                        }
-                        $componente['existencia'] -= $necesidad['cantidad'];
-                        $componentes[$idComponente] = $componente;
-                    }
-                    continue;
-                }
-                $producto = $this->productoRepositorio->bloquearExistencia($detalle->getIdProducto(), $pedido->getIdVendedor());
-                $hay = $producto['existencia'] ?? 0;
-                $yaApartado = $nuevasExistencias[$detalle->getIdProducto()] ?? $hay;
-
-                if ($producto === null || $yaApartado < $detalle->getCantidad()) {
-                    $faltantes[] = '«' . $detalle->getNombreProducto() . '» (tiene ' . max(0, $yaApartado)
-                        . ', el pedido lleva ' . $detalle->getCantidad() . ')';
-                    continue;
-                }
-                $nuevasExistencias[$detalle->getIdProducto()] = $yaApartado - $detalle->getCantidad();
-            }
-
-            if ($faltantes !== []) {
-                throw new OperacionNoPermitida(
-                    'No hay suficiente existencia de ' . implode(', ', $faltantes)
-                    . '. Registre lo que hizo en Productos con «Hice más», compre lo que falta o cancele el pedido.'
-                );
-            }
-
-            foreach ($nuevasExistencias as $idProducto => $existencia) {
-                $this->productoRepositorio->actualizarExistencia($idProducto, $pedido->getIdVendedor(), $existencia);
-            }
-            foreach ($componentes as $idComponente => $componente) {
-                (new ComponenteRepositorio())->actualizarExistencia($idComponente, $pedido->getIdVendedor(), $componente['existencia'], $componente['costo']);
-            }
-            $this->guardarEstado($pedido, EstadoPedido::CONFIRMADO, null);
-
-            BaseDatos::confirmarTransaccion();
-        } catch (Throwable $error) {
-            BaseDatos::revertirTransaccion();
-            throw $error;
-        }
-    }
-
     public function cancelar(Pedido $pedido, string $canceladoPor): void
     {
-        $permitidos = $canceladoPor === Rol::CLIENTE
-            ? [EstadoPedido::PENDIENTE]
-            : [EstadoPedido::PENDIENTE, EstadoPedido::CONFIRMADO];
         $mensaje = $canceladoPor === Rol::CLIENTE
-            ? 'Solo puede cancelar pedidos que la tienda todavía no ha confirmado. Escríbale a la tienda.'
+            ? 'Este pedido ya no se puede cancelar. Escríbale a la tienda.'
             : 'Este pedido ya no se puede cancelar.';
 
         BaseDatos::iniciarTransaccion();
 
         try {
-            $estadoAnterior = $this->exigirEstado($pedido, $permitidos, $mensaje);
+            $this->exigirEstado($pedido, [EstadoPedido::CONFIRMADO], $mensaje);
 
-            if ($estadoAnterior === EstadoPedido::CONFIRMADO) {
-                foreach ($pedido->getDetalles() as $detalle) {
-                    if ($detalle->esPersonalizado()) {
-                        $componenteRepositorio = new ComponenteRepositorio();
-                        foreach ((new PersonalizadoRepositorio())->necesidades((int) $detalle->getIdPersonalizado()) as $idComponente => $necesidad) {
-                            $componente = $componenteRepositorio->bloquearExistencia($idComponente, $pedido->getIdVendedor());
-                            if ($componente !== null) {
-                                $componenteRepositorio->actualizarExistencia(
-                                    $idComponente,
-                                    $pedido->getIdVendedor(),
-                                    $componente['existencia'] + $necesidad['cantidad'],
-                                    $componente['costo']
-                                );
-                            }
-                        }
-                        continue;
-                    }
-                    $producto = $this->productoRepositorio->bloquearExistencia($detalle->getIdProducto(), $pedido->getIdVendedor());
-                    if ($producto !== null) {
-                        $this->productoRepositorio->actualizarExistencia(
-                            $detalle->getIdProducto(),
-                            $pedido->getIdVendedor(),
-                            $producto['existencia'] + $detalle->getCantidad()
-                        );
-                    }
-                }
+            $pago = $this->pagoRepositorio->bloquearPorPedido((int) $pedido->getIdPedido());
+            if ($pago !== null && $pago->tieneProblema() && $canceladoPor === Rol::VENDEDOR) {
+                $this->pagoRepositorio->cambiarEstado((int) $pago->getIdPedidoPago(), EstadoPago::NO_LLEGO, $pago->getMotivo());
             }
+            $this->devolverExistencias($pedido, $canceladoPor);
             $this->guardarEstado($pedido, EstadoPedido::CANCELADO, $canceladoPor);
 
             BaseDatos::confirmarTransaccion();
@@ -250,12 +179,29 @@ class PedidoRepositorio
         }
     }
 
-    public function entregar(Pedido $pedido): void
+    public function entregar(Pedido $pedido, string $codigoRetiro = ''): void
     {
         BaseDatos::iniciarTransaccion();
 
         try {
             $this->exigirEstado($pedido, [EstadoPedido::CONFIRMADO], 'Solo se pueden entregar pedidos confirmados.');
+
+            $pago = $this->pagoRepositorio->bloquearPorPedido((int) $pedido->getIdPedido());
+            if ($pago !== null && !$pago->estaRecibido()) {
+                throw new OperacionNoPermitida('Primero confirme que le llegó el SINPE. Después podrá marcarlo como entregado.');
+            }
+
+            $esperado = $pedido->getRetiroCodigo();
+            if ($esperado !== null) {
+                $codigoRetiro = DatosPago::limpiarCodigo($codigoRetiro);
+                if ($codigoRetiro === '') {
+                    throw new OperacionNoPermitida('Escriba el código de retiro que le da el cliente.');
+                }
+                if (!hash_equals($esperado, $codigoRetiro)) {
+                    throw new OperacionNoPermitida('El código de retiro no coincide. Pídale al cliente que lo revise en su pedido.');
+                }
+            }
+
             $this->guardarEstado($pedido, EstadoPedido::ENTREGADO, null);
 
             BaseDatos::confirmarTransaccion();
@@ -263,6 +209,49 @@ class PedidoRepositorio
             BaseDatos::revertirTransaccion();
             throw $error;
         }
+    }
+
+    public function marcarPagoRecibido(Pedido $pedido): void
+    {
+        $this->cambiarPago(
+            $pedido,
+            [EstadoPago::POR_VERIFICAR, EstadoPago::CON_PROBLEMA],
+            EstadoPago::RECIBIDO,
+            null,
+            'Este pago ya fue revisado.'
+        );
+    }
+
+    public function marcarPagoConProblema(Pedido $pedido, string $motivo): void
+    {
+        $this->cambiarPago(
+            $pedido,
+            [EstadoPago::POR_VERIFICAR],
+            EstadoPago::CON_PROBLEMA,
+            $motivo,
+            'Este pago ya fue revisado.'
+        );
+    }
+
+    public function reenviarComprobante(Pedido $pedido, string $comprobante, string $referencia): string
+    {
+        BaseDatos::iniciarTransaccion();
+
+        try {
+            $this->exigirEstado($pedido, [EstadoPedido::CONFIRMADO], 'Este pedido ya no está activo.');
+            $pago = $this->pagoRepositorio->bloquearPorPedido((int) $pedido->getIdPedido());
+            if ($pago === null || !$pago->tieneProblema()) {
+                throw new OperacionNoPermitida('La tienda no le pidió otro comprobante para este pedido.');
+            }
+            $this->pagoRepositorio->reemplazarComprobante((int) $pago->getIdPedidoPago(), $comprobante, $referencia, EstadoPago::POR_VERIFICAR);
+
+            BaseDatos::confirmarTransaccion();
+        } catch (Throwable $error) {
+            BaseDatos::revertirTransaccion();
+            throw $error;
+        }
+
+        return $pago->getComprobante();
     }
 
     public function listarClientes(int $idVendedor, string $busqueda, int $pagina = 1): array
@@ -367,8 +356,106 @@ class PedidoRepositorio
             );
         }
 
+        $pagos = $this->pagoRepositorio->buscarPorPedidos($ids);
         foreach ($pedidos as $pedido) {
             $pedido->setDetalles($porPedido[(int) $pedido->getIdPedido()] ?? []);
+            $pedido->setPago($pagos[(int) $pedido->getIdPedido()] ?? null);
+        }
+    }
+
+    private function rebajarExistencias(Pedido $pedido): void
+    {
+        $faltantes = [];
+        $productos = [];
+        $componentes = [];
+        $componenteRepositorio = new ComponenteRepositorio();
+        $personalizadoRepositorio = new PersonalizadoRepositorio();
+
+        foreach ($pedido->getDetalles() as $detalle) {
+            if ($detalle->esPersonalizado()) {
+                foreach ($personalizadoRepositorio->necesidades((int) $detalle->getIdPersonalizado()) as $idComponente => $necesidad) {
+                    $componente = $componentes[$idComponente] ?? $componenteRepositorio->bloquearExistencia($idComponente, $pedido->getIdVendedor());
+                    if ($componente === null || !$componente['activo'] || $componente['existencia'] < $necesidad['cantidad']) {
+                        $faltantes[] = '«' . $necesidad['nombre'] . '» (quedan ' . Numero::formatear(max(0, $componente['existencia'] ?? 0)) . ')';
+                        continue;
+                    }
+                    $componente['existencia'] -= $necesidad['cantidad'];
+                    $componentes[$idComponente] = $componente;
+                }
+                continue;
+            }
+            $hay = $productos[$detalle->getIdProducto()]
+                ?? ($this->productoRepositorio->bloquearExistencia($detalle->getIdProducto(), $pedido->getIdVendedor())['existencia'] ?? null);
+            if ($hay === null || $hay < $detalle->getCantidad()) {
+                $faltantes[] = '«' . $detalle->getNombreProducto() . '» (quedan ' . max(0, (int) $hay) . ')';
+                continue;
+            }
+            $productos[$detalle->getIdProducto()] = $hay - $detalle->getCantidad();
+        }
+
+        if ($faltantes !== []) {
+            throw new OperacionNoPermitida('La tienda ya no tiene suficiente de ' . implode(', ', $faltantes) . '. Revise las cantidades e intente de nuevo.');
+        }
+
+        foreach ($productos as $idProducto => $existencia) {
+            $this->productoRepositorio->actualizarExistencia($idProducto, $pedido->getIdVendedor(), $existencia);
+        }
+        foreach ($componentes as $idComponente => $componente) {
+            $componenteRepositorio->actualizarExistencia($idComponente, $pedido->getIdVendedor(), $componente['existencia'], $componente['costo']);
+        }
+    }
+
+    private function devolverExistencias(Pedido $pedido, string $canceladoPor): void
+    {
+        $componenteRepositorio = new ComponenteRepositorio();
+        $personalizadoRepositorio = new PersonalizadoRepositorio();
+
+        foreach ($pedido->getDetalles() as $detalle) {
+            if ($detalle->esPersonalizado()) {
+                foreach ($personalizadoRepositorio->necesidades((int) $detalle->getIdPersonalizado()) as $idComponente => $necesidad) {
+                    $componente = $componenteRepositorio->bloquearExistencia($idComponente, $pedido->getIdVendedor());
+                    if ($componente !== null) {
+                        $componenteRepositorio->actualizarExistencia(
+                            $idComponente,
+                            $pedido->getIdVendedor(),
+                            $componente['existencia'] + $necesidad['cantidad'],
+                            $componente['costo']
+                        );
+                    }
+                }
+                $personalizadoRepositorio->cancelarPorPedido((int) $detalle->getIdPersonalizado(), $canceladoPor);
+                continue;
+            }
+            $producto = $this->productoRepositorio->bloquearExistencia($detalle->getIdProducto(), $pedido->getIdVendedor());
+            if ($producto !== null) {
+                $this->productoRepositorio->actualizarExistencia(
+                    $detalle->getIdProducto(),
+                    $pedido->getIdVendedor(),
+                    $producto['existencia'] + $detalle->getCantidad()
+                );
+            }
+        }
+    }
+
+    private function cambiarPago(Pedido $pedido, array $permitidos, string $estadoNuevo, ?string $motivo, string $mensaje): void
+    {
+        BaseDatos::iniciarTransaccion();
+
+        try {
+            $this->exigirEstado($pedido, [EstadoPedido::CONFIRMADO], 'Este pedido ya no está activo.');
+            $pago = $this->pagoRepositorio->bloquearPorPedido((int) $pedido->getIdPedido());
+            if ($pago === null) {
+                throw new OperacionNoPermitida('Este pedido no se pagó por SINPE Móvil.');
+            }
+            if (!in_array($pago->getEstado(), $permitidos, true)) {
+                throw new OperacionNoPermitida($mensaje);
+            }
+            $this->pagoRepositorio->cambiarEstado((int) $pago->getIdPedidoPago(), $estadoNuevo, $motivo);
+
+            BaseDatos::confirmarTransaccion();
+        } catch (Throwable $error) {
+            BaseDatos::revertirTransaccion();
+            throw $error;
         }
     }
 
@@ -424,6 +511,12 @@ class PedidoRepositorio
             $valores[] = $estado;
         }
 
+        $estadoPago = $filtros['pago'] ?? null;
+        if (EstadoPago::existe($estadoPago)) {
+            $condiciones[] = 'EXISTS (SELECT 1 FROM tbpedidopago pp WHERE pp.tbpedidopagopedidoid = p.tbpedidoid AND pp.tbpedidopagoestado = ?)';
+            $valores[] = $estadoPago;
+        }
+
         $busqueda = trim((string) ($filtros['busqueda'] ?? ''));
         if ($busqueda !== '') {
             $patron = '%' . addcslashes($busqueda, '%_\\') . '%';
@@ -470,6 +563,7 @@ class PedidoRepositorio
             $fila['tbpedidocanceladopor'],
             $fila['tbpedidoactualizacionfecha'] !== null ? new DateTime($fila['tbpedidoactualizacionfecha']) : null
         );
+        $pedido->setRetiroCodigo($fila['tbpedidoretirocodigo'] ?? null);
         $pedido->setDatosTienda((string) $fila['tbvendedortiendanombre'], (string) $fila['tbvendedortiendaenlace']);
         $pedido->setDatosCliente(
             (string) $fila['tbusuarionombrecompleto'],

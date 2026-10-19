@@ -1884,6 +1884,11 @@ h3 {
 
 .opcionUnidad input {
     position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
     opacity: 0;
     pointer-events: none;
 }
@@ -4350,7 +4355,7 @@ h3 {
 
 .personalizarArriba {
     display: grid;
-    grid-template-columns: minmax(220px, 290px) minmax(0, 1fr);
+    grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
     gap: 24px;
     align-items: start;
 }
@@ -4366,7 +4371,7 @@ h3 {
     display: flex;
     align-items: center;
     justify-content: center;
-    aspect-ratio: 4 / 3.4;
+    height: 150px;
     background: var(--colorVerdeClaro);
 }
 
@@ -4416,8 +4421,8 @@ h3 {
 
 .gridPiezas {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
 }
 
 .tarjetaPieza {
@@ -4465,7 +4470,7 @@ h3 {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 160px;
+    height: 104px;
     background: var(--colorVerdeClaro);
 }
 
@@ -4475,18 +4480,22 @@ h3 {
 
 .fotoPieza img,
 .fotoOpcion img {
-    width: 112px;
-    height: 112px;
-    border: 4px solid var(--colorSuperficie);
-    border-radius: 14px;
+    width: 72px;
+    height: 72px;
+    border: 3px solid var(--colorSuperficie);
+    border-radius: 12px;
     object-fit: cover;
     background: var(--colorSuperficie);
     box-shadow: 0 4px 14px rgba(38, 64, 54, 0.15);
 }
 
+.fotoOpcion {
+    height: 116px;
+}
+
 .fotoOpcion img {
-    width: 124px;
-    height: 124px;
+    width: 84px;
+    height: 84px;
 }
 
 .selloPieza {
@@ -4585,8 +4594,8 @@ h3 {
 
 .gridOpciones {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
 }
 
 .opcionComponente {
@@ -4830,7 +4839,7 @@ h3 {
 
 .detallePersonalizado {
     display: grid;
-    grid-template-columns: minmax(220px, 290px) minmax(0, 1fr);
+    grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
     gap: 24px;
     align-items: start;
     margin-bottom: 24px;
@@ -5073,13 +5082,13 @@ h3 {
 
     .fotoPieza,
     .fotoOpcion {
-        height: 130px;
+        height: 96px;
     }
 
     .fotoPieza img,
     .fotoOpcion img {
-        width: 92px;
-        height: 92px;
+        width: 68px;
+        height: 68px;
     }
 
     .galeriaPieza {
@@ -5113,5 +5122,526 @@ h3 {
     .cambioVista a {
         flex: 1;
         justify-content: center;
+    }
+}
+
+.formularioAgregar {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.formularioAgregar .selectorCantidad {
+    width: 100%;
+    justify-content: space-between;
+}
+
+.formularioAgregar input[name="cantidad"] {
+    flex: 1;
+    width: 0;
+}
+
+.formularioAgregar .boton {
+    width: 100%;
+}
+
+.productoCarrito {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+}
+
+.fotoProductoCarrito {
+    flex: none;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radioCampo);
+    object-fit: cover;
+    background: var(--colorVerdeClaro);
+}
+
+.carritoTienda .totalesCompra {
+    margin: 16px auto 0 0;
+}
+
+.carritoTienda .accionesCarrito {
+    justify-content: flex-start;
+}
+
+@media (max-width: 560px) {
+    .tiendaSeccion .enlacePersonalizar {
+        margin: 0 10px 10px;
+    }
+}
+
+.valorSoloLectura {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    margin: 0;
+    padding: 0 12px;
+    border-radius: var(--radioCampo);
+    background: var(--colorFondo);
+}
+
+.opcionesPago {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+}
+
+.opcionPago {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 72px;
+    padding: 12px 14px;
+    border: 1px solid var(--colorBordeCampo);
+    border-radius: var(--radio);
+    background: var(--colorSuperficie);
+    cursor: pointer;
+}
+
+.opcionPago input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.opcionPago span {
+    font-size: 0.85rem;
+    color: var(--colorTextoSuave);
+}
+
+.opcionPago:has(input:checked) {
+    border: 2px solid var(--colorTitulo);
+    background: var(--colorVerdeClaro);
+    color: var(--colorTitulo);
+}
+
+.opcionPago:has(input:focus-visible) {
+    outline: 2px solid var(--colorFoco);
+    outline-offset: 2px;
+}
+
+.pasosSinpe {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.pasoSinpe {
+    display: flex;
+    gap: 14px;
+    padding: 16px;
+    border-radius: var(--radio);
+    background: var(--colorFondo);
+}
+
+.pasoSinpeNumero {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--colorTitulo);
+    color: var(--colorTextoClaro);
+    font-weight: 700;
+}
+
+.pasoSinpeCuerpo {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    margin: 0;
+}
+
+.pasoSinpeCuerpo .textoAyuda,
+.pasoSinpeCuerpo .errorCampo {
+    margin: 0;
+}
+
+.campo label.pasoSinpeTitulo,
+.pasoSinpeTitulo {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.datosSinpe {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 10px;
+}
+
+.datoSinpe {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 14px;
+    border: 1px solid var(--colorBorde);
+    border-radius: var(--radioCampo);
+    background: var(--colorSuperficie);
+}
+
+.datoSinpe .textoAyuda {
+    margin: 0;
+}
+
+.datoSinpeValor {
+    font-size: 1.35rem;
+    letter-spacing: 0.03em;
+}
+
+.datoSinpeMonto {
+    color: var(--colorTitulo);
+}
+
+.datoSinpeCodigo {
+    border: 2px dashed var(--colorTitulo);
+}
+
+.codigoSinpeFila {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.codigoSinpe {
+    font-size: 1.6rem;
+    letter-spacing: 0.18em;
+    color: var(--colorExito);
+}
+
+.zonaComprobante {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 120px;
+    padding: 16px;
+    border: 2px dashed var(--colorBordeFoto);
+    border-radius: var(--radio);
+    background: var(--colorSuperficie);
+    color: var(--colorTitulo);
+    text-align: center;
+    cursor: pointer;
+}
+
+.campo label.zonaComprobante {
+    display: flex;
+    margin: 0;
+}
+
+.campo label.opcionPago {
+    display: flex;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.zonaComprobante svg {
+    width: 28px;
+    height: 28px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.zonaComprobante:hover {
+    background: var(--colorVerdeClaro);
+}
+
+.pasoSinpeCuerpo:focus-within .zonaComprobante,
+.campo:focus-within .zonaComprobante {
+    outline: 2px solid var(--colorFoco);
+    outline-offset: 2px;
+}
+
+.zonaComprobantePequena {
+    min-height: 80px;
+    flex-direction: row;
+}
+
+.campoConError .zonaComprobante {
+    border-color: var(--colorError);
+}
+
+.campo .campoReferencia {
+    width: 140px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-align: center;
+}
+
+.cajaPago {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 16px;
+    padding: 18px 20px;
+    border: 1px solid var(--colorBorde);
+    border-radius: var(--radio);
+    background: var(--colorSuperficie);
+}
+
+.cajaPagoVerificar {
+    border-color: var(--colorAdvertenciaBorde);
+    background: var(--colorAdvertenciaFondo);
+}
+
+.cajaPagoRecibido {
+    border-color: var(--colorExitoBorde);
+    background: var(--colorExitoFondo);
+}
+
+.cajaPagoProblema {
+    border-color: var(--colorErrorBorde);
+    background: var(--colorErrorFondo);
+}
+
+.cajaPago p {
+    margin: 0;
+}
+
+.cajaPagoEncabezado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.cajaPagoEncabezado h2 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.cajaPagoCuerpo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 18px;
+}
+
+.comprobantePago {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 160px;
+    font-size: 0.8rem;
+    text-decoration: none;
+}
+
+.comprobantePago img {
+    width: 160px;
+    height: 210px;
+    border: 1px solid var(--colorBorde);
+    border-radius: var(--radioCampo);
+    object-fit: cover;
+    background: var(--colorSuperficie);
+}
+
+.datosPago {
+    flex: 1 1 320px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    margin: 0;
+}
+
+.datosPago > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 14px;
+    border: 1px solid var(--colorBorde);
+    border-radius: var(--radioCampo);
+    background: var(--colorSuperficie);
+}
+
+.datosPago dt {
+    font-size: 0.85rem;
+    color: var(--colorTextoSuave);
+}
+
+.datosPago dd {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.datosPago dd .textoAyuda {
+    margin: 0;
+    font-weight: 400;
+}
+
+.datosPagoMonto {
+    color: var(--colorTitulo);
+}
+
+.datosPagoCodigo {
+    letter-spacing: 0.16em;
+}
+
+.cajaPagoNota {
+    padding-top: 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.cajaPagoAcciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.cajaPagoAcciones p {
+    flex: 1 1 320px;
+}
+
+.formularioProblemaPago {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.formularioProblemaPago .campo {
+    flex: 1 1 360px;
+    margin: 0;
+}
+
+.formularioProblemaPago textarea {
+    background: var(--colorSuperficie);
+}
+
+.entregaPedido {
+    margin-top: 16px;
+}
+
+.entregaPedido .textoAyuda {
+    margin: 10px 0 0;
+}
+
+.formularioEntrega {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.formularioEntrega .campo {
+    margin: 0;
+}
+
+.campo .campoCodigoRetiro {
+    width: 220px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.cajasPedidoCliente {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.cajasPedidoCliente .cajaPago {
+    margin: 0;
+}
+
+.datosPagoCliente {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    font-size: 0.92rem;
+}
+
+.formularioReenviarPago {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.formularioReenviarPago .boton {
+    align-self: flex-start;
+}
+
+.cajaCodigoRetiro {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px 20px;
+    border: 2px dashed var(--colorTitulo);
+    border-radius: var(--radio);
+    background: var(--colorFondo);
+}
+
+.cajaCodigoRetiro h2 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.cajaCodigoRetiro .textoAyuda {
+    margin: 0;
+}
+
+.codigoRetiro {
+    font-size: 2.1rem;
+    letter-spacing: 0.24em;
+    color: var(--colorExito);
+}
+
+.estadoYPago {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+@media (max-width: 560px) {
+    .comprobantePago,
+    .comprobantePago img {
+        width: 100%;
+    }
+
+    .comprobantePago img {
+        height: 240px;
+    }
+
+    .campo .campoCodigoRetiro,
+    .formularioEntrega .boton,
+    .formularioProblemaPago .boton {
+        width: 100%;
     }
 }

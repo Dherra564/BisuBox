@@ -1,10 +1,4 @@
 <?php
-/**
- * Carrito del cliente, separado por tienda
- * @var array<int, array{vendedor: \Aplicacion\Modelos\Vendedor, lineas: array, total: float, problemas: bool}> $tiendas  solo la tienda actual
- * @var array{id: int, enlace: string}|null $tiendaActual
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\Carrito;
 use Aplicacion\Nucleo\Csrf;
@@ -58,14 +52,21 @@ require __DIR__ . '/../Plantilla/encabezado.php';
                                 $producto = $linea['producto'];
                                 $idProducto = (int) $producto->getIdProducto();
                                 $maximo = max(1, min($producto->getExistencia(), Carrito::MAXIMO_POR_PRODUCTO));
+                                $foto = $producto->getFoto();
+                                $urlFoto = $foto !== null
+                                    ? $urlBase . '/fotos/producto?archivo=' . urlencode($foto)
+                                    : $urlBase . '/imagenes/productoPorDefecto.svg';
                                 ?>
                                 <tr class="<?= $linea['aviso'] !== null ? 'filaConAviso' : '' ?>">
                                     <td data-etiqueta="Producto">
-                                        <span>
-                                            <strong><?= htmlspecialchars($producto->getNombre()) ?></strong>
-                                            <?php if ($linea['aviso'] !== null): ?>
-                                                <br><span class="errorCampo"><?= htmlspecialchars($linea['aviso']) ?></span>
-                                            <?php endif; ?>
+                                        <span class="productoCarrito">
+                                            <img src="<?= htmlspecialchars($urlFoto) ?>" alt="" class="fotoProductoCarrito" loading="lazy">
+                                            <span>
+                                                <strong><?= htmlspecialchars($producto->getNombre()) ?></strong>
+                                                <?php if ($linea['aviso'] !== null): ?>
+                                                    <br><span class="errorCampo"><?= htmlspecialchars($linea['aviso']) ?></span>
+                                                <?php endif; ?>
+                                            </span>
                                         </span>
                                     </td>
                                     <td data-etiqueta="Precio" class="numero"><?= Numero::moneda($producto->getPrecioVenta()) ?></td>
@@ -97,12 +98,12 @@ require __DIR__ . '/../Plantilla/encabezado.php';
             </div>
 
             <div class="grupoBotones accionesCarrito">
-                <a href="<?= $urlBase ?>/tienda/<?= htmlspecialchars((string) $vendedor->getTiendaEnlace()) ?>" class="boton botonSecundario">Seguir comprando</a>
                 <?php if ($tienda['problemas']): ?>
-                    <span class="textoAyuda">Corrija lo marcado en rojo para poder pedir.</span>
+                    <span class="textoAyuda">Corrija lo marcado en rojo para poder comprar.</span>
                 <?php else: ?>
-                    <a href="<?= $urlBase ?>/carrito/confirmar?tienda=<?= (int) $idVendedor ?>" class="boton">Hacer pedido</a>
+                    <a href="<?= $urlBase ?>/carrito/confirmar?tienda=<?= (int) $idVendedor ?>" class="boton">Comprar</a>
                 <?php endif; ?>
+                <a href="<?= $urlBase ?>/tienda/<?= htmlspecialchars((string) $vendedor->getTiendaEnlace()) ?>" class="boton botonSecundario">Seguir comprando</a>
             </div>
         </section>
     <?php endforeach; ?>
