@@ -6,8 +6,6 @@ use Configuracion\BaseDatos;
 use PDO;
 use Throwable;
 
-// Carrito de cada cliente guardado en la base de datos.
-// Una fila por producto: cliente, tienda, producto y cantidad
 class CarritoRepositorio
 {
     private PDO $conexion;
@@ -17,7 +15,7 @@ class CarritoRepositorio
         $this->conexion = BaseDatos::obtenerConexion();
     }
 
-    /** @return array<int, array<int, int>> [idVendedor => [idProducto => cantidad]] */
+    /** @return array<int, array<int, int>> */
     public function listar(int $idCliente): array
     {
         $consulta = $this->conexion->prepare(
@@ -34,7 +32,6 @@ class CarritoRepositorio
         return $carrito;
     }
 
-    // Tienda de lo último que el cliente agregó al carrito; si no tiene nada, la de su último pedido
     public function ultimaTienda(int $idCliente): ?int
     {
         $consulta = $this->conexion->prepare(
@@ -56,7 +53,6 @@ class CarritoRepositorio
         return $idVendedor === false ? null : (int) $idVendedor;
     }
 
-    // Deja la cantidad exacta de un producto; con 0 o menos lo quita del carrito
     public function guardarCantidad(int $idCliente, int $idVendedor, int $idProducto, int $cantidad): void
     {
         if ($cantidad <= 0) {

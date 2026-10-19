@@ -2,8 +2,8 @@
 /**
  
  * @var string $urlBase
- * @var string $volverHiceMas  'lista' o 'detalle'
- * @var array|null $hiceMasFallido  si el intento anterior falló: id, cantidad y error
+ * @var string $volverHiceMas
+ * @var array|null $hiceMasFallido
  */
 
 use Aplicacion\Nucleo\Csrf;
