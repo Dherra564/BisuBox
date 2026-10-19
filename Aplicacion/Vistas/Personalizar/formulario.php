@@ -193,6 +193,9 @@ $fotoProducto = $producto->getFoto();
             <strong class="totalComponentes" data-total><?= Numero::moneda(round($total, 2)) ?></strong>
             <p class="textoAyuda">Es solo lo de los materiales. La tienda le suma la mano de obra y le manda el precio final.</p>
             <p class="alertaInventario" data-alerta-inventario role="alert" hidden>Hay piezas que no alcanzan o que falta escoger. Revise lo marcado.</p>
+            <p class="alertaInventario" data-alerta-sin-cambios role="alert" <?= isset($errores['cambios']) ? '' : 'hidden' ?>>
+                <?= htmlspecialchars($errores['cambios'] ?? 'Cambie al menos una pieza para poder enviarla a cotizar. Si la quiere igual al original, puede comprarla directo en la tienda.') ?>
+            </p>
             <button type="submit" class="boton botonRegistrar" data-enviar>Enviar a cotizar</button>
         </div>
     </section>

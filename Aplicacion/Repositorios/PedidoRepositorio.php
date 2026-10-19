@@ -154,6 +154,34 @@ class PedidoRepositorio
         return (int) $consulta->fetchColumn();
     }
 
+    public function ultimoId(int $idVendedor): int
+    {
+        $consulta = $this->conexion->prepare('SELECT COALESCE(MAX(tbpedidoid), 0) FROM tbpedido WHERE tbpedidovendedorid = ?');
+        $consulta->execute([$idVendedor]);
+
+        return (int) $consulta->fetchColumn();
+    }
+
+    public function listarNuevos(int $idVendedor, int $despuesDe): array
+    {
+        $consulta = $this->conexion->prepare(
+            'SELECT p.tbpedidoid, p.tbpedidototal, p.tbpedidometodopago, u.tbusuarionombrecompleto
+             FROM tbpedido p
+             INNER JOIN tbcliente c ON c.tbclienteid = p.tbpedidoclienteid
+             INNER JOIN tbusuario u ON u.tbusuarioid = c.tbclienteusuarioid
+             WHERE p.tbpedidovendedorid = ? AND p.tbpedidoid > ?
+             ORDER BY p.tbpedidoid ASC'
+        );
+        $consulta->execute([$idVendedor, $despuesDe]);
+
+        return array_map(fn(array $fila): array => [
+            'id' => (int) $fila['tbpedidoid'],
+            'total' => (float) $fila['tbpedidototal'],
+            'metodoPago' => (string) $fila['tbpedidometodopago'],
+            'cliente' => (string) $fila['tbusuarionombrecompleto'],
+        ], $consulta->fetchAll());
+    }
+
     public function cancelar(Pedido $pedido, string $canceladoPor): void
     {
         $mensaje = $canceladoPor === Rol::CLIENTE

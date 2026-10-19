@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var resumenPiezas = formulario.querySelector('[data-resumen-piezas]');
     var resumenPalabra = formulario.querySelector('[data-resumen-palabra]');
     var alerta = formulario.querySelector('[data-alerta-inventario]');
+    var alertaSinCambios = formulario.querySelector('[data-alerta-sin-cambios]');
     var botonEnviar = formulario.querySelector('[data-enviar]');
 
     function conMiles(entero) {
@@ -140,7 +141,8 @@ document.addEventListener('DOMContentLoaded', function () {
         textoCambios.textContent = cambios.length === 0 ? 'Sin cambios' : (cambios.length === 1 ? '1 cambio' : cambios.length + ' cambios');
 
         alerta.hidden = !hayErrores;
-        botonEnviar.disabled = hayErrores;
+        alertaSinCambios.hidden = hayErrores || cambios.length > 0;
+        botonEnviar.disabled = hayErrores || cambios.length === 0;
     }
 
     tarjetas.forEach(function (tarjeta) {

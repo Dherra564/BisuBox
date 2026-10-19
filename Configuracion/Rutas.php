@@ -1,6 +1,7 @@
 <?php
 
 use Aplicacion\Controladores\AutenticacionControlador;
+use Aplicacion\Controladores\AvisoControlador;
 use Aplicacion\Controladores\CarritoControlador;
 use Aplicacion\Controladores\ClienteControlador;
 use Aplicacion\Controladores\ComponenteControlador;
@@ -65,6 +66,8 @@ return function (Enrutador $enrutador): void {
     $enrutador->get('/fotos/producto', [FotoControlador::class, 'mostrarProducto']);
     $enrutador->get('/fotos/componente', [FotoControlador::class, 'mostrarComponente']);
     $enrutador->get('/fotos/comprobante', [FotoControlador::class, 'mostrarComprobante']);
+
+        $enrutador->get('/avisos', [AvisoControlador::class, 'revisar']);
 
     $enrutador->get('/proveedores', [ProveedorControlador::class, 'listar']);
     $enrutador->get('/proveedores/detalle', [ProveedorControlador::class, 'detalle']);

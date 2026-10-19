@@ -134,11 +134,6 @@ $enlace = fn(array $cambios): string => htmlspecialchars($urlBase . '/pedidos'
                                                 <?= mb_strtolower($pedido->getPago()->getEstado(), 'UTF-8') ?></span>
                                         <?php endif; ?>
                                     </span>
-                                    <?php if ($pedido->getPago() !== null): ?>
-                                        <span class="etiqueta <?= EstadoPago::claseEtiqueta($pedido->getPago()->getEstado()) ?>">SINPE
-                                            <?= mb_strtolower($pedido->getPago()->getEstado(), 'UTF-8') ?></span>
-                                    <?php endif; ?>
-                                    </span>
                                 </td>
                                 <td data-etiqueta="" class="acciones">
                                     <a href="<?= $urlBase ?>/pedidos/detalle?id=<?= $pedido->getIdPedido() ?>">Ver</a>

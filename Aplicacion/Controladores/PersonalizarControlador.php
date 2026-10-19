@@ -104,6 +104,13 @@ class PersonalizarControlador
             $componentesElegidos[$id] = $elegido;
             $necesidades[$elegido->getIdComponente()] = ($necesidades[$elegido->getIdComponente()] ?? 0) + $linea['cantidad'] * ($piezas ?? 1);
         }
+        $hayCambios = false;
+        foreach ($componentesElegidos as $id => $elegido) {
+            $hayCambios = $hayCambios || (int) $elegido->getIdComponente() !== $lineas[$id]['idOriginal'];
+        }
+        if (count($componentesElegidos) === count($lineas) && !$hayCambios) {
+            $validador->agregarError('cambios', 'Cambie al menos una pieza para poder enviarla a cotizar. Si la quiere igual al original, puede comprarla directo en la tienda.');
+        }
         foreach ($componentesElegidos as $id => $elegido) {
             $necesita = $necesidades[$elegido->getIdComponente()];
             if ($necesita > $elegido->getExistencia()) {

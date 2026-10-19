@@ -51,7 +51,7 @@ if ($navegacion['esDuenio']) {
     </script>
 </head>
 
-<body class="sitio">
+<body class="sitio" <?= $navegacion['avisos'] ? 'data-avisos="' . $urlBase . '/avisos"' : '' ?>>
     <header class="barraSitio">
         <div class="barraSitioIzquierda">
             <button type="button" class="botonMenuSitio" id="botonMenu" aria-controls="menuSitio" aria-expanded="true"
@@ -72,10 +72,12 @@ if ($navegacion['esDuenio']) {
 
         <nav class="tiendaIconos" aria-label="Su cuenta">
             <div class="menuCuenta">
-                <button type="button" class="tiendaIcono" id="botonCuenta" aria-expanded="false" aria-controls="panelCuenta"
-                    aria-label="<?= $haySesion ? 'Mi cuenta' : 'Ingresar o crear cuenta' ?>" title="<?= $haySesion ? 'Mi cuenta' : 'Ingresar o crear cuenta' ?>">
+                <button type="button" class="tiendaIcono" id="botonCuenta" aria-expanded="false"
+                    aria-controls="panelCuenta" aria-label="<?= $haySesion ? 'Mi cuenta' : 'Ingresar o crear cuenta' ?>"
+                    title="<?= $haySesion ? 'Mi cuenta' : 'Ingresar o crear cuenta' ?>">
                     <?= Icono::svg('perfil') ?>
-                    <?php if ($haySesion): ?><span class="nombreCuenta"><?= htmlspecialchars($nombreCorto) ?></span><?php endif; ?>
+                    <?php if ($haySesion): ?><span
+                            class="nombreCuenta"><?= htmlspecialchars($nombreCorto) ?></span><?php endif; ?>
                 </button>
                 <div class="panelCuenta" id="panelCuenta" hidden>
                     <?php if ($haySesion): ?>
@@ -90,18 +92,24 @@ if ($navegacion['esDuenio']) {
                             <button type="submit" class="opcionSalir"><?= Icono::svg('salir') ?> Cerrar sesión</button>
                         </form>
                     <?php else: ?>
-                        <a href="<?= $urlBase ?>/ingresar?volver=<?= $volverAqui ?>" class="opcionPrincipal"><?= Icono::svg('ingresar') ?> Ingresar</a>
-                        <a href="<?= $urlBase ?>/registro?volver=<?= $volverAqui ?>"><?= Icono::svg('perfil') ?> Crear cuenta</a>
+                        <a href="<?= $urlBase ?>/ingresar?volver=<?= $volverAqui ?>"
+                            class="opcionPrincipal"><?= Icono::svg('ingresar') ?> Ingresar</a>
+                        <a href="<?= $urlBase ?>/registro?volver=<?= $volverAqui ?>"><?= Icono::svg('perfil') ?> Crear
+                            cuenta</a>
                     <?php endif; ?>
                 </div>
             </div>
-            <a href="<?= $urlBase . $navegacion['rutaPedidos'] ?>" class="tiendaIcono <?= in_array($paginaActual, ['misPedidos', 'pedidos'], true) ? 'tiendaIconoActivo' : '' ?>"
-                aria-label="<?= $navegacion['textoPedidos'] ?>" title="<?= $navegacion['textoPedidos'] ?>"><?= Icono::svg('bolsa') ?></a>
+            <a href="<?= $urlBase . $navegacion['rutaPedidos'] ?>"
+                class="tiendaIcono <?= in_array($paginaActual, ['misPedidos', 'pedidos'], true) ? 'tiendaIconoActivo' : '' ?>"
+                aria-label="<?= $navegacion['textoPedidos'] ?>"
+                title="<?= $navegacion['textoPedidos'] ?>"><?= Icono::svg('bolsa') ?></a>
             <?php if ($navegacion['puedeComprar']): ?>
-                <a href="<?= $urlBase ?>/carrito" class="tiendaIcono tiendaCarrito <?= $paginaActual === 'carrito' ? 'tiendaIconoActivo' : '' ?>"
+                <a href="<?= $urlBase ?>/carrito"
+                    class="tiendaIcono tiendaCarrito <?= $paginaActual === 'carrito' ? 'tiendaIconoActivo' : '' ?>"
                     aria-label="Carrito, <?= (int) $navegacion['unidadesCarrito'] ?> productos" title="Carrito">
                     <?= Icono::svg('carrito') ?>
-                    <?php if ($navegacion['unidadesCarrito'] > 0): ?><span class="tiendaCarritoNumero"><?= (int) $navegacion['unidadesCarrito'] ?></span><?php endif; ?>
+                    <?php if ($navegacion['unidadesCarrito'] > 0): ?><span
+                            class="tiendaCarritoNumero"><?= (int) $navegacion['unidadesCarrito'] ?></span><?php endif; ?>
                     <span class="tiendaCarritoTotal"><?= Numero::moneda($navegacion['totalCarrito']) ?></span>
                 </a>
             <?php endif; ?>
@@ -117,18 +125,22 @@ if ($navegacion['esDuenio']) {
             <ul>
                 <?php foreach ($navegacion['menu'] as $opcion): ?>
                     <?php if (isset($opcion['separador'])): ?>
-                        <li class="menuSeparador" aria-hidden="true"><span><?= htmlspecialchars($opcion['separador']) ?></span></li>
+                        <li class="menuSeparador" aria-hidden="true"><span><?= htmlspecialchars($opcion['separador']) ?></span>
+                        </li>
                         <?php continue; ?>
                     <?php endif; ?>
                     <li>
-                        <a href="<?= $urlBase . htmlspecialchars($opcion['ruta']) ?>" title="<?= htmlspecialchars($opcion['texto']) ?>"
+                        <a href="<?= $urlBase . htmlspecialchars($opcion['ruta']) ?>"
+                            title="<?= htmlspecialchars($opcion['texto']) ?>"
+                            data-menu="<?= htmlspecialchars($opcion['clave']) ?>"
                             class="<?= $opcion['activo'] ? 'activo' : '' ?> <?= $opcion['clave'] === 'emprender' ? 'opcionEmprender' : '' ?>"
                             <?= $opcion['activo'] ? 'aria-current="page"' : '' ?>>
                             <?= Icono::svg($opcion['icono']) ?>
                             <span class="textoMenu"><?= htmlspecialchars($opcion['texto']) ?></span>
                             <?php if ($opcion['numero'] > 0): ?>
-                                <span class="numeroMenu <?= $opcion['clave'] === 'pedidos' ? 'numeroMenuAviso' : '' ?>"
-                                    aria-label="<?= (int) $opcion['numero'] ?> <?= match ($opcion['clave']) { 'carrito' => 'en el carrito', 'misPedidos' => 'por decidir', default => 'por atender' } ?>"><?= (int) $opcion['numero'] ?></span>
+                                <span
+                                    class="numeroMenu <?= in_array($opcion['clave'], ['pedidos', 'productos', 'inventario'], true) ? 'numeroMenuAviso' : '' ?>"
+                                    aria-label="<?= (int) $opcion['numero'] ?> <?= match ($opcion['clave']) { 'carrito' => 'en el carrito', 'misPedidos' => 'por decidir', 'productos' => 'agotados', 'inventario' => 'por acabarse o agotados', default => 'por atender'} ?>"><?= (int) $opcion['numero'] ?></span>
                             <?php endif; ?>
                         </a>
                     </li>
@@ -153,7 +165,8 @@ if ($navegacion['esDuenio']) {
 
         <main class="contenido">
             <?php if ($volverA !== null): ?>
-                <a href="<?= $urlBase . $volverA['ruta'] ?>" class="enlaceVolver">← <?= htmlspecialchars($volverA['texto']) ?></a>
+                <a href="<?= $urlBase . $volverA['ruta'] ?>" class="enlaceVolver">←
+                    <?= htmlspecialchars($volverA['texto']) ?></a>
             <?php endif; ?>
             <?php if (!$ocultarTitulo): ?>
                 <div class="encabezadoPagina">

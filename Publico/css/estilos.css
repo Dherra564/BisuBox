@@ -5645,3 +5645,195 @@ h3 {
         width: 100%;
     }
 }
+
+.alerta[data-autocerrar] {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.alertaSaliendo {
+    opacity: 0;
+    transform: translateY(-6px);
+}
+
+.avisosFlotantes {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: min(360px, calc(100vw - 32px));
+    pointer-events: none;
+}
+
+.avisoFlotante {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 14px 16px 16px;
+    overflow: hidden;
+    border: 1px solid var(--colorBorde);
+    border-left: 5px solid var(--colorTitulo);
+    border-radius: var(--radio);
+    background: var(--colorSuperficie);
+    box-shadow: 0 12px 30px rgba(38, 64, 54, 0.18);
+    pointer-events: auto;
+    animation: avisoEntrar 0.3s ease-out;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.avisoFlotanteSaliendo {
+    opacity: 0;
+    transform: translateX(24px);
+}
+
+.avisoFlotanteIcono {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--colorVerdeClaro);
+    color: var(--colorTitulo);
+}
+
+.avisoFlotanteIcono svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.avisoFlotanteCuerpo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.avisoFlotanteCuerpo strong {
+    font-size: 0.95rem;
+}
+
+.avisoFlotanteCuerpo p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--colorTextoSuave);
+}
+
+.avisoFlotanteCuerpo a {
+    align-self: flex-start;
+    margin-top: 4px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--colorTitulo);
+}
+
+.avisoFlotanteCerrar {
+    flex: none;
+    padding: 0 4px;
+    border: none;
+    background: none;
+    color: var(--colorTextoSuave);
+    font-size: 1.3rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.avisoFlotanteTiempo {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 3px;
+    background: currentColor;
+    opacity: 0.35;
+    transform-origin: left;
+    animation: avisoTiempo 10s linear forwards;
+}
+
+.avisoFlotante:hover .avisoFlotanteTiempo,
+.avisoFlotante:focus-within .avisoFlotanteTiempo {
+    animation-play-state: paused;
+}
+
+.avisoFlotantePedido {
+    border-left-color: var(--colorExito);
+    color: var(--colorExito);
+}
+
+.avisoFlotantePedido .avisoFlotanteIcono {
+    background: var(--colorExitoFondo);
+    color: var(--colorExito);
+}
+
+.avisoFlotanteAgotado,
+.avisoFlotanteProducto {
+    border-left-color: var(--colorError);
+    color: var(--colorError);
+}
+
+.avisoFlotanteAgotado .avisoFlotanteIcono,
+.avisoFlotanteProducto .avisoFlotanteIcono {
+    background: var(--colorErrorFondo);
+    color: var(--colorError);
+}
+
+.avisoFlotanteBajo {
+    border-left-color: var(--colorAdvertenciaBorde);
+    color: var(--colorAdvertencia);
+}
+
+.avisoFlotanteBajo .avisoFlotanteIcono {
+    background: var(--colorAdvertenciaFondo);
+    color: var(--colorAdvertencia);
+}
+
+.avisoFlotante .avisoFlotanteCuerpo strong {
+    color: var(--colorTexto);
+}
+
+@keyframes avisoEntrar {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes avisoTiempo {
+    from {
+        transform: scaleX(1);
+    }
+
+    to {
+        transform: scaleX(0);
+    }
+}
+
+@media (max-width: 560px) {
+    .avisosFlotantes {
+        right: 16px;
+        left: 16px;
+        bottom: 16px;
+        width: auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .avisoFlotante {
+        animation: none;
+    }
+}

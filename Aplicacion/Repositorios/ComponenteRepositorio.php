@@ -117,6 +117,30 @@ class ComponenteRepositorio
         ];
     }
 
+        public function listarPorAcabarse(int $idVendedor): array
+    {
+        $consulta = $this->conexion->prepare(
+            'SELECT c.tbcomponenteid, c.tbcomponentenombre, c.tbcomponenteexistencia, c.tbcomponenteunidad,
+                CASE WHEN ' . self::CONDICIONES_EXISTENCIA['agotado'] . " THEN 'agotado' ELSE 'bajo' END AS estado
+             FROM tbcomponente c
+             WHERE c.tbcomponentevendedorid = ? AND c.tbcomponenteactivo = 1
+               AND ((" . self::CONDICIONES_EXISTENCIA['agotado'] . ') OR (' . self::CONDICIONES_EXISTENCIA['bajo'] . '))
+             ORDER BY c.tbcomponentenombre ASC'
+        );
+        $consulta->execute([$idVendedor]);
+
+        $componentes = [];
+        foreach ($consulta->fetchAll() as $fila) {
+            $componentes[(int) $fila['tbcomponenteid']] = [
+                'nombre' => (string) $fila['tbcomponentenombre'],
+                'estado' => (string) $fila['estado'],
+                'existencia' => (float) $fila['tbcomponenteexistencia'],
+                'unidad' => $fila['tbcomponenteunidad'],
+            ];
+        }
+        return $componentes;
+    }
+
     public function contarPorVendedor(int $idVendedor): int
     {
         $consulta = $this->conexion->prepare('SELECT COUNT(*) FROM tbcomponente WHERE tbcomponentevendedorid = ?');

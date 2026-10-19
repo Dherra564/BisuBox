@@ -18,7 +18,7 @@ $titulos = [
 ?>
 <?php foreach ($mensajes as $mensaje): ?>
     <?php $tipo = isset($iconos[$mensaje['tipo']]) ? $mensaje['tipo'] : Mensaje::ADVERTENCIA; ?>
-    <div class="alerta alerta<?= ucfirst($tipo) ?>" role="<?= $tipo === Mensaje::ERROR ? 'alert' : 'status' ?>">
+    <div class="alerta alerta<?= ucfirst($tipo) ?>" role="<?= $tipo === Mensaje::ERROR ? 'alert' : 'status' ?>" <?= $tipo !== Mensaje::ERROR ? 'data-autocerrar' : '' ?>>
         <span class="alertaIcono" aria-hidden="true"><?= $iconos[$tipo] ?></span>
         <p><strong><?= $titulos[$tipo] ?>:</strong> <?= htmlspecialchars($mensaje['texto']) ?></p>
         <button type="button" class="alertaCerrar" aria-label="Cerrar mensaje">×</button>

@@ -74,6 +74,9 @@ $scriptsExtra = $scriptsExtra ?? [];
 <script src="<?= Configuracion::recurso('js/alertas.js') ?>"></script>
 <script src="<?= Configuracion::recurso('js/validaciones.js') ?>"></script>
 <script src="<?= Configuracion::recurso('js/menu.js') ?>"></script>
+<?php if ($navegacion['avisos']): ?>
+    <script src="<?= Configuracion::recurso('js/avisos.js') ?>"></script>
+<?php endif; ?>
 <?php foreach ($scriptsExtra as $script): ?>
     <script src="<?= htmlspecialchars(Configuracion::recurso('js/' . $script)) ?>"></script>
 <?php endforeach; ?>

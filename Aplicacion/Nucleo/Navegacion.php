@@ -3,14 +3,7 @@
 namespace Aplicacion\Nucleo;
 
 use Aplicacion\Modelos\Vendedor;
-use Aplicacion\Nucleo\Carrito;
-use Aplicacion\Nucleo\EstadoPedido;
-use Aplicacion\Nucleo\EstadoPersonalizado;
-use Aplicacion\Nucleo\TipoContacto;
-use Aplicacion\Nucleo\UsuarioActual;
-use Aplicacion\Nucleo\WhatsApp;
 use Aplicacion\Repositorios\ClienteRepositorio;
-use Aplicacion\Repositorios\PedidoRepositorio;
 use Aplicacion\Repositorios\PersonalizadoRepositorio;
 use Aplicacion\Repositorios\ProductoRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
@@ -41,19 +34,12 @@ class Navegacion
 
         [$unidades, $total] = $puedeComprar ? self::resumenCarrito($tienda) : [0, 0.0];
 
-        $pendientes = 0;
+        $numeros = ['pedidos' => 0, 'productos' => 0, 'inventario' => 0];
         if ($esDuenio) {
             try {
-                $personalizadoRepositorio = new PersonalizadoRepositorio();
-                $pendientes = (new PedidoRepositorio())->contar([
-                    'idVendedor' => (int) $propia->getIdVendedor(),
-                    'estado' => EstadoPedido::CONFIRMADO,
-                ]) + $personalizadoRepositorio->contar([
-                    'idVendedor' => (int) $propia->getIdVendedor(),
-                    'estado' => EstadoPersonalizado::EN_REVISION,
-                ]) + $personalizadoRepositorio->contarAvisosSinVer((int) $propia->getIdVendedor());
+                $numeros = AvisosTienda::numeros((int) $propia->getIdVendedor());
             } catch (Throwable $error) {
-                error_log('No se pudieron contar los pedidos pendientes: ' . $error->getMessage());
+                error_log('No se pudieron contar los avisos de la tienda: ' . $error->getMessage());
             }
         }
 
@@ -91,7 +77,8 @@ class Navegacion
             'whatsApp' => $esDuenio ? null : $whatsApp,
             'rutaPedidos' => self::rutaPedidos($esDuenio),
             'textoPedidos' => $esDuenio ? 'Pedidos' : (UsuarioActual::esVendedor() ? 'Mis compras' : 'Mis pedidos'),
-            'menu' => self::menu($paginaActual, $rutaTienda, $propia, $esDuenio, $unidades, $pendientes, $porDecidir),
+            'avisos' => $propia !== null,
+            'menu' => self::menu($paginaActual, $rutaTienda, $propia, $esDuenio, $unidades, $numeros, $porDecidir),
         ];
     }
 
@@ -119,7 +106,7 @@ class Navegacion
         return UsuarioActual::haySesion() ? '/mis-pedidos' : '/ingresar?volver=' . urlencode('/mis-pedidos');
     }
 
-    private static function menu(string $paginaActual, ?string $rutaTienda, ?Vendedor $propia, bool $esDuenio, int $unidades, int $pendientes, int $porDecidir): array
+    private static function menu(string $paginaActual, ?string $rutaTienda, ?Vendedor $propia, bool $esDuenio, int $unidades, array $numeros, int $porDecidir): array
     {
         $opcion = fn(string $clave, string $texto, string $ruta, string $icono, int $numero = 0): array => [
             'clave' => $clave,
@@ -167,10 +154,10 @@ class Navegacion
 
         return [
             $opcion('inicio', 'Inicio', $rutaPropia, 'inicio'),
-            $opcion('pedidos', 'Pedidos', '/pedidos', 'recibo', $pendientes),
+            $opcion('pedidos', 'Pedidos', '/pedidos', 'recibo', $numeros['pedidos']),
             $opcion('clientes', 'Clientes', '/clientes', 'clientes'),
-            $opcion('productos', 'Productos', '/productos', 'productos'),
-            $opcion('inventario', 'Inventario', '/inventario', 'inventario'),
+            $opcion('productos', 'Productos', '/productos', 'productos', $numeros['productos']),
+            $opcion('inventario', 'Inventario', '/inventario', 'inventario', $numeros['inventario']),
             $opcion('proveedores', 'Proveedores', '/proveedores', 'proveedores'),
             $opcion('tienda', 'Mi tienda', '/tienda', 'tienda'),
             $separador('Mi cuenta'),
