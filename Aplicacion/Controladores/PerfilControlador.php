@@ -58,7 +58,6 @@ class PerfilControlador
 
         $validador = $this->validarDatos($datos, $tieneIdentificacion);
         $fotoNueva = (new SubidaArchivo())->recibir('fotoPerfil', SubidaArchivo::FOTO_PERFIL, $validador);
-        // La foto que eligió no se pierde aunque el formulario tenga errores
         $datos['fotoPerfilPendiente'] = $fotoNueva;
         if (!$validador->esValido()) {
             SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_PERFIL, $fotoNueva);
@@ -83,7 +82,6 @@ class PerfilControlador
             error_log('Error al actualizar perfil: ' . $error->getMessage());
             SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_PERFIL, $nombreFoto);
             Mensaje::error('No se pudo guardar. Intente de nuevo.');
-            // Se vuelve a mostrar el formulario con lo que escribió, para no perder los cambios
             $this->usuario = $this->cargarUsuarioActual();
             $this->mostrarPerfil($datos, [], true);
             return;
@@ -132,7 +130,6 @@ class PerfilControlador
             $validador->agregarError('contrasenaNueva', 'La contraseña nueva debe ser diferente a la actual');
         }
 
-        // Lo que escribió se vuelve a mostrar si hay algún error
         $datos = ['contrasenaActual' => $actual, 'contrasenaNueva' => $nueva, 'confirmarContrasena' => $confirmar];
         if (!$validador->esValido()) {
             $this->mostrarVista('Perfil/cambiarContrasena', ['datos' => $datos, 'errores' => $validador->errores()]);

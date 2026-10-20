@@ -132,7 +132,7 @@ class DatosProducto
         }
     }
 
-    /** @param array<int, Componente> $componentes los activos del vendedor, por id */
+    /** @param array<int, Componente> $componentes */
     public static function validar(Validador $validador, array $datos, array $componentes, int $idVendedor): void
     {
         self::validarDatosComunes($validador, $datos, $idVendedor);
@@ -178,7 +178,6 @@ class DatosProducto
     }
 
     /**
-     * Arma el producto con los costos de uno solo
      * @param array<int, Componente> $componentes
      */
     public static function crearProducto(array $datos, int $idVendedor, array $componentes): Producto

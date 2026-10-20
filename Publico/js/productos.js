@@ -106,7 +106,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Si el intento anterior falló, la ventana se abre sola con la cantidad que escribió y el error
         var idReabrir = modalHiceMas.getAttribute('data-reabrir-id');
         if (idReabrir) {
             var botonReabrir = document.querySelector('[data-hice-mas][data-id="' + idReabrir + '"]');
@@ -117,7 +116,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 errorModal.hidden = errorModal.textContent === '';
                 campoCantidadModal.select();
             } else if (modalHiceMas.getAttribute('data-reabrir-error')) {
-                // Si el producto ya no tiene el botón (por ejemplo, se desactivó), el error se muestra arriba
                 var aviso = document.createElement('div');
                 aviso.className = 'alerta alertaError';
                 aviso.setAttribute('role', 'alert');

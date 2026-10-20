@@ -144,7 +144,6 @@ $soloLectura = $editando ? '' : 'readonly';
                         <input type="file" id="fotoPerfil" name="fotoPerfil" accept="image/jpeg,image/png"
                                class="campoArchivo" <?= $editando ? '' : 'disabled' ?>>
                         <?php if ($fotoPendiente !== null): ?>
-                            <!-- La foto que ya eligió no se pierde aunque el formulario tenga errores -->
                             <input type="hidden" name="fotoPerfilPendiente" value="<?= htmlspecialchars($fotoPendiente) ?>">
                             <span class="nombreArchivo">Ya eligió esta foto. Se guarda con los cambios</span>
                         <?php else: ?>

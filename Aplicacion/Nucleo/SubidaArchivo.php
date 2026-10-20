@@ -62,11 +62,6 @@ class SubidaArchivo
         return $this->guardarImagen($archivo, self::CARPETA_PRODUCTOS, 'La foto');
     }
 
-    /**
-     * Toma la foto de un formulario. Si eligió una nueva, la guarda; si no, usa la que ya
-     * había subido en un intento anterior que tuvo errores ($campo . 'Pendiente').
-     * Si la nueva no sirve, agrega el error y conserva la anterior.
-     */
     public function recibir(string $campo, string $tipo, Validador $validador): ?string
     {
         $pendiente = self::pendienteValida($tipo, $_POST[$campo . 'Pendiente'] ?? null);
@@ -93,7 +88,6 @@ class SubidaArchivo
         return $nombre;
     }
 
-    // El formulario tuvo errores: la foto ya subida queda guardada para el próximo intento
     public static function recordarPendiente(string $tipo, ?string $nombre): void
     {
         if ($nombre === null || !isset(self::CARPETAS[$tipo]) || !self::esNombreValido($nombre)) {
@@ -106,7 +100,6 @@ class SubidaArchivo
         $_SESSION[self::CLAVE_PENDIENTES][$tipo] = array_slice($pendientes, -5);
     }
 
-    // La foto ya se guardó con el registro: deja de estar pendiente
     public static function olvidarPendiente(string $tipo, ?string $nombre): void
     {
         if ($nombre === null || !isset($_SESSION[self::CLAVE_PENDIENTES][$tipo])) {
@@ -118,7 +111,6 @@ class SubidaArchivo
         ));
     }
 
-    // Solo se acepta un nombre que esta misma sesión subió, para que nadie use fotos ajenas
     private static function pendienteValida(string $tipo, mixed $nombre): ?string
     {
         if (!is_string($nombre) || !self::esNombreValido($nombre)) {

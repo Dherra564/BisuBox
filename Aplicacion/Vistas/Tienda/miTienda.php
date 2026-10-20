@@ -94,7 +94,6 @@
                     <input type="file" id="tiendaLogo" name="tiendaLogo" accept="image/jpeg,image/png"
                            class="campoArchivo" <?php echo $editando ? '' : 'disabled' ?>>
                     <?php if ($logoPendiente !== null): ?>
-                        <!-- El logo que ya eligió no se pierde aunque el formulario tenga errores -->
                         <input type="hidden" name="tiendaLogoPendiente" value="<?php echo htmlspecialchars($logoPendiente) ?>">
                         <span class="nombreArchivo">Ya eligió este logo. Se guarda con los cambios</span>
                     <?php else: ?>

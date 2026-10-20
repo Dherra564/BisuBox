@@ -81,14 +81,12 @@ class ProductoControlador
     public function insertar(): void
     {
         $this->verificarCsrf('/productos/nuevo');
-        // Aquí no se redirige aunque ya no haya componentes: se vuelve a mostrar lo que escribió
         $componentes = $this->componentesDisponibles(false);
 
         $datos = DatosProducto::leer();
         $validador = new Validador();
         DatosProducto::validar($validador, $datos, $componentes, $this->idVendedor);
         $foto = (new SubidaArchivo())->recibir('foto', SubidaArchivo::FOTO_PRODUCTO, $validador);
-        // La foto que eligió no se pierde aunque el formulario tenga errores
         $datos['fotoPendiente'] = $foto;
         if (!$validador->esValido()) {
             SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_PRODUCTO, $foto);
@@ -159,7 +157,6 @@ class ProductoControlador
         $validador = new Validador();
         DatosProducto::validarDatosComunes($validador, $datos, $this->idVendedor, $producto);
         $foto = (new SubidaArchivo())->recibir('foto', SubidaArchivo::FOTO_PRODUCTO, $validador);
-        // La foto nueva y la casilla "Quitar" no se pierden aunque el formulario tenga errores
         $datos['fotoPendiente'] = $foto;
         $datos['quitarFoto'] = ($_POST['quitarFoto'] ?? '') === '1';
         if (!$validador->esValido()) {
@@ -274,7 +271,6 @@ class ProductoControlador
         $this->redirigir($volver);
     }
 
-    // Si "Hice más" falla, la ventana se vuelve a abrir con la cantidad que escribió y el error
     private function fallarHiceMas(Producto $producto, string $cantidad, string $error, string $volver): never
     {
         $_SESSION['hiceMasFallido'] = [

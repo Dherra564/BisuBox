@@ -136,8 +136,7 @@ class Validador
         }
         return $this;
     }
-
-    // Dirección de entrega: letras, números, espacios, saltos de línea y los signos comunes de una dirección
+    
     public function direccion(string $campo, ?string $valor, string $mensaje = 'La dirección solo puede tener letras, números, espacios y los signos . , # - / ( ) °'): self
     {
         if ($this->debeRevisar($campo, $valor) && !preg_match('/^[\p{L}0-9\s.,#\-\/()°º:;]+$/u', trim($valor))) {

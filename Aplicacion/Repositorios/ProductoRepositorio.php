@@ -321,7 +321,6 @@ class ProductoRepositorio
     }
 
     /**
-     * Productos de una tienda para el carrito del cliente, por su id. Solo los de ese vendedor
      * @param int[] $ids
      * @return array<int, Producto>
      */
