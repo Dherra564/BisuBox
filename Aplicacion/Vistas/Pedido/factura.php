@@ -2,7 +2,7 @@
 /**
  
  * @var \Aplicacion\Modelos\Pedido $pedido
- * @var array $datosEncabezado  [['titulo' => ..., 'valor' => ..., 'html' => bool]]
+ * @var array 
  * @var array<int, int> $existencias  (opcional) existencia actual de cada producto
  */
 
@@ -12,6 +12,7 @@ use Aplicacion\Nucleo\MetodoPago;
 use Aplicacion\Nucleo\Numero;
 
 $existencias = $existencias ?? [];
+$disenos = $disenos ?? [];
 $cancelado = $pedido->getEstado() === EstadoPedido::CANCELADO;
 ?>
 <article class="factura <?= $cancelado ? 'facturaAnulada' : '' ?>">
@@ -44,12 +45,12 @@ $cancelado = $pedido->getEstado() === EstadoPedido::CANCELADO;
             </thead>
             <tbody>
                 <?php foreach ($pedido->getDetalles() as $detalle): ?>
-                    <?php $hay = $existencias[$detalle->getIdProducto()] ?? null; ?>
+                    <?php $hay = $detalle->esDiseno() ? null : ($existencias[$detalle->getIdProducto()] ?? null); ?>
                     <tr>
                         <td data-etiqueta="Producto">
                             <span>
                                 <?= htmlspecialchars($detalle->getNombreProducto()) ?>
-                                <?php if ($pedido->estaPendiente() && $existencias !== []): ?>
+                                <?php if ($pedido->estaPendiente() && $existencias !== [] && !$detalle->esDiseno()): ?>
                                     <br><span class="<?= $hay !== null && $hay >= $detalle->getCantidad() ? 'textoAyuda' : 'errorCampo' ?>">
                                         <?= $hay === null ? 'Este producto ya no existe' : 'Tiene ' . $hay . ' en existencia' ?>
                                     </span>
@@ -64,6 +65,23 @@ $cancelado = $pedido->getEstado() === EstadoPedido::CANCELADO;
             </tbody>
         </table>
     </div>
+
+    <?php if ($disenos !== []): ?>
+        <div class="disenosCarrito">
+            <h3>Piezas personalizadas</h3>
+            <?php foreach ($pedido->getDetalles() as $detalle): ?>
+                <?php if ($detalle->esDiseno() && isset($disenos[$detalle->getIdDiseno()])): ?>
+                    <?php
+                    $disenoLinea = $disenos[$detalle->getIdDiseno()];
+                    $avisoDiseno = null;
+                    $precioDiseno = $detalle->getSubtotal();
+                    $quitarDiseno = false;
+                    require __DIR__ . '/../Plantilla/lineaDiseno.php';
+                    ?>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
 
     <div class="totalesCompra">
         <div class="totalCompra"><span>Total</span><strong><?= Numero::moneda($pedido->getTotal()) ?></strong></div>

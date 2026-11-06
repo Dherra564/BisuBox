@@ -7,7 +7,6 @@ use Configuracion\Configuracion;
 $scriptsExtra = $scriptsExtra ?? [];
 ?>
 </main>
-</div>
 
 <footer class="pieSitio" id="contacto">
     <?php if ($tiendaSitio !== null): ?>
@@ -58,6 +57,8 @@ $scriptsExtra = $scriptsExtra ?? [];
         <p class="pieSitioHecha">BisuBox · Sistema para negocios de bisutería</p>
     <?php endif; ?>
 </footer>
+</div>
+</div>
 
 <?php if ($navegacion['whatsApp'] !== null): ?>
     <a href="<?= htmlspecialchars($navegacion['whatsApp']) ?>" class="botonWhatsApp" target="_blank" rel="noopener"

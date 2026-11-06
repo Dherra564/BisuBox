@@ -381,7 +381,61 @@ CREATE TABLE `tbpedidodetalle` (
     `tbpedidodetallecantidad` int(11) DEFAULT NULL,
     `tbpedidodetalleprecio` decimal(12, 2) DEFAULT NULL,
     `tbpedidodetallesubtotal` decimal(12, 2) DEFAULT NULL,
+    `tbpedidodetalledisenoid` int(11) DEFAULT NULL,
     PRIMARY KEY (`tbpedidodetalleid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE `tbcomponentevista` (
+    `tbcomponentevistaid` int(11) NOT NULL,
+    `tbcomponentevistavendedorid` int(11) DEFAULT NULL,
+    `tbcomponentevistacomponenteid` int(11) DEFAULT NULL,
+    `tbcomponentevistafoto` varchar(500) DEFAULT NULL,
+    `tbcomponentevistatamano` decimal(6, 1) DEFAULT NULL,
+    `tbcomponentevistaregistrofecha` datetime DEFAULT NULL,
+    `tbcomponentevistaactivo` tinyint(4) DEFAULT NULL,
+    PRIMARY KEY (`tbcomponentevistaid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE `tbpersonalizador` (
+    `tbpersonalizadorid` int(11) NOT NULL,
+    `tbpersonalizadorvendedorid` int(11) DEFAULT NULL,
+    `tbpersonalizadorhilocomponenteid` int(11) DEFAULT NULL,
+    `tbpersonalizadormanoobra` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadorganancia` decimal(6, 2) DEFAULT NULL,
+    `tbpersonalizadoractivo` tinyint(4) DEFAULT NULL,
+    `tbpersonalizadoractualizacionfecha` datetime DEFAULT NULL,
+    PRIMARY KEY (`tbpersonalizadorid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE `tbdiseno` (
+    `tbdisenoid` int(11) NOT NULL,
+    `tbdisenoclienteid` int(11) DEFAULT NULL,
+    `tbdisenovendedorid` int(11) DEFAULT NULL,
+    `tbdisenotipopieza` varchar(20) DEFAULT NULL,
+    `tbdisenolargo` decimal(6, 1) DEFAULT NULL,
+    `tbdisenosimetrico` tinyint(4) DEFAULT NULL,
+    `tbdisenohilocomponenteid` int(11) DEFAULT NULL,
+    `tbdisenohilonombre` varchar(100) DEFAULT NULL,
+    `tbdisenohilocosto` decimal(14, 4) DEFAULT NULL,
+    `tbdisenomanoobra` decimal(12, 2) DEFAULT NULL,
+    `tbdisenoganancia` decimal(6, 2) DEFAULT NULL,
+    `tbdisenocosto` decimal(12, 2) DEFAULT NULL,
+    `tbdisenoprecio` decimal(12, 2) DEFAULT NULL,
+    `tbdisenoestado` varchar(20) DEFAULT NULL,
+    `tbdisenoregistrofecha` datetime DEFAULT NULL,
+    PRIMARY KEY (`tbdisenoid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE `tbdisenodetalle` (
+    `tbdisenodetalleid` int(11) NOT NULL,
+    `tbdisenodetalledisenoid` int(11) DEFAULT NULL,
+    `tbdisenodetallecomponenteid` int(11) DEFAULT NULL,
+    `tbdisenodetalleposicion` int(11) DEFAULT NULL,
+    `tbdisenodetallenombre` varchar(100) DEFAULT NULL,
+    `tbdisenodetallefoto` varchar(500) DEFAULT NULL,
+    `tbdisenodetalletamano` decimal(6, 1) DEFAULT NULL,
+    `tbdisenodetallecostounitario` decimal(14, 4) DEFAULT NULL,
+    PRIMARY KEY (`tbdisenodetalleid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------

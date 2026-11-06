@@ -11,6 +11,7 @@ use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Repositorios\ClienteRepositorio;
+use Aplicacion\Repositorios\DisenoRepositorio;
 use Aplicacion\Repositorios\PedidoRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
 use Configuracion\Configuracion;
@@ -59,8 +60,10 @@ class MisPedidosControlador
         $pedido = $this->buscarPedido($_GET['id'] ?? null);
         $vendedor = (new VendedorRepositorio())->buscarPorId($pedido->getIdVendedor());
 
+        $idsDisenos = array_values(array_filter(array_map(fn($detalle): ?int => $detalle->getIdDiseno(), $pedido->getDetalles())));
         $this->mostrarVista('MisPedidos/detalle', [
             'pedido' => $pedido,
+            'disenos' => (new DisenoRepositorio())->buscarVarios($idsDisenos),
             'contactos' => $vendedor !== null ? $vendedor->getContactos() : [],
         ]);
     }

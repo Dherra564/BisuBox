@@ -84,6 +84,16 @@ $iconosContacto = [
     </section>
 <?php endif; ?>
 
+<?php if ($busqueda === '' && $hayPersonalizador): ?>
+    <section class="tiendaPersonaliza">
+        <div>
+            <h2>Arme su propia pieza</h2>
+            <p>Escoja las piezas, véala armada al instante y pídala a su gusto.</p>
+        </div>
+        <a href="<?= $urlBase ?>/tienda/<?= htmlspecialchars((string) $tiendaVista->getTiendaEnlace()) ?>/arma-tu-pieza" class="boton">Arme su pieza</a>
+    </section>
+<?php endif; ?>
+
 <section id="productos" class="tiendaSeccion">
     <div class="tiendaSeccionEncabezado">
         <h2><?= $busqueda !== '' ? 'Resultados para «' . htmlspecialchars($busqueda) . '»' : 'Nuestros productos' ?>

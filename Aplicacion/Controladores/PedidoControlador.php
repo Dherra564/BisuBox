@@ -6,10 +6,13 @@ use Aplicacion\Modelos\Pedido;
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\EstadoPedido;
 use Aplicacion\Nucleo\Mensaje;
+use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\OperacionNoPermitida;
 use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\UsuarioActual;
+use Aplicacion\Repositorios\ComponenteRepositorio;
+use Aplicacion\Repositorios\DisenoRepositorio;
 use Aplicacion\Repositorios\PedidoRepositorio;
 use Aplicacion\Repositorios\ProductoRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
@@ -77,16 +80,31 @@ class PedidoControlador
 
     
         $existencias = [];
+        $faltanComponentes = [];
         if ($pedido->estaPendiente()) {
-            $ids = array_map(fn($detalle): int => $detalle->getIdProducto(), $pedido->getDetalles());
-            foreach ((new ProductoRepositorio())->buscarVarios($this->idVendedor, $ids) as $idProducto => $producto) {
-                $existencias[$idProducto] = $producto->getExistencia();
+            $ids = array_values(array_filter(array_map(fn($detalle): ?int => $detalle->getIdProducto(), $pedido->getDetalles())));
+            if ($ids !== []) {
+                foreach ((new ProductoRepositorio())->buscarVarios($this->idVendedor, $ids) as $idProducto => $producto) {
+                    $existencias[$idProducto] = $producto->getExistencia();
+                }
+            }
+            $componenteRepositorio = new ComponenteRepositorio();
+            foreach ($this->pedidoRepositorio->componentesDeDisenos($pedido) as $idComponente => $necesita) {
+                $componente = $componenteRepositorio->buscarPorId($idComponente, $this->idVendedor);
+                if ($componente === null || $componente->getExistencia() + 0.00001 < $necesita) {
+                    $faltanComponentes[] = '«' . ($componente?->getNombre() ?? 'Un componente') . '»: tiene '
+                        . Numero::formatear(max(0, $componente?->getExistencia() ?? 0))
+                        . ' y las piezas personalizadas llevan ' . Numero::formatear($necesita);
+                }
             }
         }
 
+        $idsDisenos = array_values(array_filter(array_map(fn($detalle): ?int => $detalle->getIdDiseno(), $pedido->getDetalles())));
         $this->mostrarVista('Pedido/detalle', [
             'pedido' => $pedido,
             'existencias' => $existencias,
+            'faltanComponentes' => $faltanComponentes,
+            'disenos' => (new DisenoRepositorio())->buscarVarios($idsDisenos),
         ]);
     }
 

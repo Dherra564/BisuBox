@@ -7,20 +7,22 @@ class PedidoDetalle
 {
     private ?int $idPedidoDetalle;
     private ?int $idPedido;
-    private int $idProducto;
+    private ?int $idProducto;
     private string $nombreProducto;
     private int $cantidad;
     private float $precio;
     private float $subtotal;
+    private ?int $idDiseno;
 
     public function __construct(
         ?int $idPedidoDetalle,
         ?int $idPedido,
-        int $idProducto,
+        ?int $idProducto,
         string $nombreProducto,
         int $cantidad,
         float $precio,
-        ?float $subtotal = null
+        ?float $subtotal = null,
+        ?int $idDiseno = null
     ) {
         $this->idPedidoDetalle = $idPedidoDetalle;
         $this->idPedido = $idPedido;
@@ -29,6 +31,7 @@ class PedidoDetalle
         $this->cantidad = $cantidad;
         $this->precio = $precio;
         $this->subtotal = $subtotal ?? round($cantidad * $precio, 2);
+        $this->idDiseno = $idDiseno;
     }
 
     public function getIdPedidoDetalle(): ?int
@@ -41,9 +44,19 @@ class PedidoDetalle
         return $this->idPedido;
     }
 
-    public function getIdProducto(): int
+    public function getIdProducto(): ?int
     {
         return $this->idProducto;
+    }
+
+    public function getIdDiseno(): ?int
+    {
+        return $this->idDiseno;
+    }
+
+    public function esDiseno(): bool
+    {
+        return $this->idDiseno !== null;
     }
 
     public function getNombreProducto(): string

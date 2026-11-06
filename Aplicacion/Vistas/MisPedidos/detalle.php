@@ -16,6 +16,7 @@ use Aplicacion\Nucleo\WhatsApp;
 $titulo = 'Pedido #' . $pedido->getIdPedido();
 $paginaActual = 'misPedidos';
 $volverA = ['texto' => UsuarioActual::esVendedor() ? 'Mis compras' : 'Mis pedidos', 'ruta' => '/mis-pedidos'];
+$scriptsExtra = ['algoritmosVista.js', 'vistaDiseno.js'];
 require __DIR__ . '/../Plantilla/encabezado.php';
 
 $enlaceTienda = '<a href="' . $urlBase . '/tienda/' . htmlspecialchars($pedido->getEnlaceTienda()) . '" class="facturaProveedor">'

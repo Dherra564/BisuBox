@@ -11,6 +11,7 @@
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\FormaEntrega;
 use Aplicacion\Nucleo\MetodoPago;
+use Aplicacion\Nucleo\CalculoDiseno;
 use Aplicacion\Nucleo\Numero;
 
 $vendedor = $carrito['vendedor'];
@@ -108,6 +109,13 @@ $telefono = strlen($telefono) === 8 ? substr($telefono, 0, 4) . '-' . substr($te
                 <li>
                     <span><?= $linea['cantidad'] ?> × <?= htmlspecialchars($linea['producto']->getNombre()) ?></span>
                     <strong><?= Numero::moneda($linea['subtotal']) ?></strong>
+                </li>
+            <?php endforeach; ?>
+            <?php foreach ($carrito['disenos'] as $lineaDiseno): ?>
+                <li>
+                    <span>1 × <?= htmlspecialchars(CalculoDiseno::nombreDiseno($lineaDiseno['diseno']['tipo'])) ?>
+                        (<?= htmlspecialchars(CalculoDiseno::descripcion($lineaDiseno['diseno'])) ?>)</span>
+                    <strong><?= Numero::moneda($lineaDiseno['subtotal']) ?></strong>
                 </li>
             <?php endforeach; ?>
         </ul>

@@ -14,6 +14,7 @@ use Aplicacion\Nucleo\WhatsApp;
 $titulo = 'Pedido #' . $pedido->getIdPedido();
 $paginaActual = 'pedidos';
 $volverA = ['texto' => 'Pedidos', 'ruta' => '/pedidos'];
+$scriptsExtra = ['algoritmosVista.js', 'vistaDiseno.js'];
 require __DIR__ . '/../Plantilla/encabezado.php';
 
 $telefono = $pedido->getTelefonoCliente();
@@ -27,7 +28,7 @@ $datosEncabezado = [
 
 $faltaExistencia = false;
 foreach ($pedido->getDetalles() as $detalle) {
-    if (($existencias[$detalle->getIdProducto()] ?? 0) < $detalle->getCantidad()) {
+    if (!$detalle->esDiseno() && ($existencias[$detalle->getIdProducto()] ?? 0) < $detalle->getCantidad()) {
         $faltaExistencia = true;
     }
 }
@@ -68,6 +69,18 @@ $numero = $pedido->getIdPedido();
         </form>
     <?php endif; ?>
 </div>
+
+<?php if ($pedido->estaPendiente() && $faltanComponentes !== []): ?>
+    <div class="cajaInformativa cajaAdvertencia">
+        <p>No tiene suficientes componentes para las piezas personalizadas. Registre una
+            <a href="<?= $urlBase ?>/compras-proveedor/nueva">compra</a> antes de confirmar, o cancele el pedido.</p>
+        <ul>
+            <?php foreach ($faltanComponentes as $faltante): ?>
+                <li><?= htmlspecialchars($faltante) ?></li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>
 
 <?php if ($pedido->estaPendiente() && $faltaExistencia): ?>
     <p class="cajaInformativa cajaAdvertencia">

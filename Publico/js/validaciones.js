@@ -51,6 +51,26 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             mensaje: 'Escriba los minutos como número entero, por ejemplo 45'
         },
+        tamanoPieza: {
+            prueba: function (valor) {
+                var texto = valor.replace(',', '.');
+                return /^[0-9]{1,2}(\.[0-9])?$/.test(texto) && parseFloat(texto) >= 1 && parseFloat(texto) <= 80;
+            },
+            mensaje: 'El tamaño debe ser un número entre 1 y 80 mm, con un decimal como máximo'
+        },
+        manoObra: {
+            prueba: function (valor) {
+                var texto = valor.replace(/ /g, '');
+                return /^[0-9]{1,10}([.,][0-9]{1,2})?$/.test(texto) && parseFloat(texto.replace(',', '.')) <= 100000;
+            },
+            mensaje: 'La mano de obra debe ser un monto entre ₡0 y ₡100 000'
+        },
+        ganancia: {
+            prueba: function (valor) {
+                return /^[0-9]{1,3}$/.test(valor) && parseInt(valor, 10) <= 300;
+            },
+            mensaje: 'La ganancia debe ser un porcentaje entero entre 0 y 300'
+        },
     };
 
     function limpiarTelefono(valor) {
@@ -137,12 +157,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function revisarCampo(campo, formulario) {
-        // Un campo escondido (por ejemplo la dirección cuando escoge retiro) no se revisa
+        
         if (campo.closest('[hidden]')) {
             return '';
         }
 
-        // Opciones de radio: basta con que una del grupo esté marcada
+        
         if (campo.type === 'radio') {
             var grupo = formulario.querySelectorAll('input[type="radio"][name="' + campo.name + '"]');
             var marcada = Array.prototype.some.call(grupo, function (opcion) { return opcion.checked; });
@@ -240,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Revisa un campo y muestra o quita su error en ese mismo momento
+        
         function revisarYMostrar(campo) {
             if (!campo.matches(selectorCampos)) {
                 return;
@@ -259,7 +279,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // Campos que dependen de otro (confirmar contraseña, contraseña nueva distinta a la actual)
+        
         function revisarDependientes(campo) {
             if (!campo.id) {
                 return;
@@ -272,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
         }
 
-        // Mientras escribe: el error aparece o desaparece con cada tecla
+        
         function alCambiar(evento) {
             var campo = evento.target;
             if (!campo.matches('input, select, textarea') || campo.type === 'hidden') {
@@ -283,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (campo.matches(selectorCampos)) {
                 revisarYMostrar(campo);
             } else if (campo.closest('.campoConError')) {
-                // Campos sin regla del navegador (por ejemplo una foto): al cambiarlos se quita el error del servidor
+                
                 quitarError(campo);
             }
             revisarDependientes(campo);
@@ -292,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function () {
         formulario.addEventListener('input', alCambiar);
         formulario.addEventListener('change', alCambiar);
 
-        // Al salir de un campo que ya tocó, se revisa aunque lo haya dejado vacío
+        
         formulario.addEventListener('focusout', function (evento) {
             var campo = evento.target;
             if (campo.matches && campo.matches(selectorCampos) && campo.getAttribute('data-tocado') === 'si') {
@@ -301,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Lista de requisitos de la contraseña que se marca mientras escribe
+    
     var requisitosContrasena = [
         { texto: 'Entre 8 y 20 caracteres', cumple: function (v) { return v.length >= 8 && v.length <= 20; } },
         { texto: 'Una letra mayúscula', cumple: function (v) { return /[A-Z]/.test(v); } },
@@ -322,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return elemento;
         });
 
-        // La lista reemplaza el texto de ayuda fijo que estaba debajo del campo
+        
         var ayuda = campo.parentNode.querySelector('.textoAyuda');
         if (ayuda) {
             ayuda.hidden = true;
@@ -407,8 +427,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Respaldo de lo escrito: si al enviar la página expiró o algo falló y el sistema la volvió
-    // a cargar vacía, lo que la persona escribió se vuelve a poner en los campos
+    
     var CLAVE_RESPALDO = 'bisuboxRespaldoFormulario';
 
     function camposRespaldables(formulario) {
@@ -430,7 +449,7 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             sessionStorage.setItem(CLAVE_RESPALDO, JSON.stringify({ accion: formulario.getAttribute('action'), campos: campos }));
         } catch (error) {
-            // Sin almacenamiento disponible: simplemente no hay respaldo
+            
         }
     }
 
@@ -442,7 +461,7 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (error) {
             return;
         }
-        // Solo cuando la página muestra un error (si se guardó bien, no hay nada que restaurar)
+        
         if (!respaldo || !document.querySelector('.alertaError')) {
             return;
         }
@@ -457,12 +476,12 @@ document.addEventListener('DOMContentLoaded', function () {
         var escritos = campos.filter(function (campo) {
             return campo.type !== 'checkbox' && campo.type !== 'radio' && campo.tagName !== 'SELECT' && campo.value.trim() !== '';
         });
-        // Si el sistema ya devolvió el formulario lleno, se respeta lo que trae
+        
         if (escritos.length > 0) {
             return;
         }
 
-        // Los campos con el mismo nombre (por ejemplo filas repetidas) se llenan en el mismo orden
+        
         var usados = {};
         respaldo.campos.forEach(function (guardado) {
             var mismos = campos.filter(function (campo) { return campo.name === guardado.nombre; });

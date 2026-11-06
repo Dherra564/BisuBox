@@ -12,7 +12,7 @@ use Aplicacion\Nucleo\Numero;
 
 $titulo = 'Carrito';
 $paginaActual = 'carrito';
-$scriptsExtra = ['pedido.js'];
+$scriptsExtra = ['pedido.js', 'algoritmosVista.js', 'vistaDiseno.js'];
 require __DIR__ . '/../Plantilla/encabezado.php';
 ?>
 
@@ -37,6 +37,7 @@ require __DIR__ . '/../Plantilla/encabezado.php';
                 </h2>
             </header>
 
+            <?php if ($tienda['lineas'] !== []): ?>
             <form method="post" action="<?= $urlBase ?>/carrito/actualizar" class="formularioCarrito">
                 <?= Csrf::campo() ?>
                 <input type="hidden" name="tienda" value="<?= (int) $idVendedor ?>">
@@ -91,6 +92,22 @@ require __DIR__ . '/../Plantilla/encabezado.php';
                     <p><button type="submit" class="boton botonSecundario botonPequeno">Actualizar cantidades</button></p>
                 </noscript>
             </form>
+            <?php endif; ?>
+
+            <?php if ($tienda['disenos'] !== []): ?>
+                <div class="disenosCarrito">
+                    <h3>Piezas personalizadas</h3>
+                    <?php foreach ($tienda['disenos'] as $lineaDiseno): ?>
+                        <?php
+                        $disenoLinea = $lineaDiseno['diseno'];
+                        $avisoDiseno = $lineaDiseno['aviso'];
+                        $precioDiseno = $lineaDiseno['subtotal'];
+                        $quitarDiseno = true;
+                        require __DIR__ . '/../Plantilla/lineaDiseno.php';
+                        ?>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
 
             <div class="totalesCompra">
                 <div class="totalCompra"><span>Total</span><strong><?= Numero::moneda($tienda['total']) ?></strong></div>
