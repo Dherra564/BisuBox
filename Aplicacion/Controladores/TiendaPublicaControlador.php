@@ -3,6 +3,7 @@
 namespace Aplicacion\Controladores;
 
 use Aplicacion\Nucleo\Carrito;
+use Aplicacion\Nucleo\ContextoPersonalizador;
 use Aplicacion\Nucleo\EstadoPedido;
 use Aplicacion\Nucleo\Mensaje;
 use Aplicacion\Repositorios\PedidoRepositorio;
@@ -37,6 +38,7 @@ class TiendaPublicaControlador
             $enCarrito = Carrito::deTienda($idVendedor);
         }
 
+        $hayPersonalizador = ContextoPersonalizador::cargar($idVendedor) !== null;
         $tiendaVista = $vendedor;
         $mensajes = Mensaje::obtener();
 

@@ -6,7 +6,9 @@ use Aplicacion\Modelos\Pedido;
 use Aplicacion\Modelos\PedidoDetalle;
 use Aplicacion\Modelos\Vendedor;
 use Aplicacion\Nucleo\Acceso;
+use Aplicacion\Nucleo\CalculoDiseno;
 use Aplicacion\Nucleo\Carrito;
+use Aplicacion\Nucleo\ContextoPersonalizador;
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\EstadoPedido;
 use Aplicacion\Nucleo\FormaEntrega;
@@ -16,9 +18,11 @@ use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Nucleo\Validador;
 use Aplicacion\Repositorios\ClienteRepositorio;
+use Aplicacion\Repositorios\DisenoRepositorio;
 use Aplicacion\Repositorios\PedidoRepositorio;
 use Aplicacion\Repositorios\ProductoRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
+use Configuracion\BaseDatos;
 use Configuracion\Configuracion;
 use DateTime;
 use Throwable;
@@ -177,6 +181,22 @@ class CarritoControlador
             $detalles[] = $detalle;
             $total += $detalle->getSubtotal();
         }
+        $idsDisenos = [];
+        foreach ($carrito['disenos'] as $linea) {
+            $diseno = $linea['diseno'];
+            $detalles[] = new PedidoDetalle(
+                null,
+                null,
+                null,
+                CalculoDiseno::nombreDiseno($diseno['tipo']) . ' de ' . CalculoDiseno::cm($diseno['largo']) . ' cm',
+                1,
+                $diseno['precio'],
+                null,
+                $diseno['id']
+            );
+            $total += $diseno['precio'];
+            $idsDisenos[] = $diseno['id'];
+        }
 
         $pedido = new Pedido(
             null,
@@ -194,9 +214,17 @@ class CarritoControlador
             $detalles
         );
 
+        $transaccionPropia = BaseDatos::iniciarTransaccion();
         try {
             $idPedido = (new PedidoRepositorio())->crear($pedido);
+            (new DisenoRepositorio())->marcarEnPedido($idsDisenos);
+            if ($transaccionPropia) {
+                BaseDatos::confirmarTransaccion();
+            }
         } catch (Throwable $error) {
+            if ($transaccionPropia) {
+                BaseDatos::revertirTransaccion();
+            }
             error_log('Error al crear el pedido: ' . $error->getMessage());
             Mensaje::error('No se pudo enviar el pedido. Intente de nuevo.');
             $this->mostrarConfirmacion($carrito, $datos, []);
@@ -211,21 +239,36 @@ class CarritoControlador
 
     private function armarCarrito(?int $soloTienda = null): array
     {
+        $productosPorTienda = Carrito::todo();
+        $idCliente = ContextoPersonalizador::idClienteActual();
+        $disenoRepositorio = new DisenoRepositorio();
+        $disenosPorTienda = $idCliente !== null ? $disenoRepositorio->listarEnCarrito($idCliente) : [];
+        $idsTiendas = array_values(array_unique(array_merge(
+            array_map('intval', array_keys($productosPorTienda)),
+            array_map('intval', array_keys($disenosPorTienda))
+        )));
+
         $tiendas = [];
-        foreach (Carrito::todo() as $idVendedor => $productosEnCarrito) {
-            $idVendedor = (int) $idVendedor;
+        foreach ($idsTiendas as $idVendedor) {
             if ($soloTienda !== null && $idVendedor !== $soloTienda) {
                 continue;
             }
+            $productosEnCarrito = $productosPorTienda[$idVendedor] ?? [];
+            $disenos = $disenosPorTienda[$idVendedor] ?? [];
 
             $vendedor = $this->tiendaVisible($idVendedor);
             if ($vendedor === null || Carrito::esPropia($vendedor)) {
                 Carrito::vaciarTienda($idVendedor);
+                foreach ($disenos as $diseno) {
+                    $disenoRepositorio->quitar((int) $idCliente, $diseno['id']);
+                }
                 Mensaje::advertencia('Se quitaron del carrito los productos de una tienda que ya no está disponible.');
                 continue;
             }
 
-            $productos = $this->productoRepositorio->buscarVarios($idVendedor, array_keys($productosEnCarrito));
+            $productos = $productosEnCarrito !== []
+                ? $this->productoRepositorio->buscarVarios($idVendedor, array_keys($productosEnCarrito))
+                : [];
             $lineas = [];
             $total = 0.0;
             $problemas = false;
@@ -251,8 +294,31 @@ class CarritoControlador
                 $lineas[] = ['producto' => $producto, 'cantidad' => (int) $cantidad, 'subtotal' => $subtotal, 'aviso' => $aviso];
             }
 
-            if ($lineas !== []) {
-                $tiendas[$idVendedor] = ['vendedor' => $vendedor, 'lineas' => $lineas, 'total' => round($total, 2), 'problemas' => $problemas];
+            $lineasDiseno = [];
+            if ($disenos !== []) {
+                $revision = ContextoPersonalizador::revisarCarrito($idVendedor, array_values($disenos));
+                if ($revision['cambioPrecio']) {
+                    Mensaje::advertencia('El precio de una pieza personalizada cambió porque la tienda actualizó sus costos.');
+                }
+                foreach ($revision['lineas'] as $linea) {
+                    $problemas = $problemas || $linea['aviso'] !== null;
+                    $total += $linea['diseno']['precio'];
+                    $lineasDiseno[] = [
+                        'diseno' => $linea['diseno'],
+                        'aviso' => $linea['aviso'],
+                        'subtotal' => $linea['diseno']['precio'],
+                    ];
+                }
+            }
+
+            if ($lineas !== [] || $lineasDiseno !== []) {
+                $tiendas[$idVendedor] = [
+                    'vendedor' => $vendedor,
+                    'lineas' => $lineas,
+                    'disenos' => $lineasDiseno,
+                    'total' => round($total, 2),
+                    'problemas' => $problemas,
+                ];
             }
         }
         return $tiendas;
@@ -266,7 +332,7 @@ class CarritoControlador
             $this->redirigir('/carrito');
         }
         if ($carrito['problemas']) {
-            Mensaje::error('Algunos productos ya no tienen suficiente existencia. Revise las cantidades marcadas antes de pedir.');
+            Mensaje::error('Hay productos o piezas personalizadas marcadas en rojo. Corríjalas antes de pedir.');
             $this->redirigir('/carrito');
         }
         return $carrito;

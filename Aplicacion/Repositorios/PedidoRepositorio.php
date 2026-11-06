@@ -5,6 +5,7 @@ namespace Aplicacion\Repositorios;
 use Aplicacion\Modelos\Pedido;
 use Aplicacion\Modelos\PedidoDetalle;
 use Aplicacion\Nucleo\EstadoPedido;
+use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\OperacionNoPermitida;
 use Aplicacion\Nucleo\Rol;
 use Configuracion\BaseDatos;
@@ -27,11 +28,13 @@ class PedidoRepositorio
 
     private PDO $conexion;
     private ProductoRepositorio $productoRepositorio;
+    private ComponenteRepositorio $componenteRepositorio;
 
     public function __construct()
     {
         $this->conexion = BaseDatos::obtenerConexion();
         $this->productoRepositorio = new ProductoRepositorio();
+        $this->componenteRepositorio = new ComponenteRepositorio();
     }
 
     public function crear(Pedido $pedido): int
@@ -62,8 +65,9 @@ class PedidoRepositorio
 
             $insertarDetalle = $this->conexion->prepare(
                 'INSERT INTO tbpedidodetalle (tbpedidodetalleid, tbpedidodetallepedidoid, tbpedidodetalleproductoid,
-                    tbpedidodetallenombre, tbpedidodetallecantidad, tbpedidodetalleprecio, tbpedidodetallesubtotal)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)'
+                    tbpedidodetallenombre, tbpedidodetallecantidad, tbpedidodetalleprecio, tbpedidodetallesubtotal,
+                    tbpedidodetalledisenoid)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
             );
             foreach ($pedido->getDetalles() as $detalle) {
                 $idDetalle = BaseDatos::generarId('tbpedidodetalle', 'tbpedidodetalleid');
@@ -75,6 +79,7 @@ class PedidoRepositorio
                     $detalle->getCantidad(),
                     $detalle->getPrecio(),
                     $detalle->getSubtotal(),
+                    $detalle->getIdDiseno(),
                 ]);
                 $detalle->setIdPedidoDetalle($idDetalle);
                 $detalle->setIdPedido($idPedido);
@@ -151,6 +156,9 @@ class PedidoRepositorio
             $faltantes = [];
             $nuevasExistencias = [];
             foreach ($pedido->getDetalles() as $detalle) {
+                if ($detalle->esDiseno()) {
+                    continue;
+                }
                 $producto = $this->productoRepositorio->bloquearExistencia($detalle->getIdProducto(), $pedido->getIdVendedor());
                 $hay = $producto['existencia'] ?? 0;
                 $yaApartado = $nuevasExistencias[$detalle->getIdProducto()] ?? $hay;
@@ -163,15 +171,37 @@ class PedidoRepositorio
                 $nuevasExistencias[$detalle->getIdProducto()] = $yaApartado - $detalle->getCantidad();
             }
 
-            if ($faltantes !== []) {
-                throw new OperacionNoPermitida(
-                    'No hay suficiente existencia de ' . implode(', ', $faltantes)
-                    . '. Registre lo que hizo en Productos con «Hice más» o cancele el pedido.'
-                );
+            $faltanComponentes = [];
+            $nuevosComponentes = [];
+            foreach ($this->componentesDeDisenos($pedido) as $idComponente => $necesita) {
+                $componente = $this->componenteRepositorio->bloquearExistencia($idComponente, $pedido->getIdVendedor());
+                if ($componente === null || $componente['existencia'] + 0.00001 < $necesita) {
+                    $faltanComponentes[] = '«' . ($componente['nombre'] ?? 'un componente') . '» (tiene '
+                        . Numero::formatear(max(0, $componente['existencia'] ?? 0)) . ', las piezas personalizadas llevan '
+                        . Numero::formatear($necesita) . ')';
+                    continue;
+                }
+                $nuevosComponentes[$idComponente] = [round($componente['existencia'] - $necesita, 2), $componente['costo']];
+            }
+
+            if ($faltantes !== [] || $faltanComponentes !== []) {
+                $partes = [];
+                if ($faltantes !== []) {
+                    $partes[] = 'No hay suficiente existencia de ' . implode(', ', $faltantes)
+                        . '. Registre lo que hizo en Productos con «Hice más» o cancele el pedido.';
+                }
+                if ($faltanComponentes !== []) {
+                    $partes[] = 'No hay suficientes componentes: ' . implode(', ', $faltanComponentes)
+                        . '. Registre una compra o cancele el pedido.';
+                }
+                throw new OperacionNoPermitida(implode(' ', $partes));
             }
 
             foreach ($nuevasExistencias as $idProducto => $existencia) {
                 $this->productoRepositorio->actualizarExistencia($idProducto, $pedido->getIdVendedor(), $existencia);
+            }
+            foreach ($nuevosComponentes as $idComponente => [$existencia, $costo]) {
+                $this->componenteRepositorio->actualizarExistencia($idComponente, $pedido->getIdVendedor(), $existencia, $costo);
             }
             $this->guardarEstado($pedido, EstadoPedido::CONFIRMADO, null);
 
@@ -198,7 +228,21 @@ class PedidoRepositorio
             $estadoAnterior = $this->exigirEstado($pedido, $permitidos, $mensaje);
 
             if ($estadoAnterior === EstadoPedido::CONFIRMADO) {
+                foreach ($this->componentesDeDisenos($pedido) as $idComponente => $devolver) {
+                    $componente = $this->componenteRepositorio->bloquearExistencia($idComponente, $pedido->getIdVendedor());
+                    if ($componente !== null) {
+                        $this->componenteRepositorio->actualizarExistencia(
+                            $idComponente,
+                            $pedido->getIdVendedor(),
+                            round($componente['existencia'] + $devolver, 2),
+                            $componente['costo']
+                        );
+                    }
+                }
                 foreach ($pedido->getDetalles() as $detalle) {
+                    if ($detalle->esDiseno()) {
+                        continue;
+                    }
                     $producto = $this->productoRepositorio->bloquearExistencia($detalle->getIdProducto(), $pedido->getIdVendedor());
                     if ($producto !== null) {
                         $this->productoRepositorio->actualizarExistencia(
@@ -313,6 +357,30 @@ class PedidoRepositorio
         return $pedido;
     }
 
+    public function componentesDeDisenos(Pedido $pedido): array
+    {
+        $veces = [];
+        foreach ($pedido->getDetalles() as $detalle) {
+            if ($detalle->esDiseno()) {
+                $veces[$detalle->getIdDiseno()] = ($veces[$detalle->getIdDiseno()] ?? 0) + $detalle->getCantidad();
+            }
+        }
+        if ($veces === []) {
+            return [];
+        }
+
+        $necesarios = [];
+        foreach ((new DisenoRepositorio())->buscarVarios(array_keys($veces)) as $idDiseno => $diseno) {
+            foreach ($diseno['conteo'] as $idComponente => $cantidad) {
+                $necesarios[$idComponente] = ($necesarios[$idComponente] ?? 0) + $cantidad * $veces[$idDiseno];
+            }
+            if ($diseno['idHilo'] !== null) {
+                $necesarios[$diseno['idHilo']] = ($necesarios[$diseno['idHilo']] ?? 0) + $diseno['largo'] / 1000 * $veces[$idDiseno];
+            }
+        }
+        return $necesarios;
+    }
+
     /** @param Pedido[] $pedidos */
     private function cargarDetalles(array $pedidos): void
     {
@@ -332,11 +400,12 @@ class PedidoRepositorio
             $porPedido[(int) $fila['tbpedidodetallepedidoid']][] = new PedidoDetalle(
                 (int) $fila['tbpedidodetalleid'],
                 (int) $fila['tbpedidodetallepedidoid'],
-                (int) $fila['tbpedidodetalleproductoid'],
+                $fila['tbpedidodetalleproductoid'] !== null ? (int) $fila['tbpedidodetalleproductoid'] : null,
                 (string) $fila['tbpedidodetallenombre'],
                 (int) $fila['tbpedidodetallecantidad'],
                 (float) $fila['tbpedidodetalleprecio'],
-                (float) $fila['tbpedidodetallesubtotal']
+                (float) $fila['tbpedidodetallesubtotal'],
+                $fila['tbpedidodetalledisenoid'] !== null ? (int) $fila['tbpedidodetalledisenoid'] : null
             );
         }
 

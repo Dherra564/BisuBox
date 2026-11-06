@@ -14,6 +14,7 @@ class Permiso
         'sesiones.ver' => [Rol::VENDEDOR, Rol::CLIENTE],
         'tienda.gestionar' => [Rol::VENDEDOR],
         'inventario.gestionar' => [Rol::VENDEDOR],
+        'personalizador.gestionar' => [Rol::VENDEDOR],
         'proveedores.gestionar' => [Rol::VENDEDOR],
         'productos.gestionar' => [Rol::VENDEDOR],
         'comprasProveedor.gestionar' => [Rol::VENDEDOR],

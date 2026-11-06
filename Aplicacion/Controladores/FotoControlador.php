@@ -56,6 +56,12 @@ class FotoControlador
         $this->enviar($foto);
     }
 
+    public function mostrarPieza(): void
+    {
+        $nombre = is_string($_GET['archivo'] ?? null) ? $_GET['archivo'] : '';
+        $this->mostrarPublica(SubidaArchivo::obtenerFotoPieza($nombre));
+    }
+
     private function mostrarPublica(?array $foto): void
     {
         header('X-Content-Type-Options: nosniff');

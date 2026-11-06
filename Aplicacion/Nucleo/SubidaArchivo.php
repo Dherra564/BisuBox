@@ -24,17 +24,22 @@ class SubidaArchivo
     private const CARPETA_LOGOS = 'Logos';
     private const CARPETA_PRODUCTOS = 'Productos';
     private const CARPETA_COMPONENTES = 'Componentes';
+    private const CARPETA_PIEZAS = 'Piezas';
+    private const TAMANO_MAXIMO_PIEZA = 600 * 1024;
+    private const LADO_MAXIMO_PIEZA = 1000;
 
     private const CLAVE_PENDIENTES = 'fotosPendientes';
     public const FOTO_PERFIL = 'perfil';
     public const LOGO = 'logo';
     public const FOTO_PRODUCTO = 'producto';
     public const FOTO_COMPONENTE = 'componente';
+    public const FOTO_PIEZA = 'pieza';
     private const CARPETAS = [
         self::FOTO_PERFIL => self::CARPETA_PERFILES,
         self::LOGO => self::CARPETA_LOGOS,
         self::FOTO_PRODUCTO => self::CARPETA_PRODUCTOS,
         self::FOTO_COMPONENTE => self::CARPETA_COMPONENTES,
+        self::FOTO_PIEZA => self::CARPETA_PIEZAS,
     ];
 
     private string $error = '';
@@ -59,11 +64,7 @@ class SubidaArchivo
         return $this->guardarImagen($archivo, self::CARPETA_PRODUCTOS, 'La foto');
     }
 
-    /**
-     * Toma la foto de un formulario. Si eligió una nueva, la guarda; si no, usa la que ya
-     * había subido en un intento anterior que tuvo errores ($campo . 'Pendiente').
-     * Si la nueva no sirve, agrega el error y conserva la anterior.
-     */
+    
     public function recibir(string $campo, string $tipo, Validador $validador): ?string
     {
         $pendiente = self::pendienteValida($tipo, $_POST[$campo . 'Pendiente'] ?? null);
@@ -86,7 +87,7 @@ class SubidaArchivo
         return $nombre;
     }
 
-    // El formulario tuvo errores: la foto ya subida queda guardada para el próximo intento
+    
     public static function recordarPendiente(string $tipo, ?string $nombre): void
     {
         if ($nombre === null || !isset(self::CARPETAS[$tipo]) || !self::esNombreValido($nombre)) {
@@ -99,7 +100,7 @@ class SubidaArchivo
         $_SESSION[self::CLAVE_PENDIENTES][$tipo] = array_slice($pendientes, -5);
     }
 
-    // La foto ya se guardó con el registro: deja de estar pendiente
+    
     public static function olvidarPendiente(string $tipo, ?string $nombre): void
     {
         if ($nombre === null || !isset($_SESSION[self::CLAVE_PENDIENTES][$tipo])) {
@@ -111,7 +112,7 @@ class SubidaArchivo
         ));
     }
 
-    // Solo se acepta un nombre que esta misma sesión subió, para que nadie use fotos ajenas
+    
     private static function pendienteValida(string $tipo, mixed $nombre): ?string
     {
         if (!is_string($nombre) || !self::esNombreValido($nombre)) {
@@ -163,6 +164,82 @@ class SubidaArchivo
     public static function obtenerFotoComponente(string $nombre): ?array
     {
         return self::obtener($nombre, self::CARPETA_COMPONENTES);
+    }
+
+    public static function obtenerFotoPieza(string $nombre): ?array
+    {
+        return self::obtener($nombre, self::CARPETA_PIEZAS);
+    }
+
+    public static function eliminarFotoPieza(?string $nombre): void
+    {
+        self::eliminar($nombre, self::CARPETA_PIEZAS);
+    }
+
+    public static function revisarPiezaRecortada(mixed $texto): ?string
+    {
+        $prefijo = 'data:image/png;base64,';
+        if (!is_string($texto) || !str_starts_with($texto, $prefijo)) {
+            return null;
+        }
+        $datos = base64_decode(substr($texto, strlen($prefijo)), true);
+        if ($datos === false || $datos === '' || strlen($datos) > self::TAMANO_MAXIMO_PIEZA) {
+            return null;
+        }
+        if ((new finfo(FILEINFO_MIME_TYPE))->buffer($datos) !== 'image/png') {
+            return null;
+        }
+        $medidas = @getimagesizefromstring($datos);
+        if ($medidas === false || $medidas[0] < 4 || $medidas[1] < 4
+            || $medidas[0] > self::LADO_MAXIMO_PIEZA || $medidas[1] > self::LADO_MAXIMO_PIEZA) {
+            return null;
+        }
+        if (!function_exists('imagecreatefromstring')) {
+            return $datos;
+        }
+        $imagen = @imagecreatefromstring($datos);
+        if ($imagen === false) {
+            return null;
+        }
+        $ancho = imagesx($imagen);
+        $alto = imagesy($imagen);
+        $esquinasTransparentes = 0;
+        foreach ([[0, 0], [$ancho - 1, 0], [0, $alto - 1], [$ancho - 1, $alto - 1]] as [$x, $y]) {
+            $color = imagecolorsforindex($imagen, imagecolorat($imagen, $x, $y));
+            if ($color['alpha'] >= 120) {
+                $esquinasTransparentes++;
+            }
+        }
+        if ($esquinasTransparentes === 0) {
+            imagedestroy($imagen);
+            return null;
+        }
+
+        $limpia = imagecreatetruecolor($ancho, $alto);
+        imagealphablending($limpia, false);
+        imagesavealpha($limpia, true);
+        imagefill($limpia, 0, 0, imagecolorallocatealpha($limpia, 0, 0, 0, 127));
+        imagecopy($limpia, $imagen, 0, 0, 0, 0, $ancho, $alto);
+        ob_start();
+        imagepng($limpia, null, 9);
+        $resultado = (string) ob_get_clean();
+        imagedestroy($imagen);
+        imagedestroy($limpia);
+
+        return strlen($resultado) <= self::TAMANO_MAXIMO_PIEZA ? $resultado : null;
+    }
+
+    public function guardarPiezaRecortada(string $datosPng): ?string
+    {
+        $this->error = '';
+        $nombre = bin2hex(random_bytes(16)) . '.png';
+        try {
+            (new FotoRepositorio())->insertar(self::CARPETA_PIEZAS, $nombre, 'image/png', $datosPng);
+        } catch (Throwable $error) {
+            error_log('No se pudo guardar la foto recortada: ' . $error->getMessage());
+            return $this->fallar('No se pudo guardar la imagen. Intente de nuevo más tarde.');
+        }
+        return $nombre;
     }
 
     private function guardarImagen(array $archivo, string $carpeta, string $queEs): ?string

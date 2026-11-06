@@ -159,9 +159,11 @@ if ($navegacion['esDuenio']) {
                 </div>
             <?php endif; ?>
         </nav>
-        <div class="veloMenu" id="veloMenu" hidden></div>
+         <div class="veloMenu" id="veloMenu" hidden></div>
 
+        <div class="columnaSitio">
         <main class="contenido">
+            
             <?php if ($volverA !== null): ?>
                 <a href="<?= $urlBase . $volverA['ruta'] ?>" class="enlaceVolver">←
                     <?= htmlspecialchars($volverA['texto']) ?></a>

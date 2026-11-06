@@ -12,6 +12,8 @@ use Aplicacion\Controladores\InventarioControlador;
 use Aplicacion\Controladores\MisPedidosControlador;
 use Aplicacion\Controladores\PedidoControlador;
 use Aplicacion\Controladores\PerfilControlador;
+use Aplicacion\Controladores\PersonalizadorControlador;
+use Aplicacion\Controladores\PersonalizadorTiendaControlador;
 use Aplicacion\Controladores\ProductoControlador;
 use Aplicacion\Controladores\ProveedorControlador;
 use Aplicacion\Controladores\RegistroControlador;
@@ -63,6 +65,14 @@ return function (Enrutador $enrutador): void {
     $enrutador->get('/fotos/logo', [FotoControlador::class, 'mostrarLogo']);
     $enrutador->get('/fotos/producto', [FotoControlador::class, 'mostrarProducto']);
     $enrutador->get('/fotos/componente', [FotoControlador::class, 'mostrarComponente']);
+    $enrutador->get('/fotos/pieza', [FotoControlador::class, 'mostrarPieza']);
+
+    $enrutador->get('/personalizador', [PersonalizadorControlador::class, 'mostrar']);
+    $enrutador->post('/personalizador/configuracion', [PersonalizadorControlador::class, 'guardarConfiguracion']);
+    $enrutador->get('/personalizador/fotos', [PersonalizadorControlador::class, 'fotos']);
+    $enrutador->post('/personalizador/fotos', [PersonalizadorControlador::class, 'guardarFotos']);
+    $enrutador->post('/personalizador/tamano', [PersonalizadorControlador::class, 'cambiarTamano']);
+    $enrutador->post('/personalizador/quitar', [PersonalizadorControlador::class, 'quitar']);
 
     $enrutador->get('/proveedores', [ProveedorControlador::class, 'listar']);
     $enrutador->get('/proveedores/detalle', [ProveedorControlador::class, 'detalle']);
@@ -107,5 +117,8 @@ return function (Enrutador $enrutador): void {
     $enrutador->get('/clientes', [ClienteControlador::class, 'listar']);
 
     $enrutador->get('/sesiones', [SesionControlador::class, 'listar']);
+    $enrutador->post('/personalizador/agregar', [PersonalizadorTiendaControlador::class, 'agregar']);
+    $enrutador->post('/carrito/quitar-pieza', [PersonalizadorTiendaControlador::class, 'quitar']);
+    $enrutador->get('/tienda/{enlace}/arma-tu-pieza', [PersonalizadorTiendaControlador::class, 'mostrar']);
     $enrutador->get('/tienda/{enlace}', [TiendaPublicaControlador::class, 'mostrar']);
 };

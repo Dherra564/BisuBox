@@ -3,6 +3,7 @@
 namespace Aplicacion\Nucleo;
 
 use Aplicacion\Modelos\Vendedor;
+use Aplicacion\Repositorios\DisenoRepositorio;
 use Aplicacion\Repositorios\PedidoRepositorio;
 use Aplicacion\Repositorios\ProductoRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
@@ -73,12 +74,19 @@ class Navegacion
     public static function resumenCarrito(Vendedor $tienda): array
     {
         $enCarrito = Carrito::deTienda((int) $tienda->getIdVendedor());
-        if ($enCarrito === []) {
-            return [0, 0.0];
-        }
-
         $unidades = 0;
         $total = 0.0;
+        $idCliente = ContextoPersonalizador::idClienteActual();
+        if ($idCliente !== null) {
+            foreach ((new DisenoRepositorio())->listarEnCarrito($idCliente, (int) $tienda->getIdVendedor()) as $diseno) {
+                $unidades++;
+                $total += $diseno['precio'];
+            }
+        }
+        if ($enCarrito === []) {
+            return [$unidades, $total];
+        }
+
         foreach ((new ProductoRepositorio())->buscarVarios((int) $tienda->getIdVendedor(), array_keys($enCarrito)) as $idProducto => $producto) {
             $unidades += $enCarrito[$idProducto];
             $total += $enCarrito[$idProducto] * $producto->getPrecioVenta();
@@ -146,6 +154,7 @@ class Navegacion
             $opcion('clientes', 'Clientes', '/clientes', 'clientes'),
             $opcion('productos', 'Productos', '/productos', 'productos'),
             $opcion('inventario', 'Inventario', '/inventario', 'inventario'),
+            $opcion('personalizador', 'Personalizador', '/personalizador', 'personalizar'),
             $opcion('proveedores', 'Proveedores', '/proveedores', 'proveedores'),
             $opcion('tienda', 'Mi tienda', '/tienda', 'tienda'),
             $separador('Mi cuenta'),
