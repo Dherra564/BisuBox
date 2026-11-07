@@ -14,6 +14,7 @@ use Aplicacion\Repositorios\ClienteRepositorio;
 use Aplicacion\Repositorios\DisenoRepositorio;
 use Aplicacion\Repositorios\PedidoRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
+use Aplicacion\Repositorios\VentaRepositorio;
 use Configuracion\Configuracion;
 use Throwable;
 
@@ -65,6 +66,9 @@ class MisPedidosControlador
             'pedido' => $pedido,
             'disenos' => (new DisenoRepositorio())->buscarVarios($idsDisenos),
             'contactos' => $vendedor !== null ? $vendedor->getContactos() : [],
+            'venta' => $pedido->getEstado() === EstadoPedido::ENTREGADO
+                ? (new VentaRepositorio())->buscarPorPedido((int) $pedido->getIdPedido(), $pedido->getIdVendedor())
+                : null,
         ]);
     }
 

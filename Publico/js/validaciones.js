@@ -71,6 +71,24 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             mensaje: 'La ganancia debe ser un porcentaje entero entre 0 y 300'
         },
+        fechaLimite: {
+            prueba: function (valor) {
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
+                    return false;
+                }
+                var partes = valor.split('-');
+                var fecha = new Date(parseInt(partes[0], 10), parseInt(partes[1], 10) - 1, parseInt(partes[2], 10));
+                if (fecha.getFullYear() !== parseInt(partes[0], 10) || fecha.getMonth() !== parseInt(partes[1], 10) - 1) {
+                    return false;
+                }
+                var hoy = new Date();
+                hoy.setHours(0, 0, 0, 0);
+                var limite = new Date(hoy.getTime());
+                limite.setDate(limite.getDate() + 180);
+                return fecha >= hoy && fecha <= limite;
+            },
+            mensaje: 'La fecha límite para pagar debe estar entre hoy y dentro de 6 meses'
+        },
     };
 
     function limpiarTelefono(valor) {

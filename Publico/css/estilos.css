@@ -4943,3 +4943,88 @@ h3 {
         padding-bottom: 84px;
     }
 }
+
+.seccionEntrega fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+}
+
+.seccionEntrega legend {
+    padding: 0;
+    margin-bottom: 8px;
+}
+
+.opcionesPago {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.seccionEntrega .opcionPago {
+    display: flex;
+    flex-direction: row;
+    font-weight: 400;
+    margin: 0;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--colorBordeCampo);
+    border-radius: var(--radioCampo);
+    background: var(--colorSuperficie);
+    cursor: pointer;
+}
+
+.opcionPago:has(input:checked) {
+    border-color: var(--colorTitulo);
+    background: var(--colorVerdeClaro);
+}
+
+.seccionEntrega .opcionPago input {
+    width: auto;
+    min-height: 0;
+    flex: 0 0 auto;
+    margin: 3px 0 0;
+    padding: 0;
+    accent-color: var(--colorTitulo);
+}
+
+.opcionPago span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.opcionPago small {
+    color: var(--colorTextoSuave);
+}
+
+.campoVencimiento input[type="date"] {
+    max-width: 240px;
+}
+
+.resumenVenta p {
+    margin: 0;
+}
+
+.resumenVenta p + p {
+    margin-top: 6px;
+}
+
+.tablaVentas .acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+@media (max-width: 600px) {
+    .opcionesPago {
+        grid-template-columns: 1fr;
+    }
+
+    .campoVencimiento input[type="date"] {
+        max-width: none;
+    }
+}

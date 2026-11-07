@@ -21,6 +21,7 @@ use Aplicacion\Controladores\SesionControlador;
 use Aplicacion\Controladores\TiendaControlador;
 use Aplicacion\Controladores\TiendaPublicaControlador;
 use Aplicacion\Controladores\TipoComponenteControlador;
+use Aplicacion\Controladores\VentaControlador;
 use Aplicacion\Nucleo\Enrutador;
 
 
@@ -114,6 +115,8 @@ return function (Enrutador $enrutador): void {
     $enrutador->post('/pedidos/confirmar', [PedidoControlador::class, 'confirmar']);
     $enrutador->post('/pedidos/entregar', [PedidoControlador::class, 'entregar']);
     $enrutador->post('/pedidos/cancelar', [PedidoControlador::class, 'cancelar']);
+    $enrutador->get('/ventas', [VentaControlador::class, 'listar']);
+    $enrutador->post('/ventas/cobrar', [VentaControlador::class, 'cobrar']);
     $enrutador->get('/clientes', [ClienteControlador::class, 'listar']);
 
     $enrutador->get('/sesiones', [SesionControlador::class, 'listar']);

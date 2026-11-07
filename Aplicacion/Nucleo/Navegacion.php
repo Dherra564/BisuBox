@@ -151,6 +151,7 @@ class Navegacion
         return [
             $opcion('inicio', 'Inicio', $rutaPropia, 'inicio'),
             $opcion('pedidos', 'Pedidos', '/pedidos', 'recibo', $pendientes),
+            $opcion('ventas', 'Ventas', '/ventas', 'ventas'),
             $opcion('clientes', 'Clientes', '/clientes', 'clientes'),
             $opcion('productos', 'Productos', '/productos', 'productos'),
             $opcion('inventario', 'Inventario', '/inventario', 'inventario'),

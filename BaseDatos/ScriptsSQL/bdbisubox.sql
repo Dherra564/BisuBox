@@ -438,6 +438,20 @@ CREATE TABLE `tbdisenodetalle` (
     PRIMARY KEY (`tbdisenodetalleid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
+CREATE TABLE `tbventa` (
+    `tbventaid` int(11) NOT NULL,
+    `tbventavendedorid` int(11) DEFAULT NULL,
+    `tbventaclienteid` int(11) DEFAULT NULL,
+    `tbventapedidoid` int(11) DEFAULT NULL,
+    `tbventatipo` varchar(20) DEFAULT NULL,
+    `tbventafecha` datetime DEFAULT NULL,
+    `tbventatotal` decimal(12, 2) DEFAULT NULL,
+    `tbventasaldo` decimal(12, 2) DEFAULT NULL,
+    `tbventavencimiento` date DEFAULT NULL,
+    `tbventaestadopago` varchar(20) DEFAULT NULL,
+    PRIMARY KEY (`tbventaid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
 -- --------------------------------------------------------
 --
 -- Datos iniciales: un vendedor con su tienda y un cliente

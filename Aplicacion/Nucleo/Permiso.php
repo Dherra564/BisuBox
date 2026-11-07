@@ -19,6 +19,7 @@ class Permiso
         'productos.gestionar' => [Rol::VENDEDOR],
         'comprasProveedor.gestionar' => [Rol::VENDEDOR],
         'pedidos.gestionar' => [Rol::VENDEDOR],
+        'ventas.ver' => [Rol::VENDEDOR],
         'clientes.ver' => [Rol::VENDEDOR],
         'carrito.usar' => [Rol::VENDEDOR, Rol::CLIENTE],
         'misPedidos.ver' => [Rol::VENDEDOR, Rol::CLIENTE],

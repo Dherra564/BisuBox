@@ -4,6 +4,7 @@ namespace Aplicacion\Repositorios;
 
 use Aplicacion\Modelos\Pedido;
 use Aplicacion\Modelos\PedidoDetalle;
+use Aplicacion\Nucleo\DatosVenta;
 use Aplicacion\Nucleo\EstadoPedido;
 use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\OperacionNoPermitida;
@@ -262,13 +263,14 @@ class PedidoRepositorio
         }
     }
 
-    public function entregar(Pedido $pedido): void
+    public function entregar(Pedido $pedido, string $pago = DatosVenta::PAGO_COMPLETO, ?DateTime $vencimiento = null): void
     {
         BaseDatos::iniciarTransaccion();
 
         try {
             $this->exigirEstado($pedido, [EstadoPedido::CONFIRMADO], 'Solo se pueden entregar pedidos confirmados.');
             $this->guardarEstado($pedido, EstadoPedido::ENTREGADO, null);
+            (new VentaRepositorio())->registrar($pedido, $pago, $vencimiento);
 
             BaseDatos::confirmarTransaccion();
         } catch (Throwable $error) {
