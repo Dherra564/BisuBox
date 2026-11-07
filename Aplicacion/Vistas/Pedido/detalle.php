@@ -7,14 +7,16 @@
  */
 
 use Aplicacion\Nucleo\Csrf;
+use Aplicacion\Nucleo\DatosVenta;
 use Aplicacion\Nucleo\EstadoPedido;
+use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\WhatsApp;
 
 $titulo = 'Pedido #' . $pedido->getIdPedido();
 $paginaActual = 'pedidos';
 $volverA = ['texto' => 'Pedidos', 'ruta' => '/pedidos'];
-$scriptsExtra = ['algoritmosVista.js', 'vistaDiseno.js'];
+$scriptsExtra = ['algoritmosVista.js', 'vistaDiseno.js', 'entregaPedido.js'];
 require __DIR__ . '/../Plantilla/encabezado.php';
 
 $telefono = $pedido->getTelefonoCliente();
@@ -40,7 +42,21 @@ $numero = $pedido->getIdPedido();
         <?= $pedido->getCanceladoPor() === Rol::CLIENTE ? 'El cliente canceló este pedido.' : 'Usted canceló este pedido.' ?>
     </p>
 <?php elseif ($pedido->getEstado() === EstadoPedido::ENTREGADO): ?>
-    <p class="cajaInformativa">Pedido entregado.</p>
+    <?php if ($venta === null): ?>
+        <p class="cajaInformativa">Pedido entregado.</p>
+    <?php else: ?>
+        <div class="cajaInformativa resumenVenta">
+            <p><strong>Pedido entregado.</strong> Venta #<?= $venta['id'] ?> · <?= htmlspecialchars($venta['tipo']) ?></p>
+            <p>
+                <span class="etiqueta <?= DatosVenta::claseEtiqueta($venta['estadoPago'], $venta['vencimiento'], $venta['saldo']) ?>"><?= htmlspecialchars($venta['estadoPago']) ?></span>
+                <?php if ($venta['saldo'] > 0): ?>
+                    Falta cobrar <strong><?= Numero::moneda($venta['saldo']) ?></strong>
+                    <?= $venta['vencimiento'] !== null ? 'antes del ' . $venta['vencimiento']->format('d/m/Y') : '' ?>.
+                <?php endif; ?>
+                <a href="<?= $urlBase ?>/ventas">Ver ventas</a>
+            </p>
+        </div>
+    <?php endif; ?>
 <?php endif; ?>
 
 <?php require __DIR__ . '/factura.php'; ?>
@@ -59,16 +75,43 @@ $numero = $pedido->getIdPedido();
             <input type="hidden" name="id" value="<?= $numero ?>">
             <button type="submit" class="boton">Confirmar pedido</button>
         </form>
-    <?php elseif ($pedido->estaConfirmado()): ?>
-        <form method="post" action="<?= $urlBase ?>/pedidos/entregar" class="formularioEnLinea"
-            data-titulo="Marcar como entregado" data-boton="Ya lo entregué"
-            data-confirmar="¿Ya le entregó el pedido #<?= $numero ?> a <?= htmlspecialchars($pedido->getNombreCliente()) ?>?">
-            <?= Csrf::campo() ?>
-            <input type="hidden" name="id" value="<?= $numero ?>">
-            <button type="submit" class="boton">Marcar como entregado</button>
-        </form>
     <?php endif; ?>
 </div>
+
+<?php if ($pedido->estaConfirmado()): ?>
+    <?php $debe = $pagoElegido === DatosVenta::PAGO_PENDIENTE; ?>
+    <section class="formularioSeccion seccionEntrega">
+        <h2>Entregar pedido</h2>
+        <form method="post" action="<?= $urlBase ?>/pedidos/entregar" novalidate class="validarFormulario" id="formularioEntrega"
+            data-titulo="Marcar como entregado" data-boton="Ya lo entregué"
+            data-confirmar="¿Ya le entregó el pedido #<?= $numero ?> a <?= htmlspecialchars($pedido->getNombreCliente()) ?>? Se registrará la venta.">
+            <?= Csrf::campo() ?>
+            <input type="hidden" name="id" value="<?= $numero ?>">
+            <fieldset class="campo">
+                <legend class="etiquetaCampo">¿Cómo quedó el pago de <?= Numero::moneda($pedido->getTotal()) ?>?</legend>
+                <div class="opcionesPago">
+                    <label class="opcionPago">
+                        <input type="radio" name="pago" value="<?= DatosVenta::PAGO_COMPLETO ?>" <?= $debe ? '' : 'checked' ?>>
+                        <span><strong>Pagó todo</strong><small>La venta queda pagada.</small></span>
+                    </label>
+                    <label class="opcionPago">
+                        <input type="radio" name="pago" value="<?= DatosVenta::PAGO_PENDIENTE ?>" <?= $debe ? 'checked' : '' ?>>
+                        <span><strong>Queda debiendo</strong><small>La venta queda por cobrar.</small></span>
+                    </label>
+                </div>
+            </fieldset>
+            <div class="campo campoVencimiento" id="campoVencimiento" <?= $debe ? '' : 'hidden' ?>>
+                <label for="vencimiento">Fecha límite para pagar <span class="obligatorio">*</span></label>
+                <input type="date" id="vencimiento" name="vencimiento" required data-regla="fechaLimite"
+                    data-mensaje-requerido="Elija la fecha límite para pagar"
+                    min="<?= date('Y-m-d') ?>" max="<?= DatosVenta::vencimientoMaximo() ?>"
+                    value="<?= htmlspecialchars($vencimientoElegido) ?>">
+                <p class="textoAyuda">Puede ser de hoy a 6 meses. Cuando le pague, márquela como pagada en Ventas.</p>
+            </div>
+            <button type="submit" class="boton">Marcar como entregado</button>
+        </form>
+    </section>
+<?php endif; ?>
 
 <?php if ($pedido->estaPendiente() && $faltanComponentes !== []): ?>
     <div class="cajaInformativa cajaAdvertencia">

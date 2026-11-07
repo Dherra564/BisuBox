@@ -8,6 +8,7 @@
 
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\EstadoPedido;
+use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\TipoContacto;
 use Aplicacion\Nucleo\UsuarioActual;
@@ -40,6 +41,14 @@ $explicaciones = [
 ?>
 
 <p class="cajaInformativa"><?= htmlspecialchars($explicaciones[$pedido->getEstado()] ?? '') ?></p>
+
+<?php if (($venta ?? null) !== null && $venta['saldo'] > 0): ?>
+    <div class="alerta alertaAdvertencia" role="status">
+        <span class="alertaIcono" aria-hidden="true">!</span>
+        <p>Le falta pagar <strong><?= Numero::moneda($venta['saldo']) ?></strong> de este pedido<?= $venta['vencimiento'] !== null ? ', a más tardar el <strong>' . $venta['vencimiento']->format('d/m/Y') . '</strong>' : '' ?>.
+            Coordine el pago con la tienda.</p>
+    </div>
+<?php endif; ?>
 
 <?php require __DIR__ . '/../Pedido/factura.php'; ?>
 

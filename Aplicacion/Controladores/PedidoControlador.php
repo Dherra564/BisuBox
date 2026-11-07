@@ -4,6 +4,7 @@ namespace Aplicacion\Controladores;
 
 use Aplicacion\Modelos\Pedido;
 use Aplicacion\Nucleo\Csrf;
+use Aplicacion\Nucleo\DatosVenta;
 use Aplicacion\Nucleo\EstadoPedido;
 use Aplicacion\Nucleo\Mensaje;
 use Aplicacion\Nucleo\Numero;
@@ -16,6 +17,7 @@ use Aplicacion\Repositorios\DisenoRepositorio;
 use Aplicacion\Repositorios\PedidoRepositorio;
 use Aplicacion\Repositorios\ProductoRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
+use Aplicacion\Repositorios\VentaRepositorio;
 use Configuracion\Configuracion;
 use Throwable;
 
@@ -105,6 +107,11 @@ class PedidoControlador
             'existencias' => $existencias,
             'faltanComponentes' => $faltanComponentes,
             'disenos' => (new DisenoRepositorio())->buscarVarios($idsDisenos),
+            'venta' => (new VentaRepositorio())->buscarPorPedido((int) $pedido->getIdPedido(), $this->idVendedor),
+            'pagoElegido' => DatosVenta::leerPago($_GET['pago'] ?? null) ?? DatosVenta::PAGO_COMPLETO,
+            'vencimientoElegido' => is_string($_GET['vencimiento'] ?? null) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['vencimiento'])
+                ? $_GET['vencimiento']
+                : DatosVenta::vencimientoInicial(),
         ]);
     }
 
@@ -117,8 +124,31 @@ class PedidoControlador
 
     public function entregar(): void
     {
-        $pedido = $this->accion(fn(Pedido $pedido) => $this->pedidoRepositorio->entregar($pedido), 'marcar como entregado');
-        Mensaje::exito('Pedido #' . $pedido->getIdPedido() . ' marcado como entregado.');
+        $pago = DatosVenta::leerPago($_POST['pago'] ?? null);
+        $textoVencimiento = is_string($_POST['vencimiento'] ?? null) ? trim($_POST['vencimiento']) : '';
+        $vencimiento = $pago === DatosVenta::PAGO_PENDIENTE ? DatosVenta::leerVencimiento($textoVencimiento) : null;
+        $error = $pago === null
+            ? DatosVenta::MENSAJE_PAGO
+            : ($pago === DatosVenta::PAGO_PENDIENTE && $vencimiento === null ? DatosVenta::MENSAJE_VENCIMIENTO : null);
+        if ($error !== null) {
+            $this->verificarCsrf('/pedidos');
+            $pedido = $this->buscarPedido($_POST['id'] ?? null);
+            Mensaje::error($error);
+            $this->redirigir('/pedidos/detalle?' . http_build_query([
+                'id' => $pedido->getIdPedido(),
+                'pago' => $pago ?? '',
+                'vencimiento' => mb_substr($textoVencimiento, 0, 10),
+            ]));
+        }
+
+        $pedido = $this->accion(
+            fn(Pedido $pedido) => $this->pedidoRepositorio->entregar($pedido, $pago, $vencimiento),
+            'marcar como entregado'
+        );
+        Mensaje::exito('Pedido #' . $pedido->getIdPedido() . ' entregado. '
+            . ($pago === DatosVenta::PAGO_PENDIENTE
+                ? 'La venta quedó por cobrar hasta el ' . $vencimiento->format('d/m/Y') . '.'
+                : 'La venta quedó registrada como pagada.'));
         $this->redirigir('/pedidos/detalle?id=' . $pedido->getIdPedido());
     }
 
