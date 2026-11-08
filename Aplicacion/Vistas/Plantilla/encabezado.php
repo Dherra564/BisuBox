@@ -25,6 +25,8 @@ $rutaMarca = $urlBase . ($navegacion['rutaTienda'] ?? '/');
 $haySesion = UsuarioActual::haySesion();
 $nombreCorto = $haySesion ? explode(' ', trim((string) UsuarioActual::nombre()))[0] : '';
 $rolTexto = $haySesion ? ($navegacion['esDuenio'] ? 'Dueño de esta tienda' : Rol::nombre(UsuarioActual::rol())) : '';
+$fotoCuenta = $haySesion ? UsuarioActual::foto() : null;
+$urlFotoCuenta = $fotoCuenta !== null ? $urlBase . '/fotos/perfil?archivo=' . urlencode($fotoCuenta) : null;
 $volverAqui = urlencode($navegacion['rutaTienda'] ?? '/');
 $enlaceCompartir = null;
 if ($navegacion['esDuenio']) {
@@ -75,13 +77,20 @@ if ($navegacion['esDuenio']) {
                 <button type="button" class="tiendaIcono" id="botonCuenta" aria-expanded="false"
                     aria-controls="panelCuenta" aria-label="<?= $haySesion ? 'Mi cuenta' : 'Ingresar o crear cuenta' ?>"
                     title="<?= $haySesion ? 'Mi cuenta' : 'Ingresar o crear cuenta' ?>">
-                    <?= Icono::svg('perfil') ?>
+                    <?php if ($urlFotoCuenta !== null): ?>
+                        <img src="<?= htmlspecialchars($urlFotoCuenta) ?>" alt="" class="avatarCuenta">
+                    <?php else: ?>
+                        <?= Icono::svg('perfil') ?>
+                    <?php endif; ?>
                     <?php if ($haySesion): ?><span
                             class="nombreCuenta"><?= htmlspecialchars($nombreCorto) ?></span><?php endif; ?>
                 </button>
                 <div class="panelCuenta" id="panelCuenta" hidden>
                     <?php if ($haySesion): ?>
                         <div class="panelCuentaUsuario">
+                            <?php if ($urlFotoCuenta !== null): ?>
+                                <img src="<?= htmlspecialchars($urlFotoCuenta) ?>" alt="" class="avatarPanel">
+                            <?php endif; ?>
                             <strong><?= htmlspecialchars((string) UsuarioActual::nombre()) ?></strong>
                             <span><?= htmlspecialchars($rolTexto) ?></span>
                         </div>
@@ -159,26 +168,26 @@ if ($navegacion['esDuenio']) {
                 </div>
             <?php endif; ?>
         </nav>
-         <div class="veloMenu" id="veloMenu" hidden></div>
+        <div class="veloMenu" id="veloMenu" hidden></div>
 
         <div class="columnaSitio">
-        <main class="contenido">
-            
-            <?php if ($volverA !== null): ?>
-                <a href="<?= $urlBase . $volverA['ruta'] ?>" class="enlaceVolver">←
-                    <?= htmlspecialchars($volverA['texto']) ?></a>
-            <?php endif; ?>
-            <?php if (!$ocultarTitulo): ?>
-                <div class="encabezadoPagina">
-                    <h1 class="tituloPagina"><?= htmlspecialchars($titulo) ?></h1>
-                    <?php if ($botonesAccion !== []): ?>
-                        <div class="grupoBotones">
-                            <?php foreach ($botonesAccion as $boton): ?>
-                                <a href="<?= $urlBase . $boton['ruta'] ?>"
-                                    class="boton <?= !empty($boton['secundario']) ? 'botonSecundario' : '' ?>"><?= htmlspecialchars($boton['texto']) ?></a>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            <?php endif; ?>
-            <?php require __DIR__ . '/mensajes.php'; ?>
+            <main class="contenido">
+
+                <?php if ($volverA !== null): ?>
+                    <a href="<?= $urlBase . $volverA['ruta'] ?>" class="enlaceVolver">←
+                        <?= htmlspecialchars($volverA['texto']) ?></a>
+                <?php endif; ?>
+                <?php if (!$ocultarTitulo): ?>
+                    <div class="encabezadoPagina">
+                        <h1 class="tituloPagina"><?= htmlspecialchars($titulo) ?></h1>
+                        <?php if ($botonesAccion !== []): ?>
+                            <div class="grupoBotones">
+                                <?php foreach ($botonesAccion as $boton): ?>
+                                    <a href="<?= $urlBase . $boton['ruta'] ?>"
+                                        class="boton <?= !empty($boton['secundario']) ? 'botonSecundario' : '' ?>"><?= htmlspecialchars($boton['texto']) ?></a>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+                <?php require __DIR__ . '/mensajes.php'; ?>

@@ -22,6 +22,7 @@ class DatosComponente
         if ($validador->error($campo) === null && !preg_match(self::PATRON_NOMBRE, $nombre)) {
             $validador->agregarError($campo, self::MENSAJE_NOMBRE);
         }
+        $validador->sinOfensas($campo, $nombre);
     }
 
     public static function leer(TipoComponente $tipo): array
@@ -253,6 +254,7 @@ class DatosComponente
             if ($validador->error($campo) === null && !preg_match(self::PATRON_NOMBRE, $valor)) {
                 $validador->agregarError($campo, self::MENSAJE_TEXTO);
             }
+            $validador->sinOfensas($campo, $valor);
         }
     }
 }

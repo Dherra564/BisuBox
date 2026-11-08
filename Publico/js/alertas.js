@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
         modal.querySelector('.modalConfirmar').addEventListener('click', function () {
             var formulario = formularioPendiente;
             modal.close();
-            
+
             if (formulario) {
                 formulario.submit();
             }
@@ -61,22 +61,111 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('.campoArchivo').forEach(function (campo) {
         var zona = campo.closest('.zonaFoto');
+        var contenedor = campo.closest('.campo');
         var texto = zona ? zona.querySelector('.nombreArchivo') : null;
         var imagen = zona ? zona.querySelector('.fotoPerfilGrande') : null;
         var textoOriginal = texto ? texto.textContent : '';
+        var imagenOriginal = imagen ? imagen.src : '';
+        var maximo = parseInt(campo.getAttribute('data-tamano-maximo'), 10) || 0;
+        var mensajeTipo = campo.getAttribute('data-mensaje-tipo');
+        var mensajeTamano = campo.getAttribute('data-mensaje-tamano');
+
+        function mostrarError(mensaje) {
+            if (!contenedor) {
+                return;
+            }
+            quitarError();
+            contenedor.classList.add('campoConError');
+            var error = document.createElement('p');
+            error.className = 'errorCampo';
+            error.textContent = mensaje;
+            contenedor.appendChild(error);
+        }
+
+        function quitarError() {
+            if (!contenedor) {
+                return;
+            }
+            contenedor.classList.remove('campoConError');
+            contenedor.querySelectorAll('.errorCampo').forEach(function (error) {
+                error.remove();
+            });
+        }
+
+        function esImagenReal(bytes) {
+            var b = new Uint8Array(bytes);
+            var jpeg = b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF;
+            var png = b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4E && b[3] === 0x47;
+            var webp = b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46
+                && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50;
+            return jpeg || png || webp;
+        }
+
+        function rechazar(mensaje) {
+            campo.value = '';
+            if (texto) {
+                texto.textContent = textoOriginal;
+            }
+            if (imagen) {
+                imagen.src = imagenOriginal;
+            }
+            mostrarError(mensaje);
+        }
+
+        function aceptar(archivo) {
+            quitarError();
+            if (texto) {
+                texto.textContent = archivo.name;
+            }
+            if (imagen) {
+                imagen.src = URL.createObjectURL(archivo);
+            }
+        }
 
         campo.addEventListener('change', function () {
             var archivo = campo.files && campo.files[0];
-            if (texto) {
-                texto.textContent = archivo ? archivo.name : textoOriginal;
+            if (!archivo) {
+                quitarError();
+                if (texto) {
+                    texto.textContent = textoOriginal;
+                }
+                if (imagen) {
+                    imagen.src = imagenOriginal;
+                }
+                return;
             }
-            if (imagen && archivo && archivo.type.indexOf('image/') === 0) {
-                imagen.src = URL.createObjectURL(archivo);
+
+            if (!mensajeTipo || !mensajeTamano) {
+                if (texto) {
+                    texto.textContent = archivo.name;
+                }
+                if (imagen && archivo.type.indexOf('image/') === 0) {
+                    imagen.src = URL.createObjectURL(archivo);
+                }
+                return;
             }
+
+            if (maximo > 0 && archivo.size > maximo) {
+                rechazar(mensajeTamano);
+                return;
+            }
+
+            var lector = new FileReader();
+            lector.onload = function () {
+                if (esImagenReal(lector.result)) {
+                    aceptar(archivo);
+                } else {
+                    rechazar(mensajeTipo);
+                }
+            };
+            lector.onerror = function () {
+                rechazar(mensajeTipo);
+            };
+            lector.readAsArrayBuffer(archivo.slice(0, 12));
         });
     });
 
-        document.querySelectorAll('.formularioEditable').forEach(function (formulario) {
+    document.querySelectorAll('.formularioEditable').forEach(function (formulario) {
         var archivo = formulario.querySelector('.campoArchivo');
         var imagen = formulario.querySelector('.fotoPerfilGrande');
         var nombreArchivo = formulario.querySelector('.nombreArchivo');
@@ -99,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (archivo) {
                 archivo.disabled = !editando;
             }
-            
+
             formulario.querySelectorAll('[data-solo-edicion]').forEach(function (elemento) {
                 elemento.hidden = !editando;
             });

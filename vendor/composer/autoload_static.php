@@ -7,6 +7,10 @@ namespace Composer\Autoload;
 class ComposerStaticInitf1b475edff992ae6a5403207824e6baf
 {
     public static $prefixLengthsPsr4 = array (
+        'P' =>
+        array (
+            'PHPMailer\\PHPMailer\\' => 20,
+        ),
         'C' =>
         array (
             'Configuracion\\' => 14,
@@ -18,6 +22,10 @@ class ComposerStaticInitf1b475edff992ae6a5403207824e6baf
     );
 
     public static $prefixDirsPsr4 = array (
+        'PHPMailer\\PHPMailer\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
+        ),
         'Configuracion\\' =>
         array (
             0 => __DIR__ . '/../..' . '/Configuracion',
@@ -135,6 +143,13 @@ class ComposerStaticInitf1b475edff992ae6a5403207824e6baf
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'Configuracion\\BaseDatos' => __DIR__ . '/../..' . '/Configuracion/BaseDatos.php',
         'Configuracion\\Configuracion' => __DIR__ . '/../..' . '/Configuracion/Configuracion.php',
+        'PHPMailer\\PHPMailer\\DSNConfigurator' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/DSNConfigurator.php',
+        'PHPMailer\\PHPMailer\\Exception' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/Exception.php',
+        'PHPMailer\\PHPMailer\\OAuth' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/OAuth.php',
+        'PHPMailer\\PHPMailer\\OAuthTokenProvider' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/OAuthTokenProvider.php',
+        'PHPMailer\\PHPMailer\\PHPMailer' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/PHPMailer.php',
+        'PHPMailer\\PHPMailer\\POP3' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/POP3.php',
+        'PHPMailer\\PHPMailer\\SMTP' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/SMTP.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

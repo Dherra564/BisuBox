@@ -5080,10 +5080,29 @@ h3 {
     }
 
     .fotoCotizacion {
-    display: block;
-    width: 100%;
-    max-width: 420px;
-    height: auto;
-    border-radius: var(--radioCampo);
-}
+        display: block;
+        width: 100%;
+        max-width: 420px;
+        height: auto;
+        border-radius: var(--radioCampo);
+    }
+
+    .tiendaIcono .avatarCuenta {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--colorVerdeClaro);
+        background: var(--colorVerdeClaro);
+    }
+
+    .panelCuentaUsuario .avatarPanel {
+        width: 56px;
+        height: 56px;
+        margin-bottom: 8px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--colorVerdeClaro);
+        background: var(--colorVerdeClaro);
+    }
 }

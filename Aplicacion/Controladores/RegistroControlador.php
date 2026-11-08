@@ -79,13 +79,14 @@ class RegistroControlador
         $this->redirigir(Acceso::tomarDestino() ?? '/');
     }
 
-    private function validarDatos(array $datos, string $contrasena, string $confirmar): Validador
+        private function validarDatos(array $datos, string $contrasena, string $confirmar): Validador
     {
         $validador = new Validador();
 
         $validador->requerido('nombreCompleto', $datos['nombreCompleto'], 'Ingrese su nombre completo')
             ->longitud('nombreCompleto', $datos['nombreCompleto'], 3, 100, 'El nombre debe tener entre 3 y 100 caracteres')
-            ->soloLetras('nombreCompleto', $datos['nombreCompleto'], 'El nombre solo puede tener letras y espacios');
+            ->soloLetras('nombreCompleto', $datos['nombreCompleto'], 'El nombre solo puede tener letras y espacios')
+            ->sinOfensas('nombreCompleto', $datos['nombreCompleto']);
 
         $validador->requerido('correoUsuario', $datos['correoUsuario'], 'Ingrese su correo')
             ->correo('correoUsuario', $datos['correoUsuario']);

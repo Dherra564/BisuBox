@@ -366,7 +366,7 @@ class CarritoControlador
         ];
     }
 
-    private function validarDatos(array $datos): Validador
+        private function validarDatos(array $datos): Validador
     {
         $validador = new Validador();
 
@@ -381,7 +381,8 @@ class CarritoControlador
         if (!MetodoPago::existe($datos['metodoPago'])) {
             $validador->agregarError('metodoPago', 'Escoja cómo va a pagar');
         }
-        $validador->longitud('nota', $datos['nota'], 0, 300, 'La nota puede tener como máximo 300 caracteres');
+        $validador->longitud('nota', $datos['nota'], 0, 300, 'La nota puede tener como máximo 300 caracteres')
+            ->sinOfensas('nota', $datos['nota']);
 
         return $validador;
     }

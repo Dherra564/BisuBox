@@ -29,6 +29,7 @@ class DatosCotizacion
         if ($validador->error('descripcion') === null && !preg_match(DatosProducto::PATRON_DESCRIPCION, $datos['descripcion'])) {
             $validador->agregarError('descripcion', DatosProducto::MENSAJE_DESCRIPCION);
         }
+        $validador->sinOfensas('descripcion', $datos['descripcion']);
     }
 
     public static function leerRespuesta(): array
@@ -123,6 +124,7 @@ class DatosCotizacion
         if ($validador->error('respuesta') === null && !preg_match(DatosProducto::PATRON_DESCRIPCION, $datos['respuesta'])) {
             $validador->agregarError('respuesta', self::MENSAJE_RESPUESTA);
         }
+        $validador->sinOfensas('respuesta', $datos['respuesta']);
 
         if ($validador->esValido() && self::armarRespuesta($datos, $componentes)['costoTotal'] > Numero::MAXIMO) {
             $validador->agregarError('precio', 'El costo total pasa el máximo permitido; revise las cantidades y los montos');

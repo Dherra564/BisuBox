@@ -48,11 +48,12 @@ class DatosTipoComponente
         ];
     }
 
-    public static function validar(Validador $validador, array $datos, int $idVendedor, ?TipoComponente $original = null): void
+        public static function validar(Validador $validador, array $datos, int $idVendedor, ?TipoComponente $original = null): void
     {
         $validador->requerido('nombre', $datos['nombre'], 'Escriba el nombre del tipo, por ejemplo Perlas')
             ->longitud('nombre', $datos['nombre'], 2, 60, 'El nombre debe tener entre 2 y 60 caracteres')
-            ->nombreTienda('nombre', $datos['nombre']);
+            ->nombreTienda('nombre', $datos['nombre'])
+            ->sinOfensas('nombre', $datos['nombre']);
         if (
             $validador->error('nombre') === null
             && (new TipoComponenteRepositorio())->existeNombre($idVendedor, $datos['nombre'], $original?->getIdTipoComponente())
@@ -73,6 +74,7 @@ class DatosTipoComponente
             if ($validador->error($campo . 'nombre') === null && !preg_match(DatosComponente::PATRON_NOMBRE, $dato['nombre'])) {
                 $validador->agregarError($campo . 'nombre', DatosComponente::MENSAJE_NOMBRE);
             }
+            $validador->sinOfensas($campo . 'nombre', $dato['nombre']);
             $nombreComparable = mb_strtolower($dato['nombre'], 'UTF-8');
             if ($validador->error($campo . 'nombre') === null && in_array($nombreComparable, $nombresUsados, true)) {
                 $validador->agregarError($campo . 'nombre', 'Ya hay otro dato con este nombre');
@@ -89,6 +91,7 @@ class DatosTipoComponente
                 if ($validador->error($campo . 'unidad') === null && $dato['unidad'] !== '' && !preg_match(DatosComponente::PATRON_NOMBRE, $dato['unidad'])) {
                     $validador->agregarError($campo . 'unidad', 'La unidad solo puede tener caracteres, números, espacios y los signos . , ( ) # / & \' -');
                 }
+                $validador->sinOfensas($campo . 'unidad', $dato['unidad']);
             }
 
             if ($dato['clase'] === ClaseDato::LISTA) {
@@ -161,7 +164,7 @@ class DatosTipoComponente
         return $atributo !== null && $atributo->getTieneValores();
     }
 
-    private static function validarOpciones(Validador $validador, string $campo, array $opciones): void
+        private static function validarOpciones(Validador $validador, string $campo, array $opciones): void
     {
         if (count($opciones) < 2) {
             $validador->agregarError($campo, 'Una lista necesita al menos 2 opciones');
@@ -180,6 +183,10 @@ class DatosTipoComponente
             }
             if (!preg_match(DatosComponente::PATRON_NOMBRE, $opcion['valor'])) {
                 $validador->agregarError($campo, 'Las opciones solo pueden tener caracteres, números, espacios y los signos . , ( ) # / & \' -');
+                return;
+            }
+            if (Validador::tieneOfensas($opcion['valor'])) {
+                $validador->agregarError($campo, 'Este texto tiene palabras no permitidas.');
                 return;
             }
             $valores[] = mb_strtolower($opcion['valor'], 'UTF-8');

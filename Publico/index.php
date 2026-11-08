@@ -12,6 +12,11 @@ spl_autoload_register(function (string $clase): void {
     }
 });
 
+$autoloadComposer = dirname(__DIR__) . '/vendor/autoload.php';
+if (is_file($autoloadComposer)) {
+    require $autoloadComposer;
+}
+
 try {
     Configuracion::cargar();
 

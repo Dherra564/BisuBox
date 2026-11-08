@@ -8,9 +8,10 @@
  * @var string $urlBase
  */
 
-    use Aplicacion\Nucleo\Csrf;
-    use Aplicacion\Nucleo\TipoIdentificacion;
-    use Aplicacion\Nucleo\Validador;
+use Aplicacion\Nucleo\Csrf;
+use Aplicacion\Nucleo\SubidaArchivo;
+use Aplicacion\Nucleo\TipoIdentificacion;
+use Aplicacion\Nucleo\Validador;
 
     $titulo       = 'Mi perfil';
     $paginaActual = 'perfil';
@@ -135,27 +136,37 @@
             </section>
         </div>
 
-        <aside>
+                <aside>
             <section class="formularioSeccion">
                 <h2>Foto de perfil</h2>
-                <div class="<?php echo $claseCampo('fotoPerfil') ?>">
+                <div class="<?= $claseCampo('fotoPerfil') ?>">
                     <div class="zonaFoto">
-                        <img src="<?php echo $urlBase ?>/fotos/perfil?archivo=<?php echo urlencode((string) ($fotoPendiente ?? $usuario->getFotoPerfil() ?? '')) ?>"
+                        <img src="<?= $urlBase ?>/fotos/perfil?archivo=<?= urlencode((string) ($fotoPendiente ?? $usuario->getFotoPerfil() ?? '')) ?>"
                              alt="Su foto de perfil" class="fotoPerfilGrande">
                         <label for="fotoPerfil" class="boton botonSecundario">
-                            <?php echo $usuario->getFotoPerfil() ? 'Cambiar foto' : 'Elegir foto' ?>
+                            <?= $usuario->getFotoPerfil() ? 'Cambiar foto' : 'Elegir foto' ?>
                         </label>
-                        <input type="file" id="fotoPerfil" name="fotoPerfil" accept="image/jpeg,image/png"
-                               class="campoArchivo" <?php echo $editando ? '' : 'disabled' ?>>
+                        <input type="file" id="fotoPerfil" name="fotoPerfil" accept="image/jpeg,image/png,image/webp"
+                               class="campoArchivo" <?= $editando ? '' : 'disabled' ?>
+                               data-tamano-maximo="<?= SubidaArchivo::tamanoMaximo() ?>"
+                               data-mensaje-tipo="<?= htmlspecialchars(SubidaArchivo::mensajeTipo('La foto')) ?>"
+                               data-mensaje-tamano="<?= htmlspecialchars(SubidaArchivo::mensajeTamano('La foto')) ?>">
                         <?php if ($fotoPendiente !== null): ?>
-                            <!-- La foto que ya eligió no se pierde aunque el formulario tenga errores -->
-                            <input type="hidden" name="fotoPerfilPendiente" value="<?php echo htmlspecialchars($fotoPendiente) ?>">
+                            <input type="hidden" name="fotoPerfilPendiente" value="<?= htmlspecialchars($fotoPendiente) ?>">
                             <span class="nombreArchivo">Ya eligió esta foto. Se guarda con los cambios</span>
                         <?php else: ?>
-                            <span class="nombreArchivo">JPG o PNG, máximo 5 MB</span>
+                            <span class="nombreArchivo">JPG, PNG o WEBP, máximo <?= SubidaArchivo::tamanoMaximoTexto() ?></span>
+                        <?php endif; ?>
+                        <?php if ($usuario->getFotoPerfil() !== null): ?>
+                            <div class="campoCasilla">
+                                <input type="checkbox" id="quitarFoto" name="quitarFoto" value="1"
+                                       <?= !empty($datos['quitarFoto']) ? 'checked' : '' ?>
+                                       <?= $editando ? '' : 'disabled' ?> data-editable data-original="0">
+                                <label for="quitarFoto">Quitar la foto</label>
+                            </div>
                         <?php endif; ?>
                     </div>
-                    <?php echo $mensajeError('fotoPerfil') ?>
+                    <?= $mensajeError('fotoPerfil') ?>
                 </div>
             </section>
         </aside>

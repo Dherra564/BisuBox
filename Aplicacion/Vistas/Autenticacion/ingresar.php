@@ -22,9 +22,11 @@ require __DIR__ . '/../Plantilla/encabezadoAcceso.php';
 
     <div class="campo">
         <label for="contrasena">Contraseña <span class="obligatorio">*</span></label>
-        <input type="password" id="contrasena" name="contrasena" maxlength="20" required data-ver-contrasena autocomplete="current-password"
-            data-mensaje-requerido="Ingrese su contraseña">
+        <input type="password" id="contrasena" name="contrasena" maxlength="20" required data-ver-contrasena
+            autocomplete="current-password" data-mensaje-requerido="Ingrese su contraseña">
     </div>
+
+    <p class="textoAyuda"><a href="<?= $urlBase ?>/olvide-contrasena">¿Olvidó su contraseña?</a></p>
 
     <button type="submit" class="boton botonCompleto">Ingresar</button>
 </form>

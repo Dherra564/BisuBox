@@ -215,4 +215,52 @@ class Validador
     {
         return ! isset($this->errores[$campo]) && trim($valor ?? '') !== '';
     }
+
+        public function sinOfensas(string $campo, ?string $valor, string $mensaje = 'Este texto tiene palabras no permitidas.'): self
+    {
+        if ($this->debeRevisar($campo, $valor) && self::tieneOfensas($valor)) {
+            $this->agregarError($campo, $mensaje);
+        }
+        return $this;
+    }
+
+    public static function tieneOfensas(string $texto): bool
+    {
+        static $bloqueadas = null;
+        if ($bloqueadas === null) {
+            $lista = require __DIR__ . '/../../Configuracion/palabrasBloqueadas.php';
+            $bloqueadas = array_fill_keys(
+                array_map(fn(string $palabra): string => self::quitarTildes(mb_strtolower($palabra, 'UTF-8')), $lista),
+                true
+            );
+        }
+
+        $esOfensa = fn(string $palabra): bool => isset($bloqueadas[$palabra])
+            || (strlen($palabra) > 3 && str_ends_with($palabra, 's') && isset($bloqueadas[substr($palabra, 0, -1)]));
+
+        $limpio = strtr(
+            self::quitarTildes(mb_strtolower($texto, 'UTF-8')),
+            ['4' => 'a', '3' => 'e', '0' => 'o', '1' => 'i', '$' => 's']
+        );
+
+        foreach (preg_split('/[^a-z]+/', $limpio, -1, PREG_SPLIT_NO_EMPTY) as $palabra) {
+            if ($esOfensa($palabra)) {
+                return true;
+            }
+        }
+
+        if (preg_match_all('/(?<![a-z])[a-z](?:[ .]+[a-z](?![a-z]))+/', $limpio, $coincidencias)) {
+            foreach ($coincidencias[0] as $junto) {
+                if ($esOfensa((string) preg_replace('/[ .]+/', '', $junto))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static function quitarTildes(string $texto): string
+    {
+        return strtr($texto, ['á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u', 'ñ' => 'n']);
+    }
 }

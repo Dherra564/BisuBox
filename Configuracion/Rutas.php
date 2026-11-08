@@ -18,6 +18,7 @@ use Aplicacion\Controladores\PersonalizadorControlador;
 use Aplicacion\Controladores\PersonalizadorTiendaControlador;
 use Aplicacion\Controladores\ProductoControlador;
 use Aplicacion\Controladores\ProveedorControlador;
+use Aplicacion\Controladores\RecuperacionControlador;
 use Aplicacion\Controladores\RegistroControlador;
 use Aplicacion\Controladores\SesionControlador;
 use Aplicacion\Controladores\TiendaControlador;
@@ -37,6 +38,10 @@ return function (Enrutador $enrutador): void {
 
     $enrutador->get('/registro', [RegistroControlador::class, 'mostrar']);
     $enrutador->post('/registro', [RegistroControlador::class, 'registrar']);
+    $enrutador->get('/olvide-contrasena', [RecuperacionControlador::class, 'mostrarSolicitud']);
+    $enrutador->post('/olvide-contrasena', [RecuperacionControlador::class, 'solicitar']);
+    $enrutador->get('/restablecer-contrasena', [RecuperacionControlador::class, 'mostrarRestablecer']);
+    $enrutador->post('/restablecer-contrasena', [RecuperacionControlador::class, 'restablecer']);
 
     $enrutador->get('/emprender', [EmprenderControlador::class, 'mostrar']);
     $enrutador->post('/emprender', [EmprenderControlador::class, 'guardar']);

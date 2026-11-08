@@ -105,7 +105,8 @@ class DatosProducto
     {
         $validador->requerido('nombre', $datos['nombre'], 'Escriba el nombre del producto, por ejemplo Collar de perlas')
             ->longitud('nombre', $datos['nombre'], 3, 60, 'El nombre debe tener entre 3 y 60 caracteres')
-            ->nombreComercial('nombre', $datos['nombre']);
+            ->nombreComercial('nombre', $datos['nombre'])
+            ->sinOfensas('nombre', $datos['nombre']);
         if (
             $validador->error('nombre') === null
             && (new ProductoRepositorio())->existeNombre($idVendedor, $datos['nombre'], $original?->getIdProducto())
@@ -118,6 +119,7 @@ class DatosProducto
         if ($validador->error('descripcion') === null && !preg_match(self::PATRON_DESCRIPCION, $datos['descripcion'])) {
             $validador->agregarError('descripcion', self::MENSAJE_DESCRIPCION);
         }
+        $validador->sinOfensas('descripcion', $datos['descripcion']);
         if ($datos['precioVenta'] === '') {
             $validador->agregarError('precioVenta', 'Escriba en cuánto lo va a vender');
         } else {
@@ -128,6 +130,36 @@ class DatosProducto
                 $validador->agregarError('precioVenta', 'Escriba un monto, por ejemplo 8500 o 8500,50');
             } elseif ($precio <= 0) {
                 $validador->agregarError('precioVenta', 'El precio debe ser mayor que 0');
+            }
+        }
+    }
+
+    private static function validarExtras(Validador $validador, array $extras): void
+    {
+        if (count($extras) > self::MAXIMO_EXTRAS) {
+            $validador->agregarError('extras', 'Un producto puede tener como máximo ' . self::MAXIMO_EXTRAS . ' gastos extra');
+            return;
+        }
+
+        foreach ($extras as $clave => $extra) {
+            $campo = 'extra.' . $clave . '.';
+
+            $validador->requerido($campo . 'concepto', $extra['concepto'], 'Escriba para qué fue, por ejemplo Empaque')
+                ->longitud($campo . 'concepto', $extra['concepto'], 2, 60, 'El concepto debe tener entre 2 y 60 caracteres')
+                ->nombreComercial($campo . 'concepto', $extra['concepto'], 'El concepto solo puede tener letras, números, espacios y los signos . , & \' -')
+                ->sinOfensas($campo . 'concepto', $extra['concepto']);
+
+            if ($extra['monto'] === '') {
+                $validador->agregarError($campo . 'monto', 'Escriba cuánto fue');
+                continue;
+            }
+            $monto = Numero::leer($extra['monto']);
+            if (str_starts_with($extra['monto'], '-')) {
+                $validador->agregarError($campo . 'monto', 'No puede ser un número negativo');
+            } elseif ($monto === null || $monto > Numero::MAXIMO) {
+                $validador->agregarError($campo . 'monto', 'Escriba un monto, por ejemplo 150 o 150,50');
+            } elseif ($monto <= 0) {
+                $validador->agregarError($campo . 'monto', 'El monto debe ser mayor que 0');
             }
         }
     }
@@ -347,35 +379,6 @@ class DatosProducto
             );
         } elseif (round($cantidad * $componente->getCostoUnitario(), 2) > Numero::MAXIMO) {
             $validador->agregarError($campo, 'Con esta cantidad el costo es demasiado alto');
-        }
-    }
-
-    private static function validarExtras(Validador $validador, array $extras): void
-    {
-        if (count($extras) > self::MAXIMO_EXTRAS) {
-            $validador->agregarError('extras', 'Un producto puede tener como máximo ' . self::MAXIMO_EXTRAS . ' gastos extra');
-            return;
-        }
-
-        foreach ($extras as $clave => $extra) {
-            $campo = 'extra.' . $clave . '.';
-
-            $validador->requerido($campo . 'concepto', $extra['concepto'], 'Escriba para qué fue, por ejemplo Empaque')
-                ->longitud($campo . 'concepto', $extra['concepto'], 2, 60, 'El concepto debe tener entre 2 y 60 caracteres')
-                ->nombreComercial($campo . 'concepto', $extra['concepto'], 'El concepto solo puede tener letras, números, espacios y los signos . , & \' -');
-
-            if ($extra['monto'] === '') {
-                $validador->agregarError($campo . 'monto', 'Escriba cuánto fue');
-                continue;
-            }
-            $monto = Numero::leer($extra['monto']);
-            if (str_starts_with($extra['monto'], '-')) {
-                $validador->agregarError($campo . 'monto', 'No puede ser un número negativo');
-            } elseif ($monto === null || $monto > Numero::MAXIMO) {
-                $validador->agregarError($campo . 'monto', 'Escriba un monto, por ejemplo 150 o 150,50');
-            } elseif ($monto <= 0) {
-                $validador->agregarError($campo . 'monto', 'El monto debe ser mayor que 0');
-            }
         }
     }
 }

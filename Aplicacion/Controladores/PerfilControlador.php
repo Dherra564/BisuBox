@@ -40,13 +40,19 @@ class PerfilControlador
     }
 
 
-    public function actualizar(): void
+        public function actualizar(): void
     {
+        if (SubidaArchivo::envioExcedido()) {
+            Mensaje::error(SubidaArchivo::mensajeTamano('La foto'));
+            $this->redirigir('/perfil');
+        }
+
         $this->verificarCsrf('/perfil');
 
         $leer = fn(string $campo): string => is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
 
         $tieneIdentificacion = $this->usuario->esVendedor();
+        $quitarFoto = ($_POST['quitarFoto'] ?? '') === '1';
 
         $datos = [
             'tipoIdentificacion' => $tieneIdentificacion ? $leer('tipoIdentificacion') : null,
@@ -54,18 +60,17 @@ class PerfilControlador
             'nombreCompleto' => $leer('nombreCompleto'),
             'correoUsuario' => Validador::limpiarCorreo($leer('correoUsuario')),
             'numeroTelefonico' => $leer('numeroTelefonico'),
+            'quitarFoto' => $quitarFoto,
         ];
 
         $validador = $this->validarDatos($datos, $tieneIdentificacion);
         $fotoNueva = (new SubidaArchivo())->recibir('fotoPerfil', SubidaArchivo::FOTO_PERFIL, $validador);
-        // La foto que eligió no se pierde aunque el formulario tenga errores
         $datos['fotoPerfilPendiente'] = $fotoNueva;
         if (!$validador->esValido()) {
             SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_PERFIL, $fotoNueva);
             $this->mostrarPerfil($datos, $validador->errores());
             return;
         }
-        $nombreFoto = $fotoNueva;
 
         $fotoAnterior = $this->usuario->getFotoPerfil();
         $this->usuario->setTipoIdentificacion($datos['tipoIdentificacion']);
@@ -73,24 +78,25 @@ class PerfilControlador
         $this->usuario->setNombreCompleto(UsuarioRepositorio::limpiarEspacios($datos['nombreCompleto']));
         $this->usuario->setCorreoUsuario($datos['correoUsuario']);
         $this->usuario->setNumeroTelefonico(Validador::limpiarTelefono($datos['numeroTelefonico']));
-        if ($nombreFoto !== null) {
-            $this->usuario->setFotoPerfil($nombreFoto);
+        if ($fotoNueva !== null) {
+            $this->usuario->setFotoPerfil($fotoNueva);
+        } elseif ($quitarFoto) {
+            $this->usuario->setFotoPerfil(null);
         }
 
         try {
             $this->usuarioRepositorio->actualizar($this->usuario);
         } catch (Throwable $error) {
             error_log('Error al actualizar perfil: ' . $error->getMessage());
-            SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_PERFIL, $nombreFoto);
+            SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_PERFIL, $fotoNueva);
             Mensaje::error('No se pudo guardar. Intente de nuevo.');
-            // Se vuelve a mostrar el formulario con lo que escribió, para no perder los cambios
             $this->usuario = $this->cargarUsuarioActual();
             $this->mostrarPerfil($datos, [], true);
             return;
         }
-        SubidaArchivo::olvidarPendiente(SubidaArchivo::FOTO_PERFIL, $nombreFoto);
+        SubidaArchivo::olvidarPendiente(SubidaArchivo::FOTO_PERFIL, $fotoNueva);
 
-        if ($nombreFoto !== null && $fotoAnterior !== null) {
+        if ($fotoAnterior !== null && $fotoAnterior !== $this->usuario->getFotoPerfil()) {
             SubidaArchivo::eliminarFotoPerfil($fotoAnterior);
         }
         UsuarioActual::actualizarNombre($this->usuario->getNombreCompleto());
@@ -173,14 +179,15 @@ class PerfilControlador
         return $usuario;
     }
 
-    private function validarDatos(array $datos, bool $tieneIdentificacion): Validador
+        private function validarDatos(array $datos, bool $tieneIdentificacion): Validador
     {
         $validador = new Validador();
         $idUsuario = $this->usuario->getIdUsuario();
 
         $validador->requerido('nombreCompleto', $datos['nombreCompleto'], 'Ingrese su nombre completo')
             ->longitud('nombreCompleto', $datos['nombreCompleto'], 3, 100, 'El nombre debe tener entre 3 y 100 caracteres')
-            ->soloLetras('nombreCompleto', $datos['nombreCompleto'], 'El nombre solo puede tener letras y espacios');
+            ->soloLetras('nombreCompleto', $datos['nombreCompleto'], 'El nombre solo puede tener letras y espacios')
+            ->sinOfensas('nombreCompleto', $datos['nombreCompleto']);
 
         $validador->requerido('correoUsuario', $datos['correoUsuario'], 'Ingrese el correo')
             ->correo('correoUsuario', $datos['correoUsuario']);

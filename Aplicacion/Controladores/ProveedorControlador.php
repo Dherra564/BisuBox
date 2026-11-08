@@ -200,13 +200,14 @@ class ProveedorControlador
         ];
     }
 
-    private function validarDatos(array $datos, ?int $idProveedor): Validador
+        private function validarDatos(array $datos, ?int $idProveedor): Validador
     {
         $validador = new Validador();
 
         $validador->requerido('nombre', $datos['nombre'], 'Ingrese el nombre del proveedor')
             ->longitud('nombre', $datos['nombre'], 3, 50, 'El nombre debe tener entre 3 y 50 caracteres')
-            ->nombreComercial('nombre', $datos['nombre']);
+            ->nombreComercial('nombre', $datos['nombre'])
+            ->sinOfensas('nombre', $datos['nombre']);
 
         $validador->requerido('telefono', $datos['telefono'], 'Ingrese el teléfono')
             ->telefono('telefono', $datos['telefono']);

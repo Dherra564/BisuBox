@@ -23,15 +23,16 @@ class DatosTienda
     }
 
     
-    public static function validar(Validador $validador, array $datos, ?int $idVendedor = null): void
+        public static function validar(Validador $validador, array $datos, ?int $idVendedor = null): void
     {
         $validador->requerido('tiendaNombre', $datos['tiendaNombre'], 'Ingrese el nombre de la tienda')
             ->longitud('tiendaNombre', $datos['tiendaNombre'], 3, 100, 'El nombre debe tener entre 3 y 100 caracteres')
-            ->nombreTienda('tiendaNombre', $datos['tiendaNombre']);
+            ->nombreTienda('tiendaNombre', $datos['tiendaNombre'])
+            ->sinOfensas('tiendaNombre', $datos['tiendaNombre']);
 
-        $validador->longitud('tiendaDescripcion', $datos['tiendaDescripcion'], 1, 300, 'La descripción puede tener como máximo 300 caracteres');
+        $validador->longitud('tiendaDescripcion', $datos['tiendaDescripcion'], 1, 300, 'La descripción puede tener como máximo 300 caracteres')
+            ->sinOfensas('tiendaDescripcion', $datos['tiendaDescripcion']);
 
-        
         $validador->contactos($datos['contactos']);
         $contactoRepositorio = new VendedorContactoRepositorio();
         foreach ($datos['contactos'] as $indice => $contacto) {
