@@ -25,9 +25,9 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         telefono: {
             prueba: function (valor) {
-                return /^[0-9]{8}$/.test(limpiarTelefono(valor));
+                return /^[245678][0-9]{7}$/.test(limpiarTelefono(valor));
             },
-            mensaje: 'El teléfono debe tener 8 dígitos, solo números'
+            mensaje: 'El teléfono debe tener 8 dígitos y empezar con 2, 4, 5, 6, 7 u 8'
         },
         nombreTienda: {
             patron: /^[\p{L}0-9][\p{L}0-9 .&'-]*$/u,
@@ -99,6 +99,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return numeros;
     }
 
+    function limpiarCorreo(valor) {
+        return valor.replace(/[\s\u00a0\u200b-\u200d\ufeff]+/g, '');
+    }
+
     function esContactoValido(campo, valor) {
         var fila = campo.closest('.filaContacto');
         var tipo = fila ? fila.querySelector('[data-contacto-tipo]') : null;
@@ -108,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var opcion = tipo.options[tipo.selectedIndex];
 
         if (opcion.hasAttribute('data-telefono')) {
-            return /^[0-9]{8}$/.test(limpiarTelefono(valor));
+            return /^[245678][0-9]{7}$/.test(limpiarTelefono(valor));
         }
 
         var esEnlace = /^https?:\/\//i.test(valor) || /^(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)+\//i.test(valor);
@@ -149,6 +153,96 @@ document.addEventListener('DOMContentLoaded', function () {
         return tipo.options[tipo.selectedIndex];
     }
 
+    function limpiarSegunTipo(texto, soloNumeros, maximo) {
+        var limpio = limpiarIdentificacion(texto);
+        limpio = soloNumeros ? limpio.replace(/\D/g, '') : limpio.replace(/[^A-Z0-9]/g, '');
+        return limpio.slice(0, maximo);
+    }
+
+    function ponerGuiones(limpio, grupos) {
+        if (grupos.length === 0) {
+            return limpio;
+        }
+        var partes = [];
+        var inicio = 0;
+        grupos.forEach(function (tamano) {
+            if (inicio < limpio.length) {
+                partes.push(limpio.slice(inicio, inicio + tamano));
+            }
+            inicio += tamano;
+        });
+        return partes.join('-');
+    }
+
+    function posicionTrasCaracteres(texto, cantidad) {
+        var vistos = 0;
+        for (var i = 0; i < texto.length; i++) {
+            if (vistos === cantidad) {
+                return i;
+            }
+            if (texto.charAt(i) !== '-') {
+                vistos++;
+            }
+        }
+        return texto.length;
+    }
+
+    function aplicarMascaraIdentificacion(campo) {
+        var opcion = opcionTipoIdentificacion(campo);
+        if (!opcion) {
+            return;
+        }
+        var soloNumeros = opcion.getAttribute('data-solo-numeros') === '1';
+        var maximo = parseInt(opcion.getAttribute('data-largo-maximo'), 10) || 25;
+        var grupos = (opcion.getAttribute('data-grupos') || '').split('-').filter(Boolean).map(Number);
+
+        campo.inputMode = soloNumeros ? 'numeric' : 'text';
+
+        var posicion = campo.selectionStart === null ? campo.value.length : campo.selectionStart;
+        var antes = limpiarSegunTipo(campo.value.slice(0, posicion), soloNumeros, maximo).length;
+        var nuevo = ponerGuiones(limpiarSegunTipo(campo.value, soloNumeros, maximo), grupos);
+
+        if (nuevo === campo.value) {
+            return;
+        }
+        campo.value = nuevo;
+        if (document.activeElement === campo) {
+            var destino = posicionTrasCaracteres(nuevo, antes);
+            campo.setSelectionRange(destino, destino);
+        }
+    }
+    function darFormatoTelefono(valor) {
+        var numeros = limpiarTelefono(valor).slice(0, 8);
+        return numeros.length > 4 ? numeros.slice(0, 4) + '-' + numeros.slice(4) : numeros;
+    }
+
+    function esCampoTelefono(campo) {
+        if (campo.hasAttribute('data-mascara-telefono')) {
+            return true;
+        }
+        if (!campo.matches('[data-regla="contacto"]')) {
+            return false;
+        }
+        var fila = campo.closest('.filaContacto');
+        var tipo = fila ? fila.querySelector('[data-contacto-tipo]') : null;
+        return !!tipo && tipo.selectedIndex >= 0 && tipo.options[tipo.selectedIndex].hasAttribute('data-telefono');
+    }
+
+    function aplicarMascaraTelefono(campo) {
+        var posicion = campo.selectionStart === null ? campo.value.length : campo.selectionStart;
+        var antes = campo.value.slice(0, posicion).replace(/\D/g, '').length;
+        var nuevo = darFormatoTelefono(campo.value);
+
+        if (nuevo === campo.value) {
+            return;
+        }
+        campo.value = nuevo;
+        if (document.activeElement === campo) {
+            var destino = posicionTrasCaracteres(nuevo, antes);
+            campo.setSelectionRange(destino, destino);
+        }
+    }
+
     function quitarError(campo) {
         var contenedor = campo.closest('.campo');
         if (!contenedor) {
@@ -175,19 +269,23 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function revisarCampo(campo, formulario) {
-        
+
         if (campo.closest('[hidden]')) {
             return '';
         }
 
-        
+
         if (campo.type === 'radio') {
             var grupo = formulario.querySelectorAll('input[type="radio"][name="' + campo.name + '"]');
             var marcada = Array.prototype.some.call(grupo, function (opcion) { return opcion.checked; });
             return !marcada && campo.required ? (campo.getAttribute('data-mensaje-requerido') || 'Escoja una opción') : '';
         }
 
-        var valor = campo.type === 'password' ? campo.value : campo.value.trim();
+        var valor = campo.type === 'password' || campo.hasAttribute('data-ver-contrasena') ? campo.value : campo.value.trim();
+
+        if (campo.getAttribute('data-regla') === 'correo') {
+            valor = limpiarCorreo(valor);
+        }
 
         if (valor === '') {
             return campo.required ? (campo.getAttribute('data-mensaje-requerido') || 'Este campo es obligatorio') : '';
@@ -278,7 +376,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        
+
         function revisarYMostrar(campo) {
             if (!campo.matches(selectorCampos)) {
                 return;
@@ -297,7 +395,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        
+
         function revisarDependientes(campo) {
             if (!campo.id) {
                 return;
@@ -310,7 +408,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
         }
 
-        
+
         function alCambiar(evento) {
             var campo = evento.target;
             if (!campo.matches('input, select, textarea') || campo.type === 'hidden') {
@@ -321,7 +419,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (campo.matches(selectorCampos)) {
                 revisarYMostrar(campo);
             } else if (campo.closest('.campoConError')) {
-                
+
                 quitarError(campo);
             }
             revisarDependientes(campo);
@@ -330,7 +428,7 @@ document.addEventListener('DOMContentLoaded', function () {
         formulario.addEventListener('input', alCambiar);
         formulario.addEventListener('change', alCambiar);
 
-        
+
         formulario.addEventListener('focusout', function (evento) {
             var campo = evento.target;
             if (campo.matches && campo.matches(selectorCampos) && campo.getAttribute('data-tocado') === 'si') {
@@ -339,7 +437,34 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    
+    var ICONO_OJO = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+        + '<path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+    var ICONO_OJO_TACHADO = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+        + '<path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'
+        + '<path d="M4 4l16 16"/></svg>';
+
+    document.querySelectorAll('input[data-ver-contrasena]').forEach(function (campo) {
+        var envoltura = document.createElement('div');
+        envoltura.className = 'campoContrasena';
+        campo.parentNode.insertBefore(envoltura, campo);
+        envoltura.appendChild(campo);
+
+        var boton = document.createElement('button');
+        boton.type = 'button';
+        boton.className = 'botonVerContrasena';
+        boton.setAttribute('aria-label', 'Mostrar contraseña');
+        boton.innerHTML = ICONO_OJO;
+        envoltura.appendChild(boton);
+
+        boton.addEventListener('click', function () {
+            var oculta = campo.type === 'password';
+            campo.type = oculta ? 'text' : 'password';
+            boton.setAttribute('aria-label', oculta ? 'Ocultar contraseña' : 'Mostrar contraseña');
+            boton.innerHTML = oculta ? ICONO_OJO_TACHADO : ICONO_OJO;
+            campo.focus();
+        });
+    });
+
     var requisitosContrasena = [
         { texto: 'Entre 8 y 20 caracteres', cumple: function (v) { return v.length >= 8 && v.length <= 20; } },
         { texto: 'Una letra mayúscula', cumple: function (v) { return /[A-Z]/.test(v); } },
@@ -360,12 +485,11 @@ document.addEventListener('DOMContentLoaded', function () {
             return elemento;
         });
 
-        
-        var ayuda = campo.parentNode.querySelector('.textoAyuda');
+        var ayuda = campo.closest('.campo').querySelector('.textoAyuda');
         if (ayuda) {
             ayuda.hidden = true;
         }
-        campo.insertAdjacentElement('afterend', lista);
+        (campo.closest('.campoContrasena') || campo).insertAdjacentElement('afterend', lista);
 
         function actualizar() {
             requisitosContrasena.forEach(function (requisito, indice) {
@@ -386,7 +510,13 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        aplicarMascaraIdentificacion(campo);
+        campo.addEventListener('input', function () {
+            aplicarMascaraIdentificacion(campo);
+        });
+
         tipo.addEventListener('change', function () {
+            aplicarMascaraIdentificacion(campo);
             var opcion = opcionTipoIdentificacion(campo);
             if (ayuda) {
                 ayuda.textContent = opcion ? opcion.getAttribute('data-ayuda') : 'Primero seleccione el tipo';
@@ -400,6 +530,30 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         });
+    });
+
+    document.addEventListener('input', function (evento) {
+        var campo = evento.target;
+        if (campo.matches && campo.matches('input') && esCampoTelefono(campo)) {
+            aplicarMascaraTelefono(campo);
+        }
+    }, true);
+
+    document.addEventListener('change', function (evento) {
+        var selector = evento.target;
+        if (!selector.matches || !selector.matches('[data-contacto-tipo]')) {
+            return;
+        }
+        var entrada = selector.closest('.filaContacto').querySelector('[data-regla="contacto"]');
+        if (entrada && /^[\d\s+()-]*$/.test(entrada.value) && esCampoTelefono(entrada)) {
+            aplicarMascaraTelefono(entrada);
+        }
+    }, true);
+
+    document.querySelectorAll('[data-mascara-telefono], [data-regla="contacto"]').forEach(function (campo) {
+        if (esCampoTelefono(campo)) {
+            aplicarMascaraTelefono(campo);
+        }
     });
 
     document.querySelectorAll('[data-contador]').forEach(function (campo) {
@@ -445,13 +599,14 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    
+
     var CLAVE_RESPALDO = 'bisuboxRespaldoFormulario';
 
     function camposRespaldables(formulario) {
         return Array.prototype.filter.call(formulario.elements, function (campo) {
             return campo.name && !campo.disabled
                 && ['hidden', 'file', 'password', 'submit', 'button'].indexOf(campo.type) === -1
+                && !campo.hasAttribute('data-ver-contrasena')
                 && campo.name !== '_csrf';
         });
     }
@@ -467,7 +622,7 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             sessionStorage.setItem(CLAVE_RESPALDO, JSON.stringify({ accion: formulario.getAttribute('action'), campos: campos }));
         } catch (error) {
-            
+
         }
     }
 
@@ -479,7 +634,7 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (error) {
             return;
         }
-        
+
         if (!respaldo || !document.querySelector('.alertaError')) {
             return;
         }
@@ -494,12 +649,12 @@ document.addEventListener('DOMContentLoaded', function () {
         var escritos = campos.filter(function (campo) {
             return campo.type !== 'checkbox' && campo.type !== 'radio' && campo.tagName !== 'SELECT' && campo.value.trim() !== '';
         });
-        
+
         if (escritos.length > 0) {
             return;
         }
 
-        
+
         var usados = {};
         respaldo.campos.forEach(function (guardado) {
             var mismos = campos.filter(function (campo) { return campo.name === guardado.nombre; });
@@ -533,4 +688,14 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     });
+
+    document.addEventListener('input', function (evento) {
+        var campo = evento.target;
+        if (campo.matches && campo.matches('input[data-regla="correo"]')) {
+            var limpio = limpiarCorreo(campo.value);
+            if (limpio !== campo.value) {
+                campo.value = limpio;
+            }
+        }
+    }, true);
 });

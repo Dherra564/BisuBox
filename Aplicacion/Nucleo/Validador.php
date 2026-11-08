@@ -1,5 +1,4 @@
 <?php
-
 namespace Aplicacion\Nucleo;
 
 class Validador
@@ -25,10 +24,9 @@ class Validador
         return $this;
     }
 
-
     public function soloLetras(string $campo, ?string $valor, string $mensaje = 'Solo se permiten letras y espacios'): self
     {
-        if ($this->debeRevisar($campo, $valor) && !preg_match('/^\p{L}+(\s+\p{L}+)*$/u', trim($valor))) {
+        if ($this->debeRevisar($campo, $valor) && ! preg_match('/^\p{L}+(\s+\p{L}+)*$/u', trim($valor))) {
             $this->agregarError($campo, $mensaje);
         }
         return $this;
@@ -36,7 +34,7 @@ class Validador
 
     public function soloNumeros(string $campo, ?string $valor, string $mensaje = 'Solo se permiten números'): self
     {
-        if ($this->debeRevisar($campo, $valor) && !preg_match('/^[0-9]+$/', $valor)) {
+        if ($this->debeRevisar($campo, $valor) && ! preg_match('/^[0-9]+$/', $valor)) {
             $this->agregarError($campo, $mensaje);
         }
         return $this;
@@ -44,14 +42,14 @@ class Validador
 
     public function alfanumerico(string $campo, ?string $valor, string $mensaje = 'Solo se permiten letras y números, sin espacios ni guiones'): self
     {
-        if ($this->debeRevisar($campo, $valor) && !preg_match('/^[A-Za-z0-9]+$/', $valor)) {
+        if ($this->debeRevisar($campo, $valor) && ! preg_match('/^[A-Za-z0-9]+$/', $valor)) {
             $this->agregarError($campo, $mensaje);
         }
         return $this;
     }
     public function tipoIdentificacion(string $campo, ?string $tipo, string $mensaje = 'Seleccione el tipo de identificación'): self
     {
-        if (!isset($this->errores[$campo]) && !TipoIdentificacion::existe($tipo)) {
+        if (! isset($this->errores[$campo]) && ! TipoIdentificacion::existe($tipo)) {
             $this->agregarError($campo, $mensaje);
         }
         return $this;
@@ -61,16 +59,16 @@ class Validador
     {
         if (
             $this->debeRevisar($campo, $numero) && TipoIdentificacion::existe($tipo)
-            && !TipoIdentificacion::esValida($tipo, $numero)
+            && ! TipoIdentificacion::esValida($tipo, $numero)
         ) {
             $this->agregarError($campo, TipoIdentificacion::mensaje($tipo));
         }
         return $this;
     }
 
-    public function correo(string $campo, ?string $valor, string $mensaje = 'Revise el correo: debe ser como nombre@correo.com, sin espacios ni puntos seguidos'): self
+    public function correo(string $campo, ?string $valor, string $mensaje = 'Revise el correo: debe ser como nombre@gmail.com, sin espacios ni puntos seguidos'): self
     {
-        if ($this->debeRevisar($campo, $valor) && !self::esCorreo($valor)) {
+        if ($this->debeRevisar($campo, $valor) && ! self::esCorreo($valor)) {
             $this->agregarError($campo, $mensaje);
         }
         return $this;
@@ -81,15 +79,20 @@ class Validador
         $partes = explode('@', $correo);
 
         return count($partes) === 2
-            && strlen($partes[0]) <= 64
-            && strlen($correo) <= 150
-            && preg_match('/^[a-z0-9_%+-]+(\.[a-z0-9_%+-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,24}$/i', $correo) === 1;
+        && strlen($partes[0]) <= 64
+        && strlen($correo) <= 150
+        && preg_match('/^[a-z0-9_%+-]+(\.[a-z0-9_%+-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,24}$/iD', $correo) === 1;
     }
 
+    public static function limpiarCorreo(string $correo): string
+    {
+        $sinEspacios = (string) preg_replace('/[\s\x{00A0}\x{200B}-\x{200D}\x{FEFF}]+/u', '', $correo);
+        return mb_strtolower($sinEspacios, 'UTF-8');
+    }
 
     public function telefono(string $campo, ?string $valor, string $mensaje = 'El teléfono debe tener 8 dígitos y empezar con 2, 4, 5, 6, 7 u 8'): self
     {
-        if ($this->debeRevisar($campo, $valor) && !self::esTelefono(self::limpiarTelefono($valor))) {
+        if ($this->debeRevisar($campo, $valor) && ! self::esTelefono(self::limpiarTelefono($valor))) {
             $this->agregarError($campo, $mensaje);
         }
         return $this;
@@ -102,7 +105,7 @@ class Validador
 
     public function nombreTienda(string $campo, ?string $valor, string $mensaje = 'El nombre solo puede tener letras, números, espacios y los signos . & \' -'): self
     {
-        if ($this->debeRevisar($campo, $valor) && !preg_match('/^[\p{L}0-9][\p{L}0-9 .&\'-]*$/u', trim($valor))) {
+        if ($this->debeRevisar($campo, $valor) && ! preg_match('/^[\p{L}0-9][\p{L}0-9 .&\'-]*$/u', trim($valor))) {
             $this->agregarError($campo, $mensaje);
         }
         return $this;
@@ -117,9 +120,9 @@ class Validador
         $vistos = [];
         foreach ($contactos as $indice => $contacto) {
             $campo = 'contacto' . $indice;
-            if (!TipoContacto::existe($contacto['tipo'])) {
+            if (! TipoContacto::existe($contacto['tipo'])) {
                 $this->agregarError($campo, 'Seleccione el tipo de contacto');
-            } elseif (!TipoContacto::esValido($contacto['tipo'], $contacto['valor'])) {
+            } elseif (! TipoContacto::esValido($contacto['tipo'], $contacto['valor'])) {
                 $this->agregarError($campo, TipoContacto::mensaje($contacto['tipo']));
             } elseif (isset($vistos[$contacto['tipo'] . '|' . mb_strtolower($contacto['valor'], 'UTF-8')])) {
                 $this->agregarError($campo, 'Este contacto ya está en la lista');
@@ -131,7 +134,7 @@ class Validador
 
     public function nombreComercial(string $campo, ?string $valor, string $mensaje = 'El nombre solo puede tener letras, números, espacios y los signos . , & \' -'): self
     {
-        if ($this->debeRevisar($campo, $valor) && !preg_match('/^[\p{L}0-9][\p{L}0-9 .,&\'-]*$/u', trim($valor))) {
+        if ($this->debeRevisar($campo, $valor) && ! preg_match('/^[\p{L}0-9][\p{L}0-9 .,&\'-]*$/u', trim($valor))) {
             $this->agregarError($campo, $mensaje);
         }
         return $this;
@@ -140,7 +143,7 @@ class Validador
     // Dirección de entrega: letras, números, espacios, saltos de línea y los signos comunes de una dirección
     public function direccion(string $campo, ?string $valor, string $mensaje = 'La dirección solo puede tener letras, números, espacios y los signos . , # - / ( ) °'): self
     {
-        if ($this->debeRevisar($campo, $valor) && !preg_match('/^[\p{L}0-9\s.,#\-\/()°º:;]+$/u', trim($valor))) {
+        if ($this->debeRevisar($campo, $valor) && ! preg_match('/^[\p{L}0-9\s.,#\-\/()°º:;]+$/u', trim($valor))) {
             $this->agregarError($campo, $mensaje);
         }
         return $this;
@@ -149,13 +152,13 @@ class Validador
     public function contrasenaSegura(string $campo, ?string $valor, string $mensaje = 'La contraseña debe tener entre 8 y 20 caracteres, una mayúscula, una minúscula y un número, sin espacios'): self
     {
         if ($this->debeRevisar($campo, $valor)) {
-            $largo = strlen($valor);
+            $largo  = strlen($valor);
             $segura = $largo >= 8 && $largo <= 20
-                && preg_match('/[A-Z]/', $valor)
-                && preg_match('/[a-z]/', $valor)
-                && preg_match('/[0-9]/', $valor)
-                && !preg_match('/\s/u', $valor);
-            if (!$segura) {
+            && preg_match('/[A-Z]/', $valor)
+            && preg_match('/[a-z]/', $valor)
+            && preg_match('/[0-9]/', $valor)
+            && ! preg_match('/\s/u', $valor);
+            if (! $segura) {
                 $this->agregarError($campo, $mensaje);
             }
         }
@@ -170,10 +173,9 @@ class Validador
         return $this;
     }
 
-
     public function agregarError(string $campo, string $mensaje): self
     {
-        if (!isset($this->errores[$campo])) {
+        if (! isset($this->errores[$campo])) {
             $this->errores[$campo] = $mensaje;
         }
         return $this;
@@ -184,18 +186,15 @@ class Validador
         return $this->errores === [];
     }
 
-
     public function errores(): array
     {
         return $this->errores;
     }
 
-
     public function error(string $campo): ?string
     {
         return $this->errores[$campo] ?? null;
     }
-
 
     public static function limpiarTelefono(string $telefono): string
     {
@@ -206,8 +205,14 @@ class Validador
         return $soloNumeros;
     }
 
+    public static function formatearTelefono(?string $telefono): string
+    {
+        $telefono = (string) $telefono;
+        return strlen($telefono) === 8 ? substr($telefono, 0, 4) . '-' . substr($telefono, 4) : $telefono;
+    }
+
     private function debeRevisar(string $campo, ?string $valor): bool
     {
-        return !isset($this->errores[$campo]) && trim($valor ?? '') !== '';
+        return ! isset($this->errores[$campo]) && trim($valor ?? '') !== '';
     }
 }

@@ -52,7 +52,7 @@ class PerfilControlador
             'tipoIdentificacion' => $tieneIdentificacion ? $leer('tipoIdentificacion') : null,
             'numeroIdentificacion' => $tieneIdentificacion ? TipoIdentificacion::limpiar($leer('numeroIdentificacion')) : null,
             'nombreCompleto' => $leer('nombreCompleto'),
-            'correoUsuario' => mb_strtolower($leer('correoUsuario'), 'UTF-8'),
+            'correoUsuario' => Validador::limpiarCorreo($leer('correoUsuario')),
             'numeroTelefonico' => $leer('numeroTelefonico'),
         ];
 

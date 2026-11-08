@@ -64,11 +64,14 @@ $telefono = Validador::limpiarTelefono((string) $usuario->getNumeroTelefonico())
                     <option value="">Seleccione el tipo</option>
                     <?php foreach (TipoIdentificacion::todos() as $codigo => $tipo): ?>
                         <option value="<?= $codigo ?>" <?= $tipoElegido === $codigo ? 'selected' : '' ?>
-                            data-patron="<?= htmlspecialchars($tipo['patron']) ?>"
-                            data-mensaje="<?= htmlspecialchars($tipo['mensaje']) ?>"
-                            data-ayuda="<?= htmlspecialchars($tipo['ayuda']) ?>">
-                            <?= htmlspecialchars($tipo['nombre']) ?>
-                        </option>
+                        data-patron="<?= htmlspecialchars($tipo['patron']) ?>"
+                        data-mensaje="<?= htmlspecialchars($tipo['mensaje']) ?>"
+                        data-ayuda="<?= htmlspecialchars($tipo['ayuda']) ?>"
+                        data-grupos="<?= htmlspecialchars($tipo['grupos']) ?>"
+                        data-solo-numeros="<?= $tipo['soloNumeros'] ? '1' : '0' ?>"
+                        data-largo-maximo="<?= $tipo['largoMaximo'] ?>">
+                        <?= htmlspecialchars($tipo['nombre']) ?>
+                         </option>
                     <?php endforeach; ?>
                 </select>
                 <?= $mensajeError('tipoIdentificacion') ?>

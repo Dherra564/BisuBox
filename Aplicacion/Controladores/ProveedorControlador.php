@@ -196,7 +196,7 @@ class ProveedorControlador
         return [
             'nombre' => UsuarioRepositorio::limpiarEspacios($leer('nombre')),
             'telefono' => $leer('telefono'),
-            'correo' => mb_strtolower($leer('correo'), 'UTF-8'),
+            'correo' => Validador::limpiarCorreo($leer('correo')),
         ];
     }
 

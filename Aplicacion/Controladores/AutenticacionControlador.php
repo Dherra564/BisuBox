@@ -8,6 +8,7 @@ use Aplicacion\Nucleo\ManejadorSesion;
 use Aplicacion\Nucleo\Mensaje;
 use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\UsuarioActual;
+use Aplicacion\Nucleo\Validador;
 use Aplicacion\Repositorios\SesionRepositorio;
 use Aplicacion\Repositorios\UsuarioRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
@@ -21,7 +22,7 @@ class AutenticacionControlador
 
     public function iniciarSesion(): void
     {
-        $correo = is_string($_POST['correo'] ?? null) ? strtolower(trim($_POST['correo'])) : '';
+        $correo = is_string($_POST['correo'] ?? null) ? Validador::limpiarCorreo($_POST['correo']) : '';
         $contrasena = is_string($_POST['contrasena'] ?? null) ? $_POST['contrasena'] : '';
 
         if (!Csrf::esValido()) {

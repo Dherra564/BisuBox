@@ -41,7 +41,7 @@ class RegistroControlador
 
         $datos = [
             'nombreCompleto' => $this->leer('nombreCompleto'),
-            'correoUsuario' => mb_strtolower($this->leer('correoUsuario'), 'UTF-8'),
+            'correoUsuario' => Validador::limpiarCorreo($this->leer('correoUsuario')),
             'numeroTelefonico' => $this->leer('numeroTelefonico'),
         ];
         $contrasena = $this->leerContrasena('contrasena');

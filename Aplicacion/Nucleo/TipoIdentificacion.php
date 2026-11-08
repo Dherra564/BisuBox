@@ -5,31 +5,49 @@ namespace Aplicacion\Nucleo;
 class TipoIdentificacion
 {
     public const CEDULA = 'Cedula';
+    public const CEDULA_JURIDICA = 'CedulaJuridica';
     public const DIMEX = 'Dimex';
     public const PASAPORTE = 'Pasaporte';
 
     private const TIPOS = [
         self::CEDULA => [
-            'nombre' => 'Cédula de identidad',
+            'nombre' => 'Cédula nacional',
             'patron' => '^[1-9][0-9]{8}$',
             'mensaje' => 'La cédula debe tener 9 dígitos y no empezar con 0, por ejemplo 1-0234-0567',
             'ayuda' => '9 dígitos, por ejemplo 1-0234-0567',
+            'grupos' => '1-4-4',
+            'soloNumeros' => true,
+            'largoMaximo' => 9,
+        ],
+        self::CEDULA_JURIDICA => [
+            'nombre' => 'Cédula jurídica',
+            'patron' => '^3[0-9]{9}$',
+            'mensaje' => 'La cédula jurídica debe tener 10 dígitos y empezar con 3, por ejemplo 3-101-123456',
+            'ayuda' => '10 dígitos, por ejemplo 3-101-123456',
+            'grupos' => '1-3-6',
+            'soloNumeros' => true,
+            'largoMaximo' => 10,
         ],
         self::DIMEX => [
             'nombre' => 'DIMEX',
             'patron' => '^[1-9][0-9]{10,11}$',
             'mensaje' => 'El DIMEX debe tener 11 o 12 dígitos y no empezar con 0',
             'ayuda' => '11 o 12 dígitos, sin ceros al inicio',
+            'grupos' => '',
+            'soloNumeros' => true,
+            'largoMaximo' => 12,
         ],
         self::PASAPORTE => [
             'nombre' => 'Pasaporte',
             'patron' => '^[A-Z0-9]{6,20}$',
             'mensaje' => 'El pasaporte debe tener entre 6 y 20 letras o números',
             'ayuda' => 'Entre 6 y 20 letras o números',
+            'grupos' => '',
+            'soloNumeros' => false,
+            'largoMaximo' => 20,
         ],
     ];
 
-    /** @return array<string, array{nombre: string, patron: string, mensaje: string, ayuda: string}> */
     public static function todos(): array
     {
         return self::TIPOS;
@@ -64,9 +82,22 @@ class TipoIdentificacion
     public static function formatear(?string $tipo, ?string $numero): string
     {
         $numero = (string) $numero;
-        if ($tipo === self::CEDULA && strlen($numero) === 9) {
-            return substr($numero, 0, 1) . '-' . substr($numero, 1, 4) . '-' . substr($numero, 5);
+        if ($tipo === null || !isset(self::TIPOS[$tipo]) || self::TIPOS[$tipo]['grupos'] === '') {
+            return $numero;
         }
-        return $numero;
+
+        $grupos = array_map('intval', explode('-', self::TIPOS[$tipo]['grupos']));
+        if (strlen($numero) !== array_sum($grupos)) {
+            return $numero;
+        }
+
+        $partes = [];
+        $inicio = 0;
+        foreach ($grupos as $tamano) {
+            $partes[] = substr($numero, $inicio, $tamano);
+            $inicio += $tamano;
+        }
+
+        return implode('-', $partes);
     }
 }

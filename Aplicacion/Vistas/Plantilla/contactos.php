@@ -7,10 +7,12 @@
  */
 
 use Aplicacion\Nucleo\TipoContacto;
+use Aplicacion\Nucleo\Validador;
 
 $contactosSoloLectura = $contactosSoloLectura ?? false;
 
 $filaContacto = function (string $tipoElegido, string $valor, ?string $error, bool $soloLectura = false): string {
+    $valor = $tipoElegido === TipoContacto::WHATSAPP ? Validador::formatearTelefono($valor) : $valor;
     $opciones = '';
     foreach (TipoContacto::todos() as $codigo => $tipo) {
         $opciones .= '<option value="' . htmlspecialchars($codigo) . '"'
