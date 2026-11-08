@@ -34,12 +34,15 @@ class SubidaArchivo
     public const FOTO_PRODUCTO = 'producto';
     public const FOTO_COMPONENTE = 'componente';
     public const FOTO_PIEZA = 'pieza';
+    public const FOTO_COTIZACION = 'cotizacion';
+    private const CARPETA_COTIZACIONES = 'Cotizaciones';
     private const CARPETAS = [
         self::FOTO_PERFIL => self::CARPETA_PERFILES,
         self::LOGO => self::CARPETA_LOGOS,
         self::FOTO_PRODUCTO => self::CARPETA_PRODUCTOS,
         self::FOTO_COMPONENTE => self::CARPETA_COMPONENTES,
         self::FOTO_PIEZA => self::CARPETA_PIEZAS,
+        self::FOTO_COTIZACION => self::CARPETA_COTIZACIONES,
     ];
 
     private string $error = '';
@@ -421,5 +424,20 @@ class SubidaArchivo
             UPLOAD_ERR_NO_FILE => 'Seleccione una imagen',
             default => 'No se pudo subir la imagen. Intente de nuevo más tarde.',
         };
+    }
+
+        public static function eliminarFotoCotizacion(?string $nombre): void
+    {
+        self::eliminar($nombre, self::CARPETA_COTIZACIONES);
+    }
+
+    public static function obtenerFotoCotizacion(string $nombre): ?array
+    {
+        return self::obtener($nombre, self::CARPETA_COTIZACIONES);
+    }
+
+        public static function esPendiente(string $tipo, string $nombre): bool
+    {
+        return self::pendienteValida($tipo, $nombre) !== null;
     }
 }

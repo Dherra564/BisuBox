@@ -67,8 +67,8 @@ class PedidoRepositorio
             $insertarDetalle = $this->conexion->prepare(
                 'INSERT INTO tbpedidodetalle (tbpedidodetalleid, tbpedidodetallepedidoid, tbpedidodetalleproductoid,
                     tbpedidodetallenombre, tbpedidodetallecantidad, tbpedidodetalleprecio, tbpedidodetallesubtotal,
-                    tbpedidodetalledisenoid)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+                    tbpedidodetalledisenoid, tbpedidodetallecotizacionid)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
             );
             foreach ($pedido->getDetalles() as $detalle) {
                 $idDetalle = BaseDatos::generarId('tbpedidodetalle', 'tbpedidodetalleid');
@@ -81,6 +81,7 @@ class PedidoRepositorio
                     $detalle->getPrecio(),
                     $detalle->getSubtotal(),
                     $detalle->getIdDiseno(),
+                    $detalle->getIdCotizacion(),
                 ]);
                 $detalle->setIdPedidoDetalle($idDetalle);
                 $detalle->setIdPedido($idPedido);
@@ -146,7 +147,7 @@ class PedidoRepositorio
         return (int) $consulta->fetchColumn();
     }
 
-    
+
     public function confirmar(Pedido $pedido): void
     {
         BaseDatos::iniciarTransaccion();
@@ -157,7 +158,7 @@ class PedidoRepositorio
             $faltantes = [];
             $nuevasExistencias = [];
             foreach ($pedido->getDetalles() as $detalle) {
-                if ($detalle->esDiseno()) {
+                if ($detalle->esPersonalizado()) {
                     continue;
                 }
                 $producto = $this->productoRepositorio->bloquearExistencia($detalle->getIdProducto(), $pedido->getIdVendedor());
@@ -213,7 +214,7 @@ class PedidoRepositorio
         }
     }
 
-    
+
     public function cancelar(Pedido $pedido, string $canceladoPor): void
     {
         $permitidos = $canceladoPor === Rol::CLIENTE
@@ -241,7 +242,7 @@ class PedidoRepositorio
                     }
                 }
                 foreach ($pedido->getDetalles() as $detalle) {
-                    if ($detalle->esDiseno()) {
+                    if ($detalle->esPersonalizado()) {
                         continue;
                     }
                     $producto = $this->productoRepositorio->bloquearExistencia($detalle->getIdProducto(), $pedido->getIdVendedor());
@@ -280,7 +281,7 @@ class PedidoRepositorio
     }
 
     /**
-     
+
      * @return array<int, array{idCliente: int, nombre: string, telefono: string, correo: string, pedidos: int, entregados: int, totalComprado: float, ultimoPedido: DateTime}>
      */
     public function listarClientes(int $idVendedor, string $busqueda, int $pagina = 1): array
@@ -329,7 +330,7 @@ class PedidoRepositorio
         return (int) $consulta->fetchColumn();
     }
 
-    
+
     public function nombreClienteDeVendedor(int $idCliente, int $idVendedor): ?string
     {
         $consulta = $this->conexion->prepare(
@@ -362,24 +363,31 @@ class PedidoRepositorio
     public function componentesDeDisenos(Pedido $pedido): array
     {
         $veces = [];
+        $cotizaciones = [];
         foreach ($pedido->getDetalles() as $detalle) {
             if ($detalle->esDiseno()) {
                 $veces[$detalle->getIdDiseno()] = ($veces[$detalle->getIdDiseno()] ?? 0) + $detalle->getCantidad();
             }
-        }
-        if ($veces === []) {
-            return [];
+            if ($detalle->esCotizacion()) {
+                $cotizaciones[] = $detalle->getIdCotizacion();
+            }
         }
 
         $necesarios = [];
-        foreach ((new DisenoRepositorio())->buscarVarios(array_keys($veces)) as $idDiseno => $diseno) {
-            foreach ($diseno['conteo'] as $idComponente => $cantidad) {
-                $necesarios[$idComponente] = ($necesarios[$idComponente] ?? 0) + $cantidad * $veces[$idDiseno];
-            }
-            if ($diseno['idHilo'] !== null) {
-                $necesarios[$diseno['idHilo']] = ($necesarios[$diseno['idHilo']] ?? 0) + $diseno['largo'] / 1000 * $veces[$idDiseno];
+        if ($veces !== []) {
+            foreach ((new DisenoRepositorio())->buscarVarios(array_keys($veces)) as $idDiseno => $diseno) {
+                foreach ($diseno['conteo'] as $idComponente => $cantidad) {
+                    $necesarios[$idComponente] = ($necesarios[$idComponente] ?? 0) + $cantidad * $veces[$idDiseno];
+                }
+                if ($diseno['idHilo'] !== null) {
+                    $necesarios[$diseno['idHilo']] = ($necesarios[$diseno['idHilo']] ?? 0) + $diseno['largo'] / 1000 * $veces[$idDiseno];
+                }
             }
         }
+        foreach ((new CotizacionRepositorio())->componentesDe($cotizaciones) as $idComponente => $cantidad) {
+            $necesarios[$idComponente] = ($necesarios[$idComponente] ?? 0) + $cantidad;
+        }
+
         return $necesarios;
     }
 
@@ -407,7 +415,9 @@ class PedidoRepositorio
                 (int) $fila['tbpedidodetallecantidad'],
                 (float) $fila['tbpedidodetalleprecio'],
                 (float) $fila['tbpedidodetallesubtotal'],
-                $fila['tbpedidodetalledisenoid'] !== null ? (int) $fila['tbpedidodetalledisenoid'] : null
+                $fila['tbpedidodetalledisenoid'] !== null ? (int) $fila['tbpedidodetalledisenoid'] : null,
+                $fila['tbpedidodetallecotizacionid'] !== null ? (int) $fila['tbpedidodetallecotizacionid'] : null
+
             );
         }
 
@@ -460,7 +470,7 @@ class PedidoRepositorio
             $valores[] = (int) $filtros['idCliente'];
         }
         if ($condiciones === []) {
-            
+
             $condiciones[] = '1 = 0';
         }
 

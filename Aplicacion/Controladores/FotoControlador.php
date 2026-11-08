@@ -4,6 +4,8 @@ namespace Aplicacion\Controladores;
 
 use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\SubidaArchivo;
+use Aplicacion\Nucleo\UsuarioActual;
+use Aplicacion\Repositorios\CotizacionRepositorio;
 use Configuracion\Configuracion;
 
 class FotoControlador
@@ -94,5 +96,33 @@ class FotoControlador
         header('Content-Type: image/jpeg');
         header('Content-Length: ' . filesize($ruta));
         readfile($ruta);
+    }
+
+        public function mostrarCotizacion(): void
+    {
+        Permiso::exigirSesion();
+
+        $nombre = is_string($_GET['archivo'] ?? null) ? $_GET['archivo'] : '';
+        header('X-Content-Type-Options: nosniff');
+
+        $foto = $this->puedeVerFotoCotizacion($nombre) ? SubidaArchivo::obtenerFotoCotizacion($nombre) : null;
+        if ($foto === null) {
+            http_response_code(404);
+            return;
+        }
+
+        header('Cache-Control: private, max-age=86400');
+        $this->enviar($foto);
+    }
+
+    private function puedeVerFotoCotizacion(string $nombre): bool
+    {
+        if (SubidaArchivo::esPendiente(SubidaArchivo::FOTO_COTIZACION, $nombre)) {
+            return true;
+        }
+        $duenios = (new CotizacionRepositorio())->buscarPorFoto($nombre);
+
+        return $duenios !== null
+            && in_array((int) UsuarioActual::id(), [$duenios['idUsuarioCliente'], $duenios['idUsuarioVendedor']], true);
     }
 }

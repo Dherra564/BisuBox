@@ -30,7 +30,7 @@ class DatosVenta
         $hechos = 0;
         $personalizados = 0;
         foreach ($pedido->getDetalles() as $detalle) {
-            if ($detalle->esDiseno()) {
+            if ($detalle->esPersonalizado()) {
                 $personalizados++;
             } else {
                 $hechos++;

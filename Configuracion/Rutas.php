@@ -5,10 +5,12 @@ use Aplicacion\Controladores\CarritoControlador;
 use Aplicacion\Controladores\ClienteControlador;
 use Aplicacion\Controladores\ComponenteControlador;
 use Aplicacion\Controladores\CompraProveedorControlador;
+use Aplicacion\Controladores\CotizacionControlador;
 use Aplicacion\Controladores\EmprenderControlador;
 use Aplicacion\Controladores\FotoControlador;
 use Aplicacion\Controladores\InicioControlador;
 use Aplicacion\Controladores\InventarioControlador;
+use Aplicacion\Controladores\MisCotizacionesControlador;
 use Aplicacion\Controladores\MisPedidosControlador;
 use Aplicacion\Controladores\PedidoControlador;
 use Aplicacion\Controladores\PerfilControlador;
@@ -124,4 +126,20 @@ return function (Enrutador $enrutador): void {
     $enrutador->post('/carrito/quitar-pieza', [PersonalizadorTiendaControlador::class, 'quitar']);
     $enrutador->get('/tienda/{enlace}/arma-tu-pieza', [PersonalizadorTiendaControlador::class, 'mostrar']);
     $enrutador->get('/tienda/{enlace}', [TiendaPublicaControlador::class, 'mostrar']);
+
+    $enrutador->get('/fotos/cotizacion', [FotoControlador::class, 'mostrarCotizacion']);
+
+    $enrutador->post('/mis-cotizaciones/crear', [MisCotizacionesControlador::class, 'crear']);
+    $enrutador->get('/mis-cotizaciones', [MisCotizacionesControlador::class, 'listar']);
+    $enrutador->get('/mis-cotizaciones/detalle', [MisCotizacionesControlador::class, 'detalle']);
+    $enrutador->get('/mis-cotizaciones/editar', [MisCotizacionesControlador::class, 'editar']);
+    $enrutador->post('/mis-cotizaciones/editar', [MisCotizacionesControlador::class, 'actualizar']);
+    $enrutador->post('/mis-cotizaciones/cancelar', [MisCotizacionesControlador::class, 'cancelar']);
+    $enrutador->post('/mis-cotizaciones/aceptar', [MisCotizacionesControlador::class, 'aceptar']);
+    $enrutador->post('/mis-cotizaciones/rechazar', [MisCotizacionesControlador::class, 'rechazar']);
+    $enrutador->get('/tienda/{enlace}/cotizar', [MisCotizacionesControlador::class, 'nueva']);
+
+    $enrutador->get('/cotizaciones', [CotizacionControlador::class, 'listar']);
+    $enrutador->get('/cotizaciones/detalle', [CotizacionControlador::class, 'detalle']);
+    $enrutador->post('/cotizaciones/responder', [CotizacionControlador::class, 'responder']);
 };

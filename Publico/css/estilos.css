@@ -5078,4 +5078,12 @@ h3 {
     .campoVencimiento input[type="date"] {
         max-width: none;
     }
+
+    .fotoCotizacion {
+    display: block;
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    border-radius: var(--radioCampo);
+}
 }

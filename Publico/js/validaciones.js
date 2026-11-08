@@ -89,6 +89,12 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             mensaje: 'La fecha límite para pagar debe estar entre hoy y dentro de 6 meses'
         },
+        descripcionTexto: {
+            prueba: function (valor) {
+                return /^[\p{L}0-9 .,;:¡!¿?()"'\/&%#+-]*$/u.test(valor);
+            },
+            mensaje: 'La descripción solo puede tener letras, números, espacios y los signos . , ; : ¡ ! ¿ ? ( ) " \' / & % # + -'
+        },
     };
 
     function limpiarTelefono(valor) {

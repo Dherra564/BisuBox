@@ -45,12 +45,12 @@ $cancelado = $pedido->getEstado() === EstadoPedido::CANCELADO;
             </thead>
             <tbody>
                 <?php foreach ($pedido->getDetalles() as $detalle): ?>
-                    <?php $hay = $detalle->esDiseno() ? null : ($existencias[$detalle->getIdProducto()] ?? null); ?>
+                    <?php $hay = $detalle->esPersonalizado() ? null : ($existencias[$detalle->getIdProducto()] ?? null); ?>
                     <tr>
                         <td data-etiqueta="Producto">
                             <span>
                                 <?= htmlspecialchars($detalle->getNombreProducto()) ?>
-                                <?php if ($pedido->estaPendiente() && $existencias !== [] && !$detalle->esDiseno()): ?>
+                                <?php if ($pedido->estaPendiente() && $existencias !== [] && !$detalle->esPersonalizado()): ?>
                                     <br><span class="<?= $hay !== null && $hay >= $detalle->getCantidad() ? 'textoAyuda' : 'errorCampo' ?>">
                                         <?= $hay === null ? 'Este producto ya no existe' : 'Tiene ' . $hay . ' en existencia' ?>
                                     </span>

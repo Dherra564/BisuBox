@@ -30,7 +30,7 @@ $datosEncabezado = [
 
 $faltaExistencia = false;
 foreach ($pedido->getDetalles() as $detalle) {
-    if (!$detalle->esDiseno() && ($existencias[$detalle->getIdProducto()] ?? 0) < $detalle->getCantidad()) {
+    if (!$detalle->esPersonalizado() && ($existencias[$detalle->getIdProducto()] ?? 0) < $detalle->getCantidad()) {
         $faltaExistencia = true;
     }
 }

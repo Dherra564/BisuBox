@@ -6,6 +6,7 @@ use Aplicacion\Nucleo\Carrito;
 use Aplicacion\Nucleo\ContextoPersonalizador;
 use Aplicacion\Nucleo\EstadoPedido;
 use Aplicacion\Nucleo\Mensaje;
+use Aplicacion\Repositorios\CotizacionRepositorio;
 use Aplicacion\Repositorios\PedidoRepositorio;
 use Aplicacion\Repositorios\ProductoRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
@@ -29,9 +30,11 @@ class TiendaPublicaControlador
 
         $enCarrito = [];
         $pedidosPendientes = 0;
+        $cotizacionesPorResponder = 0;
         $agotados = 0;
         if ($esDuenio) {
             $pedidosPendientes = (new PedidoRepositorio())->contar(['idVendedor' => $idVendedor, 'estado' => EstadoPedido::PENDIENTE]);
+            $cotizacionesPorResponder = (new CotizacionRepositorio())->contarPorResponder($idVendedor);
             $agotados = count(array_filter($todos, fn($producto): bool => $producto->getExistencia() <= 0));
         } else {
             Carrito::elegirTienda($idVendedor, (string) $vendedor->getTiendaEnlace());

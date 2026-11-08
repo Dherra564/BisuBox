@@ -39,6 +39,11 @@ $iconosContacto = [
             <span>Pedidos pendientes</span>
             <strong><?= (int) $pedidosPendientes ?></strong>
         </a>
+        <a href="<?= $urlBase ?>/cotizaciones?estado=Enviada"
+            class="tarjetaResumen <?= $cotizacionesPorResponder > 0 ? 'tarjetaResumenAviso' : '' ?>">
+            <span>Cotizaciones por responder</span>
+            <strong><?= (int) $cotizacionesPorResponder ?></strong>
+        </a>
         <a href="<?= $urlBase ?>/productos" class="tarjetaResumen">
             <span>Productos agotados</span>
             <strong><?= (int) $agotados ?></strong>
@@ -90,7 +95,19 @@ $iconosContacto = [
             <h2>Arme su propia pieza</h2>
             <p>Escoja las piezas, véala armada al instante y pídala a su gusto.</p>
         </div>
-        <a href="<?= $urlBase ?>/tienda/<?= htmlspecialchars((string) $tiendaVista->getTiendaEnlace()) ?>/arma-tu-pieza" class="boton">Arme su pieza</a>
+        <a href="<?= $urlBase ?>/tienda/<?= htmlspecialchars((string) $tiendaVista->getTiendaEnlace()) ?>/arma-tu-pieza"
+            class="boton">Arme su pieza</a>
+    </section>
+<?php endif; ?>
+
+<?php if ($busqueda === '' && !$esDuenio): ?>
+    <section class="tiendaPersonaliza">
+        <div>
+            <h2>¿Vio una pieza que le gustó?</h2>
+            <p>Suba su foto y la tienda le dice qué lleva y cuánto cuesta.</p>
+        </div>
+        <a href="<?= $urlBase ?>/tienda/<?= htmlspecialchars((string) $tiendaVista->getTiendaEnlace()) ?>/cotizar"
+            class="boton">Cotizar por foto</a>
     </section>
 <?php endif; ?>
 

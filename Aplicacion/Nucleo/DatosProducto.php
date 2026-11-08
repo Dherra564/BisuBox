@@ -294,7 +294,7 @@ class DatosProducto
     }
 
     
-    private static function cantidadEnUnidad(array $linea, ?Componente $componente): ?float
+    public static function cantidadEnUnidad(array $linea, ?Componente $componente): ?float
     {
         $cantidad = Numero::leer($linea['cantidad']);
         if ($cantidad === null) {

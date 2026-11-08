@@ -385,6 +385,35 @@ CREATE TABLE `tbpedidodetalle` (
     PRIMARY KEY (`tbpedidodetalleid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
+CREATE TABLE `tbcotizacion` (
+    `tbcotizacionid` int(11) NOT NULL,
+    `tbcotizacionclienteid` int(11) DEFAULT NULL,
+    `tbcotizacionvendedorid` int(11) DEFAULT NULL,
+    `tbcotizacionfoto` varchar(500) DEFAULT NULL,
+    `tbcotizaciondescripcion` varchar(300) DEFAULT NULL,
+    `tbcotizacionrespuesta` varchar(300) DEFAULT NULL,
+    `tbcotizacionmanoobra` decimal(12, 2) DEFAULT NULL,
+    `tbcotizacionprecio` decimal(12, 2) DEFAULT NULL,
+    `tbcotizacionestado` varchar(20) DEFAULT NULL,
+    `tbcotizacionpedidoid` int(11) DEFAULT NULL,
+    `tbcotizacionregistrofecha` datetime DEFAULT NULL,
+    `tbcotizacionrespuestafecha` datetime DEFAULT NULL,
+    PRIMARY KEY (`tbcotizacionid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE `tbcotizaciondetalle` (
+    `tbcotizaciondetalleid` int(11) NOT NULL,
+    `tbcotizaciondetallecotizacionid` int(11) DEFAULT NULL,
+    `tbcotizaciondetallecomponenteid` int(11) DEFAULT NULL,
+    `tbcotizaciondetallecantidad` decimal(12, 2) DEFAULT NULL,
+    `tbcotizaciondetallecostounitario` decimal(14, 4) DEFAULT NULL,
+    `tbcotizaciondetallesubtotal` decimal(12, 2) DEFAULT NULL,
+    `tbcotizaciondetalleactivo` tinyint(4) DEFAULT NULL,
+    PRIMARY KEY (`tbcotizaciondetalleid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+ALTER TABLE `tbpedidodetalle` ADD COLUMN `tbpedidodetallecotizacionid` int(11) DEFAULT NULL;
+
 CREATE TABLE `tbcomponentevista` (
     `tbcomponentevistaid` int(11) NOT NULL,
     `tbcomponentevistavendedorid` int(11) DEFAULT NULL,
