@@ -4,6 +4,7 @@ namespace Aplicacion\Repositorios;
 
 use Aplicacion\Modelos\Pedido;
 use Aplicacion\Modelos\PedidoDetalle;
+use Aplicacion\Modelos\PedidoPago;
 use Aplicacion\Nucleo\DatosCotizacion;
 use Aplicacion\Nucleo\EstadoCotizacion;
 use Aplicacion\Nucleo\EstadoPedido;
@@ -159,7 +160,7 @@ class CotizacionRepositorio
         }
     }
 
-        public function aceptar(int $id, int $idCliente, array $entrega, float $precioVisto): int
+    public function aceptar(int $id, int $idCliente, array $entrega, float $precioVisto): int
     {
         BaseDatos::iniciarTransaccion();
 
@@ -178,7 +179,7 @@ class CotizacionRepositorio
                 throw new OperacionNoPermitida(DatosCotizacion::MENSAJE_PRECIO_CAMBIO);
             }
 
-            $detalle = new PedidoDetalle(null, null, null, 'Pieza por cotización #' . $id, 1, $precio, $precio, null, $id);
+            $detalle = new PedidoDetalle(null, null, null, 'Pieza por cotización #' . $id, 1, $precio, $precio, idCotizacion: $id);
             $pedido = new Pedido(
                 null,
                 (int) $fila['tbcotizacionvendedorid'],
@@ -189,16 +190,16 @@ class CotizacionRepositorio
                 $entrega['metodoPago'],
                 $entrega['nota'],
                 $precio,
-                EstadoPedido::PENDIENTE,
+                EstadoPedido::CONFIRMADO,
                 null,
                 null,
                 [$detalle]
             );
-            $idPedido = (new PedidoRepositorio())->crear($pedido);
+            $idPedido = (new PedidoRepositorio())->crear($pedido, $pago);
 
             $this->conexion->prepare(
-                'UPDATE tbcotizacion SET tbcotizacionestado = ? WHERE tbcotizacionid = ?'
-            )->execute([EstadoCotizacion::ACEPTADA, $id]);
+                'UPDATE tbcotizacion SET tbcotizacionestado = ?, tbcotizacionpedidoid = ? WHERE tbcotizacionid = ?'
+            )->execute([EstadoCotizacion::ACEPTADA, $idPedido, $id]);
 
             BaseDatos::confirmarTransaccion();
             return $idPedido;
@@ -335,9 +336,7 @@ class CotizacionRepositorio
         }
         $cotizacion = $this->desdeFila($fila);
         $cotizacion['detalles'] = $this->detalles($cotizacion['id']);
-        $cotizacion['idPedido'] = $cotizacion['estado'] === EstadoCotizacion::ACEPTADA
-            ? $this->idPedidoDe($cotizacion['id'])
-            : null;
+        $cotizacion['idPedido'] = $fila['tbcotizacionpedidoid'] !== null ? (int) $fila['tbcotizacionpedidoid'] : null;
 
         return $cotizacion;
     }
@@ -404,16 +403,5 @@ class CotizacionRepositorio
             'telefonoCliente' => (string) $fila['tbusuariotelefono'],
             'correoCliente' => (string) $fila['tbusuariocorreo'],
         ];
-    }
-
-        private function idPedidoDe(int $idCotizacion): ?int
-    {
-        $consulta = $this->conexion->prepare(
-            'SELECT tbpedidodetallepedidoid FROM tbpedidodetalle WHERE tbpedidodetallecotizacionid = ? LIMIT 1'
-        );
-        $consulta->execute([$idCotizacion]);
-        $idPedido = $consulta->fetchColumn();
-
-        return $idPedido !== false ? (int) $idPedido : null;
     }
 }

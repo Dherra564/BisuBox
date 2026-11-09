@@ -1,16 +1,16 @@
 <?php
 
-use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\DatosVenta;
 use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\PeriodoFechas;
+use Aplicacion\Nucleo\WhatsApp;
 
 $titulo = 'Ventas';
 $paginaActual = 'ventas';
 $scriptsExtra = ['filtrosCompras.js'];
 require __DIR__ . '/../Plantilla/encabezado.php';
 
-$parametros = array_filter(['tipo' => $tipo, 'estado' => $estado]) + PeriodoFechas::parametros($periodo);
+$parametros = array_filter(['tipo' => $tipo, 'estado' => $estado, 'cliente' => $idCliente]) + PeriodoFechas::parametros($periodo);
 $enlace = function (array $cambios) use ($urlBase, $parametros): string {
     $consulta = array_filter(array_merge($parametros, $cambios), fn($valor): bool => $valor !== null && $valor !== '');
     if (($consulta['periodo'] ?? null) === PeriodoFechas::TODO) {
@@ -22,7 +22,6 @@ $sinFechas = ['desde' => null, 'hasta' => null];
 $etiquetaFecha = PeriodoFechas::etiqueta($periodo);
 $esRango = $periodo['periodo'] === PeriodoFechas::RANGO;
 $pestanas = ['' => 'Todas', DatosVenta::ESTADO_POR_COBRAR => 'Por cobrar', DatosVenta::ESTADO_PAGADA => 'Pagadas'];
-$volver = substr($enlace(['pagina' => $pagina > 1 ? $pagina : null]), strlen($urlBase));
 ?>
 
 <?php if (!$hayVentas): ?>
@@ -42,7 +41,8 @@ $volver = substr($enlace(['pagina' => $pagina > 1 ? $pagina : null]), strlen($ur
         <div class="tarjeta tarjetaResumen">
             <span class="tarjetaResumenTitulo">Por cobrar</span>
             <span class="tarjetaNumero"><?= Numero::moneda($resumen['porCobrar']) ?></span>
-            <span class="textoAyuda">Lo que le deben los clientes</span>
+            <span
+                class="textoAyuda"><?= $resumen['vencido'] > 0 ? Numero::moneda($resumen['vencido']) . ' ya vencido' : 'Lo que le deben los clientes' ?></span>
         </div>
         <div class="tarjeta tarjetaResumen">
             <span class="tarjetaResumenTitulo">Con piezas personalizadas</span>
@@ -65,13 +65,17 @@ $volver = substr($enlace(['pagina' => $pagina > 1 ? $pagina : null]), strlen($ur
             <?php if ($estado !== ''): ?>
                 <input type="hidden" name="estado" value="<?= htmlspecialchars($estado) ?>">
             <?php endif; ?>
+            <?php if ($idCliente !== null): ?>
+                <input type="hidden" name="cliente" value="<?= $idCliente ?>">
+            <?php endif; ?>
             <div class="filaFiltros">
                 <div class="campo campoProveedor">
                     <label for="tipo">Tipo de venta</label>
                     <select id="tipo" name="tipo" data-enviar-al-cambiar>
                         <option value="">Todos los tipos</option>
                         <?php foreach (DatosVenta::TIPOS as $opcion): ?>
-                            <option value="<?= htmlspecialchars($opcion) ?>" <?= $tipo === $opcion ? 'selected' : '' ?>><?= htmlspecialchars($opcion) ?></option>
+                            <option value="<?= htmlspecialchars($opcion) ?>" <?= $tipo === $opcion ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($opcion) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -106,21 +110,70 @@ $volver = substr($enlace(['pagina' => $pagina > 1 ? $pagina : null]), strlen($ur
                 <input type="hidden" name="periodo" value="<?= $periodo['periodo'] ?>">
             <?php endif; ?>
 
-            <?php if ($tipo !== '' || $etiquetaFecha !== ''): ?>
+            <?php if ($tipo !== '' || $etiquetaFecha !== '' || $idCliente !== null): ?>
                 <div class="fraseFiltros">
+                    <?php if ($idCliente !== null): ?>
+                        <a href="<?= htmlspecialchars($enlace(['cliente' => null, 'pagina' => null])) ?>" class="chipFiltro"
+                            aria-label="Quitar el filtro <?= htmlspecialchars((string) $nombreCliente) ?>"><?= htmlspecialchars((string) $nombreCliente) ?>
+                            <span aria-hidden="true">✕</span></a>
+                    <?php endif; ?>
                     <?php if ($tipo !== ''): ?>
                         <a href="<?= htmlspecialchars($enlace(['tipo' => null, 'pagina' => null])) ?>" class="chipFiltro"
-                            aria-label="Quitar el filtro <?= htmlspecialchars($tipo) ?>"><?= htmlspecialchars($tipo) ?> <span aria-hidden="true">✕</span></a>
+                            aria-label="Quitar el filtro <?= htmlspecialchars($tipo) ?>"><?= htmlspecialchars($tipo) ?> <span
+                                aria-hidden="true">✕</span></a>
                     <?php endif; ?>
                     <?php if ($etiquetaFecha !== ''): ?>
-                        <a href="<?= htmlspecialchars($enlace(['periodo' => PeriodoFechas::TODO, 'pagina' => null] + $sinFechas)) ?>" class="chipFiltro"
-                            aria-label="Quitar el filtro de fecha <?= htmlspecialchars($etiquetaFecha) ?>"><?= htmlspecialchars($etiquetaFecha) ?> <span aria-hidden="true">✕</span></a>
+                        <a href="<?= htmlspecialchars($enlace(['periodo' => PeriodoFechas::TODO, 'pagina' => null] + $sinFechas)) ?>"
+                            class="chipFiltro"
+                            aria-label="Quitar el filtro de fecha <?= htmlspecialchars($etiquetaFecha) ?>"><?= htmlspecialchars($etiquetaFecha) ?>
+                            <span aria-hidden="true">✕</span></a>
                     <?php endif; ?>
-                    <a href="<?= htmlspecialchars($enlace(['tipo' => null, 'periodo' => PeriodoFechas::TODO, 'pagina' => null] + $sinFechas)) ?>"
+                    <a href="<?= htmlspecialchars($enlace(['tipo' => null, 'cliente' => null, 'periodo' => PeriodoFechas::TODO, 'pagina' => null] + $sinFechas)) ?>"
                         class="enlaceQuitarFiltros">Quitar filtros</a>
                 </div>
             <?php endif; ?>
         </form>
+
+        <?php if ($estado === DatosVenta::ESTADO_POR_COBRAR && $idCliente === null && $saldos !== []): ?>
+            <h2>Quién le debe</h2>
+            <div class="tablaContenedor">
+                <table class="tabla tablaVentas">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th class="numero">Ventas</th>
+                            <th class="numero">Saldo</th>
+                            <th>Vencimiento</th>
+                            <th><span class="soloLectores">Acciones</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($saldos as $saldo): ?>
+                            <tr>
+                                <td data-etiqueta="Cliente">
+                                    <?= htmlspecialchars($saldo['cliente'] !== '' ? $saldo['cliente'] : 'Cliente') ?></td>
+                                <td data-etiqueta="Ventas" class="numero"><?= $saldo['ventas'] ?></td>
+                                <td data-etiqueta="Saldo" class="numero"><strong><?= Numero::moneda($saldo['saldo']) ?></strong>
+                                </td>
+                                <td data-etiqueta="Vencimiento">
+                                    <?php if ($saldo['vencidas'] > 0): ?>
+                                        <span
+                                            class="etiqueta etiquetaCancelado"><?= $saldo['vencidas'] === 1 ? '1 vencida' : $saldo['vencidas'] . ' vencidas' ?></span>
+                                    <?php elseif ($saldo['proximo'] !== null): ?>
+                                        <span class="textoAyuda">Próxima: <?= $saldo['proximo']->format('d/m/Y') ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td data-etiqueta="" class="acciones">
+                                    <a href="<?= htmlspecialchars($enlace(['cliente' => $saldo['idCliente'], 'pagina' => null])) ?>"
+                                        class="boton botonSecundario botonPequeno">Ver sus ventas</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            <h2>Ventas por cobrar</h2>
+        <?php endif; ?>
 
         <?php if ($ventas === []): ?>
             <p class="sinResultados">No hay ventas con esos filtros.</p>
@@ -145,29 +198,33 @@ $volver = substr($enlace(['pagina' => $pagina > 1 ? $pagina : null]), strlen($ur
                                     <span><strong>#<?= $venta['id'] ?></strong><br>
                                         <span class="textoAyuda"><?= $venta['fecha']->format('d/m/Y') ?></span></span>
                                 </td>
-                                <td data-etiqueta="Cliente"><?= htmlspecialchars($venta['cliente'] !== '' ? $venta['cliente'] : 'Cliente') ?></td>
+                                <td data-etiqueta="Cliente">
+                                    <?= htmlspecialchars($venta['cliente'] !== '' ? $venta['cliente'] : 'Cliente') ?></td>
                                 <td data-etiqueta="Tipo"><?= htmlspecialchars($venta['tipo']) ?></td>
-                                <td data-etiqueta="Total" class="numero"><strong><?= Numero::moneda($venta['total']) ?></strong></td>
+                                <td data-etiqueta="Total" class="numero"><strong><?= Numero::moneda($venta['total']) ?></strong>
+                                </td>
                                 <td data-etiqueta="Pago">
                                     <span>
-                                        <span class="etiqueta <?= DatosVenta::claseEtiqueta($venta['estadoPago'], $venta['vencimiento'], $venta['saldo']) ?>">
+                                        <span
+                                            class="etiqueta <?= DatosVenta::claseEtiqueta($venta['estadoPago'], $venta['vencimiento'], $venta['saldo']) ?>">
                                             <?= $vencida ? 'Vencida' : htmlspecialchars($venta['estadoPago']) ?></span>
                                         <?php if ($venta['saldo'] > 0 && $venta['vencimiento'] !== null): ?>
-                                            <br><span class="textoAyuda">Debe <?= Numero::moneda($venta['saldo']) ?> · vence <?= $venta['vencimiento']->format('d/m/Y') ?></span>
+                                            <br><span class="textoAyuda">Debe <?= Numero::moneda($venta['saldo']) ?> · vence
+                                                <?= $venta['vencimiento']->format('d/m/Y') ?></span>
                                         <?php endif; ?>
                                     </span>
                                 </td>
                                 <td data-etiqueta="" class="acciones">
-                                    <a href="<?= $urlBase ?>/pedidos/detalle?id=<?= $venta['idPedido'] ?>" class="boton botonSecundario botonPequeno">Ver pedido</a>
+                                    <a href="<?= $urlBase ?>/ventas/detalle?id=<?= $venta['id'] ?>"
+                                        class="boton botonSecundario botonPequeno">Ver venta</a>
                                     <?php if ($venta['estadoPago'] === DatosVenta::ESTADO_POR_COBRAR): ?>
-                                        <form method="post" action="<?= $urlBase ?>/ventas/cobrar" class="formularioEnLinea"
-                                            data-titulo="Registrar pago" data-boton="Sí, ya pagó"
-                                            data-confirmar="¿<?= htmlspecialchars($venta['cliente'] !== '' ? $venta['cliente'] : 'El cliente') ?> ya le pagó los <?= Numero::moneda($venta['saldo']) ?> de la venta #<?= $venta['id'] ?>?">
-                                            <?= Csrf::campo() ?>
-                                            <input type="hidden" name="id" value="<?= $venta['id'] ?>">
-                                            <input type="hidden" name="volver" value="<?= htmlspecialchars($volver) ?>">
-                                            <button type="submit" class="boton botonPequeno">Ya pagó</button>
-                                        </form>
+                                        <a href="<?= $urlBase ?>/ventas/detalle?id=<?= $venta['id'] ?>#monto"
+                                            class="boton botonPequeno">Abonar</a>
+                                        <?php $recordar = WhatsApp::enlace($venta['telefono'], DatosVenta::recordatorio($venta, $tienda)); ?>
+                                        <?php if ($recordar !== null): ?>
+                                            <a href="<?= htmlspecialchars($recordar) ?>" class="boton botonSecundario botonPequeno"
+                                                target="_blank" rel="noopener">WhatsApp</a>
+                                        <?php endif; ?>
                                     <?php endif; ?>
                                 </td>
                             </tr>
@@ -184,7 +241,7 @@ $volver = substr($enlace(['pagina' => $pagina > 1 ? $pagina : null]), strlen($ur
         $parametrosPaginacion = $parametros;
         $nombreRegistros = 'ventas';
         require __DIR__ . '/../Plantilla/paginacion.php';
-        ?>
+    ?>
     <?php endif; ?>
 <?php endif; ?>
 

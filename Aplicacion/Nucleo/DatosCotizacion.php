@@ -3,6 +3,7 @@
 namespace Aplicacion\Nucleo;
 
 use Aplicacion\Modelos\Componente;
+use Aplicacion\Modelos\Vendedor;
 
 class DatosCotizacion
 {
@@ -12,8 +13,8 @@ class DatosCotizacion
     public const MENSAJE_NO_RESPONDER = 'Esta cotización ya no se puede responder: el cliente la aceptó, la rechazó o la canceló.';
     public const MENSAJE_NO_DECIDIR = 'Esta cotización ya no está esperando su respuesta.';
     public const MENSAJE_RESPUESTA = 'El mensaje solo puede tener letras, números, espacios y los signos . , ; : ¡ ! ¿ ? ( ) " \' / & % # + -';
+    public const MENSAJE_PRECIO_CAMBIO = 'La tienda cambió el precio de esta cotización. Revise el precio nuevo antes de aceptar.';
 
-        public const MENSAJE_PRECIO_CAMBIO = 'La tienda cambió el precio de esta cotización. Revise el precio nuevo antes de aceptar.';
     public static function leerSolicitud(): array
     {
         $descripcion = is_string($_POST['descripcion'] ?? null) ? trim($_POST['descripcion']) : '';
@@ -236,7 +237,7 @@ class DatosCotizacion
         }
     }
 
-        public static function leerEntrega(): array
+    public static function leerEntrega(): array
     {
         $leer = fn(string $campo): string => is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
 
@@ -245,10 +246,12 @@ class DatosCotizacion
             'direccion' => (string) preg_replace('/[ \t]+/', ' ', $leer('direccion')),
             'metodoPago' => $leer('metodoPago'),
             'nota' => $leer('nota'),
+            'referencia' => '',
+            'comprobantePendiente' => null,
         ];
     }
 
-    public static function validarEntrega(Validador $validador, array $datos): void
+    public static function validarEntrega(Validador $validador, array $datos, Vendedor $tienda): void
     {
         if (!FormaEntrega::existe($datos['entrega'])) {
             $validador->agregarError('entrega', 'Escoja cómo quiere recibir el pedido');
@@ -258,9 +261,10 @@ class DatosCotizacion
                 ->longitud('direccion', $datos['direccion'], 10, 250, 'La dirección debe tener entre 10 y 250 caracteres')
                 ->direccion('direccion', $datos['direccion']);
         }
-        if (!MetodoPago::existe($datos['metodoPago'])) {
+        if (!isset(DatosPago::metodosPara($tienda)[$datos['metodoPago']])) {
             $validador->agregarError('metodoPago', 'Escoja cómo va a pagar');
         }
-        $validador->longitud('nota', $datos['nota'], 0, 300, 'La nota puede tener como máximo 300 caracteres');
+        $validador->longitud('nota', $datos['nota'], 0, 300, 'La nota puede tener como máximo 300 caracteres')
+            ->sinOfensas('nota', $datos['nota']);
     }
 }

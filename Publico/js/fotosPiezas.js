@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function crearTarjeta(pieza, indice) {
         var tarjeta = document.createElement('div');
-        tarjeta.className = 'tarjetaPiezaNueva';
+        tarjeta.className = 'tarjetaVistaNueva';
 
         var cabeza = document.createElement('label');
         cabeza.className = 'usarPieza';

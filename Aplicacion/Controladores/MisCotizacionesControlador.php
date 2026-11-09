@@ -7,9 +7,11 @@ use Aplicacion\Nucleo\Acceso;
 use Aplicacion\Nucleo\Carrito;
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\DatosCotizacion;
+use Aplicacion\Nucleo\DatosPago;
 use Aplicacion\Nucleo\EstadoCotizacion;
 use Aplicacion\Nucleo\FormaEntrega;
 use Aplicacion\Nucleo\Mensaje;
+use Aplicacion\Nucleo\MetodoPago;
 use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\OperacionNoPermitida;
 use Aplicacion\Nucleo\Permiso;
@@ -24,7 +26,7 @@ use Throwable;
 
 class MisCotizacionesControlador
 {
-    private const ENTREGA_VACIA = ['entrega' => '', 'direccion' => '', 'metodoPago' => '', 'nota' => ''];
+    private const ENTREGA_VACIA = ['entrega' => '', 'direccion' => '', 'metodoPago' => '', 'nota' => '', 'referencia' => '', 'comprobantePendiente' => null];
 
     private CotizacionRepositorio $repositorio;
 
@@ -179,10 +181,18 @@ class MisCotizacionesControlador
             $this->redirigir($volver);
         }
 
+        $tienda = $this->tiendaVisible((new VendedorRepositorio())->buscarPorId($cotizacion['idVendedor']));
         $datos = DatosCotizacion::leerEntrega();
         $validador = new Validador();
-        DatosCotizacion::validarEntrega($validador, $datos);
+        DatosCotizacion::validarEntrega($validador, $datos, $tienda);
+        $leidoPago = null;
+        if ($datos['metodoPago'] === MetodoPago::SINPE && $validador->error('metodoPago') === null) {
+            $leidoPago = DatosPago::recibir($tienda, $validador);
+            $datos['referencia'] = $leidoPago['referencia'];
+            $datos['comprobantePendiente'] = $leidoPago['comprobante'];
+        }
         if (!$validador->esValido()) {
+            SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_COMPROBANTE, $datos['comprobantePendiente']);
             $this->mostrarDetalle($cotizacion, $datos, $validador->errores());
             return;
         }
@@ -195,19 +205,26 @@ class MisCotizacionesControlador
             'nota' => $datos['nota'] !== '' ? $datos['nota'] : null,
         ];
 
+        $pago = $leidoPago !== null ? DatosPago::crearPago($tienda, (float) $cotizacion['precio'], $leidoPago) : null;
+
         try {
-            $idPedido = $this->repositorio->aceptar($cotizacion['id'], $cotizacion['idCliente'], $entrega, (float) $precioVisto);
+            $idPedido = $this->repositorio->aceptar($cotizacion['id'], $cotizacion['idCliente'], $entrega, (float) $precioVisto, $pago);
         } catch (OperacionNoPermitida $error) {
+            SubidaArchivo::eliminarComprobante($datos['comprobantePendiente']);
             Mensaje::error($error->getMessage());
             $this->redirigir($volver);
         } catch (Throwable $error) {
             error_log('Error al aceptar la cotización: ' . $error->getMessage());
+            SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_COMPROBANTE, $datos['comprobantePendiente']);
             Mensaje::error('No se pudo aceptar. Intente de nuevo.');
             $this->mostrarDetalle($cotizacion, $datos, []);
             return;
         }
 
-        Mensaje::exito('Cotización aceptada. Su pedido #' . $idPedido . ' fue enviado a ' . $cotizacion['nombreTienda'] . '.');
+        SubidaArchivo::olvidarPendiente(SubidaArchivo::FOTO_COMPROBANTE, $datos['comprobantePendiente']);
+        DatosPago::olvidarCodigoPago((int) $tienda->getIdVendedor());
+        Mensaje::exito('Cotización aceptada. Su compra a ' . $cotizacion['nombreTienda'] . ' quedó confirmada como pedido #' . $idPedido . '.'
+            . ($pago !== null ? ' La tienda va a revisar que le llegó su SINPE.' : ' La tienda ya la está preparando.'));
         $this->redirigir('/mis-pedidos/detalle?id=' . $idPedido);
     }
 
@@ -295,10 +312,17 @@ class MisCotizacionesControlador
 
     private function mostrarDetalle(array $cotizacion, array $datos, array $errores): void
     {
+        $tienda = $cotizacion['estado'] === EstadoCotizacion::RESPONDIDA
+            ? (new VendedorRepositorio())->buscarPorId($cotizacion['idVendedor'])
+            : null;
         $this->mostrarVista('MisCotizaciones/detalle', [
             'cotizacion' => $cotizacion,
             'datos' => $datos,
             'errores' => $errores,
+            'metodos' => $tienda !== null ? DatosPago::metodosPara($tienda) : [],
+            'tiendaPago' => $tienda,
+            'codigoPago' => $tienda !== null && $tienda->tieneSinpe() ? DatosPago::codigoPago((int) $tienda->getIdVendedor()) : null,
+            'total' => (float) $cotizacion['precio'],
         ]);
     }
 

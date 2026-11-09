@@ -120,8 +120,8 @@ $total = count($piezas);
         <ul class="listaPiezas">
             <?php foreach ($piezas as $pieza): ?>
                 <?php $id = $pieza['idComponente']; $nombre = htmlspecialchars($pieza['nombre']); ?>
-                <li class="tarjetaPieza <?= $pieza['foto'] === null ? 'tarjetaPiezaSinFoto' : '' ?>">
-                    <div class="fotoPieza fondoCuadros">
+                <li class="tarjetaVista <?= $pieza['foto'] === null ? 'tarjetaVistaSinFoto' : '' ?>">
+                    <div class="fotoVista fondoCuadros">
                         <?php if ($pieza['foto'] !== null): ?>
                             <img src="<?= $urlBase ?>/fotos/pieza?archivo=<?= urlencode($pieza['foto']) ?>" alt="<?= $nombre ?>" loading="lazy">
                         <?php else: ?>

@@ -3,7 +3,6 @@
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\EstadoCotizacion;
 use Aplicacion\Nucleo\FormaEntrega;
-use Aplicacion\Nucleo\MetodoPago;
 use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\UnidadMedida;
 
@@ -18,7 +17,7 @@ $respondida = $cotizacion['precio'] !== null;
 $explicaciones = [
     EstadoCotizacion::ENVIADA => 'La tienda todavía no la responde. Mientras tanto puede editarla o cancelarla.',
     EstadoCotizacion::RESPONDIDA => 'La tienda respondió. Revise los componentes y el precio, y acepte o rechace la propuesta.',
-    EstadoCotizacion::ACEPTADA => 'Usted aceptó esta cotización y se creó su pedido.',
+    EstadoCotizacion::ACEPTADA => 'Usted aceptó esta cotización y su compra quedó confirmada.',
     EstadoCotizacion::RECHAZADA => 'Usted rechazó esta cotización.',
     EstadoCotizacion::CANCELADA => 'Usted canceló esta solicitud.',
 ];
@@ -104,9 +103,9 @@ $esEnvio = ($datos['entrega'] ?? '') === FormaEntrega::ENVIO;
 <?php endif; ?>
 
 <?php if ($estado === EstadoCotizacion::RESPONDIDA): ?>
-    <form method="post" action="<?= $urlBase ?>/mis-cotizaciones/aceptar" novalidate class="validarFormulario"
-        data-confirmar="¿Aceptar la cotización por <?= Numero::moneda($cotizacion['precio']) ?>? Se enviará el pedido a <?= htmlspecialchars($cotizacion['nombreTienda']) ?>."
-        data-titulo="Aceptar cotización" data-boton="Aceptar y hacer pedido">
+    <form method="post" action="<?= $urlBase ?>/mis-cotizaciones/aceptar" enctype="multipart/form-data" novalidate class="validarFormulario"
+        data-confirmar="¿Aceptar la cotización y comprarle a <?= htmlspecialchars($cotizacion['nombreTienda']) ?> por <?= Numero::moneda($cotizacion['precio']) ?>? La compra queda confirmada de una vez."
+        data-titulo="Aceptar cotización" data-boton="Aceptar y comprar">
         <?= Csrf::campo() ?>
         <input type="hidden" name="id" value="<?= $cotizacion['id'] ?>">
         <input type="hidden" name="precioVisto" value="<?= htmlspecialchars(Numero::paraCampo($cotizacion['precio'])) ?>">
@@ -139,30 +138,10 @@ $esEnvio = ($datos['entrega'] ?? '') === FormaEntrega::ENVIO;
             </div>
         </section>
 
-        <section class="formularioSeccion">
-            <h2>¿Cómo va a pagar?</h2>
-            <div class="<?= $claseCampo('metodoPago') ?>">
-                <label for="metodoPago">Método de pago <span class="obligatorio">*</span></label>
-                <select id="metodoPago" name="metodoPago" required data-mensaje-requerido="Escoja cómo va a pagar">
-                    <option value="">Escoja una opción</option>
-                    <?php foreach (MetodoPago::todos() as $codigo => $nombre): ?>
-                        <option value="<?= $codigo ?>" <?= ($datos['metodoPago'] ?? '') === $codigo ? 'selected' : '' ?>><?= htmlspecialchars($nombre) ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <p class="textoAyuda">El pago se coordina directamente con la tienda.</p>
-                <?= $mensajeError('metodoPago') ?>
-            </div>
-
-            <div class="<?= $claseCampo('nota') ?>">
-                <label for="nota">Nota para la tienda</label>
-                <textarea id="nota" name="nota" rows="2" maxlength="300" data-contador
-                    data-mensaje-largo="La nota puede tener como máximo 300 caracteres"><?= $valor('nota') ?></textarea>
-                <?= $mensajeError('nota') ?>
-            </div>
-        </section>
+        <?php require __DIR__ . '/../Pedido/formularioPago.php'; ?>
 
         <div class="grupoBotones accionesFormulario">
-            <button type="submit" class="boton">Aceptar y hacer pedido</button>
+            <button type="submit" class="boton">Aceptar y comprar</button>
         </div>
     </form>
 

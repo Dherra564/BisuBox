@@ -92,7 +92,7 @@ class PersonalizadorControlador
             return;
         }
 
-        Mensaje::exito($datos['activo'] ? 'Listo: sus clientes ya pueden armar piezas en su tienda' : 'Configuración guardada');
+        Mensaje::exito($datos['activo'] ? 'Sus clientes ya pueden armar piezas en su tienda' : 'Configuración guardada');
         $this->redirigir('/personalizador');
     }
 

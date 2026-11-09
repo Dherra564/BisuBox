@@ -24,13 +24,68 @@ class DatosVenta
 
     public const MENSAJE_PAGO = 'Indique si el cliente pagó todo o si queda debiendo';
     public const MENSAJE_VENCIMIENTO = 'La fecha límite para pagar debe estar entre hoy y dentro de 6 meses';
+    public const MENSAJE_MONTO = 'Escriba un monto, por ejemplo 5000 o 5000,50';
+    public const MENSAJE_METODO = 'Escoja cómo le pagó';
+    public const NOTA_PAGO_AL_ENTREGAR = 'Pagado al entregar el pedido';
+
+    public static function leerAbono(): array
+    {
+        $leer = fn(string $campo): string => is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
+
+        return [
+            'monto' => $leer('monto'),
+            'metodoPago' => $leer('metodoPago'),
+            'nota' => (string) preg_replace('/\s+/u', ' ', $leer('nota')),
+        ];
+    }
+
+    public static function validarAbono(Validador $validador, array $datos, float $saldo): ?float
+    {
+        $monto = null;
+        if ($datos['monto'] === '') {
+            $validador->agregarError('monto', 'Escriba cuánto le pagó');
+        } elseif (str_starts_with($datos['monto'], '-')) {
+            $validador->agregarError('monto', 'No puede ser un número negativo');
+        } else {
+            $monto = Numero::leer($datos['monto']);
+            if ($monto === null) {
+                $validador->agregarError('monto', self::MENSAJE_MONTO);
+            } elseif ($monto <= 0) {
+                $validador->agregarError('monto', 'El abono debe ser mayor que 0');
+            } elseif ($monto > $saldo + 0.001) {
+                $validador->agregarError('monto', self::mensajeSaldo($saldo));
+            }
+        }
+        if (!MetodoPago::existe($datos['metodoPago'])) {
+            $validador->agregarError('metodoPago', self::MENSAJE_METODO);
+        }
+        $validador->longitud('nota', $datos['nota'], 0, 300, 'La nota puede tener como máximo 300 caracteres')
+            ->sinOfensas('nota', $datos['nota']);
+
+        return $validador->esValido() ? $monto : null;
+    }
+
+    public static function mensajeSaldo(float $saldo): string
+    {
+        return 'El abono no puede ser mayor que lo que debe (' . Numero::moneda($saldo) . ')';
+    }
+
+    public static function recordatorio(array $venta, string $tienda): string
+    {
+        $texto = 'Hola ' . explode(' ', trim($venta['cliente']))[0] . ', le escribe ' . $tienda
+            . '. Le recordamos que tiene pendiente ' . Numero::moneda($venta['saldo']) . ' del pedido #' . $venta['idPedido'];
+        if ($venta['vencimiento'] !== null) {
+            $texto .= ', con fecha límite el ' . $venta['vencimiento']->format('d/m/Y');
+        }
+        return $texto . '. ¡Muchas gracias!';
+    }
 
     public static function tipoDe(Pedido $pedido): string
     {
         $hechos = 0;
         $personalizados = 0;
         foreach ($pedido->getDetalles() as $detalle) {
-            if ($detalle->esPersonalizado()) {
+            if (!$detalle->esDelCatalogo()) {
                 $personalizados++;
             } else {
                 $hechos++;
