@@ -6,8 +6,15 @@ use DateTime;
 
 class CompraProveedor
 {
-    public const ACTIVA = 'Activa';
+    public const POR_RECIBIR = 'Por recibir';
+    public const RECIBIDA = 'Recibida';
     public const ANULADA = 'Anulada';
+
+    public const CONTADO = 'Contado';
+    public const CREDITO = 'Crédito';
+
+    public const PAGADA = 'Pagada';
+    public const POR_PAGAR = 'Por pagar';
 
     private ?int $idCompraProveedor;
     private ?int $idVendedor;
@@ -18,12 +25,15 @@ class CompraProveedor
     private float $total;
     private string $estado;
     private ?DateTime $fechaRegistro;
-    /** @var CompraProveedorDetalle[] */
     private array $detalles;
     private string $nombreProveedor;
     private int $cantidadLineas;
+    private ?DateTime $fechaRecepcion;
+    private string $condicion;
+    private ?DateTime $vencimiento;
+    private float $saldo;
+    private string $estadoPago;
 
-    /** @param CompraProveedorDetalle[] $detalles */
     public function __construct(
         ?int $idCompraProveedor,
         ?int $idVendedor,
@@ -32,11 +42,16 @@ class CompraProveedor
         float $subtotal,
         float $costoEnvio,
         float $total,
-        string $estado = self::ACTIVA,
+        string $estado = self::RECIBIDA,
         ?DateTime $fechaRegistro = null,
         array $detalles = [],
         string $nombreProveedor = '',
-        int $cantidadLineas = 0
+        int $cantidadLineas = 0,
+        ?DateTime $fechaRecepcion = null,
+        string $condicion = self::CONTADO,
+        ?DateTime $vencimiento = null,
+        float $saldo = 0.0,
+        string $estadoPago = self::PAGADA
     ) {
         $this->idCompraProveedor = $idCompraProveedor;
         $this->idVendedor = $idVendedor;
@@ -50,6 +65,11 @@ class CompraProveedor
         $this->detalles = $detalles;
         $this->nombreProveedor = $nombreProveedor;
         $this->cantidadLineas = $cantidadLineas !== 0 ? $cantidadLineas : count($detalles);
+        $this->fechaRecepcion = $fechaRecepcion;
+        $this->condicion = $condicion;
+        $this->vencimiento = $vencimiento;
+        $this->saldo = $saldo;
+        $this->estadoPago = $estadoPago;
     }
 
     public function getIdCompraProveedor(): ?int
@@ -97,12 +117,21 @@ class CompraProveedor
         return $this->estado === self::ANULADA;
     }
 
+    public function estaRecibida(): bool
+    {
+        return $this->estado === self::RECIBIDA;
+    }
+
+    public function estaPorRecibir(): bool
+    {
+        return $this->estado === self::POR_RECIBIR;
+    }
+
     public function getFechaRegistro(): ?DateTime
     {
         return $this->fechaRegistro;
     }
 
-    /** @return CompraProveedorDetalle[] */
     public function getDetalles(): array
     {
         return $this->detalles;
@@ -116,6 +145,51 @@ class CompraProveedor
     public function getCantidadLineas(): int
     {
         return $this->cantidadLineas;
+    }
+
+    public function getFechaRecepcion(): ?DateTime
+    {
+        return $this->fechaRecepcion;
+    }
+
+    public function getCondicion(): string
+    {
+        return $this->condicion;
+    }
+
+    public function esCredito(): bool
+    {
+        return $this->condicion === self::CREDITO;
+    }
+
+    public function getVencimiento(): ?DateTime
+    {
+        return $this->vencimiento;
+    }
+
+    public function getSaldo(): float
+    {
+        return $this->saldo;
+    }
+
+    public function getPagado(): float
+    {
+        return round($this->total - $this->saldo, 2);
+    }
+
+    public function getEstadoPago(): string
+    {
+        return $this->estadoPago;
+    }
+
+    public function debe(): bool
+    {
+        return !$this->estaAnulada() && $this->estadoPago === self::POR_PAGAR && $this->saldo > 0;
+    }
+
+    public function estaVencida(): bool
+    {
+        return $this->debe() && $this->vencimiento !== null && $this->vencimiento < new DateTime('today');
     }
 
     public function setIdCompraProveedor(?int $idCompraProveedor): void

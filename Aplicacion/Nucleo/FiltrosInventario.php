@@ -16,7 +16,6 @@ class FiltrosInventario
         'recientes' => 'Agregados recientemente',
     ];
 
-    /** @param TipoComponente[] $tipos*/
     public static function leer(array $consulta, array $tipos): array
     {
         $texto = fn(string $clave): string => is_string($consulta[$clave] ?? null) ? trim($consulta[$clave]) : '';
@@ -53,7 +52,6 @@ class FiltrosInventario
         ];
     }
 
-    /** @return \Aplicacion\Modelos\TipoComponenteAtributo[] */
     public static function atributosFiltrables(TipoComponente $tipo): array
     {
         return array_values(array_filter(

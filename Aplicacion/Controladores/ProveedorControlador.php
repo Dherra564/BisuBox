@@ -9,6 +9,7 @@ use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Nucleo\Validador;
 use Aplicacion\Repositorios\CompraProveedorRepositorio;
+use Aplicacion\Repositorios\LineaProductoRepositorio;
 use Aplicacion\Repositorios\ProveedorRepositorio;
 use Aplicacion\Repositorios\UsuarioRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
@@ -19,12 +20,14 @@ use Throwable;
 class ProveedorControlador
 {
     private ProveedorRepositorio $proveedorRepositorio;
+    private LineaProductoRepositorio $lineaRepositorio;
     private int $idVendedor;
 
     public function __construct()
     {
         Permiso::exigir('proveedores.gestionar');
         $this->proveedorRepositorio = new ProveedorRepositorio();
+        $this->lineaRepositorio = new LineaProductoRepositorio();
 
         $vendedor = (new VendedorRepositorio())->buscarPorIdUsuario((int) UsuarioActual::id());
         if ($vendedor === null) {
@@ -40,13 +43,20 @@ class ProveedorControlador
         $busqueda = is_string($_GET['busqueda'] ?? null) ? mb_substr(trim($_GET['busqueda']), 0, 100, 'UTF-8') : '';
         $estado = in_array($_GET['estado'] ?? '', ['1', '0'], true) ? $_GET['estado'] : '';
         $activo = $estado === '' ? null : $estado === '1';
+        $lineas = $this->lineaRepositorio->listar($this->idVendedor);
+        $idLinea = is_string($_GET['linea'] ?? null) && ctype_digit($_GET['linea']) && isset($lineas[(int) $_GET['linea']])
+            ? (int) $_GET['linea']
+            : null;
 
-        $total = $this->proveedorRepositorio->contar($this->idVendedor, $busqueda, $activo);
+        $total = $this->proveedorRepositorio->contar($this->idVendedor, $busqueda, $activo, $idLinea);
         $totalPaginas = max(1, (int) ceil($total / ProveedorRepositorio::POR_PAGINA));
         $pagina = min(max(1, (int) ($_GET['pagina'] ?? 1)), $totalPaginas);
 
         $this->mostrarVista('Proveedor/lista', [
-            'proveedores' => $this->proveedorRepositorio->listar($this->idVendedor, $busqueda, $activo, $pagina),
+            'proveedores' => $this->proveedorRepositorio->listar($this->idVendedor, $busqueda, $activo, $pagina, $idLinea),
+            'lineas' => $lineas,
+            'lineasProveedor' => $this->lineaRepositorio->porProveedor($this->idVendedor),
+            'idLinea' => $idLinea,
             'busqueda' => $busqueda,
             'estado' => $estado,
             'pagina' => $pagina,
@@ -64,8 +74,12 @@ class ProveedorControlador
         $filtros = ['proveedor' => (int) $proveedor->getIdProveedor(), 'estado' => 'todas'];
         $compraRepositorio = new CompraProveedorRepositorio();
 
+        $lineas = $this->lineaRepositorio->listar($this->idVendedor);
         $this->mostrarVista('Proveedor/detalle', [
             'proveedor' => $proveedor,
+            'lineas' => array_values(array_filter(
+                array_map(fn(int $idLinea) => $lineas[$idLinea] ?? null, $this->lineaRepositorio->idsDeProveedor((int) $proveedor->getIdProveedor()))
+            )),
             'compras' => $compraRepositorio->listar($this->idVendedor, $filtros),
             'totalCompras' => $compraRepositorio->contar($this->idVendedor, $filtros),
             'resumen' => $compraRepositorio->resumen($this->idVendedor, $filtros),
@@ -74,7 +88,7 @@ class ProveedorControlador
 
     public function nuevo(): void
     {
-        $this->mostrarFormulario(null, ['nombre' => '', 'telefono' => '', 'correo' => ''], []);
+        $this->mostrarFormulario(null, ['nombre' => '', 'telefono' => '', 'correo' => '', 'lineas' => []], []);
     }
 
     public function crear(): void
@@ -99,6 +113,7 @@ class ProveedorControlador
 
         try {
             $this->proveedorRepositorio->insertar($proveedor);
+            $this->lineaRepositorio->guardarDeProveedor((int) $proveedor->getIdProveedor(), $datos['lineas']);
         } catch (Throwable $error) {
             error_log('Error al registrar proveedor: ' . $error->getMessage());
             Mensaje::error('No se pudo guardar. Intente de nuevo.');
@@ -118,6 +133,7 @@ class ProveedorControlador
             'nombre' => $proveedor->getNombre(),
             'telefono' => $proveedor->getTelefono(),
             'correo' => $proveedor->getCorreo(),
+            'lineas' => $this->lineaRepositorio->idsDeProveedor((int) $proveedor->getIdProveedor()),
         ], []);
     }
 
@@ -139,6 +155,7 @@ class ProveedorControlador
 
         try {
             $this->proveedorRepositorio->actualizar($proveedor);
+            $this->lineaRepositorio->guardarDeProveedor((int) $proveedor->getIdProveedor(), $datos['lineas']);
         } catch (Throwable $error) {
             error_log('Error al actualizar proveedor: ' . $error->getMessage());
             Mensaje::error('No se pudo guardar. Intente de nuevo.');
@@ -197,10 +214,14 @@ class ProveedorControlador
             'nombre' => UsuarioRepositorio::limpiarEspacios($leer('nombre')),
             'telefono' => $leer('telefono'),
             'correo' => Validador::limpiarCorreo($leer('correo')),
+            'lineas' => array_values(array_unique(array_map('intval', array_filter(
+                is_array($_POST['lineas'] ?? null) ? $_POST['lineas'] : [],
+                fn($valor): bool => is_string($valor) && ctype_digit($valor)
+            )))),
         ];
     }
 
-        private function validarDatos(array $datos, ?int $idProveedor): Validador
+    private function validarDatos(array $datos, ?int $idProveedor): Validador
     {
         $validador = new Validador();
 
@@ -238,6 +259,14 @@ class ProveedorControlador
             $validador->agregarError($campo, $mensaje);
         }
 
+        $lineas = $this->lineaRepositorio->listar($this->idVendedor);
+        foreach ($datos['lineas'] as $idLinea) {
+            if (!isset($lineas[$idLinea])) {
+                $validador->agregarError('lineas', 'Escoja líneas de la lista');
+                break;
+            }
+        }
+
         return $validador;
     }
 
@@ -247,6 +276,7 @@ class ProveedorControlador
             'proveedor' => $proveedor,
             'datos' => $datos,
             'errores' => $errores,
+            'lineas' => $this->lineaRepositorio->listar($this->idVendedor),
         ]);
     }
 

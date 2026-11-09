@@ -10,6 +10,7 @@ use Aplicacion\Nucleo\DatosVenta;
 use Aplicacion\Nucleo\EstadoPago;
 use Aplicacion\Nucleo\EstadoPedido;
 use Aplicacion\Nucleo\FormaEntrega;
+use Aplicacion\Nucleo\MovimientoInventario;
 use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\OperacionNoPermitida;
 use Aplicacion\Nucleo\Rol;
@@ -31,13 +32,11 @@ class PedidoRepositorio
          INNER JOIN tbusuario u ON u.tbusuarioid = c.tbclienteusuarioid';
 
     private PDO $conexion;
-    private ProductoRepositorio $productoRepositorio;
     private PedidoPagoRepositorio $pagoRepositorio;
 
     public function __construct()
     {
         $this->conexion = BaseDatos::obtenerConexion();
-        $this->productoRepositorio = new ProductoRepositorio();
         $this->pagoRepositorio = new PedidoPagoRepositorio();
     }
 
@@ -46,8 +45,8 @@ class PedidoRepositorio
         $transaccionPropia = BaseDatos::iniciarTransaccion();
 
         try {
-            $this->rebajarExistencias($pedido);
             $idPedido = BaseDatos::generarId('tbpedido', 'tbpedidoid');
+            $this->rebajarExistencias($pedido, $idPedido);
             $pedido->setRetiroCodigo($pedido->getEntrega() === FormaEntrega::RETIRO ? DatosPago::generarCodigoRetiro() : null);
 
             $consulta = $this->conexion->prepare(
@@ -401,23 +400,27 @@ class PedidoRepositorio
         }
     }
 
-    private function rebajarExistencias(Pedido $pedido): void
+    private function rebajarExistencias(Pedido $pedido, int $idPedido): void
     {
         $faltantes = [];
         $productos = [];
         $componentes = [];
-        $componenteRepositorio = new ComponenteRepositorio();
+        $inventario = new InventarioRepositorio();
         $personalizadoRepositorio = new PersonalizadoRepositorio();
+        $idVendedor = (int) $pedido->getIdVendedor();
+        $buscarComponente = fn(int $idComponente): ?array => $componentes[$idComponente]
+            ?? $inventario->bloquear(MovimientoInventario::COMPONENTE, $idComponente, $idVendedor);
 
         foreach ($pedido->getDetalles() as $detalle) {
             if ($detalle->esPersonalizado()) {
                 foreach ($personalizadoRepositorio->necesidades((int) $detalle->getIdPersonalizado()) as $idComponente => $necesidad) {
-                    $componente = $componentes[$idComponente] ?? $componenteRepositorio->bloquearExistencia($idComponente, $pedido->getIdVendedor());
+                    $componente = $buscarComponente($idComponente);
                     if ($componente === null || !$componente['activo'] || $componente['existencia'] < $necesidad['cantidad']) {
                         $faltantes[] = '«' . $necesidad['nombre'] . '» (quedan ' . Numero::formatear(max(0, $componente['existencia'] ?? 0)) . ')';
                         continue;
                     }
                     $componente['existencia'] -= $necesidad['cantidad'];
+                    $componente['usar'] = ($componente['usar'] ?? 0) + $necesidad['cantidad'];
                     $componentes[$idComponente] = $componente;
                 }
                 continue;
@@ -425,22 +428,25 @@ class PedidoRepositorio
             if (!$detalle->esDelCatalogo()) {
                 continue;
             }
-            $hay = $productos[$detalle->getIdProducto()]
-                ?? ($this->productoRepositorio->bloquearExistencia($detalle->getIdProducto(), $pedido->getIdVendedor())['existencia'] ?? null);
-            if ($hay === null || $hay < $detalle->getCantidad()) {
-                $faltantes[] = '«' . $detalle->getNombreProducto() . '» (quedan ' . max(0, (int) $hay) . ')';
+            $idProducto = (int) $detalle->getIdProducto();
+            $producto = $productos[$idProducto] ?? $inventario->bloquear(MovimientoInventario::PRODUCTO, $idProducto, $idVendedor);
+            if ($producto === null || $producto['existencia'] < $detalle->getCantidad()) {
+                $faltantes[] = '«' . $detalle->getNombreProducto() . '» (quedan ' . max(0, (int) ($producto['existencia'] ?? 0)) . ')';
                 continue;
             }
-            $productos[$detalle->getIdProducto()] = $hay - $detalle->getCantidad();
+            $producto['existencia'] -= $detalle->getCantidad();
+            $producto['usar'] = ($producto['usar'] ?? 0) + $detalle->getCantidad();
+            $productos[$idProducto] = $producto;
         }
 
         foreach ($this->componentesDeDisenosYCotizaciones($pedido) as $idComponente => $necesita) {
-            $componente = $componentes[$idComponente] ?? $componenteRepositorio->bloquearExistencia($idComponente, $pedido->getIdVendedor());
+            $componente = $buscarComponente($idComponente);
             if ($componente === null || !$componente['activo'] || $componente['existencia'] + 0.00001 < $necesita) {
                 $faltantes[] = '«' . ($componente['nombre'] ?? 'Un componente') . '» (quedan ' . Numero::formatear(max(0, $componente['existencia'] ?? 0)) . ')';
                 continue;
             }
             $componente['existencia'] = round($componente['existencia'] - $necesita, 2);
+            $componente['usar'] = round(($componente['usar'] ?? 0) + $necesita, 2);
             $componentes[$idComponente] = $componente;
         }
 
@@ -448,56 +454,79 @@ class PedidoRepositorio
             throw new OperacionNoPermitida('La tienda ya no tiene suficiente de ' . implode(', ', $faltantes) . '. Revise las cantidades e intente de nuevo.');
         }
 
-        foreach ($productos as $idProducto => $existencia) {
-            $this->productoRepositorio->actualizarExistencia($idProducto, $pedido->getIdVendedor(), $existencia);
+        foreach ($productos as $idProducto => $producto) {
+            $inventario->mover(
+                $idVendedor,
+                MovimientoInventario::PRODUCTO,
+                $idProducto,
+                MovimientoInventario::SALIDA,
+                $producto['usar'],
+                MovimientoInventario::MOTIVO_PEDIDO,
+                MovimientoInventario::REFERENCIA_PEDIDO,
+                $idPedido
+            );
         }
         foreach ($componentes as $idComponente => $componente) {
-            $componenteRepositorio->actualizarExistencia($idComponente, $pedido->getIdVendedor(), $componente['existencia'], $componente['costo']);
+            $inventario->mover(
+                $idVendedor,
+                MovimientoInventario::COMPONENTE,
+                $idComponente,
+                MovimientoInventario::SALIDA,
+                $componente['usar'],
+                MovimientoInventario::MOTIVO_PEDIDO,
+                MovimientoInventario::REFERENCIA_PEDIDO,
+                $idPedido
+            );
         }
     }
 
     private function devolverExistencias(Pedido $pedido, string $canceladoPor): void
     {
-        $componenteRepositorio = new ComponenteRepositorio();
+        $inventario = new InventarioRepositorio();
         $personalizadoRepositorio = new PersonalizadoRepositorio();
-
-        foreach ($this->componentesDeDisenosYCotizaciones($pedido) as $idComponente => $devolver) {
-            $componente = $componenteRepositorio->bloquearExistencia($idComponente, $pedido->getIdVendedor());
-            if ($componente !== null) {
-                $componenteRepositorio->actualizarExistencia(
-                    $idComponente,
-                    $pedido->getIdVendedor(),
-                    round($componente['existencia'] + $devolver, 2),
-                    $componente['costo']
-                );
-            }
-        }
+        $idVendedor = (int) $pedido->getIdVendedor();
+        $idPedido = (int) $pedido->getIdPedido();
+        $componentes = $this->componentesDeDisenosYCotizaciones($pedido);
+        $productos = [];
 
         foreach ($pedido->getDetalles() as $detalle) {
             if ($detalle->esPersonalizado()) {
                 foreach ($personalizadoRepositorio->necesidades((int) $detalle->getIdPersonalizado()) as $idComponente => $necesidad) {
-                    $componente = $componenteRepositorio->bloquearExistencia($idComponente, $pedido->getIdVendedor());
-                    if ($componente !== null) {
-                        $componenteRepositorio->actualizarExistencia(
-                            $idComponente,
-                            $pedido->getIdVendedor(),
-                            $componente['existencia'] + $necesidad['cantidad'],
-                            $componente['costo']
-                        );
-                    }
+                    $componentes[$idComponente] = round(($componentes[$idComponente] ?? 0) + $necesidad['cantidad'], 2);
                 }
-            $personalizadoRepositorio->cancelarPorPedido((int) $detalle->getIdPersonalizado(), $canceladoPor);
+                $personalizadoRepositorio->cancelarPorPedido((int) $detalle->getIdPersonalizado(), $canceladoPor);
                 continue;
             }
-            if (!$detalle->esDelCatalogo()) {
-                continue;
+            if ($detalle->esDelCatalogo()) {
+                $productos[(int) $detalle->getIdProducto()] = ($productos[(int) $detalle->getIdProducto()] ?? 0) + $detalle->getCantidad();
             }
-            $producto = $this->productoRepositorio->bloquearExistencia($detalle->getIdProducto(), $pedido->getIdVendedor());
-            if ($producto !== null) {
-                $this->productoRepositorio->actualizarExistencia(
-                    $detalle->getIdProducto(),
-                    $pedido->getIdVendedor(),
-                    $producto['existencia'] + $detalle->getCantidad()
+        }
+
+        foreach ($componentes as $idComponente => $devolver) {
+            if ($devolver > 0 && $inventario->bloquear(MovimientoInventario::COMPONENTE, $idComponente, $idVendedor) !== null) {
+                $inventario->mover(
+                    $idVendedor,
+                    MovimientoInventario::COMPONENTE,
+                    $idComponente,
+                    MovimientoInventario::ENTRADA,
+                    $devolver,
+                    MovimientoInventario::MOTIVO_PEDIDO_CANCELADO,
+                    MovimientoInventario::REFERENCIA_PEDIDO,
+                    $idPedido
+                );
+            }
+        }
+        foreach ($productos as $idProducto => $devolver) {
+            if ($inventario->bloquear(MovimientoInventario::PRODUCTO, $idProducto, $idVendedor) !== null) {
+                $inventario->mover(
+                    $idVendedor,
+                    MovimientoInventario::PRODUCTO,
+                    $idProducto,
+                    MovimientoInventario::ENTRADA,
+                    $devolver,
+                    MovimientoInventario::MOTIVO_PEDIDO_CANCELADO,
+                    MovimientoInventario::REFERENCIA_PEDIDO,
+                    $idPedido
                 );
             }
         }

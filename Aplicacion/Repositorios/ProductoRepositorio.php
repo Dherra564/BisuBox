@@ -67,7 +67,6 @@ class ProductoRepositorio
         return $this->crearDesdeFila($fila, $componentes, $extras);
     }
 
-    /** @return Producto[]*/
     public function listar(int $idVendedor, array $filtros, int $pagina = 1): array
     {
         [$condiciones, $valores] = $this->construirFiltros($idVendedor, $filtros);
@@ -92,7 +91,6 @@ class ProductoRepositorio
         return (int) $consulta->fetchColumn();
     }
 
-    /** @return array{unidades: int, valor: float, agotados: int}*/
     public function resumen(int $idVendedor): array
     {
         $consulta = $this->conexion->prepare(
@@ -154,8 +152,8 @@ class ProductoRepositorio
             $consulta = $this->conexion->prepare(
                 'INSERT INTO tbproducto (tbproductoid, tbproductovendedorid, tbproductonombre, tbproductodescripcion, tbproductofoto,
                     tbproductominutos, tbproductotarifahora, tbproductocostocomponentes, tbproductocostomanoobra, tbproductocostoextras,
-                    tbproductocostototal, tbproductoprecioventa, tbproductoexistencia, tbproductoregistrofecha, tbproductoactivo)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                    tbproductocostototal, tbproductoprecioventa, tbproductoexistencia, tbproductolineaid, tbproductoregistrofecha, tbproductoactivo)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
             );
             $consulta->execute([
                 $idProducto,
@@ -171,6 +169,7 @@ class ProductoRepositorio
                 $producto->getCostoTotal(),
                 $producto->getPrecioVenta(),
                 0,
+                $producto->getIdLinea(),
                 (new DateTime())->format('Y-m-d H:i:s'),
                 1,
             ]);
@@ -223,7 +222,8 @@ class ProductoRepositorio
     public function actualizar(Producto $producto): void
     {
         $consulta = $this->conexion->prepare(
-            'UPDATE tbproducto SET tbproductonombre = ?, tbproductodescripcion = ?, tbproductofoto = ?, tbproductoprecioventa = ?
+            'UPDATE tbproducto SET tbproductonombre = ?, tbproductodescripcion = ?, tbproductofoto = ?, tbproductoprecioventa = ?,
+                tbproductolineaid = ?
              WHERE tbproductoid = ? AND tbproductovendedorid = ?'
         );
         $consulta->execute([
@@ -231,6 +231,7 @@ class ProductoRepositorio
             $producto->getDescripcion(),
             $producto->getFoto(),
             $producto->getPrecioVenta(),
+            $producto->getIdLinea(),
             $producto->getIdProducto(),
             $producto->getIdVendedor(),
         ]);
@@ -244,30 +245,6 @@ class ProductoRepositorio
         $consulta->execute([$activo ? 1 : 0, $producto->getIdProducto(), $producto->getIdVendedor()]);
 
         $producto->setActivo($activo);
-    }
-
-    public function bloquearExistencia(int $idProducto, int $idVendedor): ?array
-    {
-        $consulta = $this->conexion->prepare(
-            'SELECT tbproductoexistencia, tbproductonombre, tbproductoactivo FROM tbproducto
-             WHERE tbproductoid = ? AND tbproductovendedorid = ? FOR UPDATE'
-        );
-        $consulta->execute([$idProducto, $idVendedor]);
-        $fila = $consulta->fetch();
-
-        return $fila ? [
-            'existencia' => (int) $fila['tbproductoexistencia'],
-            'nombre' => (string) $fila['tbproductonombre'],
-            'activo' => (bool) $fila['tbproductoactivo'],
-        ] : null;
-    }
-
-    public function actualizarExistencia(int $idProducto, int $idVendedor, int $existencia): void
-    {
-        $consulta = $this->conexion->prepare(
-            'UPDATE tbproducto SET tbproductoexistencia = ? WHERE tbproductoid = ? AND tbproductovendedorid = ?'
-        );
-        $consulta->execute([$existencia, $idProducto, $idVendedor]);
     }
 
     private function construirFiltros(int $idVendedor, array $filtros): array
@@ -293,10 +270,6 @@ class ProductoRepositorio
         return [' WHERE ' . implode(' AND ', $condiciones), $valores];
     }
 
-    /**
-     * @param ProductoComponente[] $componentes
-     * @param ProductoExtra[] $extras
-     */
     private function crearDesdeFila(array $fila, array $componentes = [], array $extras = []): Producto
     {
         return new Producto(
@@ -316,14 +289,11 @@ class ProductoRepositorio
             (bool) $fila['tbproductoactivo'],
             $fila['tbproductoregistrofecha'] !== null ? new DateTime($fila['tbproductoregistrofecha']) : null,
             $componentes,
-            $extras
+            $extras,
+            $fila['tbproductolineaid'] !== null ? (int) $fila['tbproductolineaid'] : null
         );
     }
 
-    /**
-     * @param int[] $ids
-     * @return array<int, Producto>
-     */
     public function buscarVarios(int $idVendedor, array $ids): array
     {
         $ids = array_values(array_unique(array_map('intval', $ids)));

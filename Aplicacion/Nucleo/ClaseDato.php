@@ -38,7 +38,6 @@ class ClaseDato
 
     public const MAXIMO_OPCIONES = 30;
 
-    /** @return array<string, array{nombre: string, descripcion: string, ejemplo: string, icono: string}> */
     public static function todas(): array
     {
         return self::CLASES;

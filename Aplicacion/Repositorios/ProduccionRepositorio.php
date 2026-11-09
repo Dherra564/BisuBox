@@ -5,7 +5,7 @@ namespace Aplicacion\Repositorios;
 use Aplicacion\Modelos\Produccion;
 use Aplicacion\Modelos\ProduccionComponente;
 use Aplicacion\Modelos\Producto;
-use Aplicacion\Nucleo\CostoPromedio;
+use Aplicacion\Nucleo\MovimientoInventario;
 use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\OperacionNoPermitida;
 use Configuracion\BaseDatos;
@@ -17,13 +17,13 @@ use Throwable;
 class ProduccionRepositorio
 {
     private PDO $conexion;
-    private ComponenteRepositorio $componenteRepositorio;
+    private InventarioRepositorio $inventario;
     private ProductoRepositorio $productoRepositorio;
 
     public function __construct()
     {
         $this->conexion = BaseDatos::obtenerConexion();
-        $this->componenteRepositorio = new ComponenteRepositorio();
+        $this->inventario = new InventarioRepositorio();
         $this->productoRepositorio = new ProductoRepositorio();
     }
 
@@ -57,7 +57,7 @@ class ProduccionRepositorio
             $idVendedor = (int) $producto->getIdVendedor();
             $idProducto = (int) $producto->getIdProducto();
 
-            $actualProducto = $this->productoRepositorio->bloquearExistencia($idProducto, $idVendedor);
+            $actualProducto = $this->inventario->bloquear(MovimientoInventario::PRODUCTO, $idProducto, $idVendedor);
             if ($actualProducto === null) {
                 throw new RuntimeException('El producto ' . $idProducto . ' no existe o es de otro vendedor');
             }
@@ -65,12 +65,13 @@ class ProduccionRepositorio
                 throw new OperacionNoPermitida('El producto ' . $actualProducto['nombre'] . ' está desactivado. Actívelo para hacer más.');
             }
 
+            $idProduccion = BaseDatos::generarId('tbproduccion', 'tbproduccionid');
             $usados = [];
             $faltantes = [];
             $desactivados = [];
             foreach ($producto->getComponentes() as $linea) {
                 $necesita = round($linea->getCantidad() * $cantidad, 2);
-                $actual = $this->componenteRepositorio->bloquearExistencia($linea->getIdComponente(), $idVendedor);
+                $actual = $this->inventario->bloquear(MovimientoInventario::COMPONENTE, $linea->getIdComponente(), $idVendedor);
                 if ($actual === null) {
                     throw new RuntimeException('El componente ' . $linea->getIdComponente() . ' no existe o es de otro vendedor');
                 }
@@ -84,12 +85,6 @@ class ProduccionRepositorio
                     continue;
                 }
 
-                $this->componenteRepositorio->actualizarExistencia(
-                    $linea->getIdComponente(),
-                    $idVendedor,
-                    round($actual['existencia'] - $necesita, 2),
-                    $actual['costo']
-                );
                 $usados[] = new ProduccionComponente(null, null, $linea->getIdComponente(), $necesita, $actual['costo']);
             }
             if ($desactivados !== []) {
@@ -99,9 +94,29 @@ class ProduccionRepositorio
                 throw new OperacionNoPermitida('No alcanza el inventario para: ' . implode(', ', $faltantes) . '.');
             }
 
-            $this->productoRepositorio->actualizarExistencia($idProducto, $idVendedor, $actualProducto['existencia'] + $cantidad);
+            foreach ($usados as $usado) {
+                $this->inventario->mover(
+                    $idVendedor,
+                    MovimientoInventario::COMPONENTE,
+                    $usado->getIdComponente(),
+                    MovimientoInventario::SALIDA,
+                    $usado->getCantidad(),
+                    MovimientoInventario::MOTIVO_PRODUCCION,
+                    MovimientoInventario::REFERENCIA_PRODUCCION,
+                    $idProduccion
+                );
+            }
+            $this->inventario->mover(
+                $idVendedor,
+                MovimientoInventario::PRODUCTO,
+                $idProducto,
+                MovimientoInventario::ENTRADA,
+                $cantidad,
+                MovimientoInventario::MOTIVO_PRODUCCION,
+                MovimientoInventario::REFERENCIA_PRODUCCION,
+                $idProduccion
+            );
 
-            $idProduccion = BaseDatos::generarId('tbproduccion', 'tbproduccionid');
             $consulta = $this->conexion->prepare(
                 'INSERT INTO tbproduccion (tbproduccionid, tbproduccionvendedorid, tbproduccionproductoid, tbproduccioncantidad,
                     tbproduccionfecha, tbproduccionestado, tbproduccionregistrofecha)
@@ -141,7 +156,6 @@ class ProduccionRepositorio
         return $idProduccion;
     }
 
-    /** @return Produccion[]*/
     public function listarPorProducto(int $idProducto, int $idVendedor): array
     {
         $consulta = $this->conexion->prepare(
@@ -192,7 +206,7 @@ class ProduccionRepositorio
                 throw new OperacionNoPermitida('Esta producción ya estaba anulada.');
             }
 
-            $producto = $this->productoRepositorio->bloquearExistencia($produccion->getIdProducto(), $idVendedor);
+            $producto = $this->inventario->bloquear(MovimientoInventario::PRODUCTO, $produccion->getIdProducto(), $idVendedor);
             if ($producto === null) {
                 throw new RuntimeException('El producto ' . $produccion->getIdProducto() . ' no existe o es de otro vendedor');
             }
@@ -201,19 +215,29 @@ class ProduccionRepositorio
                     'No se puede anular: esa vez hizo ' . $produccion->getCantidad() . ' y ahora solo le quedan ' . $producto['existencia'] . '.'
                 );
             }
-            $this->productoRepositorio->actualizarExistencia(
-                $produccion->getIdProducto(),
+            $this->inventario->mover(
                 $idVendedor,
-                $producto['existencia'] - $produccion->getCantidad()
+                MovimientoInventario::PRODUCTO,
+                $produccion->getIdProducto(),
+                MovimientoInventario::SALIDA,
+                $produccion->getCantidad(),
+                MovimientoInventario::MOTIVO_PRODUCCION_ANULADA,
+                MovimientoInventario::REFERENCIA_PRODUCCION,
+                $produccion->getIdProduccion()
             );
 
             foreach ($produccion->getComponentes() as $usado) {
-                $actual = $this->componenteRepositorio->bloquearExistencia($usado->getIdComponente(), $idVendedor);
-                if ($actual === null) {
-                    throw new RuntimeException('El componente ' . $usado->getIdComponente() . ' no existe o es de otro vendedor');
-                }
-                $nuevo = CostoPromedio::sumar($actual['existencia'], $actual['costo'], $usado->getCantidad(), $usado->getCostoUnitario());
-                $this->componenteRepositorio->actualizarExistencia($usado->getIdComponente(), $idVendedor, $nuevo['existencia'], $nuevo['costo']);
+                $this->inventario->mover(
+                    $idVendedor,
+                    MovimientoInventario::COMPONENTE,
+                    $usado->getIdComponente(),
+                    MovimientoInventario::ENTRADA,
+                    $usado->getCantidad(),
+                    MovimientoInventario::MOTIVO_PRODUCCION_ANULADA,
+                    MovimientoInventario::REFERENCIA_PRODUCCION,
+                    $produccion->getIdProduccion(),
+                    $usado->getCostoUnitario()
+                );
             }
 
             $consulta = $this->conexion->prepare(
@@ -234,7 +258,6 @@ class ProduccionRepositorio
         $produccion->setEstado(Produccion::ANULADA);
     }
 
-    /** @param ProduccionComponente[] $componentes */
     private function crearDesdeFila(array $fila, array $componentes = []): Produccion
     {
         return new Produccion(

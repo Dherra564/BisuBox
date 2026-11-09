@@ -1,7 +1,4 @@
 <?php
-/**
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\UsuarioActual;

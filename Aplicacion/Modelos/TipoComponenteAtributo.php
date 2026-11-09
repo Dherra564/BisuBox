@@ -14,11 +14,9 @@ class TipoComponenteAtributo
     private bool $obligatorio;
     private int $orden;
     private bool $activo;
-    /** @var TipoComponenteAtributoOpcion[] */
     private array $opciones;
     private bool $tieneValores;
 
-    /** @param TipoComponenteAtributoOpcion[] $opciones */
     public function __construct(
         ?int $idAtributo,
         ?int $idTipoComponente,
@@ -83,13 +81,11 @@ class TipoComponenteAtributo
         return $this->activo;
     }
 
-    /** @return TipoComponenteAtributoOpcion[]*/
     public function getOpciones(): array
     {
         return $this->clase === ClaseDato::LISTA ? $this->opciones : [];
     }
 
-    /** @return TipoComponenteAtributoOpcion[] */
     public function getOpcionesActivas(): array
     {
         return array_values(array_filter($this->getOpciones(), fn(TipoComponenteAtributoOpcion $opcion): bool => $opcion->getActivo()));

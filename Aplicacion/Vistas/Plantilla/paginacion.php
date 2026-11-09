@@ -1,14 +1,4 @@
 <?php
-/**
- * @var int $pagina
- * @var int $totalPaginas
- * @var int $total
- * @var int $porPagina
- * @var string $rutaPaginacion
- * @var array $parametrosPaginacion
- * @var string $nombreRegistros
- * @var string $urlBase
- */
 
 $enlacePagina = fn(int $numero): string => $urlBase . $rutaPaginacion . '?' . http_build_query(array_filter(
     $parametrosPaginacion + ['pagina' => $numero],

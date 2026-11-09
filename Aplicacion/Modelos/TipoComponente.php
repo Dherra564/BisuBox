@@ -8,11 +8,9 @@ class TipoComponente
     private ?int $idVendedor;
     private string $nombre;
     private bool $activo;
-    /** @var TipoComponenteAtributo[] */
     private array $atributos;
     private int $cantidadComponentes;
 
-    /** @param TipoComponenteAtributo[] $atributos */
     public function __construct(
         ?int $idTipoComponente,
         ?int $idVendedor,
@@ -49,13 +47,11 @@ class TipoComponente
         return $this->activo;
     }
 
-    /** @return TipoComponenteAtributo[] */
     public function getAtributos(): array
     {
         return $this->atributos;
     }
 
-    /** @return TipoComponenteAtributo[]*/
     public function getAtributosActivos(): array
     {
         return array_values(array_filter($this->atributos, fn(TipoComponenteAtributo $atributo): bool => $atributo->getActivo()));
@@ -81,7 +77,6 @@ class TipoComponente
         $this->activo = $activo;
     }
 
-    /** @param TipoComponenteAtributo[] $atributos */
     public function setAtributos(array $atributos): void
     {
         $this->atributos = $atributos;

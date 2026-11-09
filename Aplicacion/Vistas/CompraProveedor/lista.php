@@ -1,21 +1,6 @@
 <?php
-/**
- * @var \Aplicacion\Modelos\CompraProveedor[] $compras
- * @var array $resumen
- * @var \Aplicacion\Modelos\Proveedor[] $proveedores
- * @var int|null $proveedor
- * @var string $estado
- * @var array $estados
- * @var array $conteos
- * @var array $periodo
- * @var int $pagina
- * @var int $totalPaginas
- * @var int $total
- * @var int $porPagina
- * @var bool $hayCompras
- * @var string $urlBase
- */
 
+use Aplicacion\Nucleo\DatosCompraProveedor;
 use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\PeriodoFechas;
 
@@ -53,9 +38,10 @@ $esRango = $periodo['periodo'] === PeriodoFechas::RANGO;
         <a href="<?= $urlBase ?>/compras-proveedor/nueva" class="boton">Registrar la primera compra</a>
     </div>
 <?php else: ?>
-    <p class="introPagina">Lo que le ha comprado a sus proveedores. Cada compra suma sola al inventario.</p>
+    <p class="introPagina">Lo que le ha comprado a sus proveedores. Cada compra suma sola al inventario cuando la marca como
+        recibida.</p>
 
-    <div class="resumenInventario resumenCompras">
+    <div class="resumenInventario">
         <div class="tarjeta tarjetaResumen">
             <span class="tarjetaResumenTitulo">Total comprado</span>
             <span class="tarjetaNumero"><?= Numero::moneda($resumen['total']) ?></span>
@@ -71,6 +57,16 @@ $esRango = $periodo['periodo'] === PeriodoFechas::RANGO;
             <span class="tarjetaNumero"><?= Numero::moneda($resumen['envios']) ?></span>
             <span class="textoAyuda">Suma de los costos de envío</span>
         </div>
+        <a href="<?= $urlBase ?>/compras-por-pagar"
+            class="tarjeta tarjetaResumen <?= $resumen['saldo'] > 0 ? 'tarjetaAdvertencia' : '' ?>">
+            <span class="tarjetaResumenTitulo">Por pagar</span>
+            <span class="tarjetaNumero">
+                <?= Numero::moneda($resumen['saldo']) ?>
+            </span>
+            <span class="textoAyuda">
+                <?= $resumen['saldo'] > 0 ? 'Ver compras por pagar' : 'No le debe a nadie' ?>
+            </span>
+        </a>
     </div>
 
     <section class="panelCompras">
@@ -162,6 +158,7 @@ $esRango = $periodo['periodo'] === PeriodoFechas::RANGO;
                             <th class="numero">Envío</th>
                             <th class="numero">Total</th>
                             <th>Estado</th>
+                            <th>Pago</th>
                             <th><span class="soloLectores">Acciones</span></th>
                         </tr>
                     </thead>
@@ -170,17 +167,32 @@ $esRango = $periodo['periodo'] === PeriodoFechas::RANGO;
                             <tr class="<?= $compra->estaAnulada() ? 'filaInactiva' : '' ?>">
                                 <td data-etiqueta="Fecha"><?= $compra->getFecha()->format('d/m/Y') ?></td>
                                 <td data-etiqueta="Proveedor">
-                                    <strong><?= htmlspecialchars($compra->getNombreProveedor()) ?></strong></td>
+                                    <strong><?= htmlspecialchars($compra->getNombreProveedor()) ?></strong>
+                                </td>
                                 <td data-etiqueta="Componentes">
                                     <?= $compra->getCantidadLineas() === 1 ? '1 componente' : $compra->getCantidadLineas() . ' componentes' ?>
                                 </td>
                                 <td data-etiqueta="Envío" class="numero">
-                                    <?= $compra->getCostoEnvio() > 0 ? Numero::moneda($compra->getCostoEnvio()) : '—' ?></td>
+                                    <?= $compra->getCostoEnvio() > 0 ? Numero::moneda($compra->getCostoEnvio()) : '—' ?>
+                                </td>
                                 <td data-etiqueta="Total" class="numero"><strong><?= Numero::moneda($compra->getTotal()) ?></strong>
                                 </td>
                                 <td data-etiqueta="Estado">
                                     <span
-                                        class="etiqueta <?= $compra->estaAnulada() ? 'etiquetaInactivo' : 'etiquetaActivo' ?>"><?= $compra->getEstado() ?></span>
+                                        class="etiqueta <?= DatosCompraProveedor::claseEstado($compra) ?>"><?= htmlspecialchars($compra->getEstado()) ?></span>
+                                </td>
+                                <td data-etiqueta="Pago">
+                                    <?php if ($compra->estaAnulada()): ?>
+                                        <span class="textoAyuda">—</span>
+                                    <?php else: ?>
+                                        <span>
+                                            <span
+                                                class="etiqueta <?= DatosCompraProveedor::clasePago($compra) ?>"><?= DatosCompraProveedor::textoPago($compra) ?></span>
+                                            <?php if ($compra->debe()): ?>
+                                                <br><span class="textoAyuda">Debe <?= Numero::moneda($compra->getSaldo()) ?></span>
+                                            <?php endif; ?>
+                                        </span>
+                                    <?php endif; ?>
                                 </td>
                                 <td class="acciones">
                                     <a href="<?= $urlBase ?>/compras-proveedor/detalle?id=<?= $compra->getIdCompraProveedor() ?>"
@@ -204,6 +216,7 @@ $esRango = $periodo['periodo'] === PeriodoFechas::RANGO;
     <?php endif; ?>
 
     <div class="grupoBotones accionesLista">
+        <a href="<?= $urlBase ?>/compras-por-pagar" class="boton botonSecundario">Compras por pagar</a>
         <a href="<?= $urlBase ?>/compras-proveedor/nueva<?= $proveedor !== null ? '?proveedor=' . $proveedor : '' ?>"
             class="boton">Registrar compra</a>
     </div>

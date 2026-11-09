@@ -17,7 +17,6 @@ class VendedorContactoRepositorio
         $this->conexion = BaseDatos::obtenerConexion();
     }
 
-    /** @return VendedorContacto[] */
     public function listarPorVendedor(int $idVendedor): array
     {
         $consulta = $this->conexion->prepare(
@@ -44,7 +43,6 @@ class VendedorContactoRepositorio
         return (int) $consulta->fetchColumn() > 0;
     }
 
-    /** @param VendedorContacto[] $contactos */
     public function reemplazar(int $idVendedor, array $contactos): void
     {
         $transaccionPropia = BaseDatos::iniciarTransaccion();

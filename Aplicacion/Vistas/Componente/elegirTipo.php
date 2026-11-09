@@ -1,8 +1,4 @@
 <?php
-/**
- * @var \Aplicacion\Modelos\TipoComponente[] $tipos
- * @var string $urlBase
- */
 
 $titulo = 'Agregar componente';
 $paginaActual = 'inventario';

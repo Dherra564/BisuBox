@@ -1,10 +1,4 @@
 <?php
-/**
- * @var \Aplicacion\Modelos\Proveedor|null $proveedor
- * @var array $datos
- * @var array $errores
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\Csrf;
 
@@ -74,6 +68,28 @@ $rutaCancelar = $esNuevo ? '/proveedores' : '/proveedores/detalle?id=' . (int) $
                 <?php echo $mensajeError('correo') ?>
             </div>
         </div>
+    </section>
+
+    <section class="formularioSeccion">
+        <h2>Líneas que vende</h2>
+        <?php $lineasVisibles = array_filter($lineas, fn($linea): bool => $linea->getActivo() || in_array($linea->getIdLinea(), $datos['lineas'], true)); ?>
+        <?php if ($lineasVisibles === []): ?>
+            <p class="textoAyuda">Todavía no tiene líneas de producto. <a href="<?php echo $urlBase ?>/lineas/nueva">Cree una</a>, por ejemplo Perlas o Cadenas, para saber qué le compra a cada proveedor.</p>
+        <?php else: ?>
+            <div class="<?php echo isset($errores['lineas']) ? 'campo campoConError' : 'campo' ?>">
+                <div class="listaCasillasLinea">
+                    <?php foreach ($lineasVisibles as $linea): ?>
+                        <div class="campoCasilla">
+                            <input type="checkbox" id="linea-<?php echo $linea->getIdLinea() ?>" name="lineas[]" value="<?php echo $linea->getIdLinea() ?>"
+                                <?php echo in_array($linea->getIdLinea(), $datos['lineas'], true) ? 'checked' : '' ?>>
+                            <label for="linea-<?php echo $linea->getIdLinea() ?>"><?php echo htmlspecialchars($linea->getNombre()) ?><?php echo $linea->getActivo() ? '' : ' (desactivada)' ?></label>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <p class="textoAyuda">Opcional. Al registrar una compra de esa línea, este proveedor sale de primero.</p>
+                <?php echo $mensajeError('lineas') ?>
+            </div>
+        <?php endif; ?>
     </section>
 
     <div class="grupoBotones accionesFormulario">

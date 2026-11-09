@@ -1,18 +1,4 @@
 <?php
-/**
- * @var \Aplicacion\Modelos\Producto[] $productos
- * @var array $resumen
- * @var string $busqueda
- * @var string $estado
- * @var array $estados
- * @var array $conteos
- * @var int $pagina
- * @var int $totalPaginas
- * @var int $total
- * @var int $porPagina
- * @var bool $hayProductos
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\Numero;
 
@@ -130,6 +116,7 @@ $urlFoto = fn(?string $foto): string => htmlspecialchars($foto !== null
     <?php endif; ?>
 
     <div class="grupoBotones accionesLista">
+        <a href="<?= $urlBase ?>/lineas" class="boton botonSecundario">Líneas de producto</a>
         <a href="<?= $urlBase ?>/productos/nuevo" class="boton">Nuevo producto</a>
     </div>
 

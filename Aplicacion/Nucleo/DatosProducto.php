@@ -6,6 +6,7 @@ use Aplicacion\Modelos\Componente;
 use Aplicacion\Modelos\Producto;
 use Aplicacion\Modelos\ProductoComponente;
 use Aplicacion\Modelos\ProductoExtra;
+use Aplicacion\Repositorios\LineaProductoRepositorio;
 use Aplicacion\Repositorios\ProductoRepositorio;
 use Aplicacion\Repositorios\UsuarioRepositorio;
 
@@ -69,6 +70,7 @@ class DatosProducto
             'descripcion' => (string) preg_replace('/\s+/u', ' ', $texto('descripcion')),
             'ganancia' => $texto('ganancia'),
             'precioVenta' => $texto('precioVenta'),
+            'linea' => $texto('linea'),
         ];
     }
 
@@ -79,6 +81,7 @@ class DatosProducto
             'descripcion' => '',
             'ganancia' => '50',
             'precioVenta' => '',
+            'linea' => '',
             'cantidad' => '1',
             'horas' => '',
             'minutos' => '',
@@ -98,6 +101,7 @@ class DatosProducto
             'ganancia' => $porcentaje !== null && in_array((int) $porcentaje, self::GANANCIAS, true) && floor($porcentaje) == $porcentaje
                 ? (string) (int) $porcentaje : '',
             'precioVenta' => Numero::paraCampo($producto->getPrecioVenta()),
+            'linea' => $producto->getIdLinea() !== null ? (string) $producto->getIdLinea() : '',
         ];
     }
 
@@ -120,6 +124,12 @@ class DatosProducto
             $validador->agregarError('descripcion', self::MENSAJE_DESCRIPCION);
         }
         $validador->sinOfensas('descripcion', $datos['descripcion']);
+        if ($datos['linea'] !== '') {
+            $linea = ctype_digit($datos['linea']) ? (new LineaProductoRepositorio())->buscarPorId((int) $datos['linea'], $idVendedor) : null;
+            if ($linea === null || (!$linea->getActivo() && $linea->getIdLinea() !== $original?->getIdLinea())) {
+                $validador->agregarError('linea', 'Escoja una línea de la lista');
+            }
+        }
         if ($datos['precioVenta'] === '') {
             $validador->agregarError('precioVenta', 'Escriba en cuánto lo va a vender');
         } else {
@@ -164,7 +174,6 @@ class DatosProducto
         }
     }
 
-    /** @param array<int, Componente> $componentes */
     public static function validar(Validador $validador, array $datos, array $componentes, int $idVendedor): void
     {
         self::validarDatosComunes($validador, $datos, $idVendedor);
@@ -209,9 +218,6 @@ class DatosProducto
         return preg_match('/^[0-9]{1,4}$/', $cantidad) === 1 && (int) $cantidad >= 1;
     }
 
-    /**
-     * @param array<int, Componente> $componentes
-     */
     public static function crearProducto(array $datos, int $idVendedor, array $componentes): Producto
     {
         $minutos = ((int) $datos['horas']) * 60 + (int) $datos['minutos'];
@@ -268,7 +274,8 @@ class DatosProducto
             true,
             null,
             $lineas,
-            $extras
+            $extras,
+            $datos['linea'] !== '' ? (int) $datos['linea'] : null
         );
     }
 
@@ -292,7 +299,6 @@ class DatosProducto
         }
     }
 
-    /** @param array<int, Componente> $componentes */
     private static function validarComponentes(Validador $validador, array $lineas, array $componentes, int $cantidadProductos): void
     {
         if ($lineas === []) {

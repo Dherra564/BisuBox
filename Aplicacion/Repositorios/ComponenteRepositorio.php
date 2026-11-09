@@ -4,6 +4,7 @@ namespace Aplicacion\Repositorios;
 
 use Aplicacion\Modelos\Componente;
 use Aplicacion\Nucleo\ClaseDato;
+use Aplicacion\Nucleo\MovimientoInventario;
 use Configuracion\BaseDatos;
 use PDO;
 use Throwable;
@@ -34,7 +35,6 @@ class ComponenteRepositorio
         $this->conexion = BaseDatos::obtenerConexion();
     }
 
-    /** @return Componente[] */
     public function listar(int $idVendedor, array $filtros): array
     {
         $condiciones = ['c.tbcomponentevendedorid = ?'];
@@ -95,7 +95,6 @@ class ComponenteRepositorio
         );
     }
 
-    /** @return array{total: int, valor: float, bajos: int, agotados: int} */
     public function resumen(int $idVendedor): array
     {
         $consulta = $this->conexion->prepare(
@@ -193,13 +192,18 @@ class ComponenteRepositorio
                 UsuarioRepositorio::limpiarEspacios($componente->getNombre()),
                 $componente->getFoto(),
                 $componente->getUnidad(),
-                $componente->getExistencia(),
+                0,
                 $componente->getCostoUnitario(),
                 $componente->getExistenciaMinima(),
                 $componente->getActivo() ? 1 : 0,
             ]);
 
             $this->guardarValores($idComponente, $componente->getValores(), array_keys($componente->getValores()));
+            if ($componente->getExistencia() > 0) {
+                (new InventarioRepositorio())->mover((int) $componente->getIdVendedor(), MovimientoInventario::COMPONENTE, $idComponente,
+                    MovimientoInventario::ENTRADA, $componente->getExistencia(), MovimientoInventario::MOTIVO_INICIAL, null, null,
+                    $componente->getCostoUnitario());
+            }
 
             if ($transaccionPropia) {
                 BaseDatos::confirmarTransaccion();
@@ -216,7 +220,6 @@ class ComponenteRepositorio
         return $idComponente;
     }
 
-    /** @param int[] $idsAtributos */
     public function actualizar(Componente $componente, array $idsAtributos): void
     {
         $transaccionPropia = BaseDatos::iniciarTransaccion();
@@ -256,7 +259,6 @@ class ComponenteRepositorio
         $consulta->execute([$activo ? 1 : 0, $idComponente, $idVendedor]);
     }
 
-    /** @return Componente[] */
     public function listarActivos(int $idVendedor): array
     {
         $consulta = $this->conexion->prepare(
@@ -271,34 +273,6 @@ class ComponenteRepositorio
         return array_map(fn(array $fila): Componente => $this->crearDesdeFila($fila, []), $consulta->fetchAll());
     }
 
-    /** @return array{existencia: float, costo: float, nombre: string}|null */
-    public function bloquearExistencia(int $idComponente, int $idVendedor): ?array
-    {
-        $consulta = $this->conexion->prepare(
-            'SELECT tbcomponenteexistencia, tbcomponentecostounitario, tbcomponentenombre, tbcomponenteactivo FROM tbcomponente
-             WHERE tbcomponenteid = ? AND tbcomponentevendedorid = ? FOR UPDATE'
-        );
-        $consulta->execute([$idComponente, $idVendedor]);
-        $fila = $consulta->fetch();
-
-        return $fila ? [
-            'existencia' => (float) $fila['tbcomponenteexistencia'],
-            'costo' => (float) $fila['tbcomponentecostounitario'],
-            'nombre' => (string) $fila['tbcomponentenombre'],
-            'activo' => (bool) $fila['tbcomponenteactivo'],
-        ] : null;
-    }
-
-    public function actualizarExistencia(int $idComponente, int $idVendedor, float $existencia, float $costoUnitario): void
-    {
-        $consulta = $this->conexion->prepare(
-            'UPDATE tbcomponente SET tbcomponenteexistencia = ?, tbcomponentecostounitario = ?
-             WHERE tbcomponenteid = ? AND tbcomponentevendedorid = ?'
-        );
-        $consulta->execute([$existencia, $costoUnitario, $idComponente, $idVendedor]);
-    }
-
-    /** @param array<int, string> $valores  @param int[] $idsAtributos */
     private function guardarValores(int $idComponente, array $valores, array $idsAtributos): void
     {
         if ($idsAtributos !== []) {
@@ -323,7 +297,6 @@ class ComponenteRepositorio
         }
     }
 
-    /** @param int[] $idsComponente  @return array<int, array<int, string>> */
     private function listarValores(array $idsComponente): array
     {
         if ($idsComponente === []) {

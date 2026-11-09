@@ -23,7 +23,6 @@ class UnidadMedida
         ],
     ];
 
-    /** @return array<string, array{nombre: string, plural: string, abreviatura: string, costo: string, ejemplo: string, ayuda: string}> */
     public static function todas(): array
     {
         return self::UNIDADES;

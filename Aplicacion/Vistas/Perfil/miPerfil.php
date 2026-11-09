@@ -1,12 +1,4 @@
 <?php
-    /**
- * @var \Aplicacion\Modelos\Usuario $usuario
- * @var string $rol
- * @var bool $tieneIdentificacion
- * @var array $datos
- * @var array $errores
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\SubidaArchivo;

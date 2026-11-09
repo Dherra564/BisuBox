@@ -1,17 +1,12 @@
 <?php
-/**
-* @var array $datos
- * @var array $errores
- * @var \Aplicacion\Modelos\Proveedor[] $proveedores
- * @var \Aplicacion\Modelos\Componente[] $componentes
- * @var \Aplicacion\Modelos\TipoComponente[] $tipos
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\ClaseDato;
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\DatosComponente;
+use Aplicacion\Modelos\CompraProveedor;
 use Aplicacion\Nucleo\DatosCompraProveedor;
+use Aplicacion\Nucleo\DatosVenta;
+use Aplicacion\Nucleo\MetodoPago;
 use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\UnidadMedida;
 
@@ -150,6 +145,14 @@ $plantillaVacia = ['componente' => '', 'tipo' => '', 'nombre' => '', 'unidad' =>
 $infoVacia = ['nombre' => '', 'detalle' => '', 'unidad' => UnidadMedida::UNIDAD, 'existencia' => 0.0, 'nuevo' => false, 'atributos' => []];
 $enCompra = array_map(fn(array $linea): string => $linea['componente'], $datos['lineas']);
 $abrirNuevo = $componentes === [];
+$esCredito = $datos['condicion'] === CompraProveedor::CREDITO;
+$lineaElegida = ctype_digit($datos['linea']) && isset($lineas[(int) $datos['linea']]) ? (int) $datos['linea'] : null;
+$opcionProveedor = fn($proveedor): string => '<option value="' . $proveedor->getIdProveedor() . '"'
+    . ' data-lineas="' . implode(',', $lineasProveedor[(int) $proveedor->getIdProveedor()] ?? []) . '"'
+    . ((string) $proveedor->getIdProveedor() === $datos['proveedor'] ? ' selected' : '') . '>'
+    . htmlspecialchars((string) $proveedor->getNombre()) . '</option>';
+$deLaLinea = array_filter($proveedores, fn($proveedor): bool =>
+    $lineaElegida !== null && in_array($lineaElegida, $lineasProveedor[(int) $proveedor->getIdProveedor()] ?? [], true));
 ?>
 
 <?php if ($errores !== []): ?>
@@ -161,7 +164,7 @@ $abrirNuevo = $componentes === [];
 
 <form method="post" action="<?= $urlBase ?>/compras-proveedor/nueva" novalidate
     class="validarFormulario formularioCompra" data-maximo-lineas="<?= DatosCompraProveedor::MAXIMO_LINEAS ?>"
-    data-confirmar="Al registrar la compra se suma al inventario lo que compró. Si después encuentra un error, puede anularla."
+    data-confirmar="¿Registrar la compra? Si marcó que ya la recibió, se suma al inventario. Si después encuentra un error, puede anularla."
     data-titulo="Registrar compra" data-boton="Registrar compra">
     <?= Csrf::campo() ?>
 
@@ -171,17 +174,44 @@ $abrirNuevo = $componentes === [];
                 <span class="pasoNumero" aria-hidden="true">1</span>
                 <h2>Datos de la compra</h2>
             </div>
+            <?php if ($lineas !== []): ?>
+                <div class="filaCampos">
+                    <div class="campo">
+                        <label for="linea">¿De qué línea es la compra? <span class="textoOpcional">(opcional)</span></label>
+                        <select id="linea" name="linea" data-linea-compra>
+                            <option value="">Cualquier línea</option>
+                            <?php foreach ($lineas as $linea): ?>
+                                <option value="<?= $linea->getIdLinea() ?>" <?= $lineaElegida === $linea->getIdLinea() ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($linea->getNombre()) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <p class="textoAyuda">Le mostramos primero los proveedores que venden esa línea.</p>
+                    </div>
+                </div>
+            <?php endif; ?>
             <div class="filaCampos filaTres">
                 <div class="<?= $claseCampo('proveedor') ?>">
                     <label for="proveedor">Proveedor <span class="obligatorio">*</span></label>
-                    <select id="proveedor" name="proveedor" required
+                    <select id="proveedor" name="proveedor" required data-proveedor-compra
                         data-mensaje-requerido="Escoja a qué proveedor le compró">
                         <option value="">Escoja el proveedor</option>
-                        <?php foreach ($proveedores as $proveedor): ?>
-                            <option value="<?= $proveedor->getIdProveedor() ?>" <?= (string) $proveedor->getIdProveedor() === $datos['proveedor'] ? 'selected' : '' ?>>
-                                <?= htmlspecialchars((string) $proveedor->getNombre()) ?>
-                            </option>
-                        <?php endforeach; ?>
+                        <?php if ($deLaLinea !== []): ?>
+                            <optgroup label="Venden esta línea">
+                                <?php foreach ($deLaLinea as $proveedor): ?>
+                                    <?= $opcionProveedor($proveedor) ?>
+                                <?php endforeach; ?>
+                            </optgroup>
+                            <optgroup label="Otros proveedores">
+                                <?php foreach (array_diff_key($proveedores, $deLaLinea) as $proveedor): ?>
+                                    <?= $opcionProveedor($proveedor) ?>
+                                <?php endforeach; ?>
+                            </optgroup>
+                        <?php else: ?>
+                            <?php foreach ($proveedores as $proveedor): ?>
+                                <?= $opcionProveedor($proveedor) ?>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </select>
                     <?= $mensajeError('proveedor') ?>
                 </div>
@@ -392,6 +422,54 @@ $abrirNuevo = $componentes === [];
                     <?= $filaLinea((string) $clave, $linea, $infoLinea($linea)) ?>
                 <?php endforeach; ?>
             </div>
+        </section>
+
+        <section class="formularioSeccion pasoCompra">
+            <div class="pasoEncabezado">
+                <span class="pasoNumero" aria-hidden="true">4</span>
+                <h2>Pago y entrega</h2>
+            </div>
+            <div class="filaCampos filaTres">
+                <fieldset class="<?= $claseCampo('condicion') ?> opcionesUnidad">
+                    <legend class="etiquetaCampo">¿Cómo la pagó? <span class="obligatorio">*</span></legend>
+                    <div class="opcionesUnidadLista">
+                        <label class="opcionUnidad">
+                            <input type="radio" name="condicion" value="<?= CompraProveedor::CONTADO ?>" required data-condicion-compra
+                                data-mensaje-requerido="<?= DatosCompraProveedor::MENSAJE_CONDICION ?>" <?= $esCredito ? '' : 'checked' ?>>
+                            De contado
+                        </label>
+                        <label class="opcionUnidad">
+                            <input type="radio" name="condicion" value="<?= CompraProveedor::CREDITO ?>" required data-condicion-compra
+                                data-mensaje-requerido="<?= DatosCompraProveedor::MENSAJE_CONDICION ?>" <?= $esCredito ? 'checked' : '' ?>>
+                            A crédito
+                        </label>
+                    </div>
+                    <?= $mensajeError('condicion') ?>
+                </fieldset>
+                <div class="<?= $claseCampo('metodoPago') ?>" data-solo-contado <?= $esCredito ? 'hidden' : '' ?>>
+                    <label for="metodoPago">¿Con qué pagó? <span class="obligatorio">*</span></label>
+                    <select id="metodoPago" name="metodoPago" required data-mensaje-requerido="<?= DatosVenta::MENSAJE_METODO ?>">
+                        <option value="">Escoja una opción</option>
+                        <?php foreach (MetodoPago::todos() as $codigo => $nombre): ?>
+                            <option value="<?= $codigo ?>" <?= $datos['metodoPago'] === $codigo ? 'selected' : '' ?>><?= htmlspecialchars($nombre) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <?= $mensajeError('metodoPago') ?>
+                </div>
+                <div class="<?= $claseCampo('vencimiento') ?>" data-solo-credito <?= $esCredito ? '' : 'hidden' ?>>
+                    <label for="vencimiento">Fecha límite para pagar <span class="obligatorio">*</span></label>
+                    <input type="date" id="vencimiento" name="vencimiento" required
+                        data-mensaje-requerido="Escoja en el calendario la fecha límite para pagar"
+                        value="<?= htmlspecialchars($datos['vencimiento'] !== '' ? $datos['vencimiento'] : DatosCompraProveedor::vencimientoSugerido()) ?>">
+                    <p class="textoAyuda">Hasta 6 meses después de la compra. Queda en Compras por pagar.</p>
+                    <?= $mensajeError('vencimiento') ?>
+                </div>
+            </div>
+            <div class="campoCasilla">
+                <input type="checkbox" id="recibida" name="recibida" value="1" <?= $datos['recibida'] === '1' ? 'checked' : '' ?>>
+                <label for="recibida">Ya la recibí: sumar al inventario ahora</label>
+            </div>
+            <p class="textoAyuda">Si todavía no le llega, desmarque la casilla. La compra queda por recibir y la suma al inventario cuando llegue.</p>
         </section>
 
         <section class="resumenCompra" aria-label="Resumen de la compra">

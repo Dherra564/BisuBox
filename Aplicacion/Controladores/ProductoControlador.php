@@ -12,6 +12,7 @@ use Aplicacion\Nucleo\SubidaArchivo;
 use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Nucleo\Validador;
 use Aplicacion\Repositorios\ComponenteRepositorio;
+use Aplicacion\Repositorios\LineaProductoRepositorio;
 use Aplicacion\Repositorios\ProduccionRepositorio;
 use Aplicacion\Repositorios\ProductoRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
@@ -139,6 +140,9 @@ class ProductoControlador
             'producciones' => $this->produccionRepositorio->listarPorProducto((int) $producto->getIdProducto(), $this->idVendedor),
             'alcanzaPara' => $this->alcanzaPara($producto, $existencias),
             'desactivados' => $desactivados,
+            'lineaProducto' => $producto->getIdLinea() !== null
+                ? (new LineaProductoRepositorio())->buscarPorId($producto->getIdLinea(), $this->idVendedor)
+                : null,
         ]);
     }
 
@@ -169,6 +173,7 @@ class ProductoControlador
         $producto->setNombre($datos['nombre']);
         $producto->setDescripcion($datos['descripcion'] !== '' ? $datos['descripcion'] : null);
         $producto->setPrecioVenta((float) Numero::leer($datos['precioVenta']));
+        $producto->setIdLinea($datos['linea'] !== '' ? (int) $datos['linea'] : null);
         if ($foto !== null) {
             $producto->setFoto($foto);
         } elseif (($_POST['quitarFoto'] ?? '') === '1') {
@@ -333,12 +338,21 @@ class ProductoControlador
 
     private function mostrarFormulario(array $datos, array $errores, array $componentes): void
     {
-        $this->mostrarVista('Producto/formulario', ['datos' => $datos, 'errores' => $errores, 'componentes' => $componentes]);
+        $this->mostrarVista('Producto/formulario', [
+            'datos' => $datos,
+            'errores' => $errores,
+            'componentes' => $componentes,
+            'lineasProducto' => (new LineaProductoRepositorio())->listar($this->idVendedor, true),
+        ]);
     }
 
     private function mostrarEdicion(array $datos, array $errores, Producto $producto): void
     {
-        $this->mostrarVista('Producto/editar', ['datos' => $datos, 'errores' => $errores, 'producto' => $producto]);
+        $lineas = array_filter(
+            (new LineaProductoRepositorio())->listar($this->idVendedor),
+            fn($linea): bool => $linea->getActivo() || $linea->getIdLinea() === $producto->getIdLinea()
+        );
+        $this->mostrarVista('Producto/editar', ['datos' => $datos, 'errores' => $errores, 'producto' => $producto, 'lineasProducto' => $lineas]);
     }
 
     private function verificarCsrf(string $rutaSiFalla): void

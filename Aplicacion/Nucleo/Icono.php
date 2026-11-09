@@ -19,6 +19,7 @@ class Icono
         'inventario' => '<path d="M3 7l9-4 9 4-9 4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/>',
         'proveedores' => '<path d="M2 6h12v10H2z"/><path d="M14 9h4l4 4v3h-8"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>',
         'ventas' => '<path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/>',
+        'pagar' => '<path d="M3 6h18v12H3z"/><path d="M3 10h18"/><path d="M7 15h4"/>',
         'personalizar' => '<circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="4.5" r="1.8"/><circle cx="18.5" cy="8.2" r="1.8"/><circle cx="18.5" cy="15.8" r="1.8"/><circle cx="12" cy="19.5" r="1.8"/><circle cx="5.5" cy="15.8" r="1.8"/><circle cx="5.5" cy="8.2" r="1.8"/>',
         'panel' => '<path d="M4 4h7v7H4z"/><path d="M13 4h7v7h-7z"/><path d="M4 13h7v7H4z"/><path d="M13 13h7v7h-7z"/>',
         'ingresar' => '<path d="M14 4h5v16h-5"/><path d="M3 12h11"/><path d="M10 8l4 4-4 4"/>',

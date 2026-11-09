@@ -36,7 +36,7 @@ class Navegacion
 
         [$unidades, $total] = $puedeComprar ? self::resumenCarrito($tienda) : [0, 0.0];
 
-        $numeros = ['pedidos' => 0, 'productos' => 0, 'inventario' => 0];
+        $numeros = ['pedidos' => 0, 'productos' => 0, 'inventario' => 0, 'comprasVencidas' => 0];
         if ($esDuenio) {
             try {
                 $numeros = AvisosTienda::numeros((int) $propia->getIdVendedor());
@@ -195,6 +195,7 @@ class Navegacion
             $opcion('inventario', 'Inventario', '/inventario', 'inventario', $numeros['inventario']),
             $opcion('personalizador', 'Personalizador', '/personalizador', 'personalizar'),
             $opcion('proveedores', 'Proveedores', '/proveedores', 'proveedores'),
+            $opcion('comprasPorPagar', 'Compras por pagar', '/compras-por-pagar', 'pagar', $numeros['comprasVencidas']),
             $opcion('tienda', 'Mi tienda', '/tienda', 'tienda'),
             $separador('Mi cuenta'),
             $opcion('misPedidos', 'Mis compras', '/mis-pedidos', 'bolsa', $porDecidir),

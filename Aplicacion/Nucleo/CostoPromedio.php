@@ -4,7 +4,6 @@ namespace Aplicacion\Nucleo;
 
 class CostoPromedio
 {
-    /** @return array{existencia: float, costo: float} */
     public static function sumar(float $existencia, float $costo, float $cantidad, float $costoCompra): array
     {
         $existencia = max(0, $existencia);
@@ -16,7 +15,6 @@ class CostoPromedio
         return ['existencia' => $nuevaExistencia, 'costo' => round($nuevoCosto, 4)];
     }
 
-    /** @return array{existencia: float, costo: float} */
     public static function restar(float $existencia, float $costo, float $cantidad, float $costoCompra): array
     {
         $nuevaExistencia = round($existencia - $cantidad, 2);
@@ -28,7 +26,6 @@ class CostoPromedio
         return ['existencia' => $nuevaExistencia, 'costo' => round(max(0, $nuevoCosto), 4)];
     }
 
-    /** @param array<int, array{cantidad: float, subtotal: float}> $lineas  @return array<int, float> */
     public static function repartirEnvio(array $lineas, float $costoEnvio): array
     {
         $totalSubtotales = array_sum(array_column($lineas, 'subtotal'));

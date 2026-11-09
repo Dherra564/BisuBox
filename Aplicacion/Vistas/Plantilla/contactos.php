@@ -1,10 +1,4 @@
 <?php
-/**
- * @var array $contactos
- * @var array $errores
- * @var array|null $contactosOriginales
- * @var bool|null $contactosSoloLectura
- */
 
 use Aplicacion\Nucleo\TipoContacto;
 use Aplicacion\Nucleo\Validador;

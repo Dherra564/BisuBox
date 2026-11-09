@@ -158,6 +158,11 @@ CREATE TABLE `tbcompraproveedor` (
     `tbcompraproveedorcostoenvio` decimal(12, 2) DEFAULT NULL,
     `tbcompraproveedortotal` decimal(12, 2) DEFAULT NULL,
     `tbcompraproveedorestado` varchar(20) DEFAULT NULL,
+    `tbcompraproveedorrecepcionfecha` datetime DEFAULT NULL,
+    `tbcompraproveedorcondicion` varchar(20) DEFAULT NULL,
+    `tbcompraproveedorvencimiento` date DEFAULT NULL,
+    `tbcompraproveedorsaldo` decimal(12, 2) DEFAULT NULL,
+    `tbcompraproveedorestadopago` varchar(20) DEFAULT NULL,
     `tbcompraproveedorregistrofecha` datetime DEFAULT NULL,
     PRIMARY KEY (`tbcompraproveedorid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
@@ -187,6 +192,7 @@ CREATE TABLE `tbproducto` (
     `tbproductocostototal` decimal(12, 2) DEFAULT NULL,
     `tbproductoprecioventa` decimal(12, 2) DEFAULT NULL,
     `tbproductoexistencia` int(11) DEFAULT NULL,
+    `tbproductolineaid` int(11) DEFAULT NULL,
     `tbproductoregistrofecha` datetime DEFAULT NULL,
     `tbproductoactivo` tinyint(4) DEFAULT NULL,
     PRIMARY KEY (`tbproductoid`)
@@ -426,6 +432,50 @@ CREATE TABLE `tbabonoventa` (
     PRIMARY KEY (`tbabonoventaid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
+CREATE TABLE `tbabonocompra` (
+    `tbabonocompraid` int(11) NOT NULL,
+    `tbabonocompracompraid` int(11) DEFAULT NULL,
+    `tbabonocompramonto` decimal(12, 2) DEFAULT NULL,
+    `tbabonocomprametodopago` varchar(20) DEFAULT NULL,
+    `tbabonocompranota` varchar(300) DEFAULT NULL,
+    `tbabonocomprafecha` datetime DEFAULT NULL,
+    PRIMARY KEY (`tbabonocompraid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE `tbmovimientoinventario` (
+    `tbmovimientoinventarioid` int(11) NOT NULL,
+    `tbmovimientoinventariovendedorid` int(11) DEFAULT NULL,
+    `tbmovimientoinventarioarticulotipo` varchar(20) DEFAULT NULL,
+    `tbmovimientoinventarioarticuloid` int(11) DEFAULT NULL,
+    `tbmovimientoinventariotipo` varchar(20) DEFAULT NULL,
+    `tbmovimientoinventariomotivo` varchar(50) DEFAULT NULL,
+    `tbmovimientoinventarionota` varchar(300) DEFAULT NULL,
+    `tbmovimientoinventariocantidad` decimal(12, 2) DEFAULT NULL,
+    `tbmovimientoinventarioexistenciaanterior` decimal(12, 2) DEFAULT NULL,
+    `tbmovimientoinventarioexistencianueva` decimal(12, 2) DEFAULT NULL,
+    `tbmovimientoinventarioreferenciatipo` varchar(20) DEFAULT NULL,
+    `tbmovimientoinventarioreferenciaid` int(11) DEFAULT NULL,
+    `tbmovimientoinventariousuarioid` int(11) DEFAULT NULL,
+    `tbmovimientoinventariofecha` datetime DEFAULT NULL,
+    PRIMARY KEY (`tbmovimientoinventarioid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE `tblineaproducto` (
+    `tblineaproductoid` int(11) NOT NULL,
+    `tblineaproductovendedorid` int(11) DEFAULT NULL,
+    `tblineaproductonombre` varchar(50) DEFAULT NULL,
+    `tblineaproductodescripcion` varchar(300) DEFAULT NULL,
+    `tblineaproductoactivo` tinyint(4) DEFAULT NULL,
+    PRIMARY KEY (`tblineaproductoid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE `tbproveedorlinea` (
+    `tbproveedorlineaid` int(11) NOT NULL,
+    `tbproveedorlineaproveedorid` int(11) DEFAULT NULL,
+    `tbproveedorlinealineaid` int(11) DEFAULT NULL,
+    PRIMARY KEY (`tbproveedorlineaid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
 INSERT INTO `tbusuario` (`tbusuarioid`, `tbusuarioidentificaciontipo`, `tbusuarioidentificacionnumero`, `tbusuarionombrecompleto`, `tbusuarioperfilimagen`, `tbusuariocorreo`, `tbusuariotelefono`, `tbusuariocontrasena`, `tbusuariorol`, `tbusuarioregistrofecha`, `tbusuarioactivo`)
 VALUES
 (1, 'Cedula', '200000002', 'Vendedor de Prueba', NULL, 'vendedor-bisubox@gmail.com', '77777777', '$2y$12$cy7xzNTAn0Gl/Ymia8TU1evpuuyjzp4UfwlBRIY0ocJvWYYVhAdzm', 'Vendedor', '2026-10-01 00:00:00', 1),
@@ -473,13 +523,13 @@ VALUES
 (201, 2, 201, 'Cuarzo rosa 10 mm', NULL, 'Unidad', 60.00, 350.0000, 10.00, 1),
 (202, 2, 201, 'Hilo encerado café', NULL, 'Metro', 20.00, 300.0000, 3.00, 1);
 
-INSERT INTO `tbproducto` (`tbproductoid`, `tbproductovendedorid`, `tbproductonombre`, `tbproductodescripcion`, `tbproductofoto`, `tbproductominutos`, `tbproductotarifahora`, `tbproductocostocomponentes`, `tbproductocostomanoobra`, `tbproductocostoextras`, `tbproductocostototal`, `tbproductoprecioventa`, `tbproductoexistencia`, `tbproductoregistrofecha`, `tbproductoactivo`)
+INSERT INTO `tbproducto` (`tbproductoid`, `tbproductovendedorid`, `tbproductonombre`, `tbproductodescripcion`, `tbproductofoto`, `tbproductominutos`, `tbproductotarifahora`, `tbproductocostocomponentes`, `tbproductocostomanoobra`, `tbproductocostoextras`, `tbproductocostototal`, `tbproductoprecioventa`, `tbproductoexistencia`, `tbproductolineaid`, `tbproductoregistrofecha`, `tbproductoactivo`)
 VALUES
-(1, 1, 'Collar de perlas clásico', 'Collar de 45 cm con perlas blancas y broche de langosta', NULL, 60, 2000.00, 6840.00, 2000.00, 0.00, 8840.00, 13500.00, 3, '2026-10-05 10:00:00', 1),
-(2, 1, 'Pulsera rosa de cristal', 'Pulsera elástica con cuentas de cristal rosa', NULL, 30, 2000.00, 2762.50, 1000.00, 300.00, 4062.50, 6500.00, 5, '2026-10-05 10:10:00', 1),
-(3, 1, 'Collar corazón dorado', 'Cadena dorada con dije de corazón', NULL, 20, 2000.00, 1370.00, 666.67, 0.00, 2036.67, 4500.00, 0, '2026-10-05 10:20:00', 1),
-(4, 1, 'Pulsera de perlas', 'Pulsera elástica de perlas blancas', NULL, 25, 2000.00, 3350.00, 833.33, 0.00, 4183.33, 7000.00, 4, '2026-10-05 10:30:00', 1),
-(201, 2, 'Pulsera de cuarzo rosa', 'Pulsera ajustable de cuarzo rosa con hilo encerado', NULL, 30, 1800.00, 5690.00, 900.00, 0.00, 6590.00, 9500.00, 2, '2026-10-06 09:00:00', 1);
+(1, 1, 'Collar de perlas clásico', 'Collar de 45 cm con perlas blancas y broche de langosta', NULL, 60, 2000.00, 6840.00, 2000.00, 0.00, 8840.00, 13500.00, 3, 1, '2026-10-05 10:00:00', 1),
+(2, 1, 'Pulsera rosa de cristal', 'Pulsera elástica con cuentas de cristal rosa', NULL, 30, 2000.00, 2762.50, 1000.00, 300.00, 4062.50, 6500.00, 5, 3, '2026-10-05 10:10:00', 1),
+(3, 1, 'Collar corazón dorado', 'Cadena dorada con dije de corazón', NULL, 20, 2000.00, 1370.00, 666.67, 0.00, 2036.67, 4500.00, 0, 2, '2026-10-05 10:20:00', 1),
+(4, 1, 'Pulsera de perlas', 'Pulsera elástica de perlas blancas', NULL, 25, 2000.00, 3350.00, 833.33, 0.00, 4183.33, 7000.00, 4, 3, '2026-10-05 10:30:00', 1),
+(201, 2, 'Pulsera de cuarzo rosa', 'Pulsera ajustable de cuarzo rosa con hilo encerado', NULL, 30, 1800.00, 5690.00, 900.00, 0.00, 6590.00, 9500.00, 2, 4, '2026-10-06 09:00:00', 1);
 
 INSERT INTO `tbproductocomponente` (`tbproductocomponenteid`, `tbproductocomponenteproductoid`, `tbproductocomponentecomponenteid`, `tbproductocomponentecantidad`, `tbproductocomponentecostounitario`, `tbproductocomponentesubtotal`)
 VALUES
@@ -539,3 +589,64 @@ INSERT INTO `tbabonoventa` (`tbabonoventaid`, `tbabonoventaventaid`, `tbabonoven
 VALUES
 (1, 1, 3000.00, 'Efectivo', 'Adelanto al recoger', '2026-11-05 16:00:00'),
 (2, 2, 13500.00, 'Transferencia', 'Pagado al entregar el pedido', '2026-11-02 11:30:00');
+
+INSERT INTO `tblineaproducto` (`tblineaproductoid`, `tblineaproductovendedorid`, `tblineaproductonombre`, `tblineaproductodescripcion`, `tblineaproductoactivo`)
+VALUES
+(1, 1, 'Perlas', 'Perlas de vidrio y collares de perlas', 1),
+(2, 1, 'Cadenas y herrajes', 'Cadenas, broches, argollas y dijes', 1),
+(3, 1, 'Pulseras', 'Pulseras elásticas y de cuentas', 1),
+(4, 2, 'Cuarzos', 'Piedras naturales y pulseras de cuarzo', 1);
+
+INSERT INTO `tbproveedorlinea` (`tbproveedorlineaid`, `tbproveedorlineaproveedorid`, `tbproveedorlinealineaid`)
+VALUES
+(1, 1, 1),
+(2, 2, 2),
+(3, 2, 3),
+(4, 3, 4);
+
+INSERT INTO `tbcompraproveedor` (`tbcompraproveedorid`, `tbcompraproveedorvendedorid`, `tbcompraproveedorproveedorid`, `tbcompraproveedorfecha`, `tbcompraproveedorsubtotal`, `tbcompraproveedorcostoenvio`, `tbcompraproveedortotal`, `tbcompraproveedorestado`, `tbcompraproveedorrecepcionfecha`, `tbcompraproveedorcondicion`, `tbcompraproveedorvencimiento`, `tbcompraproveedorsaldo`, `tbcompraproveedorestadopago`, `tbcompraproveedorregistrofecha`)
+VALUES
+(1, 1, 1, '2026-10-03', 27000.00, 0.00, 27000.00, 'Recibida', '2026-10-03 10:00:00', 'Contado', NULL, 0.00, 'Pagada', '2026-10-03 10:00:00'),
+(2, 1, 2, '2026-10-10', 16500.00, 0.00, 16500.00, 'Recibida', '2026-10-10 15:00:00', 'Crédito', '2026-10-31', 10000.00, 'Por pagar', '2026-10-10 15:00:00'),
+(3, 1, 1, '2026-11-02', 9000.00, 1000.00, 10000.00, 'Por recibir', NULL, 'Crédito', '2026-12-02', 10000.00, 'Por pagar', '2026-11-02 09:00:00'),
+(4, 2, 3, '2026-10-04', 10500.00, 0.00, 10500.00, 'Recibida', '2026-10-04 11:00:00', 'Contado', NULL, 0.00, 'Pagada', '2026-10-04 11:00:00');
+
+INSERT INTO `tbcompraproveedordetalle` (`tbcompraproveedordetalleid`, `tbcompraproveedordetallecompraproveedorid`, `tbcompraproveedordetallecomponenteid`, `tbcompraproveedordetallecantidad`, `tbcompraproveedordetallecostounitario`, `tbcompraproveedordetallesubtotal`, `tbcompraproveedordetallecostofinal`)
+VALUES
+(1, 1, 101, 100.00, 150.0000, 15000.00, 150.0000),
+(2, 1, 103, 40.00, 300.0000, 12000.00, 300.0000),
+(3, 2, 102, 10.00, 1200.0000, 12000.00, 1200.0000),
+(4, 2, 106, 10.00, 450.0000, 4500.00, 450.0000),
+(5, 3, 105, 100.00, 90.0000, 9000.00, 100.0000),
+(6, 4, 201, 30.00, 350.0000, 10500.00, 350.0000);
+
+INSERT INTO `tbabonocompra` (`tbabonocompraid`, `tbabonocompracompraid`, `tbabonocompramonto`, `tbabonocomprametodopago`, `tbabonocompranota`, `tbabonocomprafecha`)
+VALUES
+(1, 1, 27000.00, 'Efectivo', 'Pagada al registrar la compra', '2026-10-03 10:00:00'),
+(2, 2, 6500.00, 'Transferencia', 'Primer abono', '2026-10-20 09:30:00'),
+(3, 4, 10500.00, 'SinpeMovil', 'Pagada al registrar la compra', '2026-10-04 11:00:00');
+
+INSERT INTO `tbmovimientoinventario` (`tbmovimientoinventarioid`, `tbmovimientoinventariovendedorid`, `tbmovimientoinventarioarticulotipo`, `tbmovimientoinventarioarticuloid`, `tbmovimientoinventariotipo`, `tbmovimientoinventariomotivo`, `tbmovimientoinventarionota`, `tbmovimientoinventariocantidad`, `tbmovimientoinventarioexistenciaanterior`, `tbmovimientoinventarioexistencianueva`, `tbmovimientoinventarioreferenciatipo`, `tbmovimientoinventarioreferenciaid`, `tbmovimientoinventariousuarioid`, `tbmovimientoinventariofecha`)
+VALUES
+(1, 1, 'Componente', 101, 'Entrada', 'Existencia inicial', NULL, 100.00, 0.00, 100.00, NULL, NULL, 1, '2026-10-01 08:00:00'),
+(2, 1, 'Componente', 102, 'Entrada', 'Existencia inicial', NULL, 20.00, 0.00, 20.00, NULL, NULL, 1, '2026-10-01 08:00:00'),
+(3, 1, 'Componente', 103, 'Entrada', 'Existencia inicial', NULL, 40.00, 0.00, 40.00, NULL, NULL, 1, '2026-10-01 08:00:00'),
+(4, 1, 'Componente', 104, 'Entrada', 'Existencia inicial', NULL, 50.00, 0.00, 50.00, NULL, NULL, 1, '2026-10-01 08:00:00'),
+(5, 1, 'Componente', 105, 'Entrada', 'Existencia inicial', NULL, 150.00, 0.00, 150.00, NULL, NULL, 1, '2026-10-01 08:00:00'),
+(6, 1, 'Componente', 106, 'Entrada', 'Existencia inicial', NULL, 2.00, 0.00, 2.00, NULL, NULL, 1, '2026-10-01 08:00:00'),
+(7, 1, 'Componente', 107, 'Entrada', 'Existencia inicial', NULL, 10.00, 0.00, 10.00, NULL, NULL, 1, '2026-10-01 08:00:00'),
+(8, 1, 'Producto', 1, 'Entrada', 'Existencia inicial', NULL, 4.00, 0.00, 4.00, NULL, NULL, 1, '2026-10-05 10:00:00'),
+(9, 1, 'Producto', 2, 'Entrada', 'Existencia inicial', NULL, 7.00, 0.00, 7.00, NULL, NULL, 1, '2026-10-05 10:10:00'),
+(10, 1, 'Producto', 4, 'Entrada', 'Existencia inicial', NULL, 5.00, 0.00, 5.00, NULL, NULL, 1, '2026-10-05 10:30:00'),
+(11, 2, 'Componente', 201, 'Entrada', 'Existencia inicial', NULL, 30.00, 0.00, 30.00, NULL, NULL, 3, '2026-10-02 08:00:00'),
+(12, 2, 'Componente', 202, 'Entrada', 'Existencia inicial', NULL, 20.00, 0.00, 20.00, NULL, NULL, 3, '2026-10-02 08:00:00'),
+(13, 2, 'Producto', 201, 'Entrada', 'Existencia inicial', NULL, 2.00, 0.00, 2.00, NULL, NULL, 3, '2026-10-06 09:00:00'),
+(14, 1, 'Componente', 101, 'Entrada', 'Compra recibida', NULL, 100.00, 100.00, 200.00, 'Compra', 1, 1, '2026-10-03 10:00:00'),
+(15, 1, 'Componente', 103, 'Entrada', 'Compra recibida', NULL, 40.00, 40.00, 80.00, 'Compra', 1, 1, '2026-10-03 10:00:00'),
+(16, 2, 'Componente', 201, 'Entrada', 'Compra recibida', NULL, 30.00, 30.00, 60.00, 'Compra', 4, 3, '2026-10-04 11:00:00'),
+(17, 1, 'Componente', 102, 'Entrada', 'Compra recibida', NULL, 10.00, 20.00, 30.00, 'Compra', 2, 1, '2026-10-10 15:00:00'),
+(18, 1, 'Componente', 106, 'Entrada', 'Compra recibida', NULL, 10.00, 2.00, 12.00, 'Compra', 2, 1, '2026-10-10 15:00:00'),
+(19, 1, 'Componente', 107, 'Salida', 'Merma', 'Se quebraron al armar una pulsera', 2.00, 10.00, 8.00, 'Ajuste', NULL, 1, '2026-10-15 17:00:00'),
+(20, 1, 'Producto', 1, 'Salida', 'Pedido', NULL, 1.00, 4.00, 3.00, 'Pedido', 103, 2, '2026-11-01 10:00:00'),
+(21, 1, 'Producto', 2, 'Salida', 'Pedido', NULL, 2.00, 7.00, 5.00, 'Pedido', 102, 2, '2026-11-06 14:20:00'),
+(22, 1, 'Producto', 4, 'Salida', 'Pedido', NULL, 1.00, 5.00, 4.00, 'Pedido', 102, 2, '2026-11-06 14:20:00');

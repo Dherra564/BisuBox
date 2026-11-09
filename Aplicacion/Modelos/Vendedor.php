@@ -14,10 +14,8 @@ class Vendedor extends Usuario
     private ?string $tiendaLogo;
     private bool $tiendaActiva;
     private ?string $sinpe = null;
-    /** @var VendedorContacto[] */
     private array $contactos;
 
-    /** @param VendedorContacto[] $contactos */
     public function __construct(
         ?int $idUsuario = null,
         ?string $tipoIdentificacion = null,
@@ -90,7 +88,6 @@ class Vendedor extends Usuario
         return $this->tiendaActiva;
     }
 
-    /** @return VendedorContacto[] */
     public function getContactos(): array
     {
         return $this->contactos;
@@ -146,7 +143,6 @@ class Vendedor extends Usuario
         $this->tiendaActiva = $tiendaActiva;
     }
 
-    /** @param VendedorContacto[] $contactos */
     public function setContactos(array $contactos): void
     {
         $this->contactos = $contactos;

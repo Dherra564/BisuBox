@@ -1,11 +1,4 @@
 <?php
-/**
- * @var \Aplicacion\Modelos\TipoComponente|null $tipoComponente
- * @var array $datos
- * @var array $ocultos
- * @var array $errores
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\ClaseDato;
 use Aplicacion\Nucleo\Csrf;

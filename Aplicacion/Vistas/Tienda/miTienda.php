@@ -1,10 +1,4 @@
 <?php
-/**
- * @var \Aplicacion\Modelos\Vendedor $vendedor
- * @var array $datos
- * @var array $errores
- * @var string $urlBase
- */
 
     use Aplicacion\Nucleo\Csrf;
     use Aplicacion\Nucleo\DatosTienda;

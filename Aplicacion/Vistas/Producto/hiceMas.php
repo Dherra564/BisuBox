@@ -1,10 +1,4 @@
 <?php
-/**
- 
- * @var string $urlBase
- * @var string $volverHiceMas
- * @var array|null $hiceMasFallido
- */
 
 use Aplicacion\Nucleo\Csrf;
 ?>

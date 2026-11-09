@@ -1,15 +1,4 @@
 <?php
-/**
- * @var \Aplicacion\Modelos\Proveedor[] $proveedores
- * @var string $busqueda
- * @var string $estado
- * @var int $pagina
- * @var int $totalPaginas
- * @var int $total
- * @var int $porPagina
- * @var bool $hayProveedores
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\Csrf;
 
@@ -17,7 +6,11 @@ $titulo = 'Proveedores';
 $paginaActual = 'proveedores';
 require __DIR__ . '/../Plantilla/encabezado.php';
 
-$hayFiltros = $busqueda !== '' || $estado !== '';
+$hayFiltros = $busqueda !== '' || $estado !== '' || $idLinea !== null;
+$nombresLineas = fn(int $idProveedor): string => implode(', ', array_map(
+    fn(int $id): string => $lineas[$id]->getNombre(),
+    array_filter($lineasProveedor[$idProveedor] ?? [], fn(int $id): bool => isset($lineas[$id]))
+));
 
 $formatoTelefono = fn(?string $telefono): string => strlen((string) $telefono) === 8
     ? substr($telefono, 0, 4) . '-' . substr($telefono, 4)
@@ -39,6 +32,19 @@ $formatoTelefono = fn(?string $telefono): string => strlen((string) $telefono) =
                 <option value="0" <?= $estado === '0' ? 'selected' : '' ?>>Inactivos</option>
             </select>
         </div>
+        <?php if ($lineas !== []): ?>
+            <div class="campo">
+                <label for="linea">Línea</label>
+                <select id="linea" name="linea">
+                    <option value="">Todas</option>
+                    <?php foreach ($lineas as $linea): ?>
+                        <option value="<?= $linea->getIdLinea() ?>" <?= $idLinea === $linea->getIdLinea() ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($linea->getNombre()) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        <?php endif; ?>
         <div class="filtrosBotones">
             <button type="submit" class="boton">Buscar</button>
             <?php if ($hayFiltros): ?>
@@ -74,7 +80,15 @@ $formatoTelefono = fn(?string $telefono): string => strlen((string) $telefono) =
                     $estaActivo = $proveedor->getEstado();
                     ?>
                     <tr class="<?= $estaActivo ? '' : 'filaInactiva' ?>">
-                        <td data-etiqueta="Nombre"><strong><?= $nombre ?></strong></td>
+                        <td data-etiqueta="Nombre">
+                            <span>
+                                <strong><?= $nombre ?></strong>
+                                <?php $textoLineas = $nombresLineas((int) $proveedor->getIdProveedor()); ?>
+                                <?php if ($textoLineas !== ''): ?>
+                                    <br><span class="textoAyuda"><?= htmlspecialchars($textoLineas) ?></span>
+                                <?php endif; ?>
+                            </span>
+                        </td>
                         <td data-etiqueta="Contacto">
                             <span>
                                 <?= htmlspecialchars($formatoTelefono($proveedor->getTelefono())) ?>
@@ -116,7 +130,7 @@ $formatoTelefono = fn(?string $telefono): string => strlen((string) $telefono) =
 
     <?php
     $rutaPaginacion = '/proveedores';
-    $parametrosPaginacion = ['busqueda' => $busqueda, 'estado' => $estado];
+    $parametrosPaginacion = ['busqueda' => $busqueda, 'estado' => $estado, 'linea' => $idLinea];
     $nombreRegistros = 'proveedores';
     require __DIR__ . '/../Plantilla/paginacion.php';
     ?>
@@ -125,6 +139,8 @@ $formatoTelefono = fn(?string $telefono): string => strlen((string) $telefono) =
 <div class="grupoBotones accionesLista">
     <a href="<?= $urlBase ?>/proveedores/nuevo" class="boton">Nuevo proveedor</a>
     <a href="<?= $urlBase ?>/compras-proveedor" class="boton">Lista de compras</a>
+    <a href="<?= $urlBase ?>/compras-por-pagar" class="boton botonSecundario">Compras por pagar</a>
+    <a href="<?= $urlBase ?>/lineas" class="boton botonSecundario">Líneas de producto</a>
 </div>
 
 <?php require __DIR__ . '/../Plantilla/pie.php'; ?>

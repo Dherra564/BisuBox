@@ -23,15 +23,10 @@ class Producto
     private int $existencia;
     private bool $activo;
     private ?DateTime $fechaRegistro;
-    /** @var ProductoComponente[] */
     private array $componentes;
-    /** @var ProductoExtra[] */
     private array $extras;
+    private ?int $idLinea;
 
-    /**
-     * @param ProductoComponente[] $componentes
-     * @param ProductoExtra[] $extras
-     */
     public function __construct(
         ?int $idProducto,
         ?int $idVendedor,
@@ -49,7 +44,8 @@ class Producto
         bool $activo = true,
         ?DateTime $fechaRegistro = null,
         array $componentes = [],
-        array $extras = []
+        array $extras = [],
+        ?int $idLinea = null
     ) {
         $this->idProducto = $idProducto;
         $this->idVendedor = $idVendedor;
@@ -68,6 +64,7 @@ class Producto
         $this->fechaRegistro = $fechaRegistro;
         $this->componentes = $componentes;
         $this->extras = $extras;
+        $this->idLinea = $idLinea;
     }
 
     public function getIdProducto(): ?int
@@ -155,13 +152,11 @@ class Producto
         return $this->fechaRegistro;
     }
 
-    /** @return ProductoComponente[] */
     public function getComponentes(): array
     {
         return $this->componentes;
     }
 
-    /** @return ProductoExtra[] */
     public function getExtras(): array
     {
         return $this->extras;
@@ -195,5 +190,15 @@ class Producto
     public function setActivo(bool $activo): void
     {
         $this->activo = $activo;
+    }
+
+    public function getIdLinea(): ?int
+    {
+        return $this->idLinea;
+    }
+
+    public function setIdLinea(?int $idLinea): void
+    {
+        $this->idLinea = $idLinea;
     }
 }

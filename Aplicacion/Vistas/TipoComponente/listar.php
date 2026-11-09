@@ -1,9 +1,4 @@
 <?php
-/**
- * @var \Aplicacion\Modelos\TipoComponente[] $tiposComponente
- * @var array $sugeridos
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\ClaseDato;
 use Aplicacion\Nucleo\Csrf;

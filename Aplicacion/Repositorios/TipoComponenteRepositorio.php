@@ -18,7 +18,6 @@ class TipoComponenteRepositorio
         $this->atributoRepositorio = new TipoComponenteAtributoRepositorio();
     }
 
-    /** @return TipoComponente[] */
     public function listarPorVendedor(int $idVendedor, bool $soloActivos = false): array
     {
         $consulta = $this->conexion->prepare(
@@ -100,7 +99,6 @@ class TipoComponenteRepositorio
         return $idTipoComponente;
     }
 
-    /** @param TipoComponente[] $tiposComponente */
     public function insertarVarios(array $tiposComponente): void
     {
         $transaccionPropia = BaseDatos::iniciarTransaccion();

@@ -5,8 +5,6 @@ namespace Aplicacion\Nucleo;
 use Aplicacion\Modelos\CompraProveedor;
 use Aplicacion\Modelos\CompraProveedorDetalle;
 use Aplicacion\Modelos\Componente;
-use Aplicacion\Modelos\Proveedor;
-use Aplicacion\Modelos\TipoComponente;
 use Aplicacion\Repositorios\ComponenteRepositorio;
 use Aplicacion\Repositorios\UsuarioRepositorio;
 use DateTime;
@@ -17,6 +15,10 @@ class DatosCompraProveedor
     public const MAXIMO_LINEAS = 50;
     public const METROS = 'm';
     public const CENTIMETROS = 'cm';
+    public const DIAS_CREDITO = 30;
+    public const DIAS_MAXIMOS_CREDITO = 180;
+    public const MENSAJE_CONDICION = 'Indique si la pagó de contado o a crédito';
+    public const MENSAJE_VENCIMIENTO = 'La fecha límite para pagar debe estar entre el día de la compra y 6 meses después';
 
     public static function leer(): array
     {
@@ -47,6 +49,11 @@ class DatosCompraProveedor
             'proveedor' => $texto($_POST['proveedor'] ?? null),
             'fecha' => $texto($_POST['fecha'] ?? null),
             'costoEnvio' => $texto($_POST['costoEnvio'] ?? null),
+            'linea' => $texto($_POST['linea'] ?? null),
+            'condicion' => $texto($_POST['condicion'] ?? null),
+            'metodoPago' => $texto($_POST['metodoPago'] ?? null),
+            'vencimiento' => $texto($_POST['vencimiento'] ?? null),
+            'recibida' => ($_POST['recibida'] ?? null) === '1' ? '1' : '',
             'lineas' => $lineas,
         ];
     }
@@ -57,15 +64,15 @@ class DatosCompraProveedor
             'proveedor' => $proveedor,
             'fecha' => '',
             'costoEnvio' => '',
+            'linea' => '',
+            'condicion' => CompraProveedor::CONTADO,
+            'metodoPago' => '',
+            'vencimiento' => '',
+            'recibida' => '1',
             'lineas' => [],
         ];
     }
 
-    /**
-     * @param array<int, Proveedor> $proveedores
-     * @param array<int, Componente> $componentes
-     * @param array<int, TipoComponente> $tipos
-     */
     public static function validar(
         Validador $validador,
         array $datos,
@@ -81,6 +88,7 @@ class DatosCompraProveedor
         }
 
         self::validarFecha($validador, $datos['fecha']);
+        self::validarPago($validador, $datos);
 
         if ($datos['costoEnvio'] !== '') {
             $envio = Numero::leer($datos['costoEnvio']);
@@ -138,11 +146,6 @@ class DatosCompraProveedor
         }
     }
 
-    /**
-     * @param array<int, Componente> $componentes
-     * @param array<int, TipoComponente> $tipos
-     * @return array{compra: CompraProveedor, nuevos: array<int, Componente>}
-     */
     public static function crearCompra(array $datos, int $idVendedor, array $componentes, array $tipos): array
     {
         $lineas = [];
@@ -182,6 +185,8 @@ class DatosCompraProveedor
         }
 
         $subtotal = round(array_sum(array_column($lineas, 'subtotal')), 2);
+        $total = round($subtotal + $costoEnvio, 2);
+        $esCredito = $datos['condicion'] === CompraProveedor::CREDITO;
         $compra = new CompraProveedor(
             null,
             $idVendedor,
@@ -189,10 +194,14 @@ class DatosCompraProveedor
             PeriodoFechas::leerFecha($datos['fecha']),
             $subtotal,
             $costoEnvio,
-            round($subtotal + $costoEnvio, 2),
-            CompraProveedor::ACTIVA,
+            $total,
+            $datos['recibida'] === '1' ? CompraProveedor::RECIBIDA : CompraProveedor::POR_RECIBIR,
             null,
-            $detalles
+            $detalles,
+            condicion: $esCredito ? CompraProveedor::CREDITO : CompraProveedor::CONTADO,
+            vencimiento: $esCredito ? PeriodoFechas::leerFecha($datos['vencimiento']) : null,
+            saldo: $esCredito ? $total : 0.0,
+            estadoPago: $esCredito ? CompraProveedor::POR_PAGAR : CompraProveedor::PAGADA
         );
 
         return ['compra' => $compra, 'nuevos' => $nuevos];
@@ -212,6 +221,61 @@ class DatosCompraProveedor
         } elseif ($dia < new DateTime('2000-01-01')) {
             $validador->agregarError('fecha', 'Escoja una fecha a partir del año 2000');
         }
+    }
+
+    private static function validarPago(Validador $validador, array $datos): void
+    {
+        if ($datos['condicion'] === CompraProveedor::CONTADO) {
+            if (!MetodoPago::existe($datos['metodoPago'])) {
+                $validador->agregarError('metodoPago', DatosVenta::MENSAJE_METODO);
+            }
+            return;
+        }
+        if ($datos['condicion'] !== CompraProveedor::CREDITO) {
+            $validador->agregarError('condicion', self::MENSAJE_CONDICION);
+            return;
+        }
+
+        if ($datos['vencimiento'] === '') {
+            $validador->agregarError('vencimiento', 'Escoja en el calendario la fecha límite para pagar');
+            return;
+        }
+        $vencimiento = PeriodoFechas::leerFecha($datos['vencimiento']);
+        $fecha = PeriodoFechas::leerFecha($datos['fecha']) ?? new DateTime('today');
+        $limite = (clone $fecha)->modify('+' . self::DIAS_MAXIMOS_CREDITO . ' days');
+        if ($vencimiento === null || $vencimiento < $fecha || $vencimiento > $limite) {
+            $validador->agregarError('vencimiento', self::MENSAJE_VENCIMIENTO);
+        }
+    }
+
+    public static function claseEstado(CompraProveedor $compra): string
+    {
+        return match ($compra->getEstado()) {
+            CompraProveedor::POR_RECIBIR => 'etiquetaBajo',
+            CompraProveedor::ANULADA => 'etiquetaInactivo',
+            default => 'etiquetaActivo',
+        };
+    }
+
+    public static function clasePago(CompraProveedor $compra): string
+    {
+        if (!$compra->debe()) {
+            return 'etiquetaActivo';
+        }
+        return $compra->estaVencida() ? 'etiquetaVencida' : 'etiquetaBajo';
+    }
+
+    public static function textoPago(CompraProveedor $compra): string
+    {
+        if ($compra->estaVencida()) {
+            return 'Vencida';
+        }
+        return $compra->debe() ? CompraProveedor::POR_PAGAR : CompraProveedor::PAGADA;
+    }
+
+    public static function vencimientoSugerido(): string
+    {
+        return (new DateTime('today'))->modify('+' . self::DIAS_CREDITO . ' days')->format('Y-m-d');
     }
 
     private static function validarNuevo(

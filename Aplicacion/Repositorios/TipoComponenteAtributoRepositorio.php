@@ -17,7 +17,6 @@ class TipoComponenteAtributoRepositorio
         $this->conexion = BaseDatos::obtenerConexion();
     }
 
-    /** @return TipoComponenteAtributo[] */
     public function listarPorTipo(int $idTipoComponente): array
     {
         $consulta = $this->conexion->prepare(
@@ -45,7 +44,6 @@ class TipoComponenteAtributoRepositorio
         ), $consulta->fetchAll());
     }
 
-    /** @param TipoComponenteAtributo[] $atributos */
     public function guardar(int $idTipoComponente, array $atributos): void
     {
         $transaccionPropia = BaseDatos::iniciarTransaccion();
@@ -95,7 +93,6 @@ class TipoComponenteAtributoRepositorio
         return (int) $consulta->fetchColumn() > 0;
     }
 
-    /** @return TipoComponenteAtributoOpcion[] */
     private function listarOpciones(int $idAtributo): array
     {
         $consulta = $this->conexion->prepare(
@@ -172,7 +169,6 @@ class TipoComponenteAtributoRepositorio
         $consulta->execute([$idAtributo]);
     }
 
-    /** @param TipoComponenteAtributoOpcion[] $opciones */
     private function guardarOpciones(int $idAtributo, array $opciones): void
     {
         $idsActuales = $this->listarIds(
@@ -218,7 +214,6 @@ class TipoComponenteAtributoRepositorio
         }
     }
 
-    /** @return int[] */
     private function listarIds(string $sql, int $id): array
     {
         $consulta = $this->conexion->prepare($sql);

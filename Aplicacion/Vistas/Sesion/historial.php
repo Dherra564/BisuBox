@@ -1,8 +1,4 @@
 <?php
-/**
- * @var array $sesiones
- * @var string $urlBase
- */
 
 $titulo = 'Historial de sesiones';
 $paginaActual = 'sesiones';

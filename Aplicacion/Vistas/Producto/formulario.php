@@ -1,10 +1,4 @@
 <?php
-/**
- * @var array $datos
- * @var array $errores
- * @var \Aplicacion\Modelos\Componente[] $componentes
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\DatosCompraProveedor;
@@ -188,6 +182,19 @@ $hayErrorExtras = array_filter(array_keys($errores), fn(string $campo): bool => 
                     <?= $mensajeError('descripcion') ?>
                 </div>
             </details>
+            <div class="<?= $claseCampo('linea') ?>">
+                <label for="linea">Línea <span class="textoOpcional">(opcional)</span></label>
+                <select id="linea" name="linea">
+                    <option value="">Sin línea</option>
+                    <?php foreach ($lineasProducto as $opcionLinea): ?>
+                        <option value="<?= $opcionLinea->getIdLinea() ?>" <?= $datos['linea'] === (string) $opcionLinea->getIdLinea() ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($opcionLinea->getNombre()) ?><?= $opcionLinea->getActivo() ? '' : ' (desactivada)' ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <p class="textoAyuda"><?= $lineasProducto === [] ? 'Todavía no tiene líneas. Puede crearlas en Productos, Líneas de producto.' : 'Sus clientes pueden filtrar la tienda por línea.' ?></p>
+                <?= $mensajeError('linea') ?>
+            </div>
         </section>
 
         <section class="formularioSeccion pasoProducto">

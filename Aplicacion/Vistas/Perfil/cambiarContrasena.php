@@ -1,9 +1,4 @@
 <?php
-/**
- *
- * @var array $errores 
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\Csrf;
 

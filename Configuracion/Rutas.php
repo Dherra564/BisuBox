@@ -11,6 +11,7 @@ use Aplicacion\Controladores\EmprenderControlador;
 use Aplicacion\Controladores\FotoControlador;
 use Aplicacion\Controladores\InicioControlador;
 use Aplicacion\Controladores\InventarioControlador;
+use Aplicacion\Controladores\LineaProductoControlador;
 use Aplicacion\Controladores\MisCotizacionesControlador;
 use Aplicacion\Controladores\MisPedidosControlador;
 use Aplicacion\Controladores\PedidoControlador;
@@ -57,6 +58,8 @@ return function (Enrutador $enrutador): void {
     $enrutador->post('/tienda/actualizar', [TiendaControlador::class, 'actualizar']);
 
     $enrutador->get('/inventario', [InventarioControlador::class, 'mostrar']);
+    $enrutador->get('/inventario/movimientos', [InventarioControlador::class, 'movimientos']);
+    $enrutador->post('/inventario/ajustar', [InventarioControlador::class, 'ajustar']);
     $enrutador->get('/componentes/nuevo', [ComponenteControlador::class, 'nuevo']);
     $enrutador->post('/componentes/nuevo', [ComponenteControlador::class, 'insertar']);
     $enrutador->get('/componentes/editar', [ComponenteControlador::class, 'editar']);
@@ -110,6 +113,16 @@ return function (Enrutador $enrutador): void {
     $enrutador->post('/compras-proveedor/nueva', [CompraProveedorControlador::class, 'registrar']);
     $enrutador->get('/compras-proveedor/detalle', [CompraProveedorControlador::class, 'detalle']);
     $enrutador->post('/compras-proveedor/anular', [CompraProveedorControlador::class, 'anular']);
+    $enrutador->post('/compras-proveedor/recibir', [CompraProveedorControlador::class, 'recibir']);
+    $enrutador->post('/compras-proveedor/abonar', [CompraProveedorControlador::class, 'abonar']);
+    $enrutador->get('/compras-por-pagar', [CompraProveedorControlador::class, 'porPagar']);
+
+    $enrutador->get('/lineas', [LineaProductoControlador::class, 'listar']);
+    $enrutador->get('/lineas/nueva', [LineaProductoControlador::class, 'nueva']);
+    $enrutador->post('/lineas/nueva', [LineaProductoControlador::class, 'crear']);
+    $enrutador->get('/lineas/editar', [LineaProductoControlador::class, 'editar']);
+    $enrutador->post('/lineas/editar', [LineaProductoControlador::class, 'actualizar']);
+    $enrutador->post('/lineas/estado', [LineaProductoControlador::class, 'cambiarEstado']);
 
     $enrutador->get('/carrito', [CarritoControlador::class, 'ver']);
     $enrutador->post('/carrito/agregar', [CarritoControlador::class, 'agregar']);

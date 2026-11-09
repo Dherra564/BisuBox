@@ -15,12 +15,10 @@ class Componente
     private float $costoUnitario;
     private float $existenciaMinima;
     private bool $activo;
-    /** @var array<int, string>*/
     private array $valores;
     private string $nombreTipo;
     private ?string $foto;
 
-    /** @param array<int, string> $valores */
     public function __construct(
         ?int $idComponente,
         ?int $idVendedor,
@@ -94,7 +92,6 @@ class Componente
         return $this->activo;
     }
 
-    /** @return array<int, string> */
     public function getValores(): array
     {
         return $this->valores;
@@ -155,7 +152,6 @@ class Componente
         $this->foto = $foto;
     }
 
-    /** @param array<int, string> $valores */
     public function setValores(array $valores): void
     {
         $this->valores = $valores;

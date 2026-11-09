@@ -18,7 +18,6 @@ class Rol
         ],
     ];
 
-    /** @return array<string, array{nombre: string, descripcion: string}> */
     public static function todos(): array
     {
         return self::ROLES;

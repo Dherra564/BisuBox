@@ -31,7 +31,6 @@ class TipoComponenteSugerido
         ],
     ];
 
-    /** @return array<string, array<int, array{nombre: string, clase: string, unidad?: string, opciones?: string[]}>> */
     public static function todos(): array
     {
         return self::TIPOS;

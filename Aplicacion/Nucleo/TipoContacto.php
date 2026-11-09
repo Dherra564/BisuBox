@@ -54,7 +54,6 @@ class TipoContacto
         ],
     ];
 
-    /** @return array<string, array{nombre: string, usuario: ?string, dominios: string[], mensaje: string, ayuda: string, ejemplo: string}> */
     public static function todos(): array
     {
         return self::TIPOS;
@@ -75,7 +74,6 @@ class TipoContacto
         return self::TIPOS[$tipo]['mensaje'];
     }
 
-    /** @return array<int, array{tipo: string, valor: string}> */
     public static function desdeFormulario(mixed $tipos, mixed $valores): array
     {
         $tipos   = is_array($tipos) ? array_values($tipos) : [];

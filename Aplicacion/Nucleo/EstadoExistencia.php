@@ -14,7 +14,6 @@ class EstadoExistencia
         self::SUFICIENTE => ['nombre' => 'Suficiente', 'clase' => 'etiquetaNormal'],
     ];
 
-    /** @return array<string, array{nombre: string, clase: string}> */
     public static function todos(): array
     {
         return self::ESTADOS;

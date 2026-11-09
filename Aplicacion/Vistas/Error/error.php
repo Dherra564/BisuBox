@@ -1,12 +1,4 @@
 <?php
-/**
- * @var int $codigo
- * @var string $titulo
- * @var string $mensaje
- * @var string $urlBase
- * @var bool $haySesion
- * @var ?string $detalle
- */
 use Configuracion\Configuracion;
 ?>
 <!DOCTYPE html>

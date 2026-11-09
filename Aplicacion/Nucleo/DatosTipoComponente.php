@@ -12,7 +12,6 @@ class DatosTipoComponente
 {
     public const MAXIMO_DATOS = 20;
 
-    /** @return array{nombre: string, datos: array<string, array>} */
     public static function leer(): array
     {
         $texto = fn(mixed $valor): string => is_string($valor) ? trim($valor) : '';
@@ -211,7 +210,6 @@ class DatosTipoComponente
         ];
     }
 
-    /** @return array<int, TipoComponenteAtributo> */
     private static function atributosPorId(?TipoComponente $tipoComponente): array
     {
         $atributos = [];

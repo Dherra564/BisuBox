@@ -1,12 +1,4 @@
 <?php
-/**
- * @var \Aplicacion\Modelos\TipoComponente[] $tipos
- * @var \Aplicacion\Modelos\Componente[] $componentes
- * @var array $filtros
- * @var array $resumen
- * @var bool $hayComponentes
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\ClaseDato;
 use Aplicacion\Nucleo\Csrf;
@@ -173,8 +165,7 @@ $detalle = function ($componente) use ($tiposPorId): string {
                 ? 'Ningún componente coincide con los filtros.'
                 : 'Mostrando ' . $cantidadTexto(count($componentes), 'componente', 'componentes') . '.' ?>
         </p>
-        <?php
-        ?>
+    
         <div class="campoOrden">
             <label for="orden">Ordenar por</label>
             <select id="orden" name="orden" form="filtrosInventario" data-enviar-al-cambiar data-por-defecto="nombre">
@@ -235,6 +226,10 @@ $detalle = function ($componente) use ($tiposPorId): string {
                             </td>
                             <td data-etiqueta="Costo unitario" class="numero"><?= Numero::moneda($componente->getCostoUnitario()) ?></td>
                             <td class="acciones">
+                                <a href="<?= $urlBase ?>/inventario/movimientos?articulo=componente&amp;id=<?= $componente->getIdComponente() ?>#ajuste"
+                                   class="boton botonPequeno">Ajustar</a>
+                                <a href="<?= $urlBase ?>/inventario/movimientos?articulo=componente&amp;id=<?= $componente->getIdComponente() ?>#historial"
+                                   class="boton botonSecundario botonPequeno">Historial</a>
                                 <a href="<?= $urlBase ?>/componentes/editar?id=<?= $componente->getIdComponente() ?>"
                                    class="boton botonSecundario botonPequeno">Editar</a>
                                 <form method="post" action="<?= $urlBase ?>/componentes/estado" class="formularioEnLinea"

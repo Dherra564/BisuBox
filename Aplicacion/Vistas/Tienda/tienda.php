@@ -5,6 +5,7 @@ use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\Icono;
 use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\TipoContacto;
+use Aplicacion\Nucleo\UnidadMedida;
 use Aplicacion\Nucleo\WhatsApp;
 
 $titulo = (string) $tiendaVista->getTiendaNombre();
@@ -46,7 +47,38 @@ $iconosContacto = [
             <span>Productos agotados</span>
             <strong><?= (int) $agotados ?></strong>
         </a>
+        <a href="<?= $urlBase ?>/inventario?existencia=bajo" class="tarjetaResumen <?= $porAcabarse !== [] ? 'tarjetaResumenAviso' : '' ?>">
+            <span>Componentes por acabarse</span>
+            <strong><?= count($porAcabarse) ?></strong>
+        </a>
+        <a href="<?= $urlBase ?>/compras-por-pagar<?= $comprasPorPagar['vencidas'] > 0 ? '?vista=vencidas' : '' ?>"
+            class="tarjetaResumen <?= $comprasPorPagar['vencidas'] > 0 ? 'tarjetaResumenAviso' : '' ?>">
+            <span><?= $comprasPorPagar['vencidas'] > 0 ? 'Compras por pagar vencidas' : 'Compras por pagar' ?></span>
+            <strong><?= Numero::moneda($comprasPorPagar['vencidas'] > 0 ? $comprasPorPagar['vencido'] : $comprasPorPagar['saldo']) ?></strong>
+        </a>
     </div>
+
+    <?php if ($porAcabarse !== []): ?>
+        <section class="avisoExistencia" aria-label="Componentes por debajo del mínimo">
+            <h2>Le queda poco de estos componentes</h2>
+            <ul>
+                <?php foreach (array_slice($porAcabarse, 0, 5, true) as $idComponente => $componente): ?>
+                    <li>
+                        <a href="<?= $urlBase ?>/inventario/movimientos?articulo=componente&amp;id=<?= $idComponente ?>#historial"><?= htmlspecialchars($componente['nombre']) ?></a>
+                        <span class="etiqueta <?= $componente['estado'] === 'agotado' ? 'etiquetaAgotado' : 'etiquetaBajo' ?>">
+                            <?= $componente['estado'] === 'agotado' ? 'Agotado' : 'Quedan ' . UnidadMedida::cantidad($componente['existencia'], $componente['unidad']) ?>
+                        </span>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+            <p>
+                <?php if (count($porAcabarse) > 5): ?>
+                    <a href="<?= $urlBase ?>/inventario?existencia=bajo">Ver los <?= count($porAcabarse) ?></a> ·
+                <?php endif; ?>
+                <a href="<?= $urlBase ?>/compras-proveedor/nueva">Registrar una compra</a>
+            </p>
+        </section>
+    <?php endif; ?>
 <?php endif; ?>
 
 <?php if ($busqueda === ''): ?>
@@ -110,7 +142,7 @@ $iconosContacto = [
 
 <section id="productos" class="tiendaSeccion">
     <div class="tiendaSeccionEncabezado">
-        <h2><?= $busqueda !== '' ? 'Resultados para «' . htmlspecialchars($busqueda) . '»' : 'Nuestros productos' ?></h2>
+        <h2><?= $busqueda !== '' ? 'Resultados para «' . htmlspecialchars($busqueda) . '»' : ($idLinea !== null ? htmlspecialchars($lineas[$idLinea]->getNombre()) : 'Nuestros productos') ?></h2>
         <?php if ($busqueda !== ''): ?>
             <a href="<?= $urlBase ?>/tienda/<?= htmlspecialchars((string) $tiendaVista->getTiendaEnlace()) ?>#productos">Ver todos</a>
         <?php else: ?>
@@ -118,9 +150,22 @@ $iconosContacto = [
         <?php endif; ?>
     </div>
 
+    <?php if ($lineas !== [] && $busqueda === ''): ?>
+        <nav class="botonesFecha filtroLineas" aria-label="Filtrar por línea">
+            <?php $rutaLineas = $urlBase . '/tienda/' . htmlspecialchars((string) $tiendaVista->getTiendaEnlace()); ?>
+            <a href="<?= $rutaLineas ?>#productos" class="botonFecha <?= $idLinea === null ? 'botonFechaActivo' : '' ?>"
+                <?= $idLinea === null ? 'aria-current="true"' : '' ?>>Todo</a>
+            <?php foreach ($lineas as $linea): ?>
+                <a href="<?= $rutaLineas ?>?linea=<?= $linea->getIdLinea() ?>#productos"
+                    class="botonFecha <?= $idLinea === $linea->getIdLinea() ? 'botonFechaActivo' : '' ?>"
+                    <?= $idLinea === $linea->getIdLinea() ? 'aria-current="true"' : '' ?>><?= htmlspecialchars($linea->getNombre()) ?></a>
+            <?php endforeach; ?>
+        </nav>
+    <?php endif; ?>
+
     <?php if ($productos === []): ?>
         <div class="estadoVacio">
-            <p><?= $busqueda !== '' ? 'No encontramos productos con esa búsqueda.' : 'Esta tienda todavía no tiene productos.' ?></p>
+            <p><?= $busqueda !== '' ? 'No encontramos productos con esa búsqueda.' : ($idLinea !== null ? 'No hay productos de esta línea por ahora.' : 'Esta tienda todavía no tiene productos.') ?></p>
             <?php if ($esDuenio && $busqueda === ''): ?>
                 <p><a href="<?= $urlBase ?>/productos/nuevo" class="boton">Agregar mi primer producto</a></p>
             <?php endif; ?>

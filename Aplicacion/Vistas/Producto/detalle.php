@@ -1,11 +1,4 @@
 <?php
-/**
- * @var \Aplicacion\Modelos\Producto $producto
- * @var \Aplicacion\Modelos\Produccion[] $producciones
- * @var int $alcanzaPara
- * @var string[] $desactivados
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\Numero;
@@ -36,6 +29,12 @@ $unidadesTexto = fn(int $cantidad): string => $cantidad === 1 ? '1 unidad' : $ca
         <?php if (!$producto->getActivo()): ?>
             <span class="etiqueta etiquetaInactivo">Desactivado</span>
         <?php endif; ?>
+        <?php if ($lineaProducto !== null): ?>
+            <p class="textoAyuda">Línea: <?= htmlspecialchars($lineaProducto->getNombre()) ?></p>
+        <?php endif; ?>
+        <?php if ($lineaProducto !== null): ?>
+            <p class="textoAyuda">Línea: <?= htmlspecialchars($lineaProducto->getNombre()) ?></p>
+        <?php endif; ?>
         <?php if ($producto->getDescripcion() !== null): ?>
             <p class="descripcionFicha"><?= htmlspecialchars($producto->getDescripcion()) ?></p>
         <?php endif; ?>
@@ -50,6 +49,11 @@ $unidadesTexto = fn(int $cantidad): string => $cantidad === 1 ? '1 unidad' : $ca
             <span class="numeroExistencia"><?= $existencia ?></span>
             <span><?= $existencia === 1 ? 'listo para vender' : 'listos para vender' ?></span>
         </div>
+        <p class="enlacesExistencia">
+            <a href="<?= $urlBase ?>/inventario/movimientos?articulo=producto&amp;id=<?= $producto->getIdProducto() ?>#ajuste">Ajustar existencia</a>
+            ·
+            <a href="<?= $urlBase ?>/inventario/movimientos?articulo=producto&amp;id=<?= $producto->getIdProducto() ?>#historial">Ver historial</a>
+        </p>
 
         <?php if ($producto->getActivo()): ?>
             <button type="button" class="boton" data-hice-mas data-id="<?= $producto->getIdProducto() ?>"

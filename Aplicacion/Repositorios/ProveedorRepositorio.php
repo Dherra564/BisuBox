@@ -30,10 +30,9 @@ class ProveedorRepositorio
         return $fila ? $this->crearDesdeFila($fila) : null;
     }
 
-    /** @return Proveedor[] */
-    public function listar(int $idVendedor, string $busqueda, ?bool $activo, int $pagina): array
+    public function listar(int $idVendedor, string $busqueda, ?bool $activo, int $pagina, ?int $idLinea = null): array
     {
-        [$condiciones, $valores] = $this->construirFiltros($idVendedor, $busqueda, $activo);
+        [$condiciones, $valores] = $this->construirFiltros($idVendedor, $busqueda, $activo, $idLinea);
 
         $desplazamiento = (max(1, $pagina) - 1) * self::POR_PAGINA;
         $consulta = $this->conexion->prepare(
@@ -46,7 +45,6 @@ class ProveedorRepositorio
         return array_map(fn(array $fila): Proveedor => $this->crearDesdeFila($fila), $consulta->fetchAll());
     }
 
-    /** @return Proveedor[] */
     public function listarTodos(int $idVendedor, bool $soloActivos = false): array
     {
         $consulta = $this->conexion->prepare(
@@ -59,9 +57,9 @@ class ProveedorRepositorio
         return array_map(fn(array $fila): Proveedor => $this->crearDesdeFila($fila), $consulta->fetchAll());
     }
 
-    public function contar(int $idVendedor, string $busqueda = '', ?bool $activo = null): int
+    public function contar(int $idVendedor, string $busqueda = '', ?bool $activo = null, ?int $idLinea = null): int
     {
-        [$condiciones, $valores] = $this->construirFiltros($idVendedor, $busqueda, $activo);
+        [$condiciones, $valores] = $this->construirFiltros($idVendedor, $busqueda, $activo, $idLinea);
 
         $consulta = $this->conexion->prepare('SELECT COUNT(*) FROM tbproveedor' . $condiciones);
         $consulta->execute($valores);
@@ -146,7 +144,7 @@ class ProveedorRepositorio
         $proveedor->setEstado($activo);
     }
 
-    private function construirFiltros(int $idVendedor, string $busqueda, ?bool $activo): array
+    private function construirFiltros(int $idVendedor, string $busqueda, ?bool $activo, ?int $idLinea = null): array
     {
         $condiciones = ['tbproveedorvendedorid = ?'];
         $valores = [$idVendedor];
@@ -162,6 +160,12 @@ class ProveedorRepositorio
         if ($activo !== null) {
             $condiciones[] = 'tbproveedoractivo = ?';
             $valores[] = $activo ? 1 : 0;
+        }
+
+        if ($idLinea !== null) {
+            $condiciones[] = 'EXISTS (SELECT 1 FROM tbproveedorlinea pl
+                WHERE pl.tbproveedorlineaproveedorid = tbproveedorid AND pl.tbproveedorlinealineaid = ?)';
+            $valores[] = $idLinea;
         }
 
         return [' WHERE ' . implode(' AND ', $condiciones), $valores];

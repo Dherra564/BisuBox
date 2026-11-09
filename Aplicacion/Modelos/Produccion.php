@@ -17,10 +17,8 @@ class Produccion
     private DateTime $fecha;
     private string $estado;
     private ?DateTime $fechaRegistro;
-    /** @var ProduccionComponente[] */
     private array $componentes;
 
-    /** @param ProduccionComponente[] $componentes*/
     public function __construct(
         ?int $idProduccion,
         ?int $idVendedor,
@@ -81,7 +79,6 @@ class Produccion
         return $this->fechaRegistro;
     }
 
-    /** @return ProduccionComponente[] */
     public function getComponentes(): array
     {
         return $this->componentes;

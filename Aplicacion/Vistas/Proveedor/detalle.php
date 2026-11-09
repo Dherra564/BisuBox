@@ -1,12 +1,6 @@
 <?php
-/**
- * @var \Aplicacion\Modelos\Proveedor $proveedor
- * @var \Aplicacion\Modelos\CompraProveedor[] $compras
- * @var int $totalCompras
- * @var array $resumen
- * @var string $urlBase
- */
 
+use Aplicacion\Nucleo\DatosCompraProveedor;
 use Aplicacion\Nucleo\Numero;
 
 $titulo = 'Detalle del proveedor';
@@ -27,6 +21,15 @@ $idProveedor = (int) $proveedor->getIdProveedor();
 
         <dt>Correo</dt>
         <dd><?= htmlspecialchars((string) $proveedor->getCorreo()) ?></dd>
+
+        <dt>Líneas que vende</dt>
+        <dd>
+            <?php if ($lineas === []): ?>
+                <span class="textoAyuda">Sin líneas asignadas</span>
+            <?php else: ?>
+                <?= htmlspecialchars(implode(', ', array_map(fn($linea): string => $linea->getNombre(), $lineas))) ?>
+            <?php endif; ?>
+        </dd>
 
         <dt>Registrado el</dt>
         <dd><?= $proveedor->getFechaRegistro()->format('d/m/Y') ?></dd>
@@ -59,6 +62,13 @@ $idProveedor = (int) $proveedor->getIdProveedor();
             <span class="textoAyuda">Envíos</span>
             <strong><?= Numero::moneda($resumen['envios']) ?></strong>
         </div>
+        <div>
+            <span class="textoAyuda">Le debe</span>
+            <strong><?= Numero::moneda($resumen['saldo']) ?></strong>
+            <?php if ($resumen['saldo'] > 0): ?>
+                <a href="<?= $urlBase ?>/compras-por-pagar?proveedor=<?= $idProveedor ?>" class="textoAyuda">Ver qué debe</a>
+            <?php endif; ?>
+        </div>
     </div>
 
     <?php if ($compras === []): ?>
@@ -82,7 +92,10 @@ $idProveedor = (int) $proveedor->getIdProveedor();
                             <td data-etiqueta="Componentes"><?= $compra->getCantidadLineas() === 1 ? '1 componente' : $compra->getCantidadLineas() . ' componentes' ?></td>
                             <td data-etiqueta="Total" class="numero"><strong><?= Numero::moneda($compra->getTotal()) ?></strong></td>
                             <td data-etiqueta="Estado">
-                                <span class="etiqueta <?= $compra->estaAnulada() ? 'etiquetaInactivo' : 'etiquetaActivo' ?>"><?= $compra->getEstado() ?></span>
+                                <span class="etiqueta <?= DatosCompraProveedor::claseEstado($compra) ?>"><?= htmlspecialchars($compra->getEstado()) ?></span>
+                                <?php if ($compra->debe()): ?>
+                                    <span class="etiqueta <?= DatosCompraProveedor::clasePago($compra) ?>"><?= DatosCompraProveedor::textoPago($compra) ?></span>
+                                <?php endif; ?>
                             </td>
                             <td class="acciones">
                                 <a href="<?= $urlBase ?>/compras-proveedor/detalle?id=<?= $compra->getIdCompraProveedor() ?>" class="boton botonSecundario botonPequeno">Ver</a>

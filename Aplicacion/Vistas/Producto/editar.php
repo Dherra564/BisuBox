@@ -1,10 +1,4 @@
 <?php
-/**
- * @var \Aplicacion\Modelos\Producto $producto
- * @var array $datos
- * @var array $errores
- * @var string $urlBase
- */
 
 use Aplicacion\Nucleo\Csrf;
 
@@ -83,6 +77,19 @@ $productoCostos = $producto;
                             <textarea id="descripcion" name="descripcion" maxlength="300" rows="3" data-contador
                                       placeholder="Opcional. Así lo verán sus clientes en la tienda"><?= $valor('descripcion') ?></textarea>
                             <?= $mensajeError('descripcion') ?>
+                        </div>
+                        <div class="<?= $claseCampo('linea') ?>">
+                            <label for="linea">Línea <span class="textoOpcional">(opcional)</span></label>
+                            <select id="linea" name="linea">
+                                <option value="">Sin línea</option>
+                                <?php foreach ($lineasProducto as $opcionLinea): ?>
+                                    <option value="<?= $opcionLinea->getIdLinea() ?>" <?= $datos['linea'] === (string) $opcionLinea->getIdLinea() ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($opcionLinea->getNombre()) ?><?= $opcionLinea->getActivo() ? '' : ' (desactivada)' ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <p class="textoAyuda"><?= $lineasProducto === [] ? 'Todavía no tiene líneas. Puede crearlas en Productos, Líneas de producto.' : 'Sus clientes pueden filtrar la tienda por línea.' ?></p>
+                            <?= $mensajeError('linea') ?>
                         </div>
                     </div>
                 </div>

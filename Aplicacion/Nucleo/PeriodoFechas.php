@@ -19,7 +19,6 @@ class PeriodoFechas
         self::ANIO => 'Este año',
     ];
 
-    /** @return array{periodo: string, desde: ?DateTime, hasta: ?DateTime} */
     public static function leer(array $consulta, string $porDefecto = self::TODO): array
     {
         $desde = self::leerFecha($consulta['desde'] ?? null);
@@ -49,7 +48,6 @@ class PeriodoFechas
         return ['periodo' => $periodo] + self::limites($periodo);
     }
 
-    /** @return array{desde: ?DateTime, hasta: ?DateTime} */
     public static function limites(string $periodo): array
     {
         $hoy = new DateTime('today');

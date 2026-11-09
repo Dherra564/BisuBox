@@ -1,11 +1,4 @@
 <?php
-/**
- * @var array $datos
- * @var callable $claseCampo
- * @var callable $mensajeError
- * @var callable $valor
- * @var \Aplicacion\Modelos\Producto|null $productoCostos
- */
 
 use Aplicacion\Nucleo\DatosProducto;
 use Aplicacion\Nucleo\Numero;

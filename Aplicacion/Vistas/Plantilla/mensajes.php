@@ -1,7 +1,4 @@
 <?php
-/**
- * @var array $mensajes
- */
 
 use Aplicacion\Nucleo\Mensaje;
 

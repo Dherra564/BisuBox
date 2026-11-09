@@ -10,7 +10,6 @@ use Aplicacion\Repositorios\VendedorContactoRepositorio;
 
 class DatosTienda
 {
-    /** @return array{tiendaNombre: string, tiendaDescripcion: string, contactos: array} */
     public static function leer(): array
     {
         $leer = fn(string $campo): string => is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
@@ -46,7 +45,6 @@ class DatosTienda
         }
     }
 
-    /** @return VendedorContacto[] */
     public static function crearContactos(array $contactos): array
     {
         return array_map(

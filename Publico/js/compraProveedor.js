@@ -483,4 +483,69 @@ document.addEventListener('DOMContentLoaded', function () {
 
     filtrarInventario();
     actualizar();
+
+    function mostrarCondicion() {
+        var elegida = formulario.querySelector('[data-condicion-compra]:checked');
+        var esCredito = elegida !== null && elegida.value === 'Crédito';
+        formulario.querySelectorAll('[data-solo-credito]').forEach(function (bloque) {
+            bloque.hidden = !esCredito;
+        });
+        formulario.querySelectorAll('[data-solo-contado]').forEach(function (bloque) {
+            bloque.hidden = esCredito;
+        });
+    }
+
+    formulario.querySelectorAll('[data-condicion-compra]').forEach(function (opcion) {
+        opcion.addEventListener('change', mostrarCondicion);
+    });
+    mostrarCondicion();
+
+    var selectorLinea = formulario.querySelector('[data-linea-compra]');
+    var selectorProveedor = formulario.querySelector('[data-proveedor-compra]');
+    if (selectorLinea && selectorProveedor) {
+        var opcionesProveedor = Array.prototype.slice.call(selectorProveedor.querySelectorAll('option[value]:not([value=""])'));
+
+        selectorLinea.addEventListener('change', function () {
+            var linea = selectorLinea.value;
+            var elegido = selectorProveedor.value;
+            var deLaLinea = opcionesProveedor.filter(function (opcion) {
+                return linea !== '' && opcion.getAttribute('data-lineas').split(',').indexOf(linea) !== -1;
+            });
+            var otros = opcionesProveedor.filter(function (opcion) {
+                return deLaLinea.indexOf(opcion) === -1;
+            });
+
+            selectorProveedor.querySelectorAll('optgroup').forEach(function (grupo) {
+                grupo.remove();
+            });
+            opcionesProveedor.forEach(function (opcion) {
+                opcion.remove();
+            });
+
+            if (deLaLinea.length === 0) {
+                otros.forEach(function (opcion) {
+                    selectorProveedor.appendChild(opcion);
+                });
+            } else {
+                var grupoLinea = document.createElement('optgroup');
+                grupoLinea.label = 'Venden esta línea';
+                deLaLinea.forEach(function (opcion) {
+                    grupoLinea.appendChild(opcion);
+                });
+                var grupoOtros = document.createElement('optgroup');
+                grupoOtros.label = 'Otros proveedores';
+                otros.forEach(function (opcion) {
+                    grupoOtros.appendChild(opcion);
+                });
+                selectorProveedor.appendChild(grupoLinea);
+                if (otros.length > 0) {
+                    selectorProveedor.appendChild(grupoOtros);
+                }
+                if (elegido === '' && deLaLinea.length === 1) {
+                    elegido = deLaLinea[0].value;
+                }
+            }
+            selectorProveedor.value = elegido;
+        });
+    }
 });

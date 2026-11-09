@@ -3,6 +3,7 @@
 namespace Aplicacion\Nucleo;
 
 use Aplicacion\Repositorios\ComponenteRepositorio;
+use Aplicacion\Repositorios\CompraProveedorRepositorio;
 use Aplicacion\Repositorios\PedidoRepositorio;
 use Aplicacion\Repositorios\PersonalizadoRepositorio;
 use Aplicacion\Repositorios\ProductoRepositorio;
@@ -93,6 +94,7 @@ class AvisosTienda
                 + $personalizadoRepositorio->contarAvisosSinVer($idVendedor),
             'productos' => (new ProductoRepositorio())->resumen($idVendedor)['agotados'],
             'inventario' => $componentes['bajos'] + $componentes['agotados'],
+            'comprasVencidas' => (new CompraProveedorRepositorio())->resumenPorPagar($idVendedor)['vencidas'],
         ];
     }
 

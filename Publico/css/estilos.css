@@ -6652,3 +6652,78 @@ h3 {
     border: 2px solid var(--colorVerdeClaro);
     background: var(--colorVerdeClaro);
 }
+
+
+.etiquetaVencida {
+    background: var(--colorErrorFondo);
+    color: var(--colorError);
+}
+
+.filaVencida td {
+    background: var(--colorErrorFondo);
+}
+
+.filaVencida td strong {
+    color: var(--colorErrorOscuro);
+}
+
+.cantidadEntrada {
+    color: var(--colorExito);
+}
+
+.cantidadSalida {
+    color: var(--colorError);
+}
+
+.tablaMovimientos td {
+    vertical-align: top;
+}
+
+.enlacesExistencia {
+    margin: 8px 0 0;
+    font-size: 0.9rem;
+}
+
+.listaCasillasLinea {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+}
+
+.filtroLineas {
+    margin-bottom: 16px;
+}
+
+.avisoExistencia {
+    margin-bottom: 20px;
+    padding: 16px 20px;
+    border: 1px solid var(--colorAdvertenciaBorde);
+    border-radius: var(--radio);
+    background: var(--colorAdvertenciaFondo);
+}
+
+.avisoExistencia h2 {
+    margin: 0 0 10px;
+    font-size: 1.05rem;
+    color: var(--colorAdvertencia);
+}
+
+.avisoExistencia ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 8px 20px;
+    margin: 0 0 10px;
+    padding: 0;
+    list-style: none;
+}
+
+.avisoExistencia li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.avisoExistencia p {
+    margin: 0;
+}

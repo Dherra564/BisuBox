@@ -335,6 +335,28 @@ document.addEventListener('DOMContentLoaded', function () {
             return '';
         }
 
+        if (campo.getAttribute('data-regla') === 'ajuste') {
+            if (valor.charAt(0) === '-') {
+                return 'No puede ser un número negativo';
+            }
+            var textoCantidad = valor.replace(/ /g, '');
+            if (!/^[0-9]{1,10}([.,][0-9]{1,2})?$/.test(textoCantidad)) {
+                return 'Escriba un número, por ejemplo 12 o 12,50';
+            }
+            var cantidad = parseFloat(textoCantidad.replace(',', '.'));
+            if (cantidad <= 0) {
+                return 'La cantidad debe ser mayor que 0';
+            }
+            if (campo.hasAttribute('data-entero') && Math.floor(cantidad) !== cantidad) {
+                return 'Se cuenta por unidades: use números enteros';
+            }
+            var salida = formulario.querySelector('input[name="tipo"][value="Salida"]');
+            if (salida && salida.checked && cantidad > parseFloat(campo.getAttribute('data-existencia')) + 0.001) {
+                return campo.getAttribute('data-mensaje-negativo');
+            }
+            return '';
+        }
+
         if (campo.getAttribute('data-regla') === 'identificacion') {
             var opcion = opcionTipoIdentificacion(campo);
             if (opcion && opcion.getAttribute('data-patron')

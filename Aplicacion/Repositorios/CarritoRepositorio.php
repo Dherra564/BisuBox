@@ -15,7 +15,6 @@ class CarritoRepositorio
         $this->conexion = BaseDatos::obtenerConexion();
     }
 
-    /** @return array<int, array<int, int>> */
     public function listar(int $idCliente): array
     {
         $consulta = $this->conexion->prepare(
