@@ -167,7 +167,7 @@ class VendedorRepositorio
         try {
             $consulta = $this->conexion->prepare(
                 'UPDATE tbvendedor SET tbvendedortiendanombre = ?, tbvendedortiendaenlace = ?,
-                    tbvendedortiendadescripcion = ?, tbvendedortiendalogo = ?, tbvendedoractivo = ?
+                    tbvendedortiendadescripcion = ?, tbvendedortiendalogo = ?, tbvendedorsinpe = ?, tbvendedoractivo = ?
                  WHERE tbvendedorid = ?'
             );
             $consulta->execute([
@@ -175,6 +175,7 @@ class VendedorRepositorio
                 self::normalizarEnlace((string) $vendedor->getTiendaEnlace()),
                 self::descripcionOVacio($vendedor->getTiendaDescripcion()),
                 $vendedor->getTiendaLogo(),
+                $vendedor->getSinpe(),
                 $vendedor->getTiendaActiva() ? 1 : 0,
                 $vendedor->getIdVendedor(),
             ]);
@@ -245,7 +246,7 @@ class VendedorRepositorio
     {
         $idVendedor = (int) $fila['tbvendedorid'];
 
-        return new Vendedor(
+        $vendedor = new Vendedor(
             (int) $fila['tbusuarioid'],
             $fila['tbusuarioidentificaciontipo'],
             $fila['tbusuarioidentificacionnumero'],
@@ -264,5 +265,8 @@ class VendedorRepositorio
             (bool) $fila['tbvendedoractivo'],
             $this->contactoRepositorio->listarPorVendedor($idVendedor)
         );
+        $vendedor->setSinpe($fila['tbvendedorsinpe'] ?? null);
+
+        return $vendedor;
     }
 }

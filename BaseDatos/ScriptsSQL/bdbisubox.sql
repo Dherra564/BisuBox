@@ -28,6 +28,8 @@ CREATE TABLE `tbvendedor` (
     `tbvendedortiendaenlace` varchar(60) DEFAULT NULL,
     `tbvendedortiendadescripcion` varchar(300) DEFAULT NULL,
     `tbvendedortiendalogo` varchar(500) DEFAULT NULL,
+    `tbvendedorsinpe` varchar(8) DEFAULT NULL,
+    `tbvendedorsinpe` varchar(8) DEFAULT NULL,
     `tbvendedoractivo` tinyint(4) DEFAULT NULL,
     PRIMARY KEY (`tbvendedorid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
@@ -271,6 +273,73 @@ CREATE TABLE `tbdisenodetalle` (
     PRIMARY KEY (`tbdisenodetalleid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
+-- --------------------------------------------------------
+--
+-- Estructura de tabla para la tabla `tbfoto`
+--
+
+CREATE TABLE `tbfoto` (
+    `tbfotoid` int(11) NOT NULL,
+    `tbfotocarpeta` varchar(20) DEFAULT NULL,
+    `tbfotonombre` varchar(40) DEFAULT NULL,
+    `tbfototipo` varchar(20) DEFAULT NULL,
+    `tbfotodatos` mediumblob DEFAULT NULL,
+    `tbfotoregistrofecha` datetime DEFAULT NULL,
+    PRIMARY KEY (`tbfotoid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tbcarrito`
+--
+
+CREATE TABLE `tbpersonalizado` (
+    `tbpersonalizadoid` int(11) NOT NULL,
+    `tbpersonalizadovendedorid` int(11) DEFAULT NULL,
+    `tbpersonalizadoclienteid` int(11) DEFAULT NULL,
+    `tbpersonalizadoproductoid` int(11) DEFAULT NULL,
+    `tbpersonalizadonombre` varchar(60) DEFAULT NULL,
+    `tbpersonalizadopiezas` int(11) DEFAULT NULL,
+    `tbpersonalizadonotacliente` varchar(300) DEFAULT NULL,
+    `tbpersonalizadoestado` varchar(20) DEFAULT NULL,
+    `tbpersonalizadominutos` int(11) DEFAULT NULL,
+    `tbpersonalizadotarifahora` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadocostocomponentes` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadocostomanoobra` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadocostoextras` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadocostototal` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadoganancia` int(11) DEFAULT NULL,
+    `tbpersonalizadoprecio` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadototal` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadonotatienda` varchar(300) DEFAULT NULL,
+    `tbpersonalizadocanceladopor` varchar(20) DEFAULT NULL,
+    `tbpersonalizadoavisovisto` tinyint(4) DEFAULT NULL,
+    `tbpersonalizadopedidoid` int(11) DEFAULT NULL,
+    `tbpersonalizadoregistrofecha` datetime DEFAULT NULL,
+    `tbpersonalizadocotizadofecha` datetime DEFAULT NULL,
+    `tbpersonalizadorespuestafecha` datetime DEFAULT NULL,
+    PRIMARY KEY (`tbpersonalizadoid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE `tbpersonalizadocomponente` (
+    `tbpersonalizadocomponenteid` int(11) NOT NULL,
+    `tbpersonalizadocomponentepersonalizadoid` int(11) DEFAULT NULL,
+    `tbpersonalizadocomponentecomponenteid` int(11) DEFAULT NULL,
+    `tbpersonalizadocomponenteoriginalid` int(11) DEFAULT NULL,
+    `tbpersonalizadocomponentecantidad` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadocomponentecostounitario` decimal(14, 4) DEFAULT NULL,
+    PRIMARY KEY (`tbpersonalizadocomponenteid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE `tbpersonalizadoextra` (
+    `tbpersonalizadoextraid` int(11) NOT NULL,
+    `tbpersonalizadoextrapersonalizadoid` int(11) DEFAULT NULL,
+    `tbpersonalizadoextraconcepto` varchar(60) DEFAULT NULL,
+    `tbpersonalizadoextramonto` decimal(12, 2) DEFAULT NULL,
+    PRIMARY KEY (`tbpersonalizadoextraid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
 CREATE TABLE `tbcarrito` (
     `tbcarritoid` int(11) NOT NULL,
     `tbcarritoclienteid` int(11) DEFAULT NULL,
@@ -280,6 +349,12 @@ CREATE TABLE `tbcarrito` (
     `tbcarritoagregadofecha` datetime DEFAULT NULL,
     PRIMARY KEY (`tbcarritoid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tbpedido`
+--
 
 CREATE TABLE `tbpedido` (
     `tbpedidoid` int(11) NOT NULL,
@@ -294,8 +369,16 @@ CREATE TABLE `tbpedido` (
     `tbpedidoestado` varchar(20) DEFAULT NULL,
     `tbpedidocanceladopor` varchar(20) DEFAULT NULL,
     `tbpedidoactualizacionfecha` datetime DEFAULT NULL,
+    `tbpedidoretirocodigo` varchar(6) DEFAULT NULL,
+    `tbpedidoretirocodigo` varchar(6) DEFAULT NULL,
     PRIMARY KEY (`tbpedidoid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tbpedidodetalle`
+--
 
 CREATE TABLE `tbpedidodetalle` (
     `tbpedidodetalleid` int(11) NOT NULL,
@@ -305,9 +388,26 @@ CREATE TABLE `tbpedidodetalle` (
     `tbpedidodetallecantidad` int(11) DEFAULT NULL,
     `tbpedidodetalleprecio` decimal(12, 2) DEFAULT NULL,
     `tbpedidodetallesubtotal` decimal(12, 2) DEFAULT NULL,
+    `tbpedidodetallepersonalizadoid` int(11) DEFAULT NULL,
     `tbpedidodetalledisenoid` int(11) DEFAULT NULL,
     `tbpedidodetallecotizacionid` int(11) DEFAULT NULL,
     PRIMARY KEY (`tbpedidodetalleid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE `tbpedidopago` (
+    `tbpedidopagoid` int(11) NOT NULL,
+    `tbpedidopagopedidoid` int(11) DEFAULT NULL,
+    `tbpedidopagonumerosinpe` varchar(8) DEFAULT NULL,
+    `tbpedidopagocodigo` varchar(10) DEFAULT NULL,
+    `tbpedidopagoreferencia` varchar(4) DEFAULT NULL,
+    `tbpedidopagocomprobante` varchar(40) DEFAULT NULL,
+    `tbpedidopagomonto` decimal(12, 2) DEFAULT NULL,
+    `tbpedidopagoestado` varchar(20) DEFAULT NULL,
+    `tbpedidopagomotivo` varchar(300) DEFAULT NULL,
+    `tbpedidopagointentos` int(11) DEFAULT NULL,
+    `tbpedidopagoregistrofecha` datetime DEFAULT NULL,
+    `tbpedidopagorevisionfecha` datetime DEFAULT NULL,
+    PRIMARY KEY (`tbpedidopagoid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE `tbcotizacion` (
@@ -351,7 +451,17 @@ CREATE TABLE `tbventa` (
     PRIMARY KEY (`tbventaid`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
-INSERT INTO `tbusuario` (`tbusuarioid`, `tbusuarioidentificaciontipo`, `tbusuarioidentificacionnumero`, `tbusuarionombrecompleto`, `tbusuarioperfilimagen`, `tbusuariocorreo`, `tbusuariotelefono`, `tbusuariocontrasena`, `tbusuariorol`, `tbusuarioregistrofecha`, `tbusuarioactivo`)
+CREATE TABLE `tbabonoventa` (
+    `tbabonoventaid` int(11) NOT NULL,
+    `tbabonoventaventaid` int(11) DEFAULT NULL,
+    `tbabonoventamonto` decimal(12, 2) DEFAULT NULL,
+    `tbabonoventametodopago` varchar(20) DEFAULT NULL,
+    `tbabonoventanota` varchar(300) DEFAULT NULL,
+    `tbabonoventafecha` datetime DEFAULT NULL,
+    PRIMARY KEY (`tbabonoventaid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+INSERT INTO `tbusuario`(`tbusuarioid`, `tbusuarioidentificaciontipo`, `tbusuarioidentificacionnumero`, `tbusuarionombrecompleto`, `tbusuarioperfilimagen`, `tbusuariocorreo`, `tbusuariotelefono`, `tbusuariocontrasena`, `tbusuariorol`, `tbusuarioregistrofecha`, `tbusuarioactivo`)
 VALUES
 (1, 'Cedula', '200000002', 'Vendedor de Prueba', NULL, 'vendedor-bisubox@gmail.com', '77777777', '$2y$12$cy7xzNTAn0Gl/Ymia8TU1evpuuyjzp4UfwlBRIY0ocJvWYYVhAdzm', 'Vendedor', '2026-10-01 00:00:00', 1),
 (2, NULL, NULL, 'Cliente de Prueba', NULL, 'cliente-bisubox@gmail.com', '66666666', '$2y$12$Kag4xPDKWvZgDtsJ8uYUqu71BQoosc2NilsEK4OWX/rr7K0vpYkdK', 'Cliente', '2026-10-01 00:00:00', 1),
@@ -409,3 +519,115 @@ VALUES (101, 1, 2, '2026-11-03 09:15:00', 'Retiro', NULL, 'SinpeMovil', 'Cotizac
 
 INSERT INTO `tbpedidodetalle` (`tbpedidodetalleid`, `tbpedidodetallepedidoid`, `tbpedidodetalleproductoid`, `tbpedidodetallenombre`, `tbpedidodetallecantidad`, `tbpedidodetalleprecio`, `tbpedidodetallesubtotal`, `tbpedidodetalledisenoid`, `tbpedidodetallecotizacionid`)
 VALUES (101, 101, NULL, 'Cotización: Gargantilla de perlas con broche dorado', 1, 6600.00, 6600.00, NULL, 103);
+    `tbpedidodetallepersonalizadoid` int(11) DEFAULT NULL,
+    PRIMARY KEY (`tbpedidodetalleid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tbpedidopago`
+--
+
+CREATE TABLE `tbpedidopago` (
+    `tbpedidopagoid` int(11) NOT NULL,
+    `tbpedidopagopedidoid` int(11) DEFAULT NULL,
+    `tbpedidopagonumerosinpe` varchar(8) DEFAULT NULL,
+    `tbpedidopagocodigo` varchar(10) DEFAULT NULL,
+    `tbpedidopagoreferencia` varchar(4) DEFAULT NULL,
+    `tbpedidopagocomprobante` varchar(40) DEFAULT NULL,
+    `tbpedidopagomonto` decimal(12, 2) DEFAULT NULL,
+    `tbpedidopagoestado` varchar(20) DEFAULT NULL,
+    `tbpedidopagomotivo` varchar(300) DEFAULT NULL,
+    `tbpedidopagointentos` int(11) DEFAULT NULL,
+    `tbpedidopagoregistrofecha` datetime DEFAULT NULL,
+    `tbpedidopagorevisionfecha` datetime DEFAULT NULL,
+    PRIMARY KEY (`tbpedidopagoid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tbpersonalizado`
+--
+
+CREATE TABLE `tbpersonalizado` (
+    `tbpersonalizadoid` int(11) NOT NULL,
+    `tbpersonalizadovendedorid` int(11) DEFAULT NULL,
+    `tbpersonalizadoclienteid` int(11) DEFAULT NULL,
+    `tbpersonalizadoproductoid` int(11) DEFAULT NULL,
+    `tbpersonalizadonombre` varchar(60) DEFAULT NULL,
+    `tbpersonalizadopiezas` int(11) DEFAULT NULL,
+    `tbpersonalizadonotacliente` varchar(300) DEFAULT NULL,
+    `tbpersonalizadoestado` varchar(20) DEFAULT NULL,
+    `tbpersonalizadominutos` int(11) DEFAULT NULL,
+    `tbpersonalizadotarifahora` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadocostocomponentes` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadocostomanoobra` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadocostoextras` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadocostototal` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadoganancia` int(11) DEFAULT NULL,
+    `tbpersonalizadoprecio` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadototal` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadonotatienda` varchar(300) DEFAULT NULL,
+    `tbpersonalizadocanceladopor` varchar(20) DEFAULT NULL,
+    `tbpersonalizadoavisovisto` tinyint(4) DEFAULT NULL,
+    `tbpersonalizadopedidoid` int(11) DEFAULT NULL,
+    `tbpersonalizadoregistrofecha` datetime DEFAULT NULL,
+    `tbpersonalizadocotizadofecha` datetime DEFAULT NULL,
+    `tbpersonalizadorespuestafecha` datetime DEFAULT NULL,
+    PRIMARY KEY (`tbpersonalizadoid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tbpersonalizadocomponente`
+--
+
+CREATE TABLE `tbpersonalizadocomponente` (
+    `tbpersonalizadocomponenteid` int(11) NOT NULL,
+    `tbpersonalizadocomponentepersonalizadoid` int(11) DEFAULT NULL,
+    `tbpersonalizadocomponentecomponenteid` int(11) DEFAULT NULL,
+    `tbpersonalizadocomponenteoriginalid` int(11) DEFAULT NULL,
+    `tbpersonalizadocomponentecantidad` decimal(12, 2) DEFAULT NULL,
+    `tbpersonalizadocomponentecostounitario` decimal(14, 4) DEFAULT NULL,
+    PRIMARY KEY (`tbpersonalizadocomponenteid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tbpersonalizadoextra`
+--
+
+CREATE TABLE `tbpersonalizadoextra` (
+    `tbpersonalizadoextraid` int(11) NOT NULL,
+    `tbpersonalizadoextrapersonalizadoid` int(11) DEFAULT NULL,
+    `tbpersonalizadoextraconcepto` varchar(60) DEFAULT NULL,
+    `tbpersonalizadoextramonto` decimal(12, 2) DEFAULT NULL,
+    PRIMARY KEY (`tbpersonalizadoextraid`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+--
+-- Datos iniciales: un vendedor con su tienda y un cliente
+--
+
+INSERT INTO `tbusuario` (`tbusuarioid`, `tbusuarioidentificaciontipo`, `tbusuarioidentificacionnumero`, `tbusuarionombrecompleto`, `tbusuarioperfilimagen`, `tbusuariocorreo`, `tbusuariotelefono`, `tbusuariocontrasena`, `tbusuariorol`, `tbusuarioregistrofecha`, `tbusuarioactivo`) VALUES
+(1, 'Cedula', '200000002', 'Vendedor de Prueba', NULL, 'vendedor.bisubox@gmail.com', '77777777', '$2y$12$cy7xzNTAn0Gl/Ymia8TU1evpuuyjzp4UfwlBRIY0ocJvWYYVhAdzm', 'Vendedor', '2026-10-01 00:00:00', 1),
+(2, NULL, NULL, 'Cliente de Prueba', NULL, 'cliente.bisubox@gmail.com', '66666666', '$2y$12$Kag4xPDKWvZgDtsJ8uYUqu71BQoosc2NilsEK4OWX/rr7K0vpYkdK', 'Cliente', '2026-10-01 00:00:00', 1);
+
+INSERT INTO `tbvendedor` (`tbvendedorid`, `tbvendedorusuarioid`, `tbvendedortiendanombre`, `tbvendedortiendaenlace`, `tbvendedortiendadescripcion`, `tbvendedortiendalogo`, `tbvendedorsinpe`, `tbvendedoractivo`) VALUES
+(1, 1, 'Tienda de Prueba', 'tienda-de-prueba', 'Bisutería hecha a mano para probar el sistema', NULL, '88451290', 1);
+
+INSERT INTO `tbvendedorcontacto` (`tbvendedorcontactoid`, `tbvendedorcontactovendedorid`, `tbvendedorcontactotipo`, `tbvendedorcontactovalor`) VALUES
+(1, 1, 'WhatsApp', '88451290'),
+(2, 1, 'Instagram', 'tiendadeprueba');
+
+INSERT INTO `tbcliente` (`tbclienteid`, `tbclienteusuarioid`) VALUES
+(1, 2);
+
+INSERT INTO `tbproveedor` (`tbproveedorid`, `tbproveedorvendedorid`, `tbproveedornombre`, `tbproveedortelefono`, `tbproveedorcorreo`, `tbproveedorregistrofecha`, `tbproveedoractivo`) VALUES
+(1, 1, 'Perlas del Valle S.A.', '22345678', 'ventas@perlasdelvalle.com', '2026-10-01 00:00:00', 1),
+(2, 1, 'Ana Rojas Mora', '87654321', 'anarojas@gmail.com', '2026-10-01 00:00:00', 1);

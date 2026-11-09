@@ -26,6 +26,7 @@ class Permiso
         'emprender' => [Rol::CLIENTE],
         'cotizaciones.gestionar' => [Rol::VENDEDOR],
         'misCotizaciones.ver' => [Rol::VENDEDOR, Rol::CLIENTE],
+        'personalizar' => [Rol::VENDEDOR, Rol::CLIENTE],
     ];
 
     public static function puede(string $permiso): bool

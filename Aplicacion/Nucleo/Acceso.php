@@ -8,13 +8,10 @@ use Aplicacion\Repositorios\SesionRepositorio;
 
 class Acceso
 {
-    // Página a la que vuelve la persona después de ingresar o crear su cuenta
-    // (por ejemplo la tienda donde quería hacer un pedido)
     private const CLAVE_DESTINO = 'destinoDespuesDeIngresar';
 
     public static function guardarDestino(mixed $ruta): void
     {
-        // Solo rutas internas del sistema, nunca otra página de internet
         if (is_string($ruta) && preg_match('#^/[A-Za-z0-9/_-]*(\?[A-Za-z0-9=&_-]*)?$#', $ruta) === 1 && !str_starts_with($ruta, '//')) {
             $_SESSION[self::CLAVE_DESTINO] = $ruta;
         }

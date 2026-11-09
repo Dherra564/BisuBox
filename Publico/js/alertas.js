@@ -6,6 +6,38 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    document.querySelectorAll('.alerta[data-autocerrar]').forEach(function (alerta) {
+        var restante = 10000;
+        var inicio = 0;
+        var espera = null;
+
+        function quitar() {
+            alerta.classList.add('alertaSaliendo');
+            setTimeout(function () {
+                alerta.remove();
+            }, 300);
+        }
+
+        function seguir() {
+            inicio = Date.now();
+            espera = setTimeout(quitar, restante);
+        }
+
+        function pausar() {
+            if (espera !== null) {
+                clearTimeout(espera);
+                espera = null;
+                restante -= Date.now() - inicio;
+            }
+        }
+
+        alerta.addEventListener('mouseenter', pausar);
+        alerta.addEventListener('mouseleave', seguir);
+        alerta.addEventListener('focusin', pausar);
+        alerta.addEventListener('focusout', seguir);
+        seguir();
+    });
+
     var modal = document.getElementById('modalConfirmacion');
     var formularioPendiente = null;
 

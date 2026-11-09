@@ -7,10 +7,6 @@ namespace Composer\Autoload;
 class ComposerStaticInitf1b475edff992ae6a5403207824e6baf
 {
     public static $prefixLengthsPsr4 = array (
-        'P' =>
-        array (
-            'PHPMailer\\PHPMailer\\' => 20,
-        ),
         'C' =>
         array (
             'Configuracion\\' => 14,
@@ -22,10 +18,6 @@ class ComposerStaticInitf1b475edff992ae6a5403207824e6baf
     );
 
     public static $prefixDirsPsr4 = array (
-        'PHPMailer\\PHPMailer\\' =>
-        array (
-            0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
-        ),
         'Configuracion\\' =>
         array (
             0 => __DIR__ . '/../..' . '/Configuracion',
@@ -38,22 +30,21 @@ class ComposerStaticInitf1b475edff992ae6a5403207824e6baf
 
     public static $classMap = array (
         'Aplicacion\\Controladores\\AutenticacionControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/AutenticacionControlador.php',
+        'Aplicacion\\Controladores\\AvisoControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/AvisoControlador.php',
         'Aplicacion\\Controladores\\CarritoControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/CarritoControlador.php',
         'Aplicacion\\Controladores\\ClienteControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/ClienteControlador.php',
         'Aplicacion\\Controladores\\ComponenteControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/ComponenteControlador.php',
         'Aplicacion\\Controladores\\CompraProveedorControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/CompraProveedorControlador.php',
-        'Aplicacion\\Controladores\\CotizacionControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/CotizacionControlador.php',
         'Aplicacion\\Controladores\\EmprenderControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/EmprenderControlador.php',
         'Aplicacion\\Controladores\\ErrorControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/ErrorControlador.php',
         'Aplicacion\\Controladores\\FotoControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/FotoControlador.php',
         'Aplicacion\\Controladores\\InicioControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/InicioControlador.php',
         'Aplicacion\\Controladores\\InventarioControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/InventarioControlador.php',
-        'Aplicacion\\Controladores\\MisCotizacionesControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/MisCotizacionesControlador.php',
         'Aplicacion\\Controladores\\MisPedidosControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/MisPedidosControlador.php',
         'Aplicacion\\Controladores\\PedidoControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/PedidoControlador.php',
         'Aplicacion\\Controladores\\PerfilControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/PerfilControlador.php',
-        'Aplicacion\\Controladores\\PersonalizadorControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/PersonalizadorControlador.php',
-        'Aplicacion\\Controladores\\PersonalizadorTiendaControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/PersonalizadorTiendaControlador.php',
+        'Aplicacion\\Controladores\\PersonalizadoControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/PersonalizadoControlador.php',
+        'Aplicacion\\Controladores\\PersonalizarControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/PersonalizarControlador.php',
         'Aplicacion\\Controladores\\ProductoControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/ProductoControlador.php',
         'Aplicacion\\Controladores\\ProveedorControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/ProveedorControlador.php',
         'Aplicacion\\Controladores\\RegistroControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/RegistroControlador.php',
@@ -61,13 +52,16 @@ class ComposerStaticInitf1b475edff992ae6a5403207824e6baf
         'Aplicacion\\Controladores\\TiendaControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/TiendaControlador.php',
         'Aplicacion\\Controladores\\TiendaPublicaControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/TiendaPublicaControlador.php',
         'Aplicacion\\Controladores\\TipoComponenteControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/TipoComponenteControlador.php',
-        'Aplicacion\\Controladores\\VentaControlador' => __DIR__ . '/../..' . '/Aplicacion/Controladores/VentaControlador.php',
         'Aplicacion\\Modelos\\Cliente' => __DIR__ . '/../..' . '/Aplicacion/Modelos/Cliente.php',
         'Aplicacion\\Modelos\\Componente' => __DIR__ . '/../..' . '/Aplicacion/Modelos/Componente.php',
         'Aplicacion\\Modelos\\CompraProveedor' => __DIR__ . '/../..' . '/Aplicacion/Modelos/CompraProveedor.php',
         'Aplicacion\\Modelos\\CompraProveedorDetalle' => __DIR__ . '/../..' . '/Aplicacion/Modelos/CompraProveedorDetalle.php',
         'Aplicacion\\Modelos\\Pedido' => __DIR__ . '/../..' . '/Aplicacion/Modelos/Pedido.php',
         'Aplicacion\\Modelos\\PedidoDetalle' => __DIR__ . '/../..' . '/Aplicacion/Modelos/PedidoDetalle.php',
+        'Aplicacion\\Modelos\\PedidoPago' => __DIR__ . '/../..' . '/Aplicacion/Modelos/PedidoPago.php',
+        'Aplicacion\\Modelos\\Personalizado' => __DIR__ . '/../..' . '/Aplicacion/Modelos/Personalizado.php',
+        'Aplicacion\\Modelos\\PersonalizadoComponente' => __DIR__ . '/../..' . '/Aplicacion/Modelos/PersonalizadoComponente.php',
+        'Aplicacion\\Modelos\\PersonalizadoExtra' => __DIR__ . '/../..' . '/Aplicacion/Modelos/PersonalizadoExtra.php',
         'Aplicacion\\Modelos\\Produccion' => __DIR__ . '/../..' . '/Aplicacion/Modelos/Produccion.php',
         'Aplicacion\\Modelos\\ProduccionComponente' => __DIR__ . '/../..' . '/Aplicacion/Modelos/ProduccionComponente.php',
         'Aplicacion\\Modelos\\Producto' => __DIR__ . '/../..' . '/Aplicacion/Modelos/Producto.php',
@@ -82,24 +76,22 @@ class ComposerStaticInitf1b475edff992ae6a5403207824e6baf
         'Aplicacion\\Modelos\\Vendedor' => __DIR__ . '/../..' . '/Aplicacion/Modelos/Vendedor.php',
         'Aplicacion\\Modelos\\VendedorContacto' => __DIR__ . '/../..' . '/Aplicacion/Modelos/VendedorContacto.php',
         'Aplicacion\\Nucleo\\Acceso' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/Acceso.php',
-        'Aplicacion\\Nucleo\\CalculoDiseno' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/CalculoDiseno.php',
+        'Aplicacion\\Nucleo\\AvisosTienda' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/AvisosTienda.php',
         'Aplicacion\\Nucleo\\Carrito' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/Carrito.php',
         'Aplicacion\\Nucleo\\ClaseDato' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/ClaseDato.php',
-        'Aplicacion\\Nucleo\\ContextoPersonalizador' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/ContextoPersonalizador.php',
         'Aplicacion\\Nucleo\\CostoPromedio' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/CostoPromedio.php',
         'Aplicacion\\Nucleo\\Csrf' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/Csrf.php',
         'Aplicacion\\Nucleo\\DatosComponente' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/DatosComponente.php',
         'Aplicacion\\Nucleo\\DatosCompraProveedor' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/DatosCompraProveedor.php',
-        'Aplicacion\\Nucleo\\DatosCotizacion' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/DatosCotizacion.php',
-        'Aplicacion\\Nucleo\\DatosPersonalizador' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/DatosPersonalizador.php',
+        'Aplicacion\\Nucleo\\DatosPago' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/DatosPago.php',
         'Aplicacion\\Nucleo\\DatosProducto' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/DatosProducto.php',
         'Aplicacion\\Nucleo\\DatosTienda' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/DatosTienda.php',
         'Aplicacion\\Nucleo\\DatosTipoComponente' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/DatosTipoComponente.php',
-        'Aplicacion\\Nucleo\\DatosVenta' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/DatosVenta.php',
         'Aplicacion\\Nucleo\\Enrutador' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/Enrutador.php',
-        'Aplicacion\\Nucleo\\EstadoCotizacion' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/EstadoCotizacion.php',
         'Aplicacion\\Nucleo\\EstadoExistencia' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/EstadoExistencia.php',
+        'Aplicacion\\Nucleo\\EstadoPago' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/EstadoPago.php',
         'Aplicacion\\Nucleo\\EstadoPedido' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/EstadoPedido.php',
+        'Aplicacion\\Nucleo\\EstadoPersonalizado' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/EstadoPersonalizado.php',
         'Aplicacion\\Nucleo\\FiltrosInventario' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/FiltrosInventario.php',
         'Aplicacion\\Nucleo\\FormaEntrega' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/FormaEntrega.php',
         'Aplicacion\\Nucleo\\Icono' => __DIR__ . '/../..' . '/Aplicacion/Nucleo/Icono.php',
@@ -123,13 +115,11 @@ class ComposerStaticInitf1b475edff992ae6a5403207824e6baf
         'Aplicacion\\Repositorios\\CarritoRepositorio' => __DIR__ . '/../..' . '/Aplicacion/Repositorios/CarritoRepositorio.php',
         'Aplicacion\\Repositorios\\ClienteRepositorio' => __DIR__ . '/../..' . '/Aplicacion/Repositorios/ClienteRepositorio.php',
         'Aplicacion\\Repositorios\\ComponenteRepositorio' => __DIR__ . '/../..' . '/Aplicacion/Repositorios/ComponenteRepositorio.php',
-        'Aplicacion\\Repositorios\\ComponenteVistaRepositorio' => __DIR__ . '/../..' . '/Aplicacion/Repositorios/ComponenteVistaRepositorio.php',
         'Aplicacion\\Repositorios\\CompraProveedorRepositorio' => __DIR__ . '/../..' . '/Aplicacion/Repositorios/CompraProveedorRepositorio.php',
-        'Aplicacion\\Repositorios\\CotizacionRepositorio' => __DIR__ . '/../..' . '/Aplicacion/Repositorios/CotizacionRepositorio.php',
-        'Aplicacion\\Repositorios\\DisenoRepositorio' => __DIR__ . '/../..' . '/Aplicacion/Repositorios/DisenoRepositorio.php',
         'Aplicacion\\Repositorios\\FotoRepositorio' => __DIR__ . '/../..' . '/Aplicacion/Repositorios/FotoRepositorio.php',
+        'Aplicacion\\Repositorios\\PedidoPagoRepositorio' => __DIR__ . '/../..' . '/Aplicacion/Repositorios/PedidoPagoRepositorio.php',
         'Aplicacion\\Repositorios\\PedidoRepositorio' => __DIR__ . '/../..' . '/Aplicacion/Repositorios/PedidoRepositorio.php',
-        'Aplicacion\\Repositorios\\PersonalizadorRepositorio' => __DIR__ . '/../..' . '/Aplicacion/Repositorios/PersonalizadorRepositorio.php',
+        'Aplicacion\\Repositorios\\PersonalizadoRepositorio' => __DIR__ . '/../..' . '/Aplicacion/Repositorios/PersonalizadoRepositorio.php',
         'Aplicacion\\Repositorios\\ProduccionRepositorio' => __DIR__ . '/../..' . '/Aplicacion/Repositorios/ProduccionRepositorio.php',
         'Aplicacion\\Repositorios\\ProductoRepositorio' => __DIR__ . '/../..' . '/Aplicacion/Repositorios/ProductoRepositorio.php',
         'Aplicacion\\Repositorios\\ProveedorRepositorio' => __DIR__ . '/../..' . '/Aplicacion/Repositorios/ProveedorRepositorio.php',
@@ -139,17 +129,9 @@ class ComposerStaticInitf1b475edff992ae6a5403207824e6baf
         'Aplicacion\\Repositorios\\UsuarioRepositorio' => __DIR__ . '/../..' . '/Aplicacion/Repositorios/UsuarioRepositorio.php',
         'Aplicacion\\Repositorios\\VendedorContactoRepositorio' => __DIR__ . '/../..' . '/Aplicacion/Repositorios/VendedorContactoRepositorio.php',
         'Aplicacion\\Repositorios\\VendedorRepositorio' => __DIR__ . '/../..' . '/Aplicacion/Repositorios/VendedorRepositorio.php',
-        'Aplicacion\\Repositorios\\VentaRepositorio' => __DIR__ . '/../..' . '/Aplicacion/Repositorios/VentaRepositorio.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'Configuracion\\BaseDatos' => __DIR__ . '/../..' . '/Configuracion/BaseDatos.php',
         'Configuracion\\Configuracion' => __DIR__ . '/../..' . '/Configuracion/Configuracion.php',
-        'PHPMailer\\PHPMailer\\DSNConfigurator' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/DSNConfigurator.php',
-        'PHPMailer\\PHPMailer\\Exception' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/Exception.php',
-        'PHPMailer\\PHPMailer\\OAuth' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/OAuth.php',
-        'PHPMailer\\PHPMailer\\OAuthTokenProvider' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/OAuthTokenProvider.php',
-        'PHPMailer\\PHPMailer\\PHPMailer' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/PHPMailer.php',
-        'PHPMailer\\PHPMailer\\POP3' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/POP3.php',
-        'PHPMailer\\PHPMailer\\SMTP' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/SMTP.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

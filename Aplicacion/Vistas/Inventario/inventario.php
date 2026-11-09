@@ -210,13 +210,20 @@ $detalle = function ($componente) use ($tiposPorId): string {
                         ?>
                         <tr class="<?= $componente->getActivo() ? '' : 'filaInactiva' ?>">
                             <td data-etiqueta="Componente" class="celdaComponente">
-                                <span class="nombreComponente"><?= htmlspecialchars($componente->getNombre()) ?></span>
-                                <?php if (!$componente->getActivo()): ?>
-                                    <span class="etiqueta etiquetaInactivo">Desactivado</span>
-                                <?php endif; ?>
-                                <?php if ($textoDetalle !== ''): ?>
-                                    <span class="detalleComponente"><?= htmlspecialchars($textoDetalle) ?></span>
-                                <?php endif; ?>
+                                <div class="componenteConFoto">
+                                    <img src="<?= $componente->getFoto() !== null
+                                        ? $urlBase . '/fotos/componente?archivo=' . urlencode($componente->getFoto())
+                                        : $urlBase . '/imagenes/productoPorDefecto.svg' ?>" alt="" class="miniaturaComponente" loading="lazy">
+                                    <div>
+                                        <span class="nombreComponente"><?= htmlspecialchars($componente->getNombre()) ?></span>
+                                        <?php if (!$componente->getActivo()): ?>
+                                            <span class="etiqueta etiquetaInactivo">Desactivado</span>
+                                        <?php endif; ?>
+                                        <?php if ($textoDetalle !== ''): ?>
+                                            <span class="detalleComponente"><?= htmlspecialchars($textoDetalle) ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
                             </td>
                             <td data-etiqueta="Tipo"><?= htmlspecialchars($componente->getNombreTipo()) ?></td>
                             <td data-etiqueta="Existencia" class="celdaExistencia">

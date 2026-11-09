@@ -10,11 +10,14 @@ use Aplicacion\Nucleo\CalculoDiseno;
 use Aplicacion\Nucleo\Carrito;
 use Aplicacion\Nucleo\ContextoPersonalizador;
 use Aplicacion\Nucleo\Csrf;
+use Aplicacion\Nucleo\DatosPago;
 use Aplicacion\Nucleo\EstadoPedido;
 use Aplicacion\Nucleo\FormaEntrega;
 use Aplicacion\Nucleo\Mensaje;
 use Aplicacion\Nucleo\MetodoPago;
+use Aplicacion\Nucleo\OperacionNoPermitida;
 use Aplicacion\Nucleo\Permiso;
+use Aplicacion\Nucleo\SubidaArchivo;
 use Aplicacion\Nucleo\UsuarioActual;
 use Aplicacion\Nucleo\Validador;
 use Aplicacion\Repositorios\ClienteRepositorio;
@@ -155,6 +158,8 @@ class CarritoControlador
             'direccion' => '',
             'metodoPago' => '',
             'nota' => '',
+            'referencia' => '',
+            'comprobantePendiente' => null,
         ], []);
     }
 
@@ -166,9 +171,17 @@ class CarritoControlador
         $carrito = $this->carritoListoParaPedir($idVendedor);
         $idCliente = (new ClienteRepositorio())->asegurar((int) UsuarioActual::id());
 
+        $vendedor = $carrito['vendedor'];
         $datos = $this->leerDatos();
-        $validador = $this->validarDatos($datos);
+        $validador = $this->validarDatos($datos, $vendedor);
+        $leidoPago = null;
+        if ($datos['metodoPago'] === MetodoPago::SINPE && $validador->error('metodoPago') === null) {
+            $leidoPago = DatosPago::recibir($vendedor, $validador);
+            $datos['referencia'] = $leidoPago['referencia'];
+            $datos['comprobantePendiente'] = $leidoPago['comprobante'];
+        }
         if (!$validador->esValido()) {
+            SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_COMPROBANTE, $datos['comprobantePendiente']);
             $this->mostrarConfirmacion($carrito, $datos, $validador->errores());
             return;
         }
@@ -191,8 +204,7 @@ class CarritoControlador
                 CalculoDiseno::nombreDiseno($diseno['tipo']) . ' de ' . CalculoDiseno::cm($diseno['largo']) . ' cm',
                 1,
                 $diseno['precio'],
-                null,
-                $diseno['id']
+                idDiseno: $diseno['id']
             );
             $total += $diseno['precio'];
             $idsDisenos[] = $diseno['id'];
@@ -208,32 +220,45 @@ class CarritoControlador
             $datos['metodoPago'],
             $datos['nota'] !== '' ? $datos['nota'] : null,
             round($total, 2),
-            EstadoPedido::PENDIENTE,
+            EstadoPedido::CONFIRMADO,
             null,
             null,
             $detalles
         );
 
+        $pago = $leidoPago !== null ? DatosPago::crearPago($vendedor, $pedido->getTotal(), $leidoPago) : null;
+
         $transaccionPropia = BaseDatos::iniciarTransaccion();
         try {
-            $idPedido = (new PedidoRepositorio())->crear($pedido);
+            $idPedido = (new PedidoRepositorio())->crear($pedido, $pago);
             (new DisenoRepositorio())->marcarEnPedido($idsDisenos);
             if ($transaccionPropia) {
                 BaseDatos::confirmarTransaccion();
             }
+        } catch (OperacionNoPermitida $error) {
+            if ($transaccionPropia) {
+                BaseDatos::revertirTransaccion();
+            }
+            SubidaArchivo::eliminarComprobante($datos['comprobantePendiente']);
+            Mensaje::error($error->getMessage());
+            $this->redirigir('/carrito');
+
         } catch (Throwable $error) {
             if ($transaccionPropia) {
                 BaseDatos::revertirTransaccion();
             }
             error_log('Error al crear el pedido: ' . $error->getMessage());
+            SubidaArchivo::recordarPendiente(SubidaArchivo::FOTO_COMPROBANTE, $datos['comprobantePendiente']);
             Mensaje::error('No se pudo enviar el pedido. Intente de nuevo.');
             $this->mostrarConfirmacion($carrito, $datos, []);
             return;
         }
 
+        SubidaArchivo::olvidarPendiente(SubidaArchivo::FOTO_COMPROBANTE, $datos['comprobantePendiente']);
+        DatosPago::olvidarCodigoPago($idVendedor);
         Carrito::vaciarTienda($idVendedor);
-        Mensaje::exito('Pedido enviado a ' . $carrito['vendedor']->getTiendaNombre()
-            . '. Cuando la tienda lo confirme, lo verá aquí.');
+        Mensaje::exito('Su compra a ' . $vendedor->getTiendaNombre() . ' quedó confirmada.'
+            . ($pago !== null ? ' La tienda va a revisar que le llegó su SINPE.' : ' La tienda ya la está preparando.'));
         $this->redirigir('/mis-pedidos/detalle?id=' . $idPedido);
     }
 
@@ -363,10 +388,12 @@ class CarritoControlador
             'direccion' => (string) preg_replace('/[ \t]+/', ' ', $leer('direccion')),
             'metodoPago' => $leer('metodoPago'),
             'nota' => $leer('nota'),
+            'referencia' => '',
+            'comprobantePendiente' => null,
         ];
     }
 
-        private function validarDatos(array $datos): Validador
+    private function validarDatos(array $datos, Vendedor $vendedor): Validador
     {
         $validador = new Validador();
 
@@ -378,7 +405,7 @@ class CarritoControlador
                 ->longitud('direccion', $datos['direccion'], 10, 250, 'La dirección debe tener entre 10 y 250 caracteres')
                 ->direccion('direccion', $datos['direccion']);
         }
-        if (!MetodoPago::existe($datos['metodoPago'])) {
+        if (!isset(DatosPago::metodosPara($vendedor)[$datos['metodoPago']])) {
             $validador->agregarError('metodoPago', 'Escoja cómo va a pagar');
         }
         $validador->longitud('nota', $datos['nota'], 0, 300, 'La nota puede tener como máximo 300 caracteres')
@@ -392,8 +419,12 @@ class CarritoControlador
         $clienteRepositorio = new ClienteRepositorio();
         $clienteRepositorio->asegurar((int) UsuarioActual::id());
 
+        $vendedor = $carrito['vendedor'];
         $this->mostrarVista('Carrito/confirmar', [
             'carrito' => $carrito,
+            'metodos' => DatosPago::metodosPara($vendedor),
+            'tiendaPago' => $vendedor,
+            'codigoPago' => $vendedor->tieneSinpe() ? DatosPago::codigoPago((int) $vendedor->getIdVendedor()) : null,
             'cliente' => $clienteRepositorio->buscarPorIdUsuario((int) UsuarioActual::id()),
             'datos' => $datos,
             'errores' => $errores,

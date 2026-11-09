@@ -44,7 +44,6 @@ $filaComponente = function (string $clave, array $linea) use ($claseCampo, $mens
             $agotado = $componente->getExistencia() <= 0;
             $opciones .= '<option value="' . $componente->getIdComponente() . '"'
                 . ((string) $componente->getIdComponente() === $linea['componente'] ? ' selected' : '')
-                // El que ya estaba elegido no se bloquea, para que no se pierda si se agotó mientras tanto
                 . ($agotado && (string) $componente->getIdComponente() !== $linea['componente'] ? ' disabled' : '')
                 . ' data-existencia="' . $componente->getExistencia() . '"'
                 . ' data-costo="' . $componente->getCostoUnitario() . '"'
@@ -145,7 +144,6 @@ $hayErrorExtras = array_filter(array_keys($errores), fn(string $campo): bool => 
                         <label for="foto" class="enlaceFoto"><?= $fotoPendiente !== null ? 'Cambiar foto' : 'Agregar foto' ?></label>
                         <input type="file" id="foto" name="foto" accept="image/jpeg,image/png" class="campoArchivo">
                         <?php if ($fotoPendiente !== null): ?>
-                            <!-- La foto que ya eligió no se pierde aunque el formulario tenga errores -->
                             <input type="hidden" name="fotoPendiente" value="<?= htmlspecialchars($fotoPendiente) ?>">
                             <span class="nombreArchivo">Foto elegida</span>
                         <?php else: ?>

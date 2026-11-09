@@ -45,6 +45,20 @@ document.addEventListener('DOMContentLoaded', function () {
             patron: /^[\p{L}0-9\s.,#\-\/()°º:;]+$/u,
             mensaje: 'La dirección solo puede tener letras, números, espacios y los signos . , # - / ( ) °'
         },
+        referencia: {
+            patron: /^[0-9]{4}$/,
+            mensaje: 'La referencia debe ser de 4 números, los últimos del comprobante'
+        },
+        sinpe: {
+            prueba: function (valor) {
+                return /^[5-8][0-9]{7}$/.test(limpiarTelefono(valor));
+            },
+            mensaje: 'El número SINPE Móvil debe tener 8 dígitos y empezar con 5, 6, 7 u 8'
+        },
+        codigoRetiro: {
+            patron: /^[A-Za-z0-9]{6}$/,
+            mensaje: 'El código de retiro tiene 6 letras y números'
+        },
         minutos: {
             prueba: function (valor) {
                 return /^[0-9]{1,4}$/.test(valor) && parseInt(valor, 10) >= 1;
@@ -275,11 +289,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function revisarCampo(campo, formulario) {
-
         if (campo.closest('[hidden]')) {
             return '';
         }
-
 
         if (campo.type === 'radio') {
             var grupo = formulario.querySelectorAll('input[type="radio"][name="' + campo.name + '"]');
@@ -301,6 +313,24 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!esContactoValido(campo, valor)) {
                 var tipoContacto = campo.closest('.filaContacto').querySelector('[data-contacto-tipo]');
                 return tipoContacto.options[tipoContacto.selectedIndex].getAttribute('data-mensaje');
+            }
+            return '';
+        }
+
+        if (campo.getAttribute('data-regla') === 'abono') {
+            if (valor.charAt(0) === '-') {
+                return 'No puede ser un número negativo';
+            }
+            var textoMonto = valor.replace(/ /g, '');
+            if (!/^[0-9]{1,10}([.,][0-9]{1,2})?$/.test(textoMonto)) {
+                return 'Escriba un monto, por ejemplo 5000 o 5000,50';
+            }
+            var monto = parseFloat(textoMonto.replace(',', '.'));
+            if (monto <= 0) {
+                return 'El abono debe ser mayor que 0';
+            }
+            if (monto > parseFloat(campo.getAttribute('data-saldo')) + 0.001) {
+                return campo.getAttribute('data-mensaje-saldo');
             }
             return '';
         }
@@ -382,7 +412,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-
         function revisarYMostrar(campo) {
             if (!campo.matches(selectorCampos)) {
                 return;
@@ -401,7 +430,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-
         function revisarDependientes(campo) {
             if (!campo.id) {
                 return;
@@ -414,7 +442,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
         }
 
-
         function alCambiar(evento) {
             var campo = evento.target;
             if (!campo.matches('input, select, textarea') || campo.type === 'hidden') {
@@ -425,7 +452,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if (campo.matches(selectorCampos)) {
                 revisarYMostrar(campo);
             } else if (campo.closest('.campoConError')) {
-
                 quitarError(campo);
             }
             revisarDependientes(campo);
@@ -433,7 +459,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         formulario.addEventListener('input', alCambiar);
         formulario.addEventListener('change', alCambiar);
-
 
         formulario.addEventListener('focusout', function (evento) {
             var campo = evento.target;
@@ -605,7 +630,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-
     var CLAVE_RESPALDO = 'bisuboxRespaldoFormulario';
 
     function camposRespaldables(formulario) {
@@ -628,7 +652,6 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             sessionStorage.setItem(CLAVE_RESPALDO, JSON.stringify({ accion: formulario.getAttribute('action'), campos: campos }));
         } catch (error) {
-
         }
     }
 
@@ -640,7 +663,6 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (error) {
             return;
         }
-
         if (!respaldo || !document.querySelector('.alertaError')) {
             return;
         }
@@ -655,11 +677,9 @@ document.addEventListener('DOMContentLoaded', function () {
         var escritos = campos.filter(function (campo) {
             return campo.type !== 'checkbox' && campo.type !== 'radio' && campo.tagName !== 'SELECT' && campo.value.trim() !== '';
         });
-
         if (escritos.length > 0) {
             return;
         }
-
 
         var usados = {};
         respaldo.campos.forEach(function (guardado) {

@@ -1,6 +1,7 @@
 <?php
 
 use Aplicacion\Controladores\AutenticacionControlador;
+use Aplicacion\Controladores\AvisoControlador;
 use Aplicacion\Controladores\CarritoControlador;
 use Aplicacion\Controladores\ClienteControlador;
 use Aplicacion\Controladores\ComponenteControlador;
@@ -14,8 +15,10 @@ use Aplicacion\Controladores\MisCotizacionesControlador;
 use Aplicacion\Controladores\MisPedidosControlador;
 use Aplicacion\Controladores\PedidoControlador;
 use Aplicacion\Controladores\PerfilControlador;
+use Aplicacion\Controladores\PersonalizadoControlador;
 use Aplicacion\Controladores\PersonalizadorControlador;
 use Aplicacion\Controladores\PersonalizadorTiendaControlador;
+use Aplicacion\Controladores\PersonalizarControlador;
 use Aplicacion\Controladores\ProductoControlador;
 use Aplicacion\Controladores\ProveedorControlador;
 use Aplicacion\Controladores\RecuperacionControlador;
@@ -26,7 +29,6 @@ use Aplicacion\Controladores\TiendaPublicaControlador;
 use Aplicacion\Controladores\TipoComponenteControlador;
 use Aplicacion\Controladores\VentaControlador;
 use Aplicacion\Nucleo\Enrutador;
-
 
 return function (Enrutador $enrutador): void {
 
@@ -74,6 +76,9 @@ return function (Enrutador $enrutador): void {
     $enrutador->get('/fotos/producto', [FotoControlador::class, 'mostrarProducto']);
     $enrutador->get('/fotos/componente', [FotoControlador::class, 'mostrarComponente']);
     $enrutador->get('/fotos/pieza', [FotoControlador::class, 'mostrarPieza']);
+    $enrutador->get('/fotos/comprobante', [FotoControlador::class, 'mostrarComprobante']);
+
+    $enrutador->get('/avisos', [AvisoControlador::class, 'revisar']);
 
     $enrutador->get('/personalizador', [PersonalizadorControlador::class, 'mostrar']);
     $enrutador->post('/personalizador/configuracion', [PersonalizadorControlador::class, 'guardarConfiguracion']);
@@ -106,7 +111,6 @@ return function (Enrutador $enrutador): void {
     $enrutador->get('/compras-proveedor/detalle', [CompraProveedorControlador::class, 'detalle']);
     $enrutador->post('/compras-proveedor/anular', [CompraProveedorControlador::class, 'anular']);
 
-
     $enrutador->get('/carrito', [CarritoControlador::class, 'ver']);
     $enrutador->post('/carrito/agregar', [CarritoControlador::class, 'agregar']);
     $enrutador->post('/carrito/actualizar', [CarritoControlador::class, 'actualizar']);
@@ -115,15 +119,29 @@ return function (Enrutador $enrutador): void {
     $enrutador->get('/mis-pedidos', [MisPedidosControlador::class, 'listar']);
     $enrutador->get('/mis-pedidos/detalle', [MisPedidosControlador::class, 'detalle']);
     $enrutador->post('/mis-pedidos/cancelar', [MisPedidosControlador::class, 'cancelar']);
+    $enrutador->post('/mis-pedidos/pago', [MisPedidosControlador::class, 'reenviarPago']);
 
+    $enrutador->get('/personalizar', [PersonalizarControlador::class, 'mostrar']);
+    $enrutador->post('/personalizar', [PersonalizarControlador::class, 'enviar']);
+    $enrutador->get('/mis-pedidos/personalizados', [PersonalizarControlador::class, 'listar']);
+    $enrutador->get('/mis-pedidos/personalizado', [PersonalizarControlador::class, 'detalle']);
+    $enrutador->post('/mis-pedidos/personalizado/cancelar', [PersonalizarControlador::class, 'cancelar']);
+    $enrutador->get('/mis-pedidos/personalizado/comprar', [PersonalizarControlador::class, 'comprar']);
+    $enrutador->post('/mis-pedidos/personalizado/comprar', [PersonalizarControlador::class, 'hacerCompra']);
 
     $enrutador->get('/pedidos', [PedidoControlador::class, 'listar']);
     $enrutador->get('/pedidos/detalle', [PedidoControlador::class, 'detalle']);
-    $enrutador->post('/pedidos/confirmar', [PedidoControlador::class, 'confirmar']);
     $enrutador->post('/pedidos/entregar', [PedidoControlador::class, 'entregar']);
     $enrutador->post('/pedidos/cancelar', [PedidoControlador::class, 'cancelar']);
+    $enrutador->post('/pedidos/pago/recibido', [PedidoControlador::class, 'pagoRecibido']);
+    $enrutador->post('/pedidos/pago/problema', [PedidoControlador::class, 'pagoConProblema']);
+    $enrutador->get('/pedidos/personalizados', [PersonalizadoControlador::class, 'listar']);
+    $enrutador->get('/pedidos/personalizado', [PersonalizadoControlador::class, 'detalle']);
+    $enrutador->post('/pedidos/personalizado/cotizar', [PersonalizadoControlador::class, 'cotizar']);
+    $enrutador->post('/pedidos/personalizado/rechazar', [PersonalizadoControlador::class, 'rechazar']);
     $enrutador->get('/ventas', [VentaControlador::class, 'listar']);
-    $enrutador->post('/ventas/cobrar', [VentaControlador::class, 'cobrar']);
+    $enrutador->get('/ventas/detalle', [VentaControlador::class, 'detalle']);
+    $enrutador->post('/ventas/abonar', [VentaControlador::class, 'abonar']);
     $enrutador->get('/clientes', [ClienteControlador::class, 'listar']);
 
     $enrutador->get('/sesiones', [SesionControlador::class, 'listar']);

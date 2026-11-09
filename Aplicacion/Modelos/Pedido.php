@@ -5,7 +5,6 @@ namespace Aplicacion\Modelos;
 use Aplicacion\Nucleo\EstadoPedido;
 use DateTime;
 
-
 class Pedido
 {
     private ?int $idPedido;
@@ -20,17 +19,16 @@ class Pedido
     private string $estado;
     private ?string $canceladoPor;
     private ?DateTime $fechaActualizacion;
-    /** @var PedidoDetalle[] */
     private array $detalles;
+    private ?string $retiroCodigo = null;
+    private ?PedidoPago $pago = null;
 
-    
     private string $nombreTienda = '';
     private string $enlaceTienda = '';
     private string $nombreCliente = '';
     private string $telefonoCliente = '';
     private string $correoCliente = '';
 
-    /** @param PedidoDetalle[] $detalles */
     public function __construct(
         ?int $idPedido,
         int $idVendedor,
@@ -41,7 +39,7 @@ class Pedido
         string $metodoPago,
         ?string $nota,
         float $total,
-        string $estado = EstadoPedido::PENDIENTE,
+        string $estado = EstadoPedido::CONFIRMADO,
         ?string $canceladoPor = null,
         ?DateTime $fechaActualizacion = null,
         array $detalles = []
@@ -121,7 +119,6 @@ class Pedido
         return $this->fechaActualizacion;
     }
 
-    /** @return PedidoDetalle[] */
     public function getDetalles(): array
     {
         return $this->detalles;
@@ -130,6 +127,21 @@ class Pedido
     public function getUnidades(): int
     {
         return array_sum(array_map(fn(PedidoDetalle $detalle): int => $detalle->getCantidad(), $this->detalles));
+    }
+
+    public function getRetiroCodigo(): ?string
+    {
+        return $this->retiroCodigo;
+    }
+
+    public function getPago(): ?PedidoPago
+    {
+        return $this->pago;
+    }
+
+    public function pagoPendiente(): bool
+    {
+        return $this->pago !== null && !$this->pago->estaRecibido();
     }
 
     public function getNombreTienda(): string
@@ -157,11 +169,6 @@ class Pedido
         return $this->correoCliente;
     }
 
-    public function estaPendiente(): bool
-    {
-        return $this->estado === EstadoPedido::PENDIENTE;
-    }
-
     public function estaConfirmado(): bool
     {
         return $this->estado === EstadoPedido::CONFIRMADO;
@@ -179,7 +186,16 @@ class Pedido
         $this->fechaActualizacion = new DateTime();
     }
 
-    /** @param PedidoDetalle[] $detalles */
+    public function setRetiroCodigo(?string $retiroCodigo): void
+    {
+        $this->retiroCodigo = $retiroCodigo;
+    }
+
+    public function setPago(?PedidoPago $pago): void
+    {
+        $this->pago = $pago;
+    }
+
     public function setDetalles(array $detalles): void
     {
         $this->detalles = $detalles;

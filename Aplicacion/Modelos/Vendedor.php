@@ -13,6 +13,7 @@ class Vendedor extends Usuario
     private ?string $tiendaDescripcion;
     private ?string $tiendaLogo;
     private bool $tiendaActiva;
+    private ?string $sinpe = null;
     /** @var VendedorContacto[] */
     private array $contactos;
 
@@ -118,6 +119,26 @@ class Vendedor extends Usuario
     public function setTiendaLogo(?string $tiendaLogo): void
     {
         $this->tiendaLogo = $tiendaLogo;
+    }
+
+    public function getSinpe(): ?string
+    {
+        return $this->sinpe;
+    }
+
+    public function getSinpeBonito(): string
+    {
+        return $this->sinpe !== null ? substr($this->sinpe, 0, 4) . '-' . substr($this->sinpe, 4) : '';
+    }
+
+    public function tieneSinpe(): bool
+    {
+        return $this->sinpe !== null;
+    }
+
+    public function setSinpe(?string $sinpe): void
+    {
+        $this->sinpe = $sinpe !== null && $sinpe !== '' ? $sinpe : null;
     }
 
     public function setTiendaActiva(bool $tiendaActiva): void

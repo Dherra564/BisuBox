@@ -3,15 +3,10 @@
 namespace Aplicacion\Nucleo;
 
 use Aplicacion\Modelos\Vendedor;
-use Aplicacion\Nucleo\Carrito;
-use Aplicacion\Nucleo\ContextoPersonalizador;
-use Aplicacion\Nucleo\EstadoPedido;
-use Aplicacion\Nucleo\TipoContacto;
-use Aplicacion\Nucleo\UsuarioActual;
-use Aplicacion\Nucleo\WhatsApp;
+use Aplicacion\Repositorios\ClienteRepositorio;
 use Aplicacion\Repositorios\CotizacionRepositorio;
 use Aplicacion\Repositorios\DisenoRepositorio;
-use Aplicacion\Repositorios\PedidoRepositorio;
+use Aplicacion\Repositorios\PersonalizadoRepositorio;
 use Aplicacion\Repositorios\ProductoRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
 use Throwable;
@@ -41,15 +36,38 @@ class Navegacion
 
         [$unidades, $total] = $puedeComprar ? self::resumenCarrito($tienda) : [0, 0.0];
 
-        $pendientes = 0;
+        $numeros = ['pedidos' => 0, 'productos' => 0, 'inventario' => 0];
         if ($esDuenio) {
             try {
-                $pendientes = (new PedidoRepositorio())->contar([
-                    'idVendedor' => (int) $propia->getIdVendedor(),
-                    'estado' => EstadoPedido::PENDIENTE,
-                ]);
+                $numeros = AvisosTienda::numeros((int) $propia->getIdVendedor());
             } catch (Throwable $error) {
-                error_log('No se pudieron contar los pedidos pendientes: ' . $error->getMessage());
+                error_log('No se pudieron contar los avisos de la tienda: ' . $error->getMessage());
+            }
+        }
+
+        $porDecidir = 0;
+        if (UsuarioActual::haySesion()) {
+            try {
+                $cliente = (new ClienteRepositorio())->buscarPorIdUsuario((int) UsuarioActual::id());
+                $porDecidir = $cliente !== null ? (new PersonalizadoRepositorio())->contar([
+                    'idCliente' => (int) $cliente->getIdCliente(),
+                    'estado' => EstadoPersonalizado::COTIZADO,
+                ]) : 0;
+            } catch (Throwable $error) {
+                error_log('No se pudieron contar los pedidos personalizados cotizados: ' . $error->getMessage());
+            }
+        }
+
+        $porAceptar = 0;
+        if (UsuarioActual::haySesion()) {
+            try {
+                $cliente = $cliente ?? (new ClienteRepositorio())->buscarPorIdUsuario((int) UsuarioActual::id());
+                $porAceptar = $cliente !== null ? (new CotizacionRepositorio())->contar([
+                    'idCliente' => (int) $cliente->getIdCliente(),
+                    'estado' => EstadoCotizacion::RESPONDIDA,
+                ]) : 0;
+            } catch (Throwable $error) {
+                error_log('No se pudieron contar las cotizaciones respondidas: ' . $error->getMessage());
             }
         }
 
@@ -83,8 +101,8 @@ class Navegacion
             'whatsApp' => $esDuenio ? null : $whatsApp,
             'rutaPedidos' => self::rutaPedidos($esDuenio),
             'textoPedidos' => $esDuenio ? 'Pedidos' : (UsuarioActual::esVendedor() ? 'Mis compras' : 'Mis pedidos'),
-            'menu' => self::menu($paginaActual, $rutaTienda, $propia, $esDuenio, $unidades, $pendientes, $porResponder),
-        ];
+            'avisos' => $propia !== null,
+            'menu' => self::menu($paginaActual, $rutaTienda, $propia, $esDuenio, $unidades, $numeros, $porDecidir, $porResponder, $porAceptar),        ];
     }
 
     public static function resumenCarrito(Vendedor $tienda): array
@@ -118,7 +136,7 @@ class Navegacion
         return UsuarioActual::haySesion() ? '/mis-pedidos' : '/ingresar?volver=' . urlencode('/mis-pedidos');
     }
 
-    private static function menu(string $paginaActual, ?string $rutaTienda, ?Vendedor $propia, bool $esDuenio, int $unidades, int $pendientes, int $porResponder): array
+    private static function menu(string $paginaActual, ?string $rutaTienda, ?Vendedor $propia, bool $esDuenio, int $unidades, array $numeros, int $porDecidir, int $porResponder, int $porAceptar): array
     {
         $opcion = fn(string $clave, string $texto, string $ruta, string $icono, int $numero = 0): array => [
             'clave' => $clave,
@@ -143,9 +161,8 @@ class Navegacion
             return [
                 $opcion('inicio', 'Inicio', $rutaTienda ?? '/', 'inicio'),
                 $opcion('carrito', 'Carrito', '/carrito', 'carrito', $unidades),
-                $opcion('misPedidos', 'Mis pedidos', '/mis-pedidos', 'bolsa'),
-                $opcion('misCotizaciones', 'Mis cotizaciones', '/mis-cotizaciones', 'bolsa'),
-                $opcion('perfil', 'Mi perfil', '/perfil', 'perfil'),
+                $opcion('misPedidos', 'Mis pedidos', '/mis-pedidos', 'bolsa', $porDecidir),
+                $opcion('misCotizaciones', 'Mis cotizaciones', '/mis-cotizaciones', 'cotizacion', $porAceptar),                $opcion('perfil', 'Mi perfil', '/perfil', 'perfil'),
                 $opcion('sesiones', 'Historial de sesiones', '/sesiones', 'historial'),
                 $opcion('emprender', 'Comenzar a emprender', '/emprender', 'emprender'),
             ];
@@ -157,8 +174,8 @@ class Navegacion
             return [
                 $opcion('inicio', 'Inicio', $rutaTienda ?? $rutaPropia, 'inicio'),
                 $opcion('carrito', 'Carrito', '/carrito', 'carrito', $unidades),
-                $opcion('misPedidos', 'Mis compras', '/mis-pedidos', 'bolsa'),
-                $opcion('misCotizaciones', 'Mis cotizaciones', '/mis-cotizaciones', 'bolsa'),
+                $opcion('misPedidos', 'Mis compras', '/mis-pedidos', 'bolsa', $porDecidir),
+                $opcion('misCotizaciones', 'Mis cotizaciones', '/mis-cotizaciones', 'cotizacion', $porAceptar),
                 $separador('Mi negocio'),
                 $opcion('panel', 'Panel de ' . $propia->getTiendaNombre(), $rutaPropia, 'panel'),
                 $opcion('perfil', 'Mi perfil', '/perfil', 'perfil'),
@@ -168,18 +185,18 @@ class Navegacion
 
         return [
             $opcion('inicio', 'Inicio', $rutaPropia, 'inicio'),
-            $opcion('pedidos', 'Pedidos', '/pedidos', 'recibo', $pendientes),
-            $opcion('cotizaciones', 'Cotizaciones', '/cotizaciones', 'recibo', $porResponder),
+            $opcion('pedidos', 'Pedidos', '/pedidos', 'recibo', $numeros['pedidos']),
+            $opcion('cotizaciones', 'Cotizaciones', '/cotizaciones', 'cotizacion', $porResponder),
             $opcion('ventas', 'Ventas', '/ventas', 'ventas'),
             $opcion('clientes', 'Clientes', '/clientes', 'clientes'),
-            $opcion('productos', 'Productos', '/productos', 'productos'),
-            $opcion('inventario', 'Inventario', '/inventario', 'inventario'),
+            $opcion('productos', 'Productos', '/productos', 'productos', $numeros['productos']),
+            $opcion('inventario', 'Inventario', '/inventario', 'inventario', $numeros['inventario']),
             $opcion('personalizador', 'Personalizador', '/personalizador', 'personalizar'),
             $opcion('proveedores', 'Proveedores', '/proveedores', 'proveedores'),
             $opcion('tienda', 'Mi tienda', '/tienda', 'tienda'),
             $separador('Mi cuenta'),
-            $opcion('misPedidos', 'Mis compras', '/mis-pedidos', 'bolsa'),
-            $opcion('misCotizaciones', 'Mis cotizaciones', '/mis-cotizaciones', 'bolsa'),
+            $opcion('misPedidos', 'Mis compras', '/mis-pedidos', 'bolsa', $porDecidir),
+            $opcion('misCotizaciones', 'Mis cotizaciones', '/mis-cotizaciones', 'cotizacion', $porAceptar),
             $opcion('perfil', 'Mi perfil', '/perfil', 'perfil'),
             $opcion('sesiones', 'Historial de sesiones', '/sesiones', 'historial'),
         ];

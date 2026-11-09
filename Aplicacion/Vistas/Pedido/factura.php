@@ -1,18 +1,13 @@
 <?php
-/**
- 
- * @var \Aplicacion\Modelos\Pedido $pedido
- * @var array 
- * @var array<int, int> $existencias  (opcional) existencia actual de cada producto
- */
 
 use Aplicacion\Nucleo\EstadoPedido;
 use Aplicacion\Nucleo\FormaEntrega;
 use Aplicacion\Nucleo\MetodoPago;
 use Aplicacion\Nucleo\Numero;
 
-$existencias = $existencias ?? [];
 $disenos = $disenos ?? [];
+$rutaPersonalizado = $rutaPersonalizado ?? '/mis-pedidos/personalizado?id=';
+$rutaCotizacion = $rutaCotizacion ?? '/mis-cotizaciones/detalle?id=';
 $cancelado = $pedido->getEstado() === EstadoPedido::CANCELADO;
 ?>
 <article class="factura <?= $cancelado ? 'facturaAnulada' : '' ?>">
@@ -45,15 +40,15 @@ $cancelado = $pedido->getEstado() === EstadoPedido::CANCELADO;
             </thead>
             <tbody>
                 <?php foreach ($pedido->getDetalles() as $detalle): ?>
-                    <?php $hay = $detalle->esPersonalizado() ? null : ($existencias[$detalle->getIdProducto()] ?? null); ?>
                     <tr>
                         <td data-etiqueta="Producto">
                             <span>
                                 <?= htmlspecialchars($detalle->getNombreProducto()) ?>
-                                <?php if ($pedido->estaPendiente() && $existencias !== [] && !$detalle->esPersonalizado()): ?>
-                                    <br><span class="<?= $hay !== null && $hay >= $detalle->getCantidad() ? 'textoAyuda' : 'errorCampo' ?>">
-                                        <?= $hay === null ? 'Este producto ya no existe' : 'Tiene ' . $hay . ' en existencia' ?>
-                                    </span>
+                                <?php if ($detalle->esPersonalizado()): ?>
+                                    <br><a href="<?= $urlBase . $rutaPersonalizado . $detalle->getIdPersonalizado() ?>" class="textoAyuda">Ver las piezas que escogió</a>
+                                <?php endif; ?>
+                                <?php if ($detalle->esCotizacion()): ?>
+                                    <br><a href="<?= $urlBase . $rutaCotizacion . $detalle->getIdCotizacion() ?>" class="textoAyuda">Ver la cotización</a>
                                 <?php endif; ?>
                             </span>
                         </td>

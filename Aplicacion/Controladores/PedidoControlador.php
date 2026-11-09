@@ -5,22 +5,21 @@ namespace Aplicacion\Controladores;
 use Aplicacion\Modelos\Pedido;
 use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\DatosVenta;
+use Aplicacion\Nucleo\EstadoPago;
 use Aplicacion\Nucleo\EstadoPedido;
+use Aplicacion\Nucleo\EstadoPersonalizado;
 use Aplicacion\Nucleo\Mensaje;
-use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\OperacionNoPermitida;
 use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\Rol;
 use Aplicacion\Nucleo\UsuarioActual;
-use Aplicacion\Repositorios\ComponenteRepositorio;
 use Aplicacion\Repositorios\DisenoRepositorio;
 use Aplicacion\Repositorios\PedidoRepositorio;
-use Aplicacion\Repositorios\ProductoRepositorio;
+use Aplicacion\Repositorios\PersonalizadoRepositorio;
 use Aplicacion\Repositorios\VendedorRepositorio;
 use Aplicacion\Repositorios\VentaRepositorio;
 use Configuracion\Configuracion;
 use Throwable;
-
 
 class PedidoControlador
 {
@@ -44,6 +43,7 @@ class PedidoControlador
     public function listar(): void
     {
         $estado = EstadoPedido::existe($_GET['estado'] ?? null) ? $_GET['estado'] : '';
+        $soloPorVerificar = ($_GET['pago'] ?? null) === 'verificar';
         $busqueda = is_string($_GET['busqueda'] ?? null) ? mb_substr(trim($_GET['busqueda']), 0, 100, 'UTF-8') : '';
         $idCliente = is_string($_GET['cliente'] ?? null) && ctype_digit($_GET['cliente']) ? (int) $_GET['cliente'] : null;
         $nombreCliente = $idCliente !== null ? $this->pedidoRepositorio->nombreClienteDeVendedor($idCliente, $this->idVendedor) : null;
@@ -51,7 +51,8 @@ class PedidoControlador
             $idCliente = null;
         }
 
-        $base = ['idVendedor' => $this->idVendedor, 'busqueda' => $busqueda] + ($idCliente !== null ? ['idCliente' => $idCliente] : []);
+        $base = ['idVendedor' => $this->idVendedor, 'busqueda' => $busqueda] + ($idCliente !== null ? ['idCliente' => $idCliente] : [])
+            + ($soloPorVerificar ? ['pago' => EstadoPago::POR_VERIFICAR] : []);
         $conteos = ['' => $this->pedidoRepositorio->contar($base)];
         foreach (EstadoPedido::todos() as $codigo) {
             $conteos[$codigo] = $this->pedidoRepositorio->contar($base + ['estado' => $codigo]);
@@ -61,6 +62,7 @@ class PedidoControlador
         $totalPaginas = max(1, (int) ceil($total / PedidoRepositorio::POR_PAGINA));
         $pagina = min(max(1, (int) ($_GET['pagina'] ?? 1)), $totalPaginas);
 
+        $personalizadoRepositorio = new PersonalizadoRepositorio();
         $this->mostrarVista('Pedido/lista', [
             'pedidos' => $this->pedidoRepositorio->listar($base + ['estado' => $estado], $pagina),
             'estado' => $estado,
@@ -73,39 +75,24 @@ class PedidoControlador
             'total' => $total,
             'porPagina' => PedidoRepositorio::POR_PAGINA,
             'hayPedidos' => $this->pedidoRepositorio->contar(['idVendedor' => $this->idVendedor]) > 0,
+            'porCotizar' => $personalizadoRepositorio->contar(['idVendedor' => $this->idVendedor, 'estado' => EstadoPersonalizado::EN_REVISION]),
+            'pagosPorVerificar' => $this->pedidoRepositorio->contar([
+            'idVendedor' => $this->idVendedor,
+            'estado' => EstadoPedido::CONFIRMADO,
+            'pago' => EstadoPago::POR_VERIFICAR,
+            ]),
+            'soloPorVerificar' => $soloPorVerificar,
+            'avisosPersonalizados' => $personalizadoRepositorio->contarAvisosSinVer($this->idVendedor),
         ]);
     }
 
     public function detalle(): void
     {
         $pedido = $this->buscarPedido($_GET['id'] ?? null);
-
-    
-        $existencias = [];
-        $faltanComponentes = [];
-        if ($pedido->estaPendiente()) {
-            $ids = array_values(array_filter(array_map(fn($detalle): ?int => $detalle->getIdProducto(), $pedido->getDetalles())));
-            if ($ids !== []) {
-                foreach ((new ProductoRepositorio())->buscarVarios($this->idVendedor, $ids) as $idProducto => $producto) {
-                    $existencias[$idProducto] = $producto->getExistencia();
-                }
-            }
-            $componenteRepositorio = new ComponenteRepositorio();
-            foreach ($this->pedidoRepositorio->componentesDeDisenos($pedido) as $idComponente => $necesita) {
-                $componente = $componenteRepositorio->buscarPorId($idComponente, $this->idVendedor);
-                if ($componente === null || $componente->getExistencia() + 0.00001 < $necesita) {
-                    $faltanComponentes[] = '«' . ($componente?->getNombre() ?? 'Un componente') . '»: tiene '
-                        . Numero::formatear(max(0, $componente?->getExistencia() ?? 0))
-                        . ' y las piezas personalizadas llevan ' . Numero::formatear($necesita);
-                }
-            }
-        }
-
         $idsDisenos = array_values(array_filter(array_map(fn($detalle): ?int => $detalle->getIdDiseno(), $pedido->getDetalles())));
+
         $this->mostrarVista('Pedido/detalle', [
             'pedido' => $pedido,
-            'existencias' => $existencias,
-            'faltanComponentes' => $faltanComponentes,
             'disenos' => (new DisenoRepositorio())->buscarVarios($idsDisenos),
             'venta' => (new VentaRepositorio())->buscarPorPedido((int) $pedido->getIdPedido(), $this->idVendedor),
             'pagoElegido' => DatosVenta::leerPago($_GET['pago'] ?? null) ?? DatosVenta::PAGO_COMPLETO,
@@ -115,38 +102,31 @@ class PedidoControlador
         ]);
     }
 
-    public function confirmar(): void
-    {
-        $pedido = $this->accion(fn(Pedido $pedido) => $this->pedidoRepositorio->confirmar($pedido), 'confirmar');
-        Mensaje::exito('Pedido #' . $pedido->getIdPedido() . ' confirmado. Se rebajó de la existencia lo que lleva.');
-        $this->redirigir('/pedidos/detalle?id=' . $pedido->getIdPedido());
-    }
-
     public function entregar(): void
     {
-        $pago = DatosVenta::leerPago($_POST['pago'] ?? null);
+        $this->verificarCsrf('/pedidos');
+        $pedido = $this->buscarPedido($_POST['id'] ?? null);
+        $codigo = is_string($_POST['codigoRetiro'] ?? null) ? mb_substr($_POST['codigoRetiro'], 0, 20, 'UTF-8') : '';
+        $cobro = $pedido->getPago() !== null ? DatosVenta::PAGO_COMPLETO : DatosVenta::leerPago($_POST['pago'] ?? null);
         $textoVencimiento = is_string($_POST['vencimiento'] ?? null) ? trim($_POST['vencimiento']) : '';
-        $vencimiento = $pago === DatosVenta::PAGO_PENDIENTE ? DatosVenta::leerVencimiento($textoVencimiento) : null;
-        $error = $pago === null
+        $vencimiento = $cobro === DatosVenta::PAGO_PENDIENTE ? DatosVenta::leerVencimiento($textoVencimiento) : null;
+        $error = $cobro === null
             ? DatosVenta::MENSAJE_PAGO
-            : ($pago === DatosVenta::PAGO_PENDIENTE && $vencimiento === null ? DatosVenta::MENSAJE_VENCIMIENTO : null);
+            : ($cobro === DatosVenta::PAGO_PENDIENTE && $vencimiento === null ? DatosVenta::MENSAJE_VENCIMIENTO : null);
         if ($error !== null) {
-            $this->verificarCsrf('/pedidos');
-            $pedido = $this->buscarPedido($_POST['id'] ?? null);
             Mensaje::error($error);
             $this->redirigir('/pedidos/detalle?' . http_build_query([
                 'id' => $pedido->getIdPedido(),
-                'pago' => $pago ?? '',
+                'pago' => $cobro ?? '',
                 'vencimiento' => mb_substr($textoVencimiento, 0, 10),
             ]));
         }
 
         $pedido = $this->accion(
-            fn(Pedido $pedido) => $this->pedidoRepositorio->entregar($pedido, $pago, $vencimiento),
+            fn(Pedido $pedido) => $this->pedidoRepositorio->entregar($pedido, $codigo, $cobro, $vencimiento),
             'marcar como entregado'
         );
-        Mensaje::exito('Pedido #' . $pedido->getIdPedido() . ' entregado. '
-            . ($pago === DatosVenta::PAGO_PENDIENTE
+        Mensaje::exito('Pedido #' . $pedido->getIdPedido() . ' entregado. ' . ($cobro === DatosVenta::PAGO_PENDIENTE
                 ? 'La venta quedó por cobrar hasta el ' . $vencimiento->format('d/m/Y') . '.'
                 : 'La venta quedó registrada como pagada.'));
         $this->redirigir('/pedidos/detalle?id=' . $pedido->getIdPedido());
@@ -154,17 +134,34 @@ class PedidoControlador
 
     public function cancelar(): void
     {
-        $estabaConfirmado = false;
-        $pedido = $this->accion(function (Pedido $pedido) use (&$estabaConfirmado) {
-            $estabaConfirmado = $pedido->estaConfirmado();
-            $this->pedidoRepositorio->cancelar($pedido, Rol::VENDEDOR);
-        }, 'cancelar');
-        Mensaje::exito('Pedido #' . $pedido->getIdPedido() . ' cancelado.'
-            . ($estabaConfirmado ? ' Los productos volvieron a la existencia.' : ''));
+        $pedido = $this->accion(fn(Pedido $pedido) => $this->pedidoRepositorio->cancelar($pedido, Rol::VENDEDOR), 'cancelar');
+        Mensaje::exito('Pedido #' . $pedido->getIdPedido() . ' cancelado. Los productos volvieron a la existencia.');
         $this->redirigir('/pedidos/detalle?id=' . $pedido->getIdPedido());
     }
 
-    
+    public function pagoRecibido(): void
+    {
+        $pedido = $this->accion(fn(Pedido $pedido) => $this->pedidoRepositorio->marcarPagoRecibido($pedido), 'marcar el pago como recibido');
+        Mensaje::exito('Marcó que le llegó el SINPE del pedido #' . $pedido->getIdPedido() . '. Ya puede entregarlo.');
+        $this->redirigir('/pedidos/detalle?id=' . $pedido->getIdPedido());
+    }
+
+    public function pagoConProblema(): void
+    {
+        $this->verificarCsrf('/pedidos');
+        $motivo = is_string($_POST['motivo'] ?? null) ? trim((string) preg_replace('/\s+/', ' ', $_POST['motivo'])) : '';
+        $largo = mb_strlen($motivo, 'UTF-8');
+        if ($largo < 5 || $largo > 300) {
+            $id = is_string($_POST['id'] ?? null) && ctype_digit($_POST['id']) ? $_POST['id'] : '';
+            Mensaje::error('Escriba qué pasó con el pago para que el cliente sepa (entre 5 y 300 caracteres).');
+            $this->redirigir($id !== '' ? '/pedidos/detalle?id=' . $id : '/pedidos');
+        }
+
+        $pedido = $this->accion(fn(Pedido $pedido) => $this->pedidoRepositorio->marcarPagoConProblema($pedido, $motivo), 'avisar del problema con el pago');
+        Mensaje::exito('Le avisamos al cliente que no le llegó el SINPE. Puede subir otro comprobante; si sigue sin llegar, cancele el pedido.');
+        $this->redirigir('/pedidos/detalle?id=' . $pedido->getIdPedido());
+    }
+
     private function accion(callable $hacer, string $queSeHace): Pedido
     {
         $this->verificarCsrf('/pedidos');
@@ -185,7 +182,6 @@ class PedidoControlador
         return $pedido;
     }
 
-    
     private function buscarPedido(mixed $id): Pedido
     {
         $pedido = is_string($id) && ctype_digit($id)

@@ -53,7 +53,6 @@ $productoCostos = $producto;
                             <label for="foto" class="enlaceFoto"><?= $foto !== null || $fotoPendiente !== null ? 'Cambiar foto' : 'Agregar foto' ?></label>
                             <input type="file" id="foto" name="foto" accept="image/jpeg,image/png" class="campoArchivo">
                             <?php if ($fotoPendiente !== null): ?>
-                                <!-- La foto nueva que ya eligió no se pierde aunque el formulario tenga errores -->
                                 <input type="hidden" name="fotoPendiente" value="<?= htmlspecialchars($fotoPendiente) ?>">
                                 <span class="nombreArchivo">Foto nueva elegida</span>
                             <?php else: ?>

@@ -2,7 +2,6 @@
 
 namespace Aplicacion\Modelos;
 
-
 class PedidoDetalle
 {
     private ?int $idPedidoDetalle;
@@ -12,6 +11,7 @@ class PedidoDetalle
     private int $cantidad;
     private float $precio;
     private float $subtotal;
+    private ?int $idPersonalizado;
     private ?int $idDiseno;
     private ?int $idCotizacion;
 
@@ -23,6 +23,7 @@ class PedidoDetalle
         int $cantidad,
         float $precio,
         ?float $subtotal = null,
+        ?int $idPersonalizado = null,
         ?int $idDiseno = null,
         ?int $idCotizacion = null
     ) {
@@ -33,6 +34,7 @@ class PedidoDetalle
         $this->cantidad = $cantidad;
         $this->precio = $precio;
         $this->subtotal = $subtotal ?? round($cantidad * $precio, 2);
+        $this->idPersonalizado = $idPersonalizado;
         $this->idDiseno = $idDiseno;
         $this->idCotizacion = $idCotizacion;
     }
@@ -50,16 +52,6 @@ class PedidoDetalle
     public function getIdProducto(): ?int
     {
         return $this->idProducto;
-    }
-
-    public function getIdDiseno(): ?int
-    {
-        return $this->idDiseno;
-    }
-
-    public function esDiseno(): bool
-    {
-        return $this->idDiseno !== null;
     }
 
     public function getNombreProducto(): string
@@ -82,17 +74,27 @@ class PedidoDetalle
         return $this->subtotal;
     }
 
-    public function setIdPedidoDetalle(?int $idPedidoDetalle): void
+    public function getIdPersonalizado(): ?int
     {
-        $this->idPedidoDetalle = $idPedidoDetalle;
+        return $this->idPersonalizado;
     }
 
-    public function setIdPedido(?int $idPedido): void
+    public function esPersonalizado(): bool
     {
-        $this->idPedido = $idPedido;
+        return $this->idPersonalizado !== null;
     }
 
-        public function getIdCotizacion(): ?int
+    public function getIdDiseno(): ?int
+    {
+        return $this->idDiseno;
+    }
+
+    public function esDiseno(): bool
+    {
+        return $this->idDiseno !== null;
+    }
+
+    public function getIdCotizacion(): ?int
     {
         return $this->idCotizacion;
     }
@@ -102,8 +104,18 @@ class PedidoDetalle
         return $this->idCotizacion !== null;
     }
 
-    public function esPersonalizado(): bool
+    public function esDelCatalogo(): bool
     {
-        return $this->idDiseno !== null || $this->idCotizacion !== null;
+        return $this->idPersonalizado === null && $this->idDiseno === null && $this->idCotizacion === null;
+    }
+
+    public function setIdPedidoDetalle(?int $idPedidoDetalle): void
+    {
+        $this->idPedidoDetalle = $idPedidoDetalle;
+    }
+
+    public function setIdPedido(?int $idPedido): void
+    {
+        $this->idPedido = $idPedido;
     }
 }

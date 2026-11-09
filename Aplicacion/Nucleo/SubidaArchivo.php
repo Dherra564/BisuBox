@@ -26,6 +26,8 @@ class SubidaArchivo
     private const CARPETA_PRODUCTOS = 'Productos';
     private const CARPETA_COMPONENTES = 'Componentes';
     private const CARPETA_PIEZAS = 'Piezas';
+    private const CARPETA_COTIZACIONES = 'Cotizaciones';
+    private const CARPETA_COMPROBANTES = 'Comprobantes';
     private const TAMANO_MAXIMO_PIEZA = 600 * 1024;
     private const LADO_MAXIMO_PIEZA = 1000;
 
@@ -36,7 +38,7 @@ class SubidaArchivo
     public const FOTO_COMPONENTE = 'componente';
     public const FOTO_PIEZA = 'pieza';
     public const FOTO_COTIZACION = 'cotizacion';
-    private const CARPETA_COTIZACIONES = 'Cotizaciones';
+    public const FOTO_COMPROBANTE = 'comprobante';
     private const CARPETAS = [
         self::FOTO_PERFIL => self::CARPETA_PERFILES,
         self::LOGO => self::CARPETA_LOGOS,
@@ -44,6 +46,7 @@ class SubidaArchivo
         self::FOTO_COMPONENTE => self::CARPETA_COMPONENTES,
         self::FOTO_PIEZA => self::CARPETA_PIEZAS,
         self::FOTO_COTIZACION => self::CARPETA_COTIZACIONES,
+        self::FOTO_COMPROBANTE => self::CARPETA_COMPROBANTES,
     ];
 
     private string $error = '';
@@ -130,7 +133,11 @@ class SubidaArchivo
             return $pendiente;
         }
 
-        $queEs = $tipo === self::LOGO ? 'El logo' : 'La foto';
+        $queEs = match ($tipo) {
+            self::LOGO => 'El logo',
+            self::FOTO_COMPROBANTE => 'El comprobante',
+            default => 'La foto',
+        };
         $nombre = $this->guardarImagen($_FILES[$campo], self::CARPETAS[$tipo], $queEs);
         if ($nombre === null) {
             $validador->agregarError($campo, $this->error);
@@ -296,6 +303,31 @@ class SubidaArchivo
             return $this->fallar('No se pudo guardar la imagen. Intente de nuevo más tarde.');
         }
         return $nombre;
+    }
+
+    public static function obtenerComprobante(string $nombre): ?array
+    {
+        return self::obtener($nombre, self::CARPETA_COMPROBANTES);
+    }
+
+    public static function eliminarComprobante(?string $nombre): void
+    {
+        self::eliminar($nombre, self::CARPETA_COMPROBANTES);
+    }
+
+    public static function obtenerFotoCotizacion(string $nombre): ?array
+    {
+        return self::obtener($nombre, self::CARPETA_COTIZACIONES);
+    }
+
+    public static function eliminarFotoCotizacion(?string $nombre): void
+    {
+        self::eliminar($nombre, self::CARPETA_COTIZACIONES);
+    }
+
+    public static function esPendiente(string $tipo, string $nombre): bool
+    {
+        return self::pendienteValida($tipo, $nombre) !== null;
     }
 
     private function guardarImagen(array $archivo, string $carpeta, string $queEs): ?string

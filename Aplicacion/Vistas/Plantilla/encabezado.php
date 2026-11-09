@@ -53,7 +53,7 @@ if ($navegacion['esDuenio']) {
     </script>
 </head>
 
-<body class="sitio">
+<body class="sitio" <?= $navegacion['avisos'] ? 'data-avisos="' . $urlBase . '/avisos"' : '' ?>>
     <header class="barraSitio">
         <div class="barraSitioIzquierda">
             <button type="button" class="botonMenuSitio" id="botonMenu" aria-controls="menuSitio" aria-expanded="true"
@@ -141,13 +141,15 @@ if ($navegacion['esDuenio']) {
                     <li>
                         <a href="<?= $urlBase . htmlspecialchars($opcion['ruta']) ?>"
                             title="<?= htmlspecialchars($opcion['texto']) ?>"
+                            data-menu="<?= htmlspecialchars($opcion['clave']) ?>"
                             class="<?= $opcion['activo'] ? 'activo' : '' ?> <?= $opcion['clave'] === 'emprender' ? 'opcionEmprender' : '' ?>"
                             <?= $opcion['activo'] ? 'aria-current="page"' : '' ?>>
                             <?= Icono::svg($opcion['icono']) ?>
                             <span class="textoMenu"><?= htmlspecialchars($opcion['texto']) ?></span>
                             <?php if ($opcion['numero'] > 0): ?>
-                                <span class="numeroMenu <?= $opcion['clave'] === 'pedidos' ? 'numeroMenuAviso' : '' ?>"
-                                    aria-label="<?= (int) $opcion['numero'] ?> <?= $opcion['clave'] === 'carrito' ? 'en el carrito' : 'por confirmar' ?>"><?= (int) $opcion['numero'] ?></span>
+                                <span
+                                    class="numeroMenu <?= in_array($opcion['clave'], ['pedidos', 'productos', 'inventario'], true) ? 'numeroMenuAviso' : '' ?>"
+                                    aria-label="<?= (int) $opcion['numero'] ?> <?= match ($opcion['clave']) { 'carrito' => 'en el carrito', 'misPedidos' => 'por decidir', 'productos' => 'agotados', 'inventario' => 'por acabarse o agotados', default => 'por atender'} ?>"><?= (int) $opcion['numero'] ?></span>
                             <?php endif; ?>
                         </a>
                     </li>

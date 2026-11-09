@@ -138,7 +138,6 @@ class PerfilControlador
             $validador->agregarError('contrasenaNueva', 'La contraseña nueva debe ser diferente a la actual');
         }
 
-        // Lo que escribió se vuelve a mostrar si hay algún error
         $datos = ['contrasenaActual' => $actual, 'contrasenaNueva' => $nueva, 'confirmarContrasena' => $confirmar];
         if (!$validador->esValido()) {
             $this->mostrarVista('Perfil/cambiarContrasena', ['datos' => $datos, 'errores' => $validador->errores()]);
