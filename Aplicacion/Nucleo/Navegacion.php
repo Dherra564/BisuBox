@@ -143,6 +143,7 @@ class Navegacion
             return [
                 $opcion('inicio', 'Inicio', $rutaTienda ?? '/', 'inicio'),
                 $opcion('carrito', 'Carrito', '/carrito', 'carrito', $unidades),
+                $opcion('misPedidos', 'Mis pedidos', '/mis-pedidos', 'bolsa'),
                 $opcion('misCotizaciones', 'Mis cotizaciones', '/mis-cotizaciones', 'bolsa'),
                 $opcion('perfil', 'Mi perfil', '/perfil', 'perfil'),
                 $opcion('sesiones', 'Historial de sesiones', '/sesiones', 'historial'),
