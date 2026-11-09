@@ -33,7 +33,8 @@ class TiendaPublicaControlador
         $agotados = 0;
         if ($esDuenio) {
             $pedidosPorEntregar = (new PedidoRepositorio())->contar(['idVendedor' => $idVendedor, 'estado' => EstadoPedido::CONFIRMADO]);
-            $cotizacionesPorResponder = (new CotizacionRepositorio())->contarPorResponder($idVendedor);            $agotados = count(array_filter($todos, fn($producto): bool => $producto->getExistencia() <= 0));
+            $cotizacionesPorResponder = (new CotizacionRepositorio())->contarPorResponder($idVendedor);
+            $agotados = count(array_filter($todos, fn($producto): bool => $producto->getExistencia() <= 0));
         } else {
             Carrito::elegirTienda($idVendedor, (string) $vendedor->getTiendaEnlace());
             $enCarrito = Carrito::deTienda($idVendedor);

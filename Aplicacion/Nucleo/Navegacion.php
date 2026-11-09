@@ -102,7 +102,8 @@ class Navegacion
             'rutaPedidos' => self::rutaPedidos($esDuenio),
             'textoPedidos' => $esDuenio ? 'Pedidos' : (UsuarioActual::esVendedor() ? 'Mis compras' : 'Mis pedidos'),
             'avisos' => $propia !== null,
-            'menu' => self::menu($paginaActual, $rutaTienda, $propia, $esDuenio, $unidades, $numeros, $porDecidir, $porResponder, $porAceptar),        ];
+            'menu' => self::menu($paginaActual, $rutaTienda, $propia, $esDuenio, $unidades, $numeros, $porDecidir, $porResponder, $porAceptar),
+        ];
     }
 
     public static function resumenCarrito(Vendedor $tienda): array
@@ -162,7 +163,8 @@ class Navegacion
                 $opcion('inicio', 'Inicio', $rutaTienda ?? '/', 'inicio'),
                 $opcion('carrito', 'Carrito', '/carrito', 'carrito', $unidades),
                 $opcion('misPedidos', 'Mis pedidos', '/mis-pedidos', 'bolsa', $porDecidir),
-                $opcion('misCotizaciones', 'Mis cotizaciones', '/mis-cotizaciones', 'cotizacion', $porAceptar),                $opcion('perfil', 'Mi perfil', '/perfil', 'perfil'),
+                $opcion('misCotizaciones', 'Mis cotizaciones', '/mis-cotizaciones', 'cotizacion', $porAceptar),
+                $opcion('perfil', 'Mi perfil', '/perfil', 'perfil'),
                 $opcion('sesiones', 'Historial de sesiones', '/sesiones', 'historial'),
                 $opcion('emprender', 'Comenzar a emprender', '/emprender', 'emprender'),
             ];

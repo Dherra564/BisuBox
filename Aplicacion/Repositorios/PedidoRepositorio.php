@@ -388,7 +388,7 @@ class PedidoRepositorio
                 (int) $fila['tbpedidodetallecantidad'],
                 (float) $fila['tbpedidodetalleprecio'],
                 (float) $fila['tbpedidodetallesubtotal'],
-                fila['tbpedidodetallepersonalizadoid'] !== null ? (int) $fila['tbpedidodetallepersonalizadoid'] : null,
+                $fila['tbpedidodetallepersonalizadoid'] !== null ? (int) $fila['tbpedidodetallepersonalizadoid'] : null,
                 $fila['tbpedidodetalledisenoid'] !== null ? (int) $fila['tbpedidodetalledisenoid'] : null,
                 $fila['tbpedidodetallecotizacionid'] !== null ? (int) $fila['tbpedidodetallecotizacionid'] : null
             );

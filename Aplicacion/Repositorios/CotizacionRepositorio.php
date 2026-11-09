@@ -160,7 +160,7 @@ class CotizacionRepositorio
         }
     }
 
-    public function aceptar(int $id, int $idCliente, array $entrega, float $precioVisto): int
+    public function aceptar(int $id, int $idCliente, array $entrega, float $precioVisto, ?PedidoPago $pago): int
     {
         BaseDatos::iniciarTransaccion();
 

@@ -43,8 +43,7 @@ $whatsApp = $porCobrar ? WhatsApp::enlace($venta['telefono'], DatosVenta::record
         </div>
         <div>
             <span class="textoAyuda">Pedido</span>
-            <a href="<?= $urlBase ?>/pedidos/detalle?id=<?= $venta['idPedido'] ?>" class="facturaProveedor">#
-                <?= $venta['idPedido'] ?>
+            <a href="<?= $urlBase ?>/pedidos/detalle?id=<?= $venta['idPedido'] ?>" class="facturaProveedor">#<?= $venta['idPedido'] ?>
             </a>
         </div>
         <div>

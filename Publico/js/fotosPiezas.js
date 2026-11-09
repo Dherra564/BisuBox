@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function () {
         tarjeta.appendChild(cabeza);
 
         var vista = document.createElement('div');
-        vista.className = 'fotoPieza fondoCuadros';
+        vista.className = 'fotoVista fondoCuadros';
         tarjeta.appendChild(vista);
 
         var botones = document.createElement('div');

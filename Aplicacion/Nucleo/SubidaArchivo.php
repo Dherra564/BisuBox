@@ -519,20 +519,4 @@ class SubidaArchivo
             default => 'No se pudo subir la imagen. Intente de nuevo más tarde.',
         };
     }
-
-
-    public static function eliminarFotoCotizacion(?string $nombre): void
-    {
-        self::eliminar($nombre, self::CARPETA_COTIZACIONES);
-    }
-
-    public static function obtenerFotoCotizacion(string $nombre): ?array
-    {
-        return self::obtener($nombre, self::CARPETA_COTIZACIONES);
-    }
-
-    public static function esPendiente(string $tipo, string $nombre): bool
-    {
-        return self::pendienteValida($tipo, $nombre) !== null;
-    }
 }
