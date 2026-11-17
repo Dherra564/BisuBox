@@ -478,8 +478,8 @@ CREATE TABLE `tbproveedorlinea` (
 
 INSERT INTO `tbusuario` (`tbusuarioid`, `tbusuarioidentificaciontipo`, `tbusuarioidentificacionnumero`, `tbusuarionombrecompleto`, `tbusuarioperfilimagen`, `tbusuariocorreo`, `tbusuariotelefono`, `tbusuariocontrasena`, `tbusuariorol`, `tbusuarioregistrofecha`, `tbusuarioactivo`)
 VALUES
-(1, 'Cedula', '200000002', 'Vendedor de Prueba', NULL, 'vendedor-bisubox@gmail.com', '77777777', '$2y$12$cy7xzNTAn0Gl/Ymia8TU1evpuuyjzp4UfwlBRIY0ocJvWYYVhAdzm', 'Vendedor', '2026-10-01 00:00:00', 1),
-(2, NULL, NULL, 'Cliente de Prueba', NULL, 'cliente-bisubox@gmail.com', '66666666', '$2y$12$Kag4xPDKWvZgDtsJ8uYUqu71BQoosc2NilsEK4OWX/rr7K0vpYkdK', 'Cliente', '2026-10-01 00:00:00', 1),
+(1, 'Cedula', '200000002', 'Vendedor de Prueba', NULL, 'vendedor.bisubox@gmail.com', '77777777', '$2y$12$cy7xzNTAn0Gl/Ymia8TU1evpuuyjzp4UfwlBRIY0ocJvWYYVhAdzm', 'Vendedor', '2026-10-01 00:00:00', 1),
+(2, NULL, NULL, 'Cliente de Prueba', NULL, 'cliente.bisubox@gmail.com', '66666666', '$2y$12$Kag4xPDKWvZgDtsJ8uYUqu71BQoosc2NilsEK4OWX/rr7K0vpYkdK', 'Cliente', '2026-10-01 00:00:00', 1),
 (3, 'Cedula', '304560789', 'Luna Vargas Mora', NULL, 'vendedor@gmail.com', '71234567', '$2y$12$EweQabsPMmcSBbpOBhdzDe4q5Ig6JKLHlxq6agjAl8Na3RBYSs9LG', 'Vendedor', '2026-10-02 00:00:00', 1),
 (4, NULL, NULL, 'Carlos Comprador Rojas', NULL, 'comprador@gmail.com', '62345678', '$2y$12$elAA.scsUup07yc2BMm0cuteSvozpZi0Zj9NH7rPt4G2XJIeotkzq', 'Cliente', '2026-10-02 00:00:00', 1);
 

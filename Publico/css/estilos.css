@@ -9139,3 +9139,782 @@ body,
         white-space: normal;
     }
 }
+
+.avisoPiezasFoto {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 16px;
+    border-left: 0;
+    border-radius: 14px;
+}
+
+.seccionPersonalizador {
+    border-color: #e3eae6;
+    border-radius: 18px;
+}
+
+.seccionPersonalizador h2,
+.pasoTomarFoto h2,
+#seccionResultado h2,
+#formularioPiezas h2,
+.pasoArme h2 {
+    margin: 0;
+    font-family: var(--fuenteTitulos);
+    font-size: 1.35rem;
+    font-weight: 500;
+    color: #1e5541;
+}
+
+.seccionPersonalizador .encabezadoSeccion {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 20px;
+    margin-bottom: 16px;
+}
+
+.campoInterruptor {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+}
+
+.campoInterruptor input[type="checkbox"] {
+    appearance: none;
+    flex: none;
+    position: relative;
+    width: 46px;
+    height: 26px;
+    margin: 0;
+    border-radius: 999px;
+    background: #cfdcd5;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.campoInterruptor input[type="checkbox"]::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: left 0.15s;
+}
+
+.campoInterruptor input[type="checkbox"]:checked {
+    background: var(--colorTitulo);
+}
+
+.campoInterruptor input[type="checkbox"]:checked::after {
+    left: 23px;
+}
+
+.campoInterruptor input[type="checkbox"]:focus-visible {
+    outline: 2px solid var(--colorFoco);
+    outline-offset: 2px;
+}
+
+.campoInterruptor label {
+    font-weight: 700;
+}
+
+.campoInterruptor label .textoAyuda {
+    display: block;
+    font-weight: 400;
+}
+
+.configuracionPersonalizador .campo {
+    margin: 0;
+}
+
+.pieConfiguracion {
+    margin-top: 14px;
+    padding-top: 0;
+    border-top: 0;
+}
+
+.pieConfiguracion .formulaPrecio {
+    flex: 1 1 320px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: #f1faf5;
+    color: #1e5541;
+}
+
+.seccionPersonalizador .boton,
+.pasoTomarFoto .boton,
+#formularioPiezas .boton,
+#seccionResultado .boton {
+    border-radius: 999px;
+}
+
+.seccionPersonalizador .boton:not(.botonSecundario),
+.pasoTomarFoto .boton:not(.botonSecundario),
+#formularioPiezas .boton:not(.botonSecundario) {
+    border-color: var(--colorTitulo);
+    background: var(--colorTitulo);
+    color: var(--colorTextoClaro);
+}
+
+.seccionPersonalizador .boton:not(.botonSecundario):hover,
+.pasoTomarFoto .boton:not(.botonSecundario):hover,
+#formularioPiezas .boton:not(.botonSecundario):hover {
+    border-color: #1e5541;
+    background: #1e5541;
+}
+
+.progresoPiezas {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: min(280px, 100%);
+}
+
+.progresoPiezas .textoAyuda {
+    margin: 0;
+    white-space: nowrap;
+}
+
+.progresoPiezas .barraAvance {
+    flex: 1;
+    height: 8px;
+}
+
+.selectorPestana {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.pestanasPiezas {
+    margin: 0 0 14px;
+}
+
+.pestanasPiezas .pestana {
+    cursor: pointer;
+}
+
+#verConFoto:checked ~ .pestanasPiezas .pestanaConFoto,
+#verSinFoto:checked ~ .pestanasPiezas .pestanaSinFoto {
+    color: #1e5541;
+    border-bottom-color: var(--colorTitulo);
+}
+
+#verConFoto:checked ~ .pestanasPiezas .pestanaConFoto .pestanaCantidad,
+#verSinFoto:checked ~ .pestanasPiezas .pestanaSinFoto .pestanaCantidad {
+    background: var(--colorTitulo);
+    color: var(--colorTextoClaro);
+}
+
+#verConFoto:focus-visible ~ .pestanasPiezas .pestanaConFoto,
+#verSinFoto:focus-visible ~ .pestanasPiezas .pestanaSinFoto {
+    outline: 2px solid var(--colorFoco);
+    outline-offset: 2px;
+}
+
+#verConFoto:checked ~ .panelSinFoto,
+#verSinFoto:checked ~ .panelConFoto {
+    display: none;
+}
+
+.panelPiezas > .textoAyuda {
+    margin: 0 0 12px;
+}
+
+.seccionPiezas .piezasConFoto {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+    margin: 0;
+}
+
+.seccionPiezas .piezaConFoto {
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    border-color: #e3eae6;
+    border-radius: 16px;
+}
+
+.seccionPiezas .miniaturaPieza {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 14px;
+    border-color: #eef2f0;
+}
+
+.seccionPiezas .miniaturaPieza img {
+    max-width: 70%;
+    max-height: 70%;
+}
+
+.seccionPiezas .cuerpoPieza strong {
+    padding-right: 0;
+}
+
+.seccionPiezas .tamanoPieza .campo {
+    flex: 1 1 auto;
+    max-width: none;
+}
+
+.seccionPiezas .tamanoPieza .campo label {
+    white-space: nowrap;
+}
+
+.seccionPiezas .tamanoPieza .boton {
+    min-height: 42px;
+}
+
+.seccionPiezas .quitarFotoPieza {
+    position: static;
+    align-self: flex-end;
+}
+
+.seccionPiezas .quitarFotoPieza .enlaceAccion {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.seccionPiezas .piezasSinFoto {
+    margin: 0;
+    border-color: #e3eae6;
+    border-radius: 14px;
+}
+
+.seccionPiezas .piezasSinFoto li {
+    padding: 12px 16px;
+}
+
+.pasosFotos {
+    margin: -6px 0 16px;
+}
+
+.contenido:has(#seccionResultado:not([hidden])) .pasoFotoRecorte,
+.contenido:has(#formularioPiezas:not([hidden])) .pasoFotoPiezas {
+    color: #1e5541;
+}
+
+.contenido:has(#seccionResultado:not([hidden])) .pasoFotoRecorte span,
+.contenido:has(#formularioPiezas:not([hidden])) .pasoFotoPiezas span {
+    border-color: var(--colorTitulo);
+    color: var(--colorTitulo);
+}
+
+.contenido:has(#seccionResultado:not([hidden])) .pasosFotos li:first-child span {
+    border-color: var(--colorTitulo);
+    background: var(--colorTitulo);
+    color: var(--colorTextoClaro);
+}
+
+.pasoTomarFoto {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 24px;
+    align-items: stretch;
+    border-color: #e3eae6;
+    border-radius: 18px;
+}
+
+.consejosTomarFoto {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.consejosTomarFoto .muestrasFondo {
+    grid-auto-flow: column;
+    justify-content: start;
+}
+
+.consejosTomarFoto .consejosFoto {
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.zonaTomarFoto {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 0;
+    padding: 24px;
+    border: 2px dashed #9cc3b0;
+    border-radius: 18px;
+    background: #f6faf8;
+    text-align: center;
+}
+
+.zonaTomarFoto .boton {
+    width: auto;
+    padding-left: 26px;
+    padding-right: 26px;
+}
+
+.zonaTomarFoto .textoAyuda {
+    margin: 0;
+}
+
+.iconoTomarFoto {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #e6f2ec;
+    color: var(--colorTitulo);
+}
+
+.iconoTomarFoto .icono {
+    width: 26px;
+    height: 26px;
+}
+
+#seccionResultado,
+#formularioPiezas .formularioSeccion {
+    border-color: #e3eae6;
+    border-radius: 18px;
+}
+
+#formularioPiezas .piezasEncontradas {
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+}
+
+.tarjetaVistaNueva {
+    border-radius: 16px;
+}
+
+.tarjetaVistaNueva:has(.usarPieza input:checked) {
+    border: 2px solid var(--colorTitulo);
+    background: #f6faf8;
+}
+
+.accionesFotos {
+    padding-top: 14px;
+    border-top: 1px solid #eef2f0;
+}
+
+.armePieza {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.armePieza .vistaPersonalizador {
+    padding: 20px;
+    border-color: #e3eae6;
+    border-radius: 18px;
+}
+
+.armePieza .vistaPersonalizador canvas {
+    border-radius: 14px;
+    background: #fbfdfc;
+}
+
+.encabezadoOrden {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 14px;
+    margin: 14px 0 8px;
+}
+
+.encabezadoOrden .tituloOrden {
+    margin: 0;
+    color: #1e5541;
+}
+
+.encabezadoOrden .botonesDiseno {
+    display: flex;
+    gap: 14px;
+    margin: 0;
+}
+
+.encabezadoOrden .enlaceAccion {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.armePieza .listaOrden li {
+    background: #f6faf8;
+}
+
+.columnaArme {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+.pasoArme {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px;
+    border: 1px solid #e3eae6;
+    border-radius: 18px;
+    background: var(--colorSuperficie);
+}
+
+.pasoArme fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.pasoArme .campo {
+    margin: 0;
+}
+
+.pasoArme .chipTipoPieza:has(input:checked) {
+    border-color: var(--colorTitulo);
+    background: var(--colorTitulo);
+    color: var(--colorTextoClaro);
+}
+
+.campoLargoPieza input[type="range"] {
+    width: 100%;
+    accent-color: var(--colorTitulo);
+}
+
+.armePieza.catalogoPiezas,
+.pasoArme.catalogoPiezas {
+    margin: 0;
+}
+
+.pasoArme .listaCatalogoPiezas {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+.pasoArme .piezaCatalogo {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 10px;
+    border-color: #e3eae6;
+    border-radius: 14px;
+    text-align: center;
+}
+
+.pasoArme .piezaCatalogo img {
+    width: 64px;
+    height: 64px;
+}
+
+.pasoArme .piezaCatalogo span {
+    align-items: center;
+}
+
+.pasoArme .piezaCatalogo strong {
+    font-size: 0.88rem;
+}
+
+.pasoArme .piezaCatalogo small {
+    font-size: 0.78rem;
+}
+
+.resumenArme {
+    position: sticky;
+    top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+    border: 1px solid #dce9e2;
+    border-radius: 18px;
+    background: #f6faf8;
+}
+
+.resumenArme .avisoDiseno {
+    min-height: 0;
+    margin: 0;
+}
+
+.resumenArme .avisoDiseno:empty {
+    display: none;
+}
+
+.resumenArme .datoDiseno {
+    gap: 6px;
+    padding: 0;
+    border-top: 0;
+}
+
+.filaDatoDiseno {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 12px;
+}
+
+.etiquetaResumen {
+    font-weight: 600;
+}
+
+.resumenArme .barraHilo {
+    background: #e3eae6;
+}
+
+.resumenArme #ajustarLargo {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.datoLleva .materialesDiseno {
+    font-size: 0.9rem;
+    color: var(--colorTextoSuave);
+}
+
+.compraArme {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #dce9e2;
+}
+
+.datoPrecio {
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.resumenArme .precioDiseno {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #1e5541;
+}
+
+.formularioArme .boton {
+    border-color: var(--colorTitulo);
+    border-radius: 999px;
+    background: var(--colorTitulo);
+    color: var(--colorTextoClaro);
+}
+
+.formularioArme .boton:hover {
+    border-color: #1e5541;
+    background: #1e5541;
+}
+
+.formularioArme .textoAyuda {
+    margin: 8px 0 0;
+}
+
+@media (max-width: 900px) {
+    .pasoTomarFoto,
+    .armePieza {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pasosFotos {
+        gap: 8px 18px;
+        font-size: 0.85rem;
+    }
+
+    .seccionPiezas .piezasConFoto {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pasoArme .listaCatalogoPiezas {
+        display: flex;
+        max-height: none;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 6px;
+    }
+
+    .pasoArme .piezaCatalogo {
+        flex: 0 0 120px;
+        scroll-snap-align: start;
+    }
+
+    .resumenArme {
+        position: static;
+        padding-bottom: 110px;
+    }
+
+    .compraArme {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 30;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+        border-top: 1px solid #e3eae6;
+        background: var(--colorSuperficie);
+        box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    .compraArme .datoPrecio {
+        flex: 1;
+        flex-direction: column !important;
+        align-items: flex-start;
+        gap: 0;
+    }
+
+    .compraArme .datoPrecio .etiquetaResumen .textoAyuda {
+        display: none;
+    }
+
+    .compraArme .precioDiseno {
+        font-size: 1.5rem;
+    }
+
+    .compraArme .formularioArme .textoAyuda {
+        display: none;
+    }
+}
+
+@media (max-width: 520px) {
+    .seccionPiezas .piezasConFoto {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .seccionPiezas .miniaturaPieza {
+        aspect-ratio: 16 / 9;
+    }
+
+    .pieConfiguracion .formulaPrecio {
+        flex: none;
+    }
+
+    .pieConfiguracion .grupoBotones {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .pieConfiguracion .grupoBotones .boton {
+        padding-left: 10px;
+        padding-right: 10px;
+        white-space: nowrap;
+    }
+
+    .pieConfiguracion .grupoBotones .boton:only-child {
+        grid-column: 1 / -1;
+    }
+}
+
+.encabezadoOrden .botonesDiseno {
+    gap: 8px;
+}
+
+.encabezadoOrden .botonesDiseno .enlaceAccion,
+.listaOrden .botonEnlace,
+.resumenArme #ajustarLargo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 6px 16px;
+    border: 1px solid #d5e8de;
+    border-radius: 999px;
+    background: #eef6f1;
+    color: #1e5541;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.encabezadoOrden .botonesDiseno .enlaceAccion:hover,
+.resumenArme #ajustarLargo:hover {
+    border-color: var(--colorTitulo);
+    background: var(--colorTitulo);
+    color: var(--colorTextoClaro);
+    text-decoration: none;
+}
+
+.encabezadoOrden .botonesDiseno .enlaceAccion.enlaceAccionPeligro {
+    border-color: #f3d3cf;
+    background: #fdf1ef;
+    color: var(--colorError);
+}
+
+.encabezadoOrden .botonesDiseno .enlaceAccion.enlaceAccionPeligro:hover,
+.listaOrden .botonEnlace:hover {
+    border-color: var(--colorError);
+    background: var(--colorError);
+    color: #ffffff;
+}
+
+.encabezadoOrden .botonesDiseno .enlaceAccion:focus-visible,
+.listaOrden .botonEnlace:focus-visible,
+.resumenArme #ajustarLargo:focus-visible {
+    outline: 2px solid var(--colorFoco);
+    outline-offset: 2px;
+}
+
+.armePieza .listaOrden {
+    gap: 8px;
+}
+
+.armePieza .listaOrden li {
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    padding: 6px 8px 6px 10px;
+    border: 1px solid #e3eae6;
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.armePieza .listaOrden img {
+    width: 36px;
+    height: 36px;
+    padding: 3px;
+    border-radius: 50%;
+    background: #f6faf8;
+}
+
+.listaOrden .botonEnlace {
+    min-height: 30px;
+    padding: 4px 14px;
+    border-color: #e3eae6;
+    background: #ffffff;
+    color: #5d6b65;
+    font-size: 0.82rem;
+}
+
+.resumenArme #ajustarLargo {
+    width: 100%;
+    margin-top: 4px;
+}
+
+.resumenArme #ajustarLargo[hidden] {
+    display: none;
+}
+
+.encabezadoOrden .botonesDiseno .enlaceAccion {
+    white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+    .encabezadoOrden .botonesDiseno {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .encabezadoOrden .botonesDiseno .enlaceAccion {
+        padding: 6px 12px;
+        font-size: 0.82rem;
+    }
+}
