@@ -90,7 +90,7 @@ $iniciales = mb_strtoupper(implode('', array_map(fn(string $parte): string => mb
                 <span class="tarjetaNumero"><?= Numero::moneda($resumen['saldo']) ?></span>
                 <?php if ($resumen['saldo'] > 0): ?>
                     <a href="<?= $urlBase ?>/compras-por-pagar?proveedor=<?= $idProveedor ?>" class="enlaceVerVenta">Ver qué
-                        debe →</a>
+                        debe</a>
                 <?php endif; ?>
             </div>
         </div>

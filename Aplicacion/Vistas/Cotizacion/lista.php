@@ -65,7 +65,9 @@ $porResponder = $conteos[EstadoCotizacion::ENVIADA];
                                     <span class="etiqueta <?= EstadoCotizacion::claseEtiqueta($cotizacion['estado']) ?>"><?= $cotizacion['estado'] ?></span>
                                 </td>
                                 <td data-etiqueta="" class="acciones">
-                                    <a href="<?= $urlBase ?>/cotizaciones/detalle?id=<?= $cotizacion['id'] ?>" class="boton botonPequeno">Ver</a>
+                                    <a href="<?= $urlBase ?>/cotizaciones/detalle?id=<?= $cotizacion['id'] ?>" 
+                                    class="boton botonPequeno">Ver</a>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

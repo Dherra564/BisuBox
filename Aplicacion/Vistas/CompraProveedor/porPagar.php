@@ -174,7 +174,7 @@ foreach ($proveedores as $opcion) {
                                     <a href="<?= $urlBase ?>/compras-proveedor/detalle?id=<?= $compra->getIdCompraProveedor() ?>#monto"
                                         class="boton botonPequeno">Abonar</a>
                                     <a href="<?= $urlBase ?>/compras-proveedor/detalle?id=<?= $compra->getIdCompraProveedor() ?>"
-                                        class="enlaceVerVenta">Ver</a>
+                                        class="enlaceAccion">Ver</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
