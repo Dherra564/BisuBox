@@ -20,20 +20,13 @@ class Configuracion
             return;
         }
 
+        $rutaEjemplo = self::rutaBase() . '/.env.ejemplo';
         $rutaEnv = self::rutaBase() . '/.env';
-        if (!is_file($rutaEnv)) {
-            throw new RuntimeException('No existe el archivo .env. Copie .env.ejemplo como .env y complete sus datos.');
+        if (!is_file($rutaEjemplo) && !is_file($rutaEnv)) {
+            throw new RuntimeException('No existe el archivo .env ni el .env.ejemplo.');
         }
 
-        $lineas = file($rutaEnv, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        foreach ($lineas as $linea) {
-            $linea = trim($linea);
-            if ($linea === '' || str_starts_with($linea, '#') || !str_contains($linea, '=')) {
-                continue;
-            }
-            [$clave, $valor] = explode('=', $linea, 2);
-            self::$valores[trim($clave)] = trim(trim($valor), "\"'");
-        }
+        self::$valores = array_merge(self::leerArchivo($rutaEjemplo), self::leerArchivo($rutaEnv));
 
         self::verificarClaves(['bdServidor', 'bdPuerto', 'bdNombre', 'bdUsuario', 'zonaHoraria']);
 
@@ -53,6 +46,25 @@ class Configuracion
         error_reporting(E_ALL);
 
         self::$cargada = true;
+    }
+
+    private static function leerArchivo(string $ruta): array
+    {
+        if (!is_file($ruta)) {
+            return [];
+        }
+
+        $valores = [];
+        foreach (file($ruta, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $linea) {
+            $linea = trim($linea);
+            if ($linea === '' || str_starts_with($linea, '#') || !str_contains($linea, '=')) {
+                continue;
+            }
+            [$clave, $valor] = explode('=', $linea, 2);
+            $valores[trim($clave)] = trim(trim($valor), "\"'");
+        }
+
+        return $valores;
     }
 
     public static function obtener(string $clave, ?string $porDefecto = null): ?string
