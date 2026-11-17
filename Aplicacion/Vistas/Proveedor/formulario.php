@@ -33,6 +33,7 @@ $rutaCancelar = $esNuevo ? '/proveedores' : '/proveedores/detalle?id=' . (int) $
         <input type="hidden" name="id" value="<?php echo (int) $proveedor->getIdProveedor() ?>">
     <?php endif; ?>
 
+    <div class="disenoFormProveedor">
     <section class="formularioSeccion">
         <h2>Datos del proveedor</h2>
 
@@ -45,10 +46,7 @@ $rutaCancelar = $esNuevo ? '/proveedores' : '/proveedores/detalle?id=' . (int) $
             <p class="textoAyuda">Por ejemplo Perlas del Valle S.A.</p>
             <?php echo $mensajeError('nombre') ?>
         </div>
-    </section>
-
-    <section class="formularioSeccion">
-        <h2>Contacto</h2>
+    <div class="grupoBotones accionesFormulario">
 
         <div class="filaCampos">
             <div class="<?php echo $claseCampo('telefono') ?>">
@@ -92,7 +90,9 @@ $rutaCancelar = $esNuevo ? '/proveedores' : '/proveedores/detalle?id=' . (int) $
         <?php endif; ?>
     </section>
 
-    <div class="grupoBotones accionesFormulario">
+    </div>
+
+    <div class="grupoBotones accionesFormulario accionesComponente">
         <a href="<?php echo $urlBase . $rutaCancelar ?>" class="boton botonSecundario">Cancelar</a>
         <button type="submit" class="boton"><?php echo $esNuevo ? 'Registrar proveedor' : 'Guardar cambios' ?></button>
     </div>

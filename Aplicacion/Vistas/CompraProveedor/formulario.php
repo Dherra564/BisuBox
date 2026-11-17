@@ -168,14 +168,15 @@ $deLaLinea = array_filter($proveedores, fn($proveedor): bool =>
     data-titulo="Registrar compra" data-boton="Registrar compra">
     <?= Csrf::campo() ?>
 
-    <div class="registroCompra">
+    <div class="registroCompra registroCompraLateral">
+        <div class="pasosCompra">
         <section class="formularioSeccion pasoCompra">
             <div class="pasoEncabezado">
                 <span class="pasoNumero" aria-hidden="true">1</span>
                 <h2>Datos de la compra</h2>
             </div>
-            <?php if ($lineas !== []): ?>
-                <div class="filaCampos">
+            <div class="filaCampos datosCompra">
+                <?php if ($lineas !== []): ?>
                     <div class="campo">
                         <label for="linea">¿De qué línea es la compra? <span class="textoOpcional">(opcional)</span></label>
                         <select id="linea" name="linea" data-linea-compra>
@@ -188,9 +189,7 @@ $deLaLinea = array_filter($proveedores, fn($proveedor): bool =>
                         </select>
                         <p class="textoAyuda">Le mostramos primero los proveedores que venden esa línea.</p>
                     </div>
-                </div>
-            <?php endif; ?>
-            <div class="filaCampos filaTres">
+                <?php endif; ?>
                 <div class="<?= $claseCampo('proveedor') ?>">
                     <label for="proveedor">Proveedor <span class="obligatorio">*</span></label>
                     <select id="proveedor" name="proveedor" required data-proveedor-compra
@@ -472,7 +471,10 @@ $deLaLinea = array_filter($proveedores, fn($proveedor): bool =>
             <p class="textoAyuda">Si todavía no le llega, desmarque la casilla. La compra queda por recibir y la suma al inventario cuando llegue.</p>
         </section>
 
-        <section class="resumenCompra" aria-label="Resumen de la compra">
+        </div>
+
+        <aside class="resumenCompra" aria-label="Resumen de la compra">
+            <h2>Resumen</h2>
             <div class="resumenCompraTotales" aria-live="polite">
                 <div><span data-resumen-cantidad>0 componentes</span><strong data-total-subtotal>₡0</strong></div>
                 <div><span>Envío</span><strong data-total-envio>Sin envío</strong></div>
@@ -482,7 +484,7 @@ $deLaLinea = array_filter($proveedores, fn($proveedor): bool =>
                 <a href="<?= $urlBase ?>/compras-proveedor" class="enlaceCancelar">Cancelar</a>
                 <button type="submit" class="boton botonRegistrar">Registrar compra</button>
             </div>
-        </section>
+        </aside>
     </div>
 </form>
 

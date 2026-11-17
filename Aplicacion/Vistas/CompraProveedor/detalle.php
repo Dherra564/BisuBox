@@ -19,6 +19,7 @@ $claseCampo = fn(string $campo): string => isset($errores[$campo]) ? 'campo camp
 $mensajeError = fn(string $campo): string => isset($errores[$campo])
     ? '<p class="errorCampo">' . htmlspecialchars($errores[$campo]) . '</p>'
     : '';
+$porcentajePagado = $compra->getTotal() > 0 ? min(100, max(0, round($compra->getPagado() / $compra->getTotal() * 100))) : 0;
 ?>
 
 <?php if ($errores !== []): ?>
@@ -28,8 +29,8 @@ $mensajeError = fn(string $campo): string => isset($errores[$campo])
     </div>
 <?php endif; ?>
 
-<article class="factura <?= $compra->estaAnulada() ? 'facturaAnulada' : '' ?>">
-    <header class="facturaEncabezado">
+<section class="encabezadoVenta">
+    <div class="facturaEncabezado">
         <div>
             <span class="textoAyuda">Proveedor</span>
             <a href="<?= $urlBase ?>/proveedores/detalle?id=<?= $compra->getIdProveedor() ?>" class="facturaProveedor">
@@ -55,8 +56,57 @@ $mensajeError = fn(string $campo): string => isset($errores[$campo])
                 <?php endif; ?>
             </span>
         </div>
-    </header>
+    </div>
+    <?php if ($compra->estaPorRecibir()): ?>
+        <form method="post" action="<?= $urlBase ?>/compras-proveedor/recibir" class="formularioEnLinea recibirCompra"
+            data-titulo="Recibir compra" data-boton="Ya la recibí"
+            data-confirmar="¿Ya le llegó la compra de <?= htmlspecialchars($compra->getNombreProveedor()) ?>? Se sumarán al inventario los componentes que trae.">
+            <?= Csrf::campo() ?>
+            <input type="hidden" name="id" value="<?= $compra->getIdCompraProveedor() ?>">
+            <button type="submit" class="boton">Marcar como recibida</button>
+        </form>
+    <?php endif; ?>
+</section>
 
+<?php if ($compra->estaPorRecibir()): ?>
+    <p class="cajaInformativa">Esta compra todavía no ha llegado. Cuando la reciba, márquela para sumar los componentes al
+        inventario.</p>
+<?php endif; ?>
+
+<?php if ($compra->estaAnulada()): ?>
+    <p class="cajaInformativa">
+        Esta compra está
+        anulada<?= $compra->getFechaRecepcion() !== null ? ': lo que entró con ella ya se restó del inventario' : '' ?>
+        y no cuenta en los totales.
+    </p>
+<?php else: ?>
+    <section class="cuentasVenta" aria-label="Pagos de la compra">
+        <div>
+            <span class="textoAyuda">Total de la compra</span>
+            <strong><?= Numero::moneda($compra->getTotal()) ?></strong>
+        </div>
+        <div>
+            <span class="textoAyuda">Pagado</span>
+            <strong><?= Numero::moneda($compra->getPagado()) ?></strong>
+        </div>
+        <div class="saldoVenta">
+            <span class="textoAyuda">Saldo</span>
+            <strong><?= Numero::moneda($compra->getSaldo()) ?></strong>
+        </div>
+        <div class="avanceVenta">
+            <div class="barraAvance" aria-hidden="true"><span style="width: <?= $porcentajePagado ?>%"></span></div>
+            <?php if ($compra->debe() && $compra->getVencimiento() !== null): ?>
+                <p class="<?= $compra->estaVencida() ? 'errorCampo' : 'textoAyuda' ?>">
+                    <?= $compra->estaVencida() ? 'Venció el ' : 'Fecha límite para pagar: ' ?>
+                    <?= $compra->getVencimiento()->format('d/m/Y') ?>
+                </p>
+            <?php endif; ?>
+        </div>
+    </section>
+<?php endif; ?>
+
+<section class="factura abonosVenta <?= $compra->estaAnulada() ? 'facturaAnulada' : '' ?>">
+    <h2>Componentes</h2>
     <div class="tablaContenedor">
         <table class="tabla tablaFactura">
             <thead>
@@ -75,9 +125,11 @@ $mensajeError = fn(string $campo): string => isset($errores[$campo])
                             <span class="detalleComponente"><?= htmlspecialchars($detalle->getNombreTipo()) ?></span>
                         </td>
                         <td data-etiqueta="Cantidad" class="numero">
-                            <?= UnidadMedida::cantidad($detalle->getCantidad(), $detalle->getUnidad()) ?></td>
+                            <?= UnidadMedida::cantidad($detalle->getCantidad(), $detalle->getUnidad()) ?>
+                        </td>
                         <td data-etiqueta="Precio total" class="numero">
-                            <strong><?= Numero::moneda($detalle->getSubtotal()) ?></strong></td>
+                            <strong><?= Numero::moneda($detalle->getSubtotal()) ?></strong>
+                        </td>
                         <td data-etiqueta="<?= UnidadMedida::etiquetaCosto($detalle->getUnidad()) ?>" class="numero">
                             <?= Numero::moneda($detalle->getCostoUnitario()) ?>
                             <span
@@ -89,33 +141,73 @@ $mensajeError = fn(string $campo): string => isset($errores[$campo])
         </table>
     </div>
 
-    <div class="totalesCompra">
-        <div><span>Subtotal</span><strong><?= Numero::moneda($compra->getSubtotal()) ?></strong></div>
-        <div>
-            <span>Envío</span><strong><?= $hayEnvio ? Numero::moneda($compra->getCostoEnvio()) : 'Sin envío' ?></strong>
-        </div>
-        <div class="totalCompra"><span>Total</span><strong><?= Numero::moneda($compra->getTotal()) ?></strong></div>
-        <?php if ($compra->esCredito() && !$compra->estaAnulada()): ?>
-            <div><span>Pagado</span><strong><?= Numero::moneda($compra->getPagado()) ?></strong></div>
-            <div class="totalCompra"><span>Saldo</span><strong><?= Numero::moneda($compra->getSaldo()) ?></strong></div>
+    <div class="pieComponentesCompra">
+        <?php if ($compra->getFechaRegistro() !== null): ?>
+            <p class="textoAyuda">
+                Registrada en el sistema el <?= $compra->getFechaRegistro()->format('d/m/Y \a \l\a\s H:i') ?>.
+                <?php if ($compra->getFechaRecepcion() !== null): ?>
+                    Recibida el <?= $compra->getFechaRecepcion()->format('d/m/Y \a \l\a\s H:i') ?>.
+                <?php endif; ?>
+            </p>
         <?php endif; ?>
+        <div class="totalesLinea">
+            <span>Subtotal <strong><?= Numero::moneda($compra->getSubtotal()) ?></strong></span>
+            <span>Envío
+                <strong><?= $hayEnvio ? Numero::moneda($compra->getCostoEnvio()) : 'Sin envío' ?></strong></span>
+            <span>Total <strong class="totalLineaMonto"><?= Numero::moneda($compra->getTotal()) ?></strong></span>
+        </div>
     </div>
+</section>
 
-    <?php if ($compra->debe() && $compra->getVencimiento() !== null): ?>
-        <p class="<?= $compra->estaVencida() ? 'errorCampo' : 'textoAyuda' ?>">
-            <?= $compra->estaVencida() ? 'Venció el ' : 'Fecha límite para pagar: ' ?>    <?= $compra->getVencimiento()->format('d/m/Y') ?>
-        </p>
-    <?php endif; ?>
+<?php if ($compra->debe()): ?>
+    <section class="formularioSeccion abonoVenta">
+        <h2>Registrar un abono</h2>
+        <form method="post" action="<?= $urlBase ?>/compras-proveedor/abonar" novalidate class="validarFormulario"
+            data-titulo="Registrar abono" data-boton="Guardar abono"
+            data-confirmar="¿Guardar el abono a <?= htmlspecialchars($compra->getNombreProveedor()) ?> por la compra del <?= $compra->getFecha()->format('d/m/Y') ?>?">
+            <?= Csrf::campo() ?>
+            <input type="hidden" name="id" value="<?= $compra->getIdCompraProveedor() ?>">
 
-    <?php if ($compra->getFechaRegistro() !== null): ?>
-        <p class="textoAyuda">
-            Registrada en el sistema el <?= $compra->getFechaRegistro()->format('d/m/Y \a \l\a\s H:i') ?>.
-            <?php if ($compra->getFechaRecepcion() !== null): ?>
-                Recibida el <?= $compra->getFechaRecepcion()->format('d/m/Y \a \l\a\s H:i') ?>.
-            <?php endif; ?>
-        </p>
-    <?php endif; ?>
+            <div class="<?= $claseCampo('monto') ?>">
+                <label for="monto">Monto que le pagó <span class="obligatorio">*</span></label>
+                <input type="text" id="monto" name="monto" inputmode="decimal" maxlength="14" required data-regla="abono"
+                    data-saldo="<?= htmlspecialchars((string) $compra->getSaldo()) ?>"
+                    data-mensaje-saldo="<?= htmlspecialchars(DatosVenta::mensajeSaldo($compra->getSaldo())) ?>"
+                    data-mensaje-requerido="Escriba cuánto le pagó"
+                    value="<?= htmlspecialchars((string) $datos['monto']) ?>">
+                <p class="textoAyuda">Debe <?= Numero::moneda($compra->getSaldo()) ?>. Puede abonar una parte o todo.</p>
+                <?= $mensajeError('monto') ?>
+            </div>
 
+            <div class="<?= $claseCampo('metodoPago') ?>">
+                <label for="metodoPago">¿Cómo le pagó? <span class="obligatorio">*</span></label>
+                <select id="metodoPago" name="metodoPago" required
+                    data-mensaje-requerido="<?= DatosVenta::MENSAJE_METODO ?>">
+                    <option value="">Escoja una opción</option>
+                    <?php foreach (MetodoPago::todos() as $codigo => $nombre): ?>
+                        <option value="<?= $codigo ?>" <?= $datos['metodoPago'] === $codigo ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($nombre) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <?= $mensajeError('metodoPago') ?>
+            </div>
+
+            <div class="<?= $claseCampo('nota') ?>">
+                <label for="nota">Nota</label>
+                <input type="text" id="nota" name="nota" maxlength="300"
+                    data-mensaje-largo="La nota puede tener como máximo 300 caracteres"
+                    value="<?= htmlspecialchars((string) $datos['nota']) ?>">
+                <p class="textoAyuda">Opcional. Por ejemplo, el número de comprobante.</p>
+                <?= $mensajeError('nota') ?>
+            </div>
+
+            <button type="submit" class="boton">Guardar abono</button>
+        </form>
+    </section>
+<?php endif; ?>
+
+<section class="factura abonosVenta">
     <h2>Pagos</h2>
     <?php if ($abonos === []): ?>
         <p class="textoAyuda">Todavía no ha registrado pagos para esta compra.</p>
@@ -144,92 +236,23 @@ $mensajeError = fn(string $campo): string => isset($errores[$campo])
             </table>
         </div>
     <?php endif; ?>
-</article>
+</section>
 
-<?php if ($compra->debe()): ?>
-    <section class="formularioSeccion">
-        <h2>Registrar un abono</h2>
-        <form method="post" action="<?= $urlBase ?>/compras-proveedor/abonar" novalidate class="validarFormulario"
-            data-titulo="Registrar abono" data-boton="Guardar abono"
-            data-confirmar="¿Guardar el abono a <?= htmlspecialchars($compra->getNombreProveedor()) ?> por la compra del <?= $compra->getFecha()->format('d/m/Y') ?>?">
-            <?= Csrf::campo() ?>
-            <input type="hidden" name="id" value="<?= $compra->getIdCompraProveedor() ?>">
-
-            <div class="<?= $claseCampo('monto') ?>">
-                <label for="monto">Monto que le pagó <span class="obligatorio">*</span></label>
-                <input type="text" id="monto" name="monto" inputmode="decimal" maxlength="14" required data-regla="abono"
-                    data-saldo="<?= htmlspecialchars((string) $compra->getSaldo()) ?>"
-                    data-mensaje-saldo="<?= htmlspecialchars(DatosVenta::mensajeSaldo($compra->getSaldo())) ?>"
-                    data-mensaje-requerido="Escriba cuánto le pagó"
-                    value="<?= htmlspecialchars((string) $datos['monto']) ?>">
-                <p class="textoAyuda">Debe <?= Numero::moneda($compra->getSaldo()) ?>. Puede abonar una parte o todo.</p>
-                <?= $mensajeError('monto') ?>
-            </div>
-
-            <div class="<?= $claseCampo('metodoPago') ?>">
-                <label for="metodoPago">¿Cómo le pagó? <span class="obligatorio">*</span></label>
-                <select id="metodoPago" name="metodoPago" required
-                    data-mensaje-requerido="<?= DatosVenta::MENSAJE_METODO ?>">
-                    <option value="">Escoja una opción</option>
-                    <?php foreach (MetodoPago::todos() as $codigo => $nombre): ?>
-                        <option value="<?= $codigo ?>" <?= $datos['metodoPago'] === $codigo ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($nombre) ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <?= $mensajeError('metodoPago') ?>
-            </div>
-
-            <div class="<?= $claseCampo('nota') ?>">
-                <label for="nota">Nota</label>
-                <input type="text" id="nota" name="nota" maxlength="300"
-                    data-mensaje-largo="La nota puede tener como máximo 300 caracteres"
-                    value="<?= htmlspecialchars((string) $datos['nota']) ?>">
-                <p class="textoAyuda">Opcional. Por ejemplo, el número de comprobante.</p>
-                <?= $mensajeError('nota') ?>
-            </div>
-
-            <div class="grupoBotones">
-                <button type="submit" class="boton">Guardar abono</button>
-            </div>
-        </form>
-    </section>
-<?php endif; ?>
-
-<?php if ($compra->estaPorRecibir()): ?>
-    <div class="cajaPaso">
-        <p><strong>Esta compra todavía no ha llegado.</strong> Cuando la reciba, márquela para sumar los componentes al
-            inventario.</p>
-        <form method="post" action="<?= $urlBase ?>/compras-proveedor/recibir" class="formularioEnLinea"
-            data-titulo="Recibir compra" data-boton="Ya la recibí"
-            data-confirmar="¿Ya le llegó la compra de <?= htmlspecialchars($compra->getNombreProveedor()) ?>? Se sumarán al inventario los componentes que trae.">
-            <?= Csrf::campo() ?>
-            <input type="hidden" name="id" value="<?= $compra->getIdCompraProveedor() ?>">
-            <button type="submit" class="boton">Marcar como recibida</button>
-        </form>
-    </div>
-<?php endif; ?>
-
-<?php if ($compra->estaAnulada()): ?>
-    <p class="cajaInformativa">
-        Esta compra está
-        anulada<?= $compra->getFechaRecepcion() !== null ? ': lo que entró con ella ya se restó del inventario' : '' ?>
-        y no cuenta en los totales.
-    </p>
-<?php elseif ($compra->esCredito() && $compra->getPagado() > 0): ?>
+<?php if (!$compra->estaAnulada() && $compra->esCredito() && $compra->getPagado() > 0): ?>
     <div class="cajaAnular">
         <p><strong>No se puede anular:</strong> ya le hizo abonos a esta compra.</p>
     </div>
-<?php elseif ($sinExistencia !== []): ?>
+<?php elseif (!$compra->estaAnulada() && $sinExistencia !== []): ?>
     <div class="cajaAnular">
         <p>
             <strong>No se puede anular:</strong> ya se usó parte de <?= htmlspecialchars(implode(', ', $sinExistencia)) ?>,
             así que en el inventario no queda lo suficiente para restarlo.
         </p>
     </div>
-<?php else: ?>
+<?php elseif (!$compra->estaAnulada()): ?>
     <div class="cajaAnular">
         <p>
-            ¿Encontró un error en esta compra? Anúlela y regístrela de nuevo.
+            <strong>¿Encontró un error en esta compra?</strong> Anúlela y regístrela de nuevo.
             <?= $compra->estaRecibida() ? 'Al anularla se resta del inventario lo que entró con ella.' : '' ?>
         </p>
         <form method="post" action="<?= $urlBase ?>/compras-proveedor/anular" class="formularioEnLinea"

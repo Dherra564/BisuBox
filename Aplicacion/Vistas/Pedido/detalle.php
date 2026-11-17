@@ -34,6 +34,11 @@ $clasesPago = [
     EstadoPago::CON_PROBLEMA => 'cajaPagoProblema',
     EstadoPago::NO_LLEGO => 'cajaPagoProblema',
 ];
+$botonesEncabezado = [];
+if ($whatsApp !== null) {
+    $botonesEncabezado[] = ['texto' => 'Escribirle por WhatsApp', 'ruta' => $whatsApp, 'externo' => true];
+}
+$botonesEncabezado[] = ['texto' => 'Otros pedidos de este cliente', 'ruta' => $urlBase . '/pedidos?cliente=' . $pedido->getIdCliente(), 'secundario' => true];
 ?>
 
 <?php if ($pedido->getEstado() === EstadoPedido::CANCELADO): ?>
@@ -58,8 +63,11 @@ $clasesPago = [
     <?php endif; ?>
 <?php endif; ?>
 
+<?php require __DIR__ . '/encabezadoPedido.php'; ?>
+<?php require __DIR__ . '/factura.php'; ?>
+
 <?php if ($pago !== null): ?>
-    <section class="cajaPago <?= $clasesPago[$pago->getEstado()] ?? '' ?>" aria-labelledby="tituloPago">
+    <section class="cajaPago cajaPagoTienda <?= $clasesPago[$pago->getEstado()] ?? '' ?>" aria-labelledby="tituloPago">
         <div class="cajaPagoEncabezado">
             <h2 id="tituloPago">Pago por SINPE Móvil</h2>
             <span
@@ -150,17 +158,6 @@ $clasesPago = [
         <?php endif; ?>
     </section>
 <?php endif; ?>
-
-<?php require __DIR__ . '/factura.php'; ?>
-
-<div class="grupoBotones accionesPedido">
-    <?php if ($whatsApp !== null): ?>
-        <a href="<?= htmlspecialchars($whatsApp) ?>" class="boton" target="_blank" rel="noopener">Escribirle por
-            WhatsApp</a>
-    <?php endif; ?>
-    <a href="<?= $urlBase ?>/pedidos?cliente=<?= $pedido->getIdCliente() ?>" class="boton">Otros pedidos de este
-        cliente</a>
-</div>
 
 <?php if ($activo): ?>
     <section class="formularioSeccion entregaPedido" aria-labelledby="tituloEntrega">

@@ -38,13 +38,6 @@ $urlFoto = $fotoMostrada !== null
     </div>
 <?php endif; ?>
 
-<div class="tipoElegido">
-    <span>Tipo: <strong><?= htmlspecialchars($tipoComponente->getNombre()) ?></strong></span>
-    <?php if (!$editando): ?>
-        <a href="<?= $urlBase ?>/componentes/nuevo">Cambiar tipo</a>
-    <?php endif; ?>
-</div>
-
 <form method="post" action="<?= $urlBase ?>/componentes/<?= $editando ? 'editar' : 'nuevo' ?>"
     enctype="multipart/form-data" novalidate class="validarFormulario formularioComponente">
     <?= Csrf::campo() ?>
@@ -54,9 +47,8 @@ $urlFoto = $fotoMostrada !== null
         <input type="hidden" name="tipo" value="<?= $tipoComponente->getIdTipoComponente() ?>">
     <?php endif; ?>
 
-    <section class="formularioSeccion">
-        <h2>Datos comunes</h2>
-        <div class="encabezadoProducto">
+    <div class="disenoComponente">
+        <aside class="formularioSeccion fotoComponente">
             <div class="<?= $claseCampo('foto') ?>">
                 <div class="zonaFoto zonaFotoProducto">
                     <img src="<?= htmlspecialchars($urlFoto) ?>" alt="" class="fotoPerfilGrande fotoProducto">
@@ -79,8 +71,18 @@ $urlFoto = $fotoMostrada !== null
                 </div>
                 <?= $mensajeError('foto') ?>
             </div>
+        </aside>
 
-            <div>
+        <div class="columnaComponente">
+            <section class="formularioSeccion">
+                <h2>Datos comunes</h2>
+                <div class="tipoElegido">
+                    <span>Tipo: <strong><?= htmlspecialchars($tipoComponente->getNombre()) ?></strong></span>
+                    <?php if (!$editando): ?>
+                        <a href="<?= $urlBase ?>/componentes/nuevo">Cambiar tipo</a>
+                    <?php endif; ?>
+                </div>
+
                 <div class="<?= $claseCampo('nombre') ?>">
                     <label for="nombre">Nombre del componente <span class="obligatorio">*</span></label>
                     <input type="text" id="nombre" name="nombre" minlength="2" maxlength="100" required
@@ -121,122 +123,127 @@ $urlFoto = $fotoMostrada !== null
                         <?= $mensajeError('existenciaMinima') ?>
                     </div>
                 </div>
-            </div>
-        </div>
+            </section>
 
-        <?php if (!$editando): ?>
-            <div class="filaCampos">
-                <div class="<?= $claseCampo('existencia') ?>">
-                    <label for="existencia">¿Cuántas tiene ahora?</label>
-                    <div class="campoConUnidad">
-                        <input type="text" id="existencia" name="existencia" maxlength="13" inputmode="decimal"
-                            data-regla="cantidad"
-                            data-mensaje-regla="Escriba un número con hasta 2 decimales, por ejemplo 12 o 12,50"
-                            placeholder="0" value="<?= $valor('existencia') ?>">
-                        <select name="medida" class="selectorMedida" aria-label="Metros o centímetros" data-medida
-                            <?= $esMetro ? '' : 'hidden' ?>>
-                            <option value="m" <?= $enCentimetros ? '' : 'selected' ?>>m</option>
-                            <option value="cm" <?= $enCentimetros ? 'selected' : '' ?>>cm</option>
-                        </select>
-                        <span class="unidadCampo" data-unidad-plural data-unidad-existencia <?= $esMetro ? 'hidden' : '' ?>><?= $plural ?></span>
-                    </div>
-                    <p class="textoAyuda" data-unidad-ayuda>
-                        <?= htmlspecialchars($unidades[$datos['unidad']]['ayuda'] ?? '') ?>
-                    </p>
-                    <p class="textoAyuda">Si todavía no tiene, déjelo vacío.</p>
-                    <?= $mensajeError('existencia') ?>
-                </div>
-                <div class="<?= $claseCampo('costoTotal') ?>">
-                    <label for="costoTotal">¿Cuánto pagó en total por eso?</label>
-                    <div class="campoConUnidad campoConMoneda">
-                        <span class="unidadCampo">₡</span>
-                        <input type="text" id="costoTotal" name="costoTotal" maxlength="13" inputmode="decimal"
-                            data-regla="cantidad"
-                            data-mensaje-regla="Escriba un número con hasta 2 decimales, por ejemplo 12 o 12,50"
-                            placeholder="0" data-costo-total value="<?= $valor('costoTotal') ?>">
-                    </div>
-                    <p class="costoCalculadoComponente" data-costo-calculado aria-live="polite"></p>
-                    <?= $mensajeError('costoTotal') ?>
-                </div>
-            </div>
-        <?php endif; ?>
-    </section>
-
-    <section class="formularioSeccion">
-        <h2>Datos de <?= htmlspecialchars(mb_strtolower($tipoComponente->getNombre(), 'UTF-8')) ?></h2>
-        <?php if ($atributos === []): ?>
-            <p class="textoAyuda">Este tipo solo pide los datos comunes.
-                <a href="<?= $urlBase ?>/tipos-componente/editar?id=<?= $tipoComponente->getIdTipoComponente() ?>">Agregarle
-                    datos</a>.
-            </p>
-        <?php else: ?>
-            <div class="datosDelTipo">
-                <?php foreach ($atributos as $atributo): ?>
-                    <?php
-                    $idAtributo = (int) $atributo->getIdAtributo();
-                    $campo = 'valor.' . $idAtributo;
-                    $idCampo = 'valor-' . $idAtributo;
-                    $nombreCampo = 'valor[' . $idAtributo . ']';
-                    $valorActual = (string) ($datos['valores'][$idAtributo] ?? '');
-                    $marca = ' <span class="obligatorio">*</span>';
-                    $mensajeRequerido = 'Este tipo siempre pide ' . mb_strtolower($atributo->getNombre(), 'UTF-8');
-                    ?>
-                    <?php if ($atributo->getClase() === ClaseDato::SINO): ?>
-                        <div class="campo campoCasilla">
-                            <input type="checkbox" id="<?= $idCampo ?>" name="<?= $nombreCampo ?>" value="1" <?= $valorActual === '1' ? 'checked' : '' ?>>
-                            <label for="<?= $idCampo ?>"><?= htmlspecialchars($atributo->getNombre()) ?></label>
-                        </div>
-                    <?php else: ?>
-                        <div class="<?= $claseCampo($campo) ?>">
-                            <label for="<?= $idCampo ?>"><?= htmlspecialchars($atributo->getNombre()) . $marca ?></label>
-                            <?php if ($atributo->getClase() === ClaseDato::LISTA): ?>
-                                <select id="<?= $idCampo ?>" name="<?= $nombreCampo ?>" required
-                                    data-mensaje-requerido="<?= htmlspecialchars($mensajeRequerido) ?>">
-                                    <option value="">Escoja una opción</option>
-                                    <?php foreach ($atributo->getOpciones() as $opcion): ?>
-                                        <?php
-                                        $esActual = $valorActual === (string) $opcion->getIdOpcion();
-                                        if (!$opcion->getActivo() && !$esActual) {
-                                            continue;
-                                        }
-                                        ?>
-                                        <option value="<?= $opcion->getIdOpcion() ?>" <?= $esActual ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($opcion->getValor()) ?>
-                                            <?= $opcion->getActivo() ? '' : ' (ya no se usa)' ?>
-                                        </option>
-                                    <?php endforeach; ?>
+            <?php if (!$editando): ?>
+                <section class="formularioSeccion">
+                    <h2>Lo que tiene ahora</h2>
+                    <div class="filaCampos">
+                        <div class="<?= $claseCampo('existencia') ?>">
+                            <label for="existencia">¿Cuántas tiene ahora?</label>
+                            <div class="campoConUnidad">
+                                <input type="text" id="existencia" name="existencia" maxlength="13" inputmode="decimal"
+                                    data-regla="cantidad"
+                                    data-mensaje-regla="Escriba un número con hasta 2 decimales, por ejemplo 12 o 12,50"
+                                    placeholder="0" value="<?= $valor('existencia') ?>">
+                                <select name="medida" class="selectorMedida" aria-label="Metros o centímetros" data-medida
+                                    <?= $esMetro ? '' : 'hidden' ?>>
+                                    <option value="m" <?= $enCentimetros ? '' : 'selected' ?>>m</option>
+                                    <option value="cm" <?= $enCentimetros ? 'selected' : '' ?>>cm</option>
                                 </select>
-                            <?php elseif ($atributo->getClase() === ClaseDato::NUMERO): ?>
-                                <div class="campoConUnidad">
-                                    <input type="text" id="<?= $idCampo ?>" name="<?= $nombreCampo ?>" maxlength="13"
-                                        inputmode="decimal" data-regla="cantidad"
-                                        data-mensaje-regla="Escriba un número, por ejemplo 8 o 8,5" data-atributo-numero
-                                        data-mensaje-requerido="<?= htmlspecialchars($mensajeRequerido) ?>" required
-                                        value="<?= htmlspecialchars($valorActual) ?>">
-                                    <?php if ($atributo->getUnidad()): ?>
-                                        <span class="unidadCampo"><?= htmlspecialchars($atributo->getUnidad()) ?></span>
-                                    <?php endif; ?>
+                                <span class="unidadCampo" data-unidad-plural data-unidad-existencia <?= $esMetro ? 'hidden' : '' ?>><?= $plural ?></span>
+                            </div>
+                            <p class="textoAyuda" data-unidad-ayuda>
+                                <?= htmlspecialchars($unidades[$datos['unidad']]['ayuda'] ?? '') ?>
+                            </p>
+                            <p class="textoAyuda">Si todavía no tiene, déjelo vacío.</p>
+                            <?= $mensajeError('existencia') ?>
+                        </div>
+                        <div class="<?= $claseCampo('costoTotal') ?>">
+                            <label for="costoTotal">¿Cuánto pagó en total por eso?</label>
+                            <div class="campoConUnidad campoConMoneda">
+                                <span class="unidadCampo">₡</span>
+                                <input type="text" id="costoTotal" name="costoTotal" maxlength="13" inputmode="decimal"
+                                    data-regla="cantidad"
+                                    data-mensaje-regla="Escriba un número con hasta 2 decimales, por ejemplo 12 o 12,50"
+                                    placeholder="0" data-costo-total value="<?= $valor('costoTotal') ?>">
+                            </div>
+                            <p class="costoCalculadoComponente" data-costo-calculado aria-live="polite"></p>
+                            <?= $mensajeError('costoTotal') ?>
+                        </div>
+                    </div>
+                </section>
+            <?php endif; ?>
+
+            <section class="formularioSeccion">
+                <h2>Datos de <?= htmlspecialchars(mb_strtolower($tipoComponente->getNombre(), 'UTF-8')) ?></h2>
+                <?php if ($atributos === []): ?>
+                    <p class="textoAyuda">Este tipo solo pide los datos comunes.
+                        <a href="<?= $urlBase ?>/tipos-componente/editar?id=<?= $tipoComponente->getIdTipoComponente() ?>">Agregarle
+                            datos</a>.
+                    </p>
+                <?php else: ?>
+                    <div class="datosDelTipo">
+                        <?php foreach ($atributos as $atributo): ?>
+                            <?php
+                            $idAtributo = (int) $atributo->getIdAtributo();
+                            $campo = 'valor.' . $idAtributo;
+                            $idCampo = 'valor-' . $idAtributo;
+                            $nombreCampo = 'valor[' . $idAtributo . ']';
+                            $valorActual = (string) ($datos['valores'][$idAtributo] ?? '');
+                            $marca = ' <span class="obligatorio">*</span>';
+                            $mensajeRequerido = 'Este tipo siempre pide ' . mb_strtolower($atributo->getNombre(), 'UTF-8');
+                            ?>
+                            <?php if ($atributo->getClase() === ClaseDato::SINO): ?>
+                                <div class="campo campoCasilla">
+                                    <input type="checkbox" id="<?= $idCampo ?>" name="<?= $nombreCampo ?>" value="1"
+                                        <?= $valorActual === '1' ? 'checked' : '' ?>>
+                                    <label for="<?= $idCampo ?>"><?= htmlspecialchars($atributo->getNombre()) ?></label>
                                 </div>
                             <?php else: ?>
-                                <input type="text" id="<?= $idCampo ?>" name="<?= $nombreCampo ?>" maxlength="300" data-atributo-texto
-                                    data-mensaje-requerido="<?= htmlspecialchars($mensajeRequerido) ?>" required
-                                    value="<?= htmlspecialchars($valorActual) ?>">
+                                <div class="<?= $claseCampo($campo) ?>">
+                                    <label for="<?= $idCampo ?>"><?= htmlspecialchars($atributo->getNombre()) . $marca ?></label>
+                                    <?php if ($atributo->getClase() === ClaseDato::LISTA): ?>
+                                        <select id="<?= $idCampo ?>" name="<?= $nombreCampo ?>" required
+                                            data-mensaje-requerido="<?= htmlspecialchars($mensajeRequerido) ?>">
+                                            <option value="">Escoja una opción</option>
+                                            <?php foreach ($atributo->getOpciones() as $opcion): ?>
+                                                <?php
+                                                $esActual = $valorActual === (string) $opcion->getIdOpcion();
+                                                if (!$opcion->getActivo() && !$esActual) {
+                                                    continue;
+                                                }
+                                                ?>
+                                                <option value="<?= $opcion->getIdOpcion() ?>" <?= $esActual ? 'selected' : '' ?>>
+                                                    <?= htmlspecialchars($opcion->getValor()) ?>
+                                                    <?= $opcion->getActivo() ? '' : ' (ya no se usa)' ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    <?php elseif ($atributo->getClase() === ClaseDato::NUMERO): ?>
+                                        <div class="campoConUnidad">
+                                            <input type="text" id="<?= $idCampo ?>" name="<?= $nombreCampo ?>" maxlength="13"
+                                                inputmode="decimal" data-regla="cantidad"
+                                                data-mensaje-regla="Escriba un número, por ejemplo 8 o 8,5" data-atributo-numero
+                                                data-mensaje-requerido="<?= htmlspecialchars($mensajeRequerido) ?>" required
+                                                value="<?= htmlspecialchars($valorActual) ?>">
+                                            <?php if ($atributo->getUnidad()): ?>
+                                                <span class="unidadCampo"><?= htmlspecialchars($atributo->getUnidad()) ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <input type="text" id="<?= $idCampo ?>" name="<?= $nombreCampo ?>" maxlength="300"
+                                            data-atributo-texto data-mensaje-requerido="<?= htmlspecialchars($mensajeRequerido) ?>"
+                                            required value="<?= htmlspecialchars($valorActual) ?>">
+                                    <?php endif; ?>
+                                    <?= $mensajeError($campo) ?>
+                                </div>
                             <?php endif; ?>
-                            <?= $mensajeError($campo) ?>
-                        </div>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-    </section>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </section>
 
-    <div class="grupoBotones accionesFormulario accionesIzquierda">
-        <button type="submit" class="boton"><?= $editando ? 'Guardar cambios' : 'Agregar al inventario' ?></button>
-        <?php if (!$editando): ?>
-            <button type="submit" name="siguiente" value="otro" class="boton botonSecundario">Guardar y agregar
-                otro</button>
-        <?php endif; ?>
-        <a href="<?= $urlBase ?>/inventario" class="boton botonSecundario">Cancelar</a>
+            <div class="grupoBotones accionesFormulario accionesComponente">
+                <button type="submit"
+                    class="boton"><?= $editando ? 'Guardar cambios' : 'Agregar al inventario' ?></button>
+                <?php if (!$editando): ?>
+                    <button type="submit" name="siguiente" value="otro" class="boton botonSecundario">Guardar y agregar
+                        otro</button>
+                <?php endif; ?>
+                <a href="<?= $urlBase ?>/inventario" class="boton botonSecundario">Cancelar</a>
+            </div>
+        </div>
     </div>
 </form>
 

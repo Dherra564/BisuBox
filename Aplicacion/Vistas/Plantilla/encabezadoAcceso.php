@@ -1,7 +1,6 @@
 <?php
 
 use Aplicacion\Nucleo\Navegacion;
-use Aplicacion\Nucleo\Numero;
 use Configuracion\Configuracion;
 
 $urlBase = Configuracion::urlBase();
@@ -41,13 +40,6 @@ $nombreAcceso = $tiendaAcceso !== null ? (string) $tiendaAcceso->getTiendaNombre
                         ? (string) $tiendaAcceso->getTiendaDescripcion()
                         : 'Bisutería hecha a mano, directo de quien la crea.') ?>
                 </p>
-                <?php if ($navegacion['unidadesCarrito'] > 0): ?>
-                    <div class="accesoCarrito">
-                        <span>Su carrito: <?= (int) $navegacion['unidadesCarrito'] ?>
-                            <?= $navegacion['unidadesCarrito'] === 1 ? 'producto' : 'productos' ?></span>
-                        <strong><?= Numero::moneda($navegacion['totalCarrito']) ?></strong>
-                    </div>
-                <?php endif; ?>
             </div>
 
             <span class="accesoHecho"><?= $tiendaAcceso !== null ? 'Hecho con BisuBox' : '' ?></span>

@@ -136,6 +136,7 @@ $cantidadComponentes = $tipoComponente?->getCantidadComponentes() ?? 0;
         <input type="hidden" name="id" value="<?= $tipoComponente->getIdTipoComponente() ?>">
     <?php endif; ?>
 
+    <div class="disenoTipo">
     <section class="formularioSeccion">
         <h2>Nombre del tipo</h2>
         <div class="<?= $claseCampo('nombre') ?>">
@@ -149,6 +150,7 @@ $cantidadComponentes = $tipoComponente?->getCantidadComponentes() ?? 0;
         </div>
     </section>
 
+    <div class="columnaTipo">
     <section class="formularioSeccion">
         <h2>Datos que pide este tipo</h2>
         <p class="textoAyuda">
@@ -188,7 +190,10 @@ $cantidadComponentes = $tipoComponente?->getCantidadComponentes() ?? 0;
         </div>
     </section>
 
-    <div class="grupoBotones accionesFormulario accionesIzquierda">
+    </div>
+    </div>
+
+    <div class="grupoBotones accionesFormulario accionesComponente">
         <button type="submit" class="boton"><?= $editando ? 'Guardar cambios' : 'Crear tipo' ?></button>
         <a href="<?= $urlBase ?>/tipos-componente" class="boton botonSecundario">Cancelar</a>
     </div>

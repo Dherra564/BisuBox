@@ -47,21 +47,23 @@ $mensajeError = fn(string $campo): string => isset($errores[$campo])
         <?php echo $mensajeError('numeroTelefonico') ?>
     </div>
 
-    <div class="<?= $claseCampo('contrasena') ?>">
-        <label for="contrasena">Contraseña <span class="obligatorio">*</span></label>
-        <input type="password" id="contrasena" name="contrasena" maxlength="20" required data-regla="contrasena"
-            data-ver-contrasena value="<?= $valor('contrasena') ?>" autocomplete="new-password"
-            data-mensaje-requerido="Ingrese una contraseña">
-        <p class="textoAyuda">De 8 a 20 caracteres, con mayúscula, minúscula y número</p>
-        <?= $mensajeError('contrasena') ?>
-    </div>
+    <div class="filaCampos">
+        <div class="<?= $claseCampo('contrasena') ?>">
+            <label for="contrasena">Contraseña <span class="obligatorio">*</span></label>
+            <input type="password" id="contrasena" name="contrasena" maxlength="20" required data-regla="contrasena"
+                data-ver-contrasena value="<?= $valor('contrasena') ?>" autocomplete="new-password"
+                data-mensaje-requerido="Ingrese una contraseña">
+            <p class="textoAyuda">De 8 a 20 caracteres, con mayúscula, minúscula y número</p>
+            <?= $mensajeError('contrasena') ?>
+        </div>
 
-    <div class="<?= $claseCampo('confirmarContrasena') ?>">
-        <label for="confirmarContrasena">Confirmar contraseña <span class="obligatorio">*</span></label>
-        <input type="password" id="confirmarContrasena" name="confirmarContrasena" maxlength="20" required
-            data-ver-contrasena value="<?= $valor('confirmarContrasena') ?>" data-igual-a="contrasena"
-            autocomplete="new-password" data-mensaje-requerido="Confirme la contraseña">
-        <?= $mensajeError('confirmarContrasena') ?>
+        <div class="<?= $claseCampo('confirmarContrasena') ?>">
+            <label for="confirmarContrasena">Confirmar contraseña <span class="obligatorio">*</span></label>
+            <input type="password" id="confirmarContrasena" name="confirmarContrasena" maxlength="20" required
+                data-ver-contrasena value="<?= $valor('confirmarContrasena') ?>" data-igual-a="contrasena"
+                autocomplete="new-password" data-mensaje-requerido="Confirme la contraseña">
+            <?= $mensajeError('confirmarContrasena') ?>
+        </div>
     </div>
 
     <button type="submit" class="boton botonCompleto">Crear mi cuenta</button>

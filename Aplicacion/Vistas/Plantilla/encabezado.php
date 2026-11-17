@@ -134,7 +134,7 @@ if ($navegacion['esDuenio']) {
             <ul>
                 <?php foreach ($navegacion['menu'] as $opcion): ?>
                     <?php if (isset($opcion['separador'])): ?>
-                        <li class="menuSeparador" aria-hidden="true"><span><?= htmlspecialchars($opcion['separador']) ?></span>
+                        <li class="menuSeparador<?= $opcion['separador'] === '' ? ' menuSeparadorLinea' : '' ?>" aria-hidden="true"><span><?= htmlspecialchars($opcion['separador']) ?></span>
                         </li>
                         <?php continue; ?>
                     <?php endif; ?>

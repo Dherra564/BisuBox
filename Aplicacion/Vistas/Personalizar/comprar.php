@@ -28,8 +28,7 @@ $telefono = strlen($telefono) === 8 ? substr($telefono, 0, 4) . '-' . substr($te
     </div>
 <?php endif; ?>
 
-<div class="disenoFormulario">
-    <form method="post" action="<?= $urlBase ?>/mis-pedidos/personalizado/comprar" enctype="multipart/form-data" novalidate class="validarFormulario"
+<div class="disenoFormulario compraPersonalizado">    <form method="post" action="<?= $urlBase ?>/mis-pedidos/personalizado/comprar" enctype="multipart/form-data" novalidate class="validarFormulario"
         data-confirmar="¿Comprar su pieza personalizada a <?= htmlspecialchars($personalizado->getNombreTienda()) ?> por <?= Numero::moneda($total) ?>? La compra queda confirmada de una vez."
         data-titulo="Comprar" data-boton="Comprar">
         <?= Csrf::campo() ?>
