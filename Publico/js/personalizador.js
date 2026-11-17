@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return 0;
         }
         var suma = lista.reduce(function (total, id) { return total + catalogo[id].precio; }, 0);
-        suma += datos.hiloPorMm * estado.largo + datos.manoObra;
+         suma += datos.hiloPorMm * Math.ceil(estado.largo / 10) * 10 + datos.manoObra;
         var redondeado = Math.round(suma * 100) / 100;
         return Math.ceil(redondeado / datos.redondeo) * datos.redondeo;
     }
