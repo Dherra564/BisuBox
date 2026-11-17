@@ -37,6 +37,11 @@ class AutenticacionControlador
         }
         $this->recordarCorreo($correo);
 
+        if (!Validador::esCorreo($correo)) {
+            Mensaje::error('Revise el correo: debe ser como nombre@gmail.com, sin espacios ni puntos seguidos');
+            $this->redirigir('/ingresar');
+        }
+
         if ($contrasena === '') {
             Mensaje::error('Ingrese su contraseña');
             $this->redirigir('/ingresar');
