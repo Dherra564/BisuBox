@@ -137,9 +137,29 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    function crearLinea(datos) {
+        function avisar(titulo, mensaje) {
+        var modal = document.getElementById('modalConfirmacion');
+        if (!modal || typeof modal.showModal !== 'function') {
+            window.alert(mensaje);
+            return;
+        }
+        var cancelar = modal.querySelector('.modalCancelar');
+        var aceptar = modal.querySelector('.modalConfirmar');
+        modal.querySelector('.modalTitulo').textContent = titulo;
+        modal.querySelector('.modalMensaje').textContent = mensaje;
+        aceptar.textContent = 'Entendido';
+        aceptar.classList.remove('botonPeligro');
+        cancelar.hidden = true;
+        modal.addEventListener('close', function () {
+            cancelar.hidden = false;
+        }, { once: true });
+        modal.showModal();
+        aceptar.focus();
+    }
+
+        function crearLinea(datos) {
         if (lineas().length >= maximo) {
-            window.alert('Una compra puede tener como máximo ' + maximo + ' componentes.');
+            avisar('Límite de componentes', 'Una compra puede tener como máximo ' + maximo + ' componentes.');
             return null;
         }
         var contenedor = document.createElement('div');

@@ -132,9 +132,12 @@ document.addEventListener('DOMContentLoaded', function () {
         actualizar();
     }
 
+    
+
     function quitarEn(posicion) {
+        var eraCentro = estado.simetrico && posicion === 0 && estado.elegidas.length > 1;
         estado.elegidas.splice(posicion, 1);
-        avisar('');
+        avisar(eraCentro ? 'Se quitó el centro. Ahora «' + catalogo[estado.elegidas[0]].nombre + '» quedó al centro.' : '');
         actualizar();
     }
 
@@ -209,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return 0;
         }
         var suma = lista.reduce(function (total, id) { return total + catalogo[id].precio; }, 0);
-        suma += datos.hiloPorMm * estado.largo + datos.manoObra;
+         suma += datos.hiloPorMm * Math.ceil(estado.largo / 10) * 10 + datos.manoObra;
         var redondeado = Math.round(suma * 100) / 100;
         return Math.ceil(redondeado / datos.redondeo) * datos.redondeo;
     }
@@ -265,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 : 'Faltan ' + cm((largo - usado) / 10) + ' cm para cerrar la ' + tipoActual().nombreMinuscula + '.';
             if (!cierra && lista.length > 0) {
                 var sugerido = A.largoParaCerrar(usado, tipoActual().minimo * 10, tipoActual().maximo * 10, datos.paso * 10, datos.proporcionCerrar);
-                if (sugerido !== null && sugerido !== largo) {
+                    if (sugerido !== null && sugerido !== largo && sugerido / 10 <= datos.hiloDisponibleMm + 0.01) {
                     largoSugerido = sugerido / 10;
                 }
             }

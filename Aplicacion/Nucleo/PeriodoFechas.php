@@ -38,7 +38,8 @@ class PeriodoFechas
 
         if ($desde !== null || $hasta !== null) {
             if ($desde !== null && $hasta !== null && $desde > $hasta) {
-                [$desde, $hasta] = [$hasta, $desde];
+                Mensaje::error('La fecha «desde» no puede ser mayor que la fecha «hasta».');
+                return ['periodo' => self::RANGO, 'desde' => null, 'hasta' => null];
             }
             return ['periodo' => self::RANGO, 'desde' => $desde, 'hasta' => $hasta];
         }

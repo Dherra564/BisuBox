@@ -114,7 +114,7 @@ class CalculoDiseno
             }
         }
 
-        $metrosHilo = $largo / 1000;
+        $metrosHilo = DatosPersonalizador::metrosHilo($largo);
         if ($metrosHilo + (float) ($yaEnCarrito['hilo'] ?? 0) > $hilo['existencia'] + 0.00001) {
             $errores[] = self::MENSAJE_HILO;
         }

@@ -6,6 +6,7 @@ use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\DatosCotizacion;
 use Aplicacion\Nucleo\EstadoCotizacion;
 use Aplicacion\Nucleo\Mensaje;
+use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\OperacionNoPermitida;
 use Aplicacion\Nucleo\Permiso;
 use Aplicacion\Nucleo\UsuarioActual;
@@ -103,6 +104,10 @@ class CotizacionControlador
         Mensaje::exito($yaRespondida
             ? 'Respuesta ajustada. El cliente verá el precio nuevo.'
             : 'Respuesta enviada a ' . $cotizacion['nombreCliente'] . '. Cuando la acepte, recibirá el pedido.');
+        if ($respuesta['precio'] < $respuesta['costoTotal']) {
+            Mensaje::advertencia('El precio (' . Numero::moneda($respuesta['precio']) . ') es menor que el costo de la pieza ('
+                . Numero::moneda($respuesta['costoTotal']) . '). Si el cliente acepta, pierde plata.');
+        }
         $this->redirigir($volver);
     }
 

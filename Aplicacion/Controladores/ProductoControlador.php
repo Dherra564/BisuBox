@@ -116,6 +116,7 @@ class ProductoControlador
 
         Mensaje::exito('«' . $producto->getNombre() . '» listo: ' . ($cantidad === 1 ? 'hizo 1' : 'hizo ' . $cantidad)
             . ' y se descontó del inventario lo que llevan.');
+        $this->avisarPrecioBajo($producto->getPrecioVenta(), $producto->getCostoTotal());
         $this->redirigir('/productos/detalle?id=' . $idProducto);
     }
 
@@ -197,6 +198,7 @@ class ProductoControlador
         }
 
         Mensaje::exito('Cambios de «' . $producto->getNombre() . '» guardados');
+        $this->avisarPrecioBajo($producto->getPrecioVenta(), $producto->getCostoTotal());
         $this->redirigir('/productos/detalle?id=' . $producto->getIdProducto());
     }
 
@@ -368,6 +370,14 @@ class ProductoControlador
         $variablesVista['mensajes'] = Mensaje::obtener();
         extract($variablesVista, EXTR_SKIP);
         require Configuracion::rutaBase() . '/Aplicacion/Vistas/' . $vista . '.php';
+    }
+
+    private function avisarPrecioBajo(float $precio, float $costo): void
+    {
+        if ($precio < $costo) {
+            Mensaje::advertencia('El precio de venta (' . Numero::moneda($precio) . ') es menor que lo que cuesta hacerlo ('
+                . Numero::moneda($costo) . '). Con ese precio pierde plata en cada venta.');
+        }
     }
 
     private function redirigir(string $ruta): never
