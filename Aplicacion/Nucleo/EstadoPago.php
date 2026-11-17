@@ -16,11 +16,6 @@ class EstadoPago
         self::NO_LLEGO => 'etiquetaCancelado',
     ];
 
-    public static function todos(): array
-    {
-        return array_keys(self::CLASES);
-    }
-
     public static function existe(?string $estado): bool
     {
         return $estado !== null && isset(self::CLASES[$estado]);

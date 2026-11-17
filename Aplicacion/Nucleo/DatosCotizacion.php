@@ -162,11 +162,6 @@ class DatosCotizacion
         ];
     }
 
-    public static function sugerirPrecio(float $costo, int $ganancia): float
-    {
-        return ceil($costo * (1 + $ganancia / 100) / 10) * 10;
-    }
-
     private static function validarComponentes(Validador $validador, array $lineas, array $componentes): void
     {
         if ($lineas === []) {

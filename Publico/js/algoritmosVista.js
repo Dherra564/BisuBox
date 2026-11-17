@@ -599,7 +599,6 @@ var AlgoritmosVista = (function () {
     }
 
     return {
-        LADO_MAXIMO: LADO_MAXIMO,
         escalaParaLado: escalaParaLado,
         colorDeFondo: colorDeFondo,
         quitarFondo: quitarFondo,
@@ -620,7 +619,6 @@ var AlgoritmosVista = (function () {
         largoParaCerrar: largoParaCerrar,
         acomodarCirculo: acomodarCirculo,
         curvaCollar: curvaCollar,
-        puntoEnCurva: puntoEnCurva,
         acomodarCollar: acomodarCollar
     };
 })();

@@ -1,7 +1,5 @@
 :root {
     --colorMenu: #c2e6d5;
-    --colorMenuActivo: #a9dbc4;
-    --colorMenuHover: rgba(255, 255, 255, 0.35);
     --colorMenuTenue: #4f5c57;
     --colorPrincipal: #c2e6d5;
     --colorPrincipalOscuro: #a9dbc4;
@@ -53,7 +51,6 @@ body {
     font-size: 15px;
     line-height: 1.5;
     color: var(--colorTexto);
-    background: var(--colorFondo);
 }
 
 a {
@@ -461,9 +458,6 @@ h3 {
 
 .tabla th {
     padding: 12px 14px;
-    background: var(--colorVerdeClaro);
-    color: var(--colorTitulo);
-    font-size: 0.85rem;
     font-weight: 700;
     text-align: left;
     white-space: nowrap;
@@ -952,10 +946,6 @@ h3 {
     color: var(--colorTextoSuave);
 }
 
-.tarjetasTipo {
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-}
-
 .tarjetaTipo {
     display: flex;
     flex-direction: column;
@@ -1408,7 +1398,6 @@ h3 {
 .componenteConFoto {
     display: flex;
     align-items: center;
-    gap: 12px;
 }
 
 .miniaturaComponente {
@@ -1453,7 +1442,6 @@ h3 {
 
 .tarjetasEleccion {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 14px;
     margin: 20px 0 16px;
 }
@@ -1461,10 +1449,6 @@ h3 {
 .tarjetaEleccion {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 18px 20px;
-    border: 2px solid var(--colorBorde);
-    border-radius: var(--radio);
     background: var(--colorSuperficie);
     color: inherit;
     text-decoration: none;
@@ -1601,7 +1585,6 @@ h3 {
 .panelCompras {
     margin-bottom: 16px;
     border: 1px solid var(--colorBorde);
-    border-radius: var(--radio);
     background: var(--colorSuperficie);
     overflow: hidden;
 }
@@ -2180,9 +2163,7 @@ h3 {
 
 .factura {
     margin-bottom: 16px;
-    padding: 20px 22px;
     border: 1px solid var(--colorBorde);
-    border-radius: var(--radio);
     background: var(--colorSuperficie);
 }
 
@@ -2231,9 +2212,7 @@ h3 {
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 12px;
-    padding: 14px 20px;
     border: 1px solid var(--colorErrorBorde);
-    border-radius: var(--radio);
     background: var(--colorSuperficie);
 }
 
@@ -2253,29 +2232,6 @@ h3 {
 
 .encabezadoSeccion h2 {
     margin: 0;
-}
-
-.resumenProveedor {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px 32px;
-    margin-bottom: 14px;
-    padding: 12px 18px;
-    border-radius: var(--radioCampo);
-    background: var(--colorFondo);
-}
-
-.resumenProveedor > div {
-    display: flex;
-    flex-direction: column;
-}
-
-.resumenProveedor .textoAyuda {
-    margin: 0;
-}
-
-.resumenProveedor strong {
-    font-size: 1.15rem;
 }
 
 @media (max-width: 768px) {
@@ -2322,7 +2278,6 @@ h3 {
         justify-content: flex-end;
         gap: 8px;
         padding-top: 10px;
-        white-space: normal;
     }
 
     .tabla td.acciones::before {
@@ -2584,10 +2539,6 @@ h3 {
 
     .totalesCompra {
         max-width: none;
-    }
-
-    .factura {
-        padding: 16px;
     }
 
     .tablaFactura tr {
@@ -2980,9 +2931,6 @@ h3 {
 }
 
 .gridProductos {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
     margin: 0;
     padding: 16px;
     list-style: none;
@@ -3222,8 +3170,6 @@ h3 {
     }
 
     .gridProductos {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
         padding: 10px;
     }
 }
@@ -3295,7 +3241,6 @@ h3 {
 .formularioAgregar {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
     justify-content: space-between;
     gap: 10px;
     padding: 0 16px 16px;
@@ -3363,24 +3308,15 @@ h3 {
     border-top: 1px solid var(--colorBorde);
 }
 
-.accionesPedido {
-    margin-bottom: 16px;
-}
-
 @media (max-width: 768px) {
     .accionesCarrito {
         justify-content: stretch;
     }
 
-    .accionesCarrito .boton,
-    .accionesPedido .boton,
-    .accionesPedido .formularioEnLinea {
+    .accionesCarrito .boton {
         flex: 1 1 100%;
     }
 
-    .accionesPedido .formularioEnLinea .boton {
-        width: 100%;
-    }
 }
 
 .opcionUnidad {
@@ -3393,7 +3329,6 @@ h3 {
     max-width: 320px;
     padding: 4px 6px 4px 18px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.55);
     flex: 0 1 320px;
     min-width: 0;
 }
@@ -3458,11 +3393,7 @@ h3 {
 
 .tiendaMarcaNombre {
     font-family: var(--fuenteTitulos);
-    font-size: 1.45rem;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
     text-align: center;
-    color: #2b4a3e;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -3480,17 +3411,10 @@ h3 {
     position: relative;
     min-width: 40px;
     min-height: 40px;
-    border-radius: 999px;
     padding: 0 6px;
 }
 
-.tiendaIcono:hover,
-.tiendaIconoActivo {
-    background: rgba(255, 255, 255, 0.45);
-}
-
 .tiendaCarritoTotal {
-    font-weight: 600;
     font-variant-numeric: tabular-nums;
 }
 
@@ -3514,28 +3438,18 @@ h3 {
     align-items: center;
     justify-content: space-between;
     gap: 24px;
-    margin-bottom: 28px;
-    padding: 44px 48px;
-    border-radius: var(--radio);
-    background: linear-gradient(120deg, #f7e9df 0%, #f3ddd0 55%, #ead3c6 100%);
 }
 
 .tiendaPortadaEtiqueta {
     margin: 0 0 6px;
-    color: #8a6a5a;
     font-size: 0.85rem;
-    font-weight: 600;
     letter-spacing: 0.2em;
     text-transform: uppercase;
 }
 
 .tiendaPortadaTitulo {
     margin: 0 0 10px;
-    color: #4a3f3a;
-    font-family: Georgia, "Times New Roman", serif;
     font-size: clamp(2.2rem, 6vw, 3.8rem);
-    font-style: italic;
-    font-weight: 400;
     line-height: 1.05;
     text-wrap: balance;
 }
@@ -3543,7 +3457,6 @@ h3 {
 .tiendaPortadaDescripcion {
     max-width: 46ch;
     margin: 0 0 20px;
-    color: #5d504a;
     font-size: 1.1rem;
 }
 
@@ -3553,7 +3466,6 @@ h3 {
     height: 180px;
     border-radius: 50%;
     object-fit: cover;
-    border: 6px solid rgba(255, 255, 255, 0.7);
 }
 
 .tiendaSeccionEncabezado {
@@ -3566,14 +3478,6 @@ h3 {
 
 .tiendaSeccionEncabezado h2 {
     margin: 0;
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: 1.6rem;
-    font-weight: 400;
-}
-
-.tiendaSeccion .gridProductos {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 22px;
 }
 
 .fotoTarjetaMarco {
@@ -3635,7 +3539,6 @@ h3 {
     .tiendaPortada {
         flex-direction: column-reverse;
         align-items: flex-start;
-        padding: 28px 22px;
     }
 
     .tiendaPortadaLogo {
@@ -3650,26 +3553,8 @@ h3 {
 }
 
 @media (max-width: 560px) {
-    .tiendaSeccion .gridProductos {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
-    }
-
-    .tiendaSeccion .tarjetaProductoTexto {
-        padding: 10px 10px 4px;
-    }
-
     .tiendaSeccion .tarjetaProductoTexto .textoAyuda {
         display: none;
-    }
-
-    .tiendaSeccion .formularioAgregar,
-    .tiendaSeccion .tarjetaProductoPie {
-        padding: 0 10px 10px;
-    }
-
-    .tiendaSeccion .formularioAgregar .boton {
-        width: 100%;
     }
 
     .tiendaSeccion .selectorCantidad {
@@ -3680,12 +3565,6 @@ h3 {
 
     .tiendaSeccion .botonCantidad {
         width: 34px;
-        height: 38px;
-    }
-
-    .tiendaSeccion .formularioAgregar input[name="cantidad"] {
-        width: 0;
-        flex: 1;
         height: 38px;
     }
 
@@ -3700,7 +3579,6 @@ h3 {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background: var(--colorSuperficie);
 }
 
 .icono {
@@ -3723,8 +3601,6 @@ h3 {
     align-items: center;
     gap: 20px;
     padding: 12px 24px;
-    background: var(--colorPrincipal);
-    border-bottom: 1px solid var(--colorPrincipalOscuro);
 }
 
 .barraSitioIzquierda {
@@ -3741,15 +3617,8 @@ h3 {
     justify-content: center;
     width: 44px;
     height: 44px;
-    border: none;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.45);
-    color: var(--colorTexto);
     cursor: pointer;
-}
-
-.botonMenuSitio:hover {
-    background: rgba(255, 255, 255, 0.75);
 }
 
 .botonMenuSitio:focus-visible,
@@ -3876,8 +3745,6 @@ h3 {
     overflow-x: hidden;
     overflow-y: auto;
     padding: 18px 12px;
-    background: var(--colorVerdeClaro);
-    border-right: 1px solid var(--colorBorde);
     transition: width 0.2s ease;
 }
 
@@ -3903,17 +3770,8 @@ h3 {
     white-space: nowrap;
 }
 
-.menuSitio a:hover {
-    background: rgba(194, 230, 213, 0.6);
-}
-
 .menuSitio a.activo {
-    background: var(--colorMenu);
     font-weight: 700;
-}
-
-.menuSitio .icono {
-    color: #2b4a3e;
 }
 
 .menuSitio .opcionEmprender .icono {
@@ -3951,9 +3809,6 @@ h3 {
     gap: 8px;
     margin-top: 16px;
     padding: 14px;
-    background: var(--colorSuperficie);
-    border: 1px solid var(--colorExitoBorde);
-    border-radius: var(--radio);
     font-size: 0.9rem;
     white-space: normal;
 }
@@ -4005,16 +3860,12 @@ h3 {
 }
 
 .pieSitio {
-    background: var(--colorVerdeClaro);
     border-top: 1px solid var(--colorBorde);
     color: var(--colorTexto);
 }
 
 .pieSitioColumnas {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
-    gap: 24px 48px;
-    padding: 32px 48px 24px;
 }
 
 .pieSitio p {
@@ -4032,7 +3883,6 @@ h3 {
 .pieSitio .pieSitioContactos {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px 40px;
 }
 
 .pieSitio a {
@@ -4041,10 +3891,6 @@ h3 {
 
 .pieSitioNombre {
     font-family: var(--fuenteTitulos);
-    font-size: 1.2rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: #2b4a3e;
 }
 
 .pieSitioTitulo {
@@ -4087,7 +3933,6 @@ h3 {
     gap: 8px;
     padding: 8px 16px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.8);
     color: var(--colorTexto);
     font-size: 0.9rem;
     text-decoration: none;
@@ -4104,9 +3949,6 @@ h3 {
 
 .resumenDuenio {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
-    margin-bottom: 20px;
 }
 
 .tarjetaResumen span {
@@ -4337,8 +4179,6 @@ h3 {
     }
 
     .tiendaMarcaNombre {
-        font-size: 1rem;
-        letter-spacing: 0.12em;
         text-align: left;
     }
 
@@ -4393,7 +4233,6 @@ h3 {
 
     .pieSitioColumnas {
         grid-template-columns: 1fr;
-        padding: 24px 16px;
     }
 
     .paginaAccesoDividida {
@@ -4441,7 +4280,6 @@ h3 {
     margin-bottom: 18px;
     padding: 4px;
     border-radius: 999px;
-    background: var(--colorVerdeClaro);
 }
 
 .cambioVista a {
@@ -4451,19 +4289,12 @@ h3 {
     min-height: 40px;
     padding: 0 18px;
     border-radius: 999px;
-    color: var(--colorTexto);
     font-weight: 600;
     text-decoration: none;
 }
 
 .cambioVista a:hover {
     background: rgba(255, 255, 255, 0.6);
-}
-
-.cambioVista .cambioVistaActivo {
-    background: var(--colorSuperficie);
-    color: var(--colorTitulo);
-    box-shadow: 0 1px 4px rgba(38, 64, 54, 0.12);
 }
 
 .cambioVista .numeroMenu {
@@ -4978,8 +4809,6 @@ h3 {
 
 .detallePersonalizado {
     display: grid;
-    grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
-    gap: 24px;
     align-items: start;
     margin-bottom: 24px;
 }
@@ -5054,8 +4883,6 @@ h3 {
     padding: 22px 24px;
     border: 1px solid var(--colorBorde);
     border-top: 4px solid var(--colorTitulo);
-    border-radius: 16px;
-    background: var(--colorSuperficie);
 }
 
 .franjaPrecioCotizado {
@@ -5307,12 +5134,6 @@ h3 {
     justify-content: flex-start;
 }
 
-@media (max-width: 560px) {
-    .tiendaSeccion .enlacePersonalizar {
-        margin: 0 10px 10px;
-    }
-}
-
 .valorSoloLectura {
     display: flex;
     align-items: center;
@@ -5321,12 +5142,6 @@ h3 {
     padding: 0 12px;
     border-radius: var(--radioCampo);
     background: var(--colorFondo);
-}
-
-.opcionesPago {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-    gap: 10px;
 }
 
 .opcionPago {
@@ -5360,7 +5175,6 @@ h3 {
 
 .opcionPago:has(input:checked) {
     border: 2px solid var(--colorTitulo);
-    background: var(--colorVerdeClaro);
     color: var(--colorTitulo);
 }
 
@@ -5535,25 +5349,8 @@ h3 {
     flex-direction: column;
     gap: 14px;
     margin-bottom: 16px;
-    padding: 18px 20px;
     border: 1px solid var(--colorBorde);
-    border-radius: var(--radio);
     background: var(--colorSuperficie);
-}
-
-.cajaPagoVerificar {
-    border-color: var(--colorAdvertenciaBorde);
-    background: var(--colorAdvertenciaFondo);
-}
-
-.cajaPagoRecibido {
-    border-color: var(--colorExitoBorde);
-    background: var(--colorExitoFondo);
-}
-
-.cajaPagoProblema {
-    border-color: var(--colorErrorBorde);
-    background: var(--colorErrorFondo);
 }
 
 .cajaPago p {
@@ -5707,7 +5504,6 @@ h3 {
 
 .cajasPedidoCliente {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 16px;
     margin-bottom: 16px;
 }
@@ -5737,18 +5533,7 @@ h3 {
 }
 
 .cajaCodigoRetiro {
-    display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 18px 20px;
-    border: 2px dashed var(--colorTitulo);
-    border-radius: var(--radio);
-    background: var(--colorFondo);
-}
-
-.cajaCodigoRetiro h2 {
-    margin: 0;
-    font-size: 1.1rem;
 }
 
 .cajaCodigoRetiro .textoAyuda {
@@ -5990,7 +5775,6 @@ h3 {
     padding: 14px;
     background: var(--colorSuperficie);
     border: 1px solid var(--colorBorde);
-    border-radius: var(--radio);
     min-width: 0;
 }
 
@@ -6014,8 +5798,6 @@ h3 {
 .avisoPiezasFoto {
     margin: 0 0 16px;
     padding: 10px 14px;
-    border-radius: var(--radioCampo);
-    border-left: 4px solid var(--colorAdvertenciaBorde);
     background: var(--colorAdvertenciaFondo);
     color: var(--colorTexto);
     font-size: 0.92rem;
@@ -6050,9 +5832,6 @@ h3 {
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 14px;
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid var(--colorBorde);
 }
 
 .pieConfiguracion .campoCasilla {
@@ -6061,26 +5840,6 @@ h3 {
 
 .pieConfiguracion .grupoBotones {
     margin: 0;
-}
-
-.subtituloPiezas {
-    display: flex;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 6px 0 0;
-    font-size: 0.95rem;
-}
-
-.subtituloPiezas span {
-    font-size: 0.85rem;
-    font-weight: 400;
-    color: var(--colorTextoSuave);
-}
-
-.piezasSinFoto + .subtituloPiezas,
-.piezasConFoto + .subtituloPiezas {
-    margin-top: 24px;
 }
 
 .piezasConFoto {
@@ -6385,7 +6144,6 @@ h3 {
 .tiendaPersonaliza h2 {
     margin: 0 0 4px;
     font-family: var(--fuenteTitulos);
-    color: var(--colorTitulo);
 }
 
 .tiendaPersonaliza p {
@@ -6399,8 +6157,7 @@ h3 {
     align-items: start;
 }
 
-.vistaPersonalizador,
-.panelPersonalizador {
+.vistaPersonalizador {
     background: var(--colorSuperficie);
     border: 1px solid var(--colorBorde);
     border-radius: var(--radio);
@@ -6490,17 +6247,6 @@ h3 {
 .chipTipoPieza:has(input:focus-visible) {
     outline: 2px solid var(--colorFoco);
     outline-offset: 2px;
-}
-
-.panelPersonalizador input[type="range"] {
-    width: 100%;
-    accent-color: var(--colorTitulo);
-}
-
-.panelPersonalizador fieldset {
-    border: 0;
-    padding: 0;
-    margin: 0 0 14px;
 }
 
 .botonesDiseno {
@@ -6700,11 +6446,6 @@ h3 {
     margin: 0;
 }
 
-.tituloAlertaFondo {
-    font-weight: 700;
-    color: var(--colorAdvertencia);
-}
-
 .muestrasFondo {
     display: grid;
     gap: 6px;
@@ -6736,7 +6477,6 @@ h3 {
     background: #ffffff;
     color: #3d4a45;
 }
-
 
 @media (max-width: 520px) {
     .alertaFondoFoto {
@@ -6800,26 +6540,9 @@ h3 {
         padding: 22px 16px 18px;
     }
 
-    .pieSitioNombre {
-        font-size: 1.05rem;
-        letter-spacing: 0.14em;
-    }
-
     body:has(.botonWhatsApp) .pieSitioHecha {
         padding-bottom: 84px;
     }
-}
-
-.seccionEntrega fieldset {
-    border: 0;
-    margin: 0;
-    padding: 0;
-    min-width: 0;
-}
-
-.seccionEntrega legend {
-    padding: 0;
-    margin-bottom: 8px;
 }
 
 .opcionesPago {
@@ -6828,32 +6551,9 @@ h3 {
     gap: 10px;
 }
 
-.seccionEntrega .opcionPago {
-    display: flex;
-    flex-direction: row;
-    font-weight: 400;
-    margin: 0;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 12px 14px;
-    border: 1px solid var(--colorBordeCampo);
-    border-radius: var(--radioCampo);
-    background: var(--colorSuperficie);
-    cursor: pointer;
-}
-
 .opcionPago:has(input:checked) {
     border-color: var(--colorTitulo);
     background: var(--colorVerdeClaro);
-}
-
-.seccionEntrega .opcionPago input {
-    width: auto;
-    min-height: 0;
-    flex: 0 0 auto;
-    margin: 3px 0 0;
-    padding: 0;
-    accent-color: var(--colorTitulo);
 }
 
 .opcionPago span {
@@ -6922,7 +6622,6 @@ h3 {
     background: var(--colorVerdeClaro);
 }
 
-
 .etiquetaVencida {
     background: var(--colorErrorFondo);
     color: var(--colorError);
@@ -6951,12 +6650,6 @@ h3 {
 .enlacesExistencia {
     margin: 8px 0 0;
     font-size: 0.9rem;
-}
-
-.listaCasillasLinea {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 24px;
 }
 
 .filtroLineas {
@@ -7751,11 +7444,6 @@ body,
 .cajaAnular {
     margin-top: 16px;
     padding: 18px 24px;
-    border-radius: 18px;
-}
-
-.cajaAnular .botonPeligro {
-    border-radius: 999px;
 }
 
 .listaPersonalizados .tarjetaPersonalizado {
@@ -9139,7 +8827,6 @@ body,
         white-space: normal;
     }
 }
-
 .avisoPiezasFoto {
     display: flex;
     flex-wrap: wrap;
@@ -9536,17 +9223,12 @@ body,
 
 .encabezadoOrden .botonesDiseno {
     display: flex;
-    gap: 14px;
     margin: 0;
 }
 
 .encabezadoOrden .enlaceAccion {
     margin: 0;
     font-size: 0.9rem;
-}
-
-.armePieza .listaOrden li {
-    background: #f6faf8;
 }
 
 .columnaArme {
@@ -9670,7 +9352,6 @@ body,
 
 .resumenArme #ajustarLargo {
     margin: 0;
-    font-size: 0.9rem;
 }
 
 .datoLleva .materialesDiseno {

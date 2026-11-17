@@ -118,12 +118,6 @@ class Carrito
         }
     }
 
-    public static function unidades(): int
-    {
-        $tienda = self::tiendaActual();
-        return $tienda !== null ? array_sum(self::deTienda($tienda['id'])) : 0;
-    }
-
     public static function elegirTienda(int $idVendedor, string $enlace): void
     {
         $_SESSION[self::CLAVE_TIENDA] = ['id' => $idVendedor, 'enlace' => $enlace];

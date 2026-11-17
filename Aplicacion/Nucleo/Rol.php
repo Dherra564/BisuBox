@@ -18,11 +18,6 @@ class Rol
         ],
     ];
 
-    public static function todos(): array
-    {
-        return self::ROLES;
-    }
-
     public static function existe(?string $rol): bool
     {
         return $rol !== null && isset(self::ROLES[$rol]);

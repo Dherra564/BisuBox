@@ -410,8 +410,10 @@ class PedidoRepositorio
         $inventario = new InventarioRepositorio();
         $personalizadoRepositorio = new PersonalizadoRepositorio();
         $idVendedor = (int) $pedido->getIdVendedor();
-        $buscarComponente = fn(int $idComponente): ?array => $componentes[$idComponente]
-            ?? $inventario->bloquear(MovimientoInventario::COMPONENTE, $idComponente, $idVendedor);
+        $buscarComponente = function (int $idComponente) use (&$componentes, $inventario, $idVendedor): ?array {
+            return $componentes[$idComponente]
+                ?? $inventario->bloquear(MovimientoInventario::COMPONENTE, $idComponente, $idVendedor);
+        };
 
         foreach ($pedido->getDetalles() as $detalle) {
             if ($detalle->esPersonalizado()) {

@@ -126,5 +126,5 @@ var DibujoDiseno = (function () {
 
     document.addEventListener('DOMContentLoaded', dibujarGuardados);
 
-    return { dibujar: dibujar, LADO: LADO };
+    return { dibujar: dibujar };
 })();

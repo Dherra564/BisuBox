@@ -2,7 +2,6 @@
 
 namespace Aplicacion\Modelos;
 
-use Aplicacion\Modelos\ProduccionComponente;
 use DateTime;
 
 class Produccion
