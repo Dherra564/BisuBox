@@ -7,5 +7,6 @@ return [
     'marica', 'maricon', 'culero', 'culera', 'culo', 'malparido', 'malparida',
     'gonorrea', 'idiota', 'imbecil', 'estupido', 'estupida', 'mamon', 'mamada',
     'pajero', 'pajera', 'guevon', 'huevon', 'webon', 'cagada', 'cagar',
+    'putamadre', 'hijodeputa', 'zorra', 'perra', 'playo', 'carepicha', 'hp', 'hpta',
     'fuck', 'fucker', 'shit', 'bitch', 'asshole', 'dick', 'cunt', 'nigger', 'nigga',
 ];

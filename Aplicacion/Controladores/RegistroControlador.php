@@ -48,8 +48,6 @@ class RegistroControlador
         $confirmar = $this->leerContrasena('confirmarContrasena');
 
         $validador = $this->validarDatos($datos, $contrasena, $confirmar);
-        $datos['contrasena'] = $contrasena;
-        $datos['confirmarContrasena'] = $confirmar;
 
         if (!$validador->esValido()) {
             $this->mostrarVista('Registro/crearCuenta', ['datos' => $datos, 'errores' => $validador->errores()]);

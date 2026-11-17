@@ -113,7 +113,7 @@
             <div class="<?php echo $claseCampo('tiendaSinpe') ?>">
                 <label for="tiendaSinpe">Número SINPE Móvil</label>
                 <input type="text" id="tiendaSinpe" name="tiendaSinpe" maxlength="9" inputmode="numeric" placeholder="8888-8888"
-                       data-regla="sinpe" <?php echo $soloLectura ?>
+                       data-regla="sinpe" data-mascara-telefono <?php echo $soloLectura ?>
                        data-editable data-original="<?php echo htmlspecialchars($vendedor->getSinpeBonito()) ?>"
                        value="<?php echo $valor('tiendaSinpe') ?>">
                 <p class="textoAyuda">Aquí le pagan sus clientes. Si lo deja vacío, al comprar no les aparece la opción SINPE Móvil.</p>
