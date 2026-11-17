@@ -45,7 +45,7 @@ class ContextoPersonalizador
                 $componentes[$idComponente] = ($componentes[$idComponente] ?? 0) + $cantidad;
             }
             if ($idHilo !== null && $diseno['idHilo'] === $idHilo) {
-                $metros += $diseno['largo'] / 1000;
+                 $metros += DatosPersonalizador::metrosHilo($diseno['largo']);
             }
         }
         return ['componentes' => $componentes, 'hilo' => $metros];

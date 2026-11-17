@@ -2,6 +2,7 @@
 
 namespace Aplicacion\Repositorios;
 
+use Aplicacion\Nucleo\DatosPersonalizador;
 use Configuracion\BaseDatos;
 use DateTime;
 use PDO;
@@ -124,7 +125,7 @@ class DisenoRepositorio
                 $componentes[$idComponente] = ($componentes[$idComponente] ?? 0) + $cantidad;
             }
             if ($diseno['idHilo'] !== null) {
-                $hilo[$diseno['idHilo']] = ($hilo[$diseno['idHilo']] ?? 0) + $diseno['largo'] / 1000;
+                $hilo[$diseno['idHilo']] = ($hilo[$diseno['idHilo']] ?? 0) + DatosPersonalizador::metrosHilo($diseno['largo']);
             }
         }
         return ['componentes' => $componentes, 'hilos' => $hilo];

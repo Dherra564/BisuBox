@@ -31,6 +31,11 @@ class DatosPersonalizador
     public const PROPORCION_PARA_CERRAR = 0.95;
     public const PASO_LARGO = 5;
 
+    public static function metrosHilo(float $largoMilimetros): float
+    {
+        return ceil(round($largoMilimetros / 10, 4)) / 100;
+    }
+
     public static function leerTamano(mixed $texto): ?float
     {
         if (!is_string($texto)) {
