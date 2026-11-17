@@ -45,6 +45,10 @@ class MisCotizacionesControlador
 
     public function crear(): void
     {
+        if (SubidaArchivo::envioExcedido()) {
+            Mensaje::error(SubidaArchivo::mensajeTamano('La imagen') . '.');
+            $this->redirigir('/mis-cotizaciones');
+        }
         $vendedor = $this->tiendaVisible((new VendedorRepositorio())->buscarPorId($this->leerId($_POST['tienda'] ?? null)));
         $rutaFormulario = '/tienda/' . $vendedor->getTiendaEnlace() . '/cotizar';
         $this->exigirCuenta($rutaFormulario);
@@ -333,6 +337,10 @@ class MisCotizacionesControlador
 
     private function verificarCsrf(string $rutaSiFalla): void
     {
+        if (SubidaArchivo::envioExcedido()) {
+            Mensaje::error(SubidaArchivo::mensajeTamano('La imagen') . '.');
+            $this->redirigir($rutaSiFalla);
+        }
         if (!Csrf::esValido()) {
             Mensaje::error('La página expiró. Recargue e intente de nuevo.');
             $this->redirigir($rutaSiFalla);
