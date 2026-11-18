@@ -199,7 +199,8 @@ document.addEventListener('DOMContentLoaded', function () {
         actualizar();
         linea.querySelector('[data-linea-cantidad]').focus();
         return linea;
-    }
+    } 
+    
 
     function cantidadEnUnidad(linea) {
         var cantidad = leerNumero(linea.querySelector('[data-linea-cantidad]').value) || 0;
