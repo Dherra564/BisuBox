@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    var lista = formulario.querySelector('[data-lineas]');
+    var lista = formulario.querySelector('.listaLineasCompra[data-lineas]');
     var sinLineas = formulario.querySelector('[data-sin-lineas]');
     var encabezado = formulario.querySelector('[data-encabezado-lineas]');
     var plantilla = document.querySelector('[data-linea-plantilla]');

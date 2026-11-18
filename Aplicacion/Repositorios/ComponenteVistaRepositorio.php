@@ -200,15 +200,6 @@ class ComponenteVistaRepositorio
         return (bool) $consulta->fetchColumn();
     }
 
-    public function fotoEsPublica(string $foto): bool
-    {
-        $consulta = $this->conexion->prepare(
-            'SELECT 1 FROM tbcomponentevista WHERE tbcomponentevistafoto = ? AND tbcomponentevistaactivo = 1 LIMIT 1'
-        );
-        $consulta->execute([$foto]);
-        return (bool) $consulta->fetchColumn();
-    }
-
     private function tamanosSugeridos(array $idsComponente): array
     {
         if ($idsComponente === []) {

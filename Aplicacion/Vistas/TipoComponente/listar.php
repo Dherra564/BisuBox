@@ -6,7 +6,7 @@ use Aplicacion\Nucleo\Csrf;
 $titulo = 'Tipos de componente';
 $paginaActual = 'inventario';
 $volverA = ['texto' => 'Inventario', 'ruta' => '/inventario'];
-$botonAccion = $tiposComponente !== [] ? ['texto' => 'Nuevo tipo', 'ruta' => '/tipos-componente/nuevo'] : null;
+$botonAccion = $tiposComponente !== [] ? ['texto' => '+ Nuevo tipo', 'ruta' => '/tipos-componente/nuevo'] : null;
 require __DIR__ . '/../Plantilla/encabezado.php';
 
 $chip = fn(string $nombre, string $clase, ?string $unidad = null): string =>
@@ -64,7 +64,7 @@ usort($tiposComponente, fn($a, $b): int => (int) $b->getActivo() <=> (int) $a->g
         </div>
     <?php endif; ?>
 
-    <p class="cajaInformativa">
+    <p class="introPagina">
         Todos los componentes piden nombre, unidad de medida, costo y existencia mínima.
         Aquí decide qué otros datos pide cada tipo.
     </p>
@@ -98,9 +98,9 @@ usort($tiposComponente, fn($a, $b): int => (int) $b->getActivo() <=> (int) $a->g
                     <p class="textoAyuda">Solo pide los datos comunes.</p>
                 <?php endif; ?>
 
-                <div class="grupoBotones tarjetaAccion">
+                <div class="tarjetaAccion accionesTipo">
                     <a href="<?= $urlBase ?>/tipos-componente/editar?id=<?= $tipoComponente->getIdTipoComponente() ?>"
-                        class="boton botonSecundario botonPequeno">Editar</a>
+                        class="enlaceAccion">Editar</a>
                     <?php if ($tipoComponente->getActivo()): ?>
                         <form method="post" action="<?= $urlBase ?>/tipos-componente/estado" class="formularioEnLinea"
                             data-titulo="Desactivar tipo" data-boton="Desactivar"
@@ -108,14 +108,14 @@ usort($tiposComponente, fn($a, $b): int => (int) $b->getActivo() <=> (int) $a->g
                             <?= Csrf::campo() ?>
                             <input type="hidden" name="id" value="<?= $tipoComponente->getIdTipoComponente() ?>">
                             <input type="hidden" name="activo" value="0">
-                            <button type="submit" class="boton botonSecundario botonPequeno botonPeligroSuave">Desactivar</button>
+                            <button type="submit" class="enlaceAccion enlaceAccionPeligro">Desactivar</button>
                         </form>
                     <?php else: ?>
                         <form method="post" action="<?= $urlBase ?>/tipos-componente/estado" class="formularioEnLinea">
                             <?= Csrf::campo() ?>
                             <input type="hidden" name="id" value="<?= $tipoComponente->getIdTipoComponente() ?>">
                             <input type="hidden" name="activo" value="1">
-                            <button type="submit" class="boton botonSecundario botonPequeno">Activar</button>
+                            <button type="submit" class="enlaceAccion">Activar</button>
                         </form>
                     <?php endif; ?>
                 </div>

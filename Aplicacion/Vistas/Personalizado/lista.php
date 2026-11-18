@@ -109,7 +109,7 @@ $enlacePestana = fn(string $codigo): string => $urlBase . '/pedidos/personalizad
                                 </td>
                                 <td data-etiqueta="" class="acciones">
                                     <a href="<?= $urlBase ?>/pedidos/personalizado?id=<?= $personalizado->getIdPersonalizado() ?>"
-                                        class="boton botonPequeno <?= $personalizado->estaEnRevision() ? '' : 'botonSecundario' ?>">
+                                        class="boton botonPequeno">
                                         <?= $personalizado->estaEnRevision() ? 'Cotizar' : 'Ver' ?>
                                     </a>
                                 </td>

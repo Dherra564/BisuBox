@@ -110,21 +110,6 @@ class SubidaArchivo
         };
     }
 
-    public function guardarFotoPerfil(array $archivo): ?string
-    {
-        return $this->guardarImagen($archivo, self::CARPETA_PERFILES, 'La foto');
-    }
-
-    public function guardarLogo(array $archivo): ?string
-    {
-        return $this->guardarImagen($archivo, self::CARPETA_LOGOS, 'El logo');
-    }
-
-    public function guardarFotoProducto(array $archivo): ?string
-    {
-        return $this->guardarImagen($archivo, self::CARPETA_PRODUCTOS, 'La foto');
-    }
-
     public function recibir(string $campo, string $tipo, Validador $validador): ?string
     {
         $pendiente = self::pendienteValida($tipo, $_POST[$campo . 'Pendiente'] ?? null);

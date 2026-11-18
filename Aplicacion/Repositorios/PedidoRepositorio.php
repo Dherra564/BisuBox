@@ -2,10 +2,12 @@
 
 namespace Aplicacion\Repositorios;
 
+
 use Aplicacion\Modelos\Pedido;
 use Aplicacion\Modelos\PedidoDetalle;
 use Aplicacion\Modelos\PedidoPago;
 use Aplicacion\Nucleo\DatosPago;
+use Aplicacion\Nucleo\DatosPersonalizador;
 use Aplicacion\Nucleo\DatosVenta;
 use Aplicacion\Nucleo\EstadoPago;
 use Aplicacion\Nucleo\EstadoPedido;
@@ -408,8 +410,10 @@ class PedidoRepositorio
         $inventario = new InventarioRepositorio();
         $personalizadoRepositorio = new PersonalizadoRepositorio();
         $idVendedor = (int) $pedido->getIdVendedor();
-        $buscarComponente = fn(int $idComponente): ?array => $componentes[$idComponente]
-            ?? $inventario->bloquear(MovimientoInventario::COMPONENTE, $idComponente, $idVendedor);
+        $buscarComponente = function (int $idComponente) use (&$componentes, $inventario, $idVendedor): ?array {
+            return $componentes[$idComponente]
+                ?? $inventario->bloquear(MovimientoInventario::COMPONENTE, $idComponente, $idVendedor);
+        };
 
         foreach ($pedido->getDetalles() as $detalle) {
             if ($detalle->esPersonalizado()) {
@@ -552,7 +556,7 @@ class PedidoRepositorio
                     $necesarios[$idComponente] = ($necesarios[$idComponente] ?? 0) + $cantidad * $veces[$idDiseno];
                 }
                 if ($diseno['idHilo'] !== null) {
-                    $necesarios[$diseno['idHilo']] = ($necesarios[$diseno['idHilo']] ?? 0) + $diseno['largo'] / 1000 * $veces[$idDiseno];
+                    $necesarios[$diseno['idHilo']] = ($necesarios[$diseno['idHilo']] ?? 0) + DatosPersonalizador::metrosHilo($diseno['largo']) * $veces[$idDiseno];
                 }
             }
         }

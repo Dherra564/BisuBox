@@ -66,24 +66,23 @@ $enlace = fn(array $cambios): string => htmlspecialchars($urlBase . '/pedidos'
         </p>
     <?php endif; ?>
 
-    <form method="get" action="<?= $urlBase ?>/pedidos" class="filtros">
-        <?php if ($estado !== ''): ?><input type="hidden" name="estado" value="<?= $estado ?>"><?php endif; ?>
-        <?php if ($idCliente !== null): ?><input type="hidden" name="cliente" value="<?= $idCliente ?>"><?php endif; ?>
-        <?php if ($soloPorVerificar): ?><input type="hidden" name="pago" value="verificar"><?php endif; ?>
-        <div class="campo">
-            <label for="busqueda">Buscar</label>
-            <input type="search" id="busqueda" name="busqueda" maxlength="100"
-                placeholder="Cliente, correo o número de pedido" value="<?= htmlspecialchars($busqueda) ?>">
-        </div>
-        <div class="filtrosBotones">
-            <button type="submit" class="boton">Buscar</button>
-            <?php if ($busqueda !== ''): ?>
-                <a href="<?= $enlace(['busqueda' => null, 'estado' => $estado]) ?>" class="boton botonSecundario">Limpiar</a>
-            <?php endif; ?>
-        </div>
-    </form>
-
     <section class="panelCompras">
+        <form method="get" action="<?= $urlBase ?>/pedidos" class="filtros">
+            <?php if ($estado !== ''): ?><input type="hidden" name="estado" value="<?= $estado ?>"><?php endif; ?>
+            <?php if ($idCliente !== null): ?><input type="hidden" name="cliente" value="<?= $idCliente ?>"><?php endif; ?>
+            <?php if ($soloPorVerificar): ?><input type="hidden" name="pago" value="verificar"><?php endif; ?>
+            <div class="campo">
+                <label for="busqueda">Buscar</label>
+                <input type="search" id="busqueda" name="busqueda" maxlength="100"
+                    placeholder="Cliente, correo o número de pedido" value="<?= htmlspecialchars($busqueda) ?>">
+            </div>
+            <div class="filtrosBotones">
+                <button type="submit" class="boton">Buscar</button>
+                <?php if ($busqueda !== ''): ?>
+                    <a href="<?= $enlace(['busqueda' => null, 'estado' => $estado]) ?>" class="boton botonSecundario">Limpiar</a>
+                <?php endif; ?>
+            </div>
+        </form>
         <nav class="pestanas" aria-label="Estado de los pedidos">
             <?php foreach ($pestanas as $codigo => $nombre): ?>
                 <a href="<?= $enlace(['estado' => $codigo]) ?>"
@@ -136,7 +135,7 @@ $enlace = fn(array $cambios): string => htmlspecialchars($urlBase . '/pedidos'
                                     </span>
                                 </td>
                                 <td data-etiqueta="" class="acciones">
-                                    <a href="<?= $urlBase ?>/pedidos/detalle?id=<?= $pedido->getIdPedido() ?>">Ver</a>
+                                    <a href="<?= $urlBase ?>/pedidos/detalle?id=<?= $pedido->getIdPedido() ?>" class="boton botonPequeno">Ver</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

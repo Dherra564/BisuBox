@@ -32,6 +32,9 @@ foreach ($contactos as $contacto) {
     }
 }
 
+$botonesEncabezado = $whatsApp !== null
+    ? [['texto' => 'Escribirle a la tienda por WhatsApp', 'ruta' => $whatsApp, 'externo' => true]]
+    : [];
 $pago = $pedido->getPago();
 $activo = $pedido->estaConfirmado();
 $comprobantePendiente = $datos['comprobantePendiente'] ?? null;
@@ -59,10 +62,20 @@ $explicaciones = [
 
 <p class="cajaInformativa"><?= htmlspecialchars($explicaciones[$pedido->getEstado()] ?? '') ?></p>
 
+<?php require __DIR__ . '/../Pedido/encabezadoPedido.php'; ?>
+
 <?php if ($pago !== null || ($activo && $pedido->getRetiroCodigo() !== null)): ?>
     <div class="cajasPedidoCliente">
+        <?php if ($activo && $pedido->getRetiroCodigo() !== null): ?>
+            <section class="cajaCodigoRetiro" aria-labelledby="tituloRetiro">
+                <h2 id="tituloRetiro">Su código de retiro</h2>
+                <strong class="codigoRetiro"><?= htmlspecialchars($pedido->getRetiroCodigo()) ?></strong>
+                <p class="textoAyuda">Dígaselo a la tienda cuando recoja su pedido. Sin este código no se lo pueden entregar.
+                </p>
+            </section>
+        <?php endif; ?>
         <?php if ($pago !== null): ?>
-            <section class="cajaPago <?= $clasesPago[$pago->getEstado()] ?? '' ?>" aria-labelledby="tituloPago">
+            <section class="cajaPago cajaPagoCliente <?= $clasesPago[$pago->getEstado()] ?? '' ?>" aria-labelledby="tituloPago">
                 <div class="cajaPagoEncabezado">
                     <h2 id="tituloPago">Pago por SINPE Móvil</h2>
                     <span
@@ -127,22 +140,14 @@ $explicaciones = [
                 <?php endif; ?>
             </section>
         <?php endif; ?>
-
-        <?php if ($activo && $pedido->getRetiroCodigo() !== null): ?>
-            <section class="cajaCodigoRetiro" aria-labelledby="tituloRetiro">
-                <h2 id="tituloRetiro">Su código de retiro</h2>
-                <strong class="codigoRetiro"><?= htmlspecialchars($pedido->getRetiroCodigo()) ?></strong>
-                <p class="textoAyuda">Dígaselo a la tienda cuando recoja su pedido. Sin este código no se lo pueden entregar.
-                </p>
-            </section>
-        <?php endif; ?>
     </div>
 <?php endif; ?>
 
 <?php if (($venta ?? null) !== null && $venta['saldo'] > 0): ?>
     <div class="alerta alertaAdvertencia" role="status">
         <span class="alertaIcono" aria-hidden="true">!</span>
-        <p>Le falta pagar <strong><?= Numero::moneda($venta['saldo']) ?></strong> de este pedido<?= $venta['vencimiento'] !== null ? ', a más tardar el <strong>' . $venta['vencimiento']->format('d/m/Y') . '</strong>' : '' ?>.
+        <p>Le falta pagar <strong><?= Numero::moneda($venta['saldo']) ?></strong> de este
+            pedido<?= $venta['vencimiento'] !== null ? ', a más tardar el <strong>' . $venta['vencimiento']->format('d/m/Y') . '</strong>' : '' ?>.
             Coordine el pago con la tienda.</p>
     </div>
 <?php endif; ?>
@@ -153,23 +158,18 @@ $explicaciones = [
         <ul class="lineasResumen">
             <?php foreach ($venta['abonos'] as $abono): ?>
                 <li>
-                    <span><?= $abono['fecha']->format('d/m/Y') ?> · <?= htmlspecialchars(MetodoPago::nombre($abono['metodoPago'])) ?></span>
+                    <span><?= $abono['fecha']->format('d/m/Y') ?> ·
+                        <?= htmlspecialchars(MetodoPago::nombre($abono['metodoPago'])) ?></span>
                     <strong><?= Numero::moneda($abono['monto']) ?></strong>
                 </li>
             <?php endforeach; ?>
         </ul>
-        <p class="textoAyuda">Ha pagado <?= Numero::moneda($venta['pagado']) ?> de <?= Numero::moneda($venta['total']) ?>.</p>
+        <p class="textoAyuda">Ha pagado <?= Numero::moneda($venta['pagado']) ?> de <?= Numero::moneda($venta['total']) ?>.
+        </p>
     </section>
 <?php endif; ?>
 
 <?php require __DIR__ . '/../Pedido/factura.php'; ?>
-
-<div class="grupoBotones">
-    <?php if ($whatsApp !== null): ?>
-        <a href="<?= htmlspecialchars($whatsApp) ?>" class="boton" target="_blank" rel="noopener">Escribirle a la tienda por
-            WhatsApp</a>
-    <?php endif; ?>
-</div>
 
 <?php if ($activo): ?>
     <div class="cajaAnular">

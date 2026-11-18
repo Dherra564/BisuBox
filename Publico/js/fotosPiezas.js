@@ -421,7 +421,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var mascara = A.quitarFondo(imagenActual, parseInt(tolerancia.value, 10));
         var separacion = A.separarPiezas(mascara);
         var fondoBlanco = A.esColorClaro(mascara.color.r, mascara.color.g, mascara.color.b);
-        var borradas = fondoBlanco ? A.buscarPiezasBorradas(imagenActual, parseInt(tolerancia.value, 10), separacion) : [];
+        var borradas = fondoBlanco ? A.buscarPiezasBorradas(imagenActual, separacion) : [];
         dibujarResultado(mascara, separacion, borradas);
 
         avisos.innerHTML = '';
@@ -538,15 +538,30 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    if (datos.piezas.length > 0) {
-        var cargadas = 0;
+        if (datos.piezas.length > 0) {
         var porCargar = datos.piezas.filter(function (pieza) { return pieza.imagen !== ''; });
-        piezas = [];
+        var faltanPorCargar = porCargar.length;
+        var recuperadas = [];
+        var fallidas = 0;
+        var terminarUna = function () {
+            faltanPorCargar--;
+            if (faltanPorCargar > 0) {
+                return;
+            }
+            piezas = recuperadas.filter(Boolean);
+            mostrarTarjetas();
+            if (fallidas > 0) {
+                errorPiezas.textContent = fallidas === 1
+                    ? 'Una pieza no se pudo recuperar. Vuelva a subir la foto para guardarla.'
+                    : fallidas + ' piezas no se pudieron recuperar. Vuelva a subir la foto para guardarlas.';
+                errorPiezas.hidden = false;
+            }
+        };
         porCargar.forEach(function (enviada, posicion) {
             var imagen = new Image();
             imagen.onload = function () {
                 var recorte = recorteDesdeImagen(imagen);
-                piezas[posicion] = {
+                recuperadas[posicion] = {
                     recorte: recorte,
                     recorteRelleno: null,
                     tieneHueco: false,
@@ -556,12 +571,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     componente: enviada.componente,
                     tamano: enviada.tamano,
                     avisos: enviada.avisos,
-                    indiceServidor: enviada.indice
+                                 indiceServidor: enviada.indice
                 };
-                cargadas++;
-                if (cargadas === porCargar.length) {
-                    mostrarTarjetas();
-                }
+                terminarUna();
+            };
+            imagen.onerror = function () {
+                fallidas++;
+                terminarUna();
             };
             imagen.src = enviada.imagen;
         });

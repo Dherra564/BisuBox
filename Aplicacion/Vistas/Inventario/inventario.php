@@ -11,6 +11,11 @@ use Aplicacion\Nucleo\UnidadMedida;
 $titulo = 'Inventario';
 $paginaActual = 'inventario';
 $scriptsExtra = ['inventario.js'];
+$botonesAccion = $hayComponentes ? [
+    ['texto' => 'Tipos de componente', 'ruta' => '/tipos-componente', 'secundario' => true],
+    ['texto' => 'Registrar compra', 'ruta' => '/compras-proveedor/nueva', 'secundario' => true],
+    ['texto' => '+ Agregar componente', 'ruta' => '/componentes/nuevo'],
+] : [];
 require __DIR__ . '/../Plantilla/encabezado.php';
 
 $tiposPorId = [];
@@ -76,7 +81,7 @@ $detalle = function ($componente) use ($tiposPorId): string {
             <span class="textoAyuda">Existencia × costo unitario</span>
         </a>
         <a href="<?= $enlace(['existencia' => EstadoExistencia::BAJO, 'estado' => null]) ?>"
-           class="tarjeta tarjetaResumen <?= $resumen['bajos'] > 0 ? 'tarjetaAdvertencia' : '' ?>
+           class="tarjeta tarjetaResumen <?= $resumen['bajos'] > 0 ? 'tarjetaAdvertencia tarjetaPorAcabarse' : '' ?>
            <?= $filtros['existencia'] === EstadoExistencia::BAJO ? 'tarjetaElegida' : '' ?>">
             <span class="tarjetaResumenTitulo">Por acabarse</span>
             <span class="tarjetaNumero"><?= $resumen['bajos'] ?></span>
@@ -91,6 +96,7 @@ $detalle = function ($componente) use ($tiposPorId): string {
         </a>
     </div>
 
+    <section class="panelCompras panelInventario">
     <form method="get" action="<?= $urlBase ?>/inventario" class="filtros filtrosInventario" id="filtrosInventario" data-filtros>
         <div class="campo">
             <label for="buscar">Buscar</label>
@@ -218,20 +224,20 @@ $detalle = function ($componente) use ($tiposPorId): string {
                             </td>
                             <td data-etiqueta="Tipo"><?= htmlspecialchars($componente->getNombreTipo()) ?></td>
                             <td data-etiqueta="Existencia" class="celdaExistencia">
-                                <span class="cantidadExistencia"><?= UnidadMedida::cantidad($componente->getExistencia(), $componente->getUnidad()) ?></span>
-                                <span class="etiqueta <?= EstadoExistencia::clase($estado) ?>"><?= EstadoExistencia::nombre($estado) ?></span>
+                                <span class="lineaExistencia">
+                                    <span class="cantidadExistencia"><?= UnidadMedida::cantidad($componente->getExistencia(), $componente->getUnidad()) ?></span>
+                                    <span class="etiqueta <?= EstadoExistencia::clase($estado) ?>"><?= EstadoExistencia::nombre($estado) ?></span>
+                                </span>
                                 <?php if ($componente->getExistenciaMinima() > 0): ?>
                                     <span class="textoAyuda">Mínimo: <?= Numero::formatear($componente->getExistenciaMinima()) ?></span>
                                 <?php endif; ?>
                             </td>
                             <td data-etiqueta="Costo unitario" class="numero"><?= Numero::moneda($componente->getCostoUnitario()) ?></td>
-                            <td class="acciones">
+                            <td class="acciones accionesInventario">
                                 <a href="<?= $urlBase ?>/inventario/movimientos?articulo=componente&amp;id=<?= $componente->getIdComponente() ?>#ajuste"
                                    class="boton botonPequeno">Ajustar</a>
-                                <a href="<?= $urlBase ?>/inventario/movimientos?articulo=componente&amp;id=<?= $componente->getIdComponente() ?>#historial"
-                                   class="boton botonSecundario botonPequeno">Historial</a>
                                 <a href="<?= $urlBase ?>/componentes/editar?id=<?= $componente->getIdComponente() ?>"
-                                   class="boton botonSecundario botonPequeno">Editar</a>
+                                   class="enlaceAccion">Editar</a>
                                 <form method="post" action="<?= $urlBase ?>/componentes/estado" class="formularioEnLinea"
                                       <?php if ($componente->getActivo()): ?>
                                           data-titulo="Desactivar componente" data-boton="Desactivar"
@@ -240,7 +246,7 @@ $detalle = function ($componente) use ($tiposPorId): string {
                                     <?= Csrf::campo() ?>
                                     <input type="hidden" name="id" value="<?= $componente->getIdComponente() ?>">
                                     <input type="hidden" name="activo" value="<?= $componente->getActivo() ? '0' : '1' ?>">
-                                    <button type="submit" class="boton botonSecundario botonPequeno <?= $componente->getActivo() ? 'botonPeligroSuave' : '' ?>"><?= $componente->getActivo() ? 'Desactivar' : 'Activar' ?></button>
+                                    <button type="submit" class="enlaceAccion <?= $componente->getActivo() ? 'enlaceAccionPeligro' : '' ?>"><?= $componente->getActivo() ? 'Desactivar' : 'Activar' ?></button>
                                 </form>
                             </td>
                         </tr>
@@ -249,12 +255,7 @@ $detalle = function ($componente) use ($tiposPorId): string {
             </table>
         </div>
     <?php endif; ?>
-
-    <div class="grupoBotones accionesLista">
-        <a href="<?= $urlBase ?>/tipos-componente" class="boton">Tipos de componente</a>
-        <a href="<?= $urlBase ?>/compras-proveedor/nueva" class="boton">Registrar compra</a>
-        <a href="<?= $urlBase ?>/componentes/nuevo" class="boton">Agregar componente</a>
-    </div>
+    </section>
 <?php endif; ?>
 
 <?php require __DIR__ . '/../Plantilla/pie.php'; ?>

@@ -69,7 +69,7 @@ class Enrutador
     private function normalizar(string $ruta): string
     {
         $ruta = '/' . trim($ruta, '/');
-        return $ruta === '' ? '/' : $ruta;
+        return $ruta;
     }
 
     private function ejecutar(array | Closure $accion, array $parametros = []): void

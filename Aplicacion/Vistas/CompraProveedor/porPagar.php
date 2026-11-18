@@ -7,6 +7,7 @@ use Aplicacion\Nucleo\PeriodoFechas;
 $titulo = 'Compras por pagar';
 $paginaActual = 'comprasPorPagar';
 $scriptsExtra = ['filtrosCompras.js'];
+$botonesAccion = $saldos !== [] ? [['texto' => '+ Registrar compra', 'ruta' => '/compras-proveedor/nueva']] : [];
 require __DIR__ . '/../Plantilla/encabezado.php';
 
 $parametros = array_filter(['proveedor' => $proveedor, 'vista' => $vencidas ? 'vencidas' : null]) + PeriodoFechas::parametros($periodo);
@@ -35,21 +36,20 @@ foreach ($proveedores as $opcion) {
         <p><a href="<?= $urlBase ?>/compras-proveedor/nueva" class="boton">Registrar compra</a></p>
     </div>
 <?php else: ?>
-    <p class="introPagina">Las compras que hizo a crédito y todavía no ha terminado de pagar. Las vencidas salen en rojo.
-    </p>
+    <p class="introPagina">Las compras que hizo a crédito y todavía no ha terminado de pagar.</p>
 
     <div class="resumenInventario resumenCompras">
-        <div class="tarjeta tarjetaResumen">
+        <div class="tarjeta tarjetaResumen tarjetaResumenDestacada">
             <span class="tarjetaResumenTitulo">Total por pagar</span>
             <span class="tarjetaNumero"><?= Numero::moneda($resumen['saldo']) ?></span>
             <span class="textoAyuda"><?= $resumen['compras'] === 1 ? '1 compra' : $resumen['compras'] . ' compras' ?></span>
         </div>
         <a href="<?= $enlace(['vista' => 'vencidas', 'pagina' => null]) ?>"
-            class="tarjeta tarjetaResumen <?= $resumen['vencido'] > 0 ? 'tarjetaError' : '' ?> <?= $vencidas ? 'tarjetaElegida' : '' ?>">
+            class="tarjeta tarjetaResumen <?= $resumen['vencido'] > 0 ? 'tarjetaError tarjetaVencido' : '' ?> <?= $vencidas ? 'tarjetaElegida' : '' ?>">
             <span class="tarjetaResumenTitulo">Vencido</span>
             <span class="tarjetaNumero"><?= Numero::moneda($resumen['vencido']) ?></span>
             <span
-                class="textoAyuda"><?= $resumen['vencidas'] === 0 ? 'Nada vencido' : ($resumen['vencidas'] === 1 ? '1 compra vencida' : $resumen['vencidas'] . ' compras vencidas') ?></span>
+                class="textoAyuda"><?= $resumen['vencidas'] === 0 ? 'Nada vencido' : ($resumen['vencidas'] === 1 ? '1 compra vencida · ver cuál' : $resumen['vencidas'] . ' compras vencidas · ver cuáles') ?></span>
         </a>
         <div class="tarjeta tarjetaResumen <?= $resumen['semana'] > 0 ? 'tarjetaAdvertencia' : '' ?>">
             <span class="tarjetaResumenTitulo">Vence esta semana</span>
@@ -58,51 +58,7 @@ foreach ($proveedores as $opcion) {
         </div>
     </div>
 
-    <?php if ($proveedor === null && $saldos !== []): ?>
-        <section class="panelCompras">
-            <h2>A quién le debe</h2>
-            <div class="tablaContenedor">
-                <table class="tabla tablaVentas">
-                    <thead>
-                        <tr>
-                            <th>Proveedor</th>
-                            <th class="numero">Compras</th>
-                            <th class="numero">Saldo</th>
-                            <th class="numero">Vencido</th>
-                            <th>Vencimiento</th>
-                            <th><span class="soloLectores">Acciones</span></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($saldos as $saldo): ?>
-                            <tr class="<?= $saldo['vencidas'] > 0 ? 'filaVencida' : '' ?>">
-                                <td data-etiqueta="Proveedor"><strong><?= htmlspecialchars($saldo['proveedor']) ?></strong></td>
-                                <td data-etiqueta="Compras" class="numero"><?= $saldo['compras'] ?></td>
-                                <td data-etiqueta="Saldo" class="numero"><strong><?= Numero::moneda($saldo['saldo']) ?></strong>
-                                </td>
-                                <td data-etiqueta="Vencido" class="numero">
-                                    <?= $saldo['vencido'] > 0 ? Numero::moneda($saldo['vencido']) : '—' ?></td>
-                                <td data-etiqueta="Vencimiento">
-                                    <?php if ($saldo['vencidas'] > 0): ?>
-                                        <span
-                                            class="etiqueta etiquetaVencida"><?= $saldo['vencidas'] === 1 ? '1 vencida' : $saldo['vencidas'] . ' vencidas' ?></span>
-                                    <?php elseif ($saldo['proximo'] !== null): ?>
-                                        <span class="textoAyuda">Próxima: <?= $saldo['proximo']->format('d/m/Y') ?></span>
-                                    <?php endif; ?>
-                                </td>
-                                <td data-etiqueta="" class="acciones">
-                                    <a href="<?= $enlace(['proveedor' => $saldo['idProveedor'], 'pagina' => null]) ?>"
-                                        class="boton botonSecundario botonPequeno">Ver sus compras</a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    <?php endif; ?>
-
-    <section class="panelCompras">
+    <section class="panelCompras panelVentas panelPorPagar">
         <nav class="pestanas" aria-label="Compras por pagar">
             <a href="<?= $enlace(['vista' => null, 'pagina' => null]) ?>"
                 class="pestana <?= !$vencidas ? 'pestanaActiva' : '' ?>" <?= !$vencidas ? 'aria-current="page"' : '' ?>>Por
@@ -214,11 +170,11 @@ foreach ($proveedores as $opcion) {
                                         <?php endif; ?>
                                     </span>
                                 </td>
-                                <td data-etiqueta="" class="acciones">
-                                    <a href="<?= $urlBase ?>/compras-proveedor/detalle?id=<?= $compra->getIdCompraProveedor() ?>"
-                                        class="boton botonSecundario botonPequeno">Ver compra</a>
+                                <td data-etiqueta="" class="acciones accionesVenta">
                                     <a href="<?= $urlBase ?>/compras-proveedor/detalle?id=<?= $compra->getIdCompraProveedor() ?>#monto"
                                         class="boton botonPequeno">Abonar</a>
+                                    <a href="<?= $urlBase ?>/compras-proveedor/detalle?id=<?= $compra->getIdCompraProveedor() ?>"
+                                        class="enlaceAccion">Ver</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

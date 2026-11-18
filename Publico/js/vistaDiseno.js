@@ -2,19 +2,28 @@ var DibujoDiseno = (function () {
 
     var LADO = 560;
     var imagenes = {};
+    var esperando = {};
 
     function cargarImagen(url, alCargar) {
-        if (imagenes[url]) {
-            if (imagenes[url].complete) {
-                return imagenes[url];
-            }
-            imagenes[url].addEventListener('load', alCargar);
-            return imagenes[url];
+        var imagen = imagenes[url];
+        if (!imagen) {
+            imagen = new Image();
+            imagenes[url] = imagen;
+            esperando[url] = [];
+            var avisar = function () {
+                var pendientes = esperando[url];
+                esperando[url] = [];
+                pendientes.forEach(function (funcion) {
+                    funcion();
+                });
+            };
+            imagen.addEventListener('load', avisar);
+            imagen.addEventListener('error', avisar);
+            imagen.src = url;
         }
-        var imagen = new Image();
-        imagen.addEventListener('load', alCargar);
-        imagen.src = url;
-        imagenes[url] = imagen;
+        if (!imagen.complete && alCargar && esperando[url].indexOf(alCargar) === -1) {
+            esperando[url].push(alCargar);
+        }
         return imagen;
     }
 
@@ -84,7 +93,7 @@ var DibujoDiseno = (function () {
 
         posiciones.forEach(function (posicion) {
             var pieza = diseno.catalogo[posicion.id];
-            var imagen = cargarImagen(pieza.foto, alTerminarCarga || function () {});
+            var imagen = cargarImagen(pieza.foto, alTerminarCarga);
             if (!imagen.complete || imagen.naturalWidth === 0) {
                 faltan++;
                 return;
@@ -117,5 +126,5 @@ var DibujoDiseno = (function () {
 
     document.addEventListener('DOMContentLoaded', dibujarGuardados);
 
-    return { dibujar: dibujar, LADO: LADO };
+    return { dibujar: dibujar };
 })();

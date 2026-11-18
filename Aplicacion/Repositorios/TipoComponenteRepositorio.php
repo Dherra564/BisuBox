@@ -46,14 +46,6 @@ class TipoComponenteRepositorio
         return $fila ? $this->crearDesdeFila($fila) : null;
     }
 
-    public function contarPorVendedor(int $idVendedor): int
-    {
-        $consulta = $this->conexion->prepare('SELECT COUNT(*) FROM tbtipocomponente WHERE tbtipocomponentevendedorid = ?');
-        $consulta->execute([$idVendedor]);
-
-        return (int) $consulta->fetchColumn();
-    }
-
     public function existeNombre(int $idVendedor, string $nombre, ?int $excluirIdTipoComponente = null): bool
     {
         $consulta = $this->conexion->prepare(

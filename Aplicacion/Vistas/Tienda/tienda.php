@@ -5,7 +5,6 @@ use Aplicacion\Nucleo\Csrf;
 use Aplicacion\Nucleo\Icono;
 use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\TipoContacto;
-use Aplicacion\Nucleo\UnidadMedida;
 use Aplicacion\Nucleo\WhatsApp;
 
 $titulo = (string) $tiendaVista->getTiendaNombre();
@@ -30,11 +29,13 @@ $iconosContacto = [
     <?php if (!$tiendaVista->getTiendaActiva()): ?>
         <div class="alerta alertaAdvertencia" role="status">
             <span class="alertaIcono" aria-hidden="true">⚠</span>
-            <p><strong>Atención:</strong> Su tienda está oculta y sus clientes no la pueden ver. Actívela en <a href="<?= $urlBase ?>/tienda">Mi tienda</a>.</p>
+            <p><strong>Atención:</strong> Su tienda está oculta y sus clientes no la pueden ver. Actívela en <a
+                    href="<?= $urlBase ?>/tienda">Mi tienda</a>.</p>
         </div>
     <?php endif; ?>
     <div class="resumenDuenio">
-            <a href="<?= $urlBase ?>/pedidos?estado=Confirmado" class="tarjetaResumen <?= $pedidosPorEntregar > 0 ? 'tarjetaResumenAviso' : '' ?>">
+        <a href="<?= $urlBase ?>/pedidos?estado=Confirmado"
+            class="tarjetaResumen <?= $pedidosPorEntregar > 0 ? 'tarjetaResumenAviso' : '' ?>">
             <span>Pedidos por entregar</span>
             <strong><?= (int) $pedidosPorEntregar ?></strong>
         </a>
@@ -47,7 +48,8 @@ $iconosContacto = [
             <span>Productos agotados</span>
             <strong><?= (int) $agotados ?></strong>
         </a>
-        <a href="<?= $urlBase ?>/inventario?existencia=bajo" class="tarjetaResumen <?= $porAcabarse !== [] ? 'tarjetaResumenAviso' : '' ?>">
+        <a href="<?= $urlBase ?>/inventario?existencia=bajo"
+            class="tarjetaResumen <?= $porAcabarse !== [] ? 'tarjetaResumenAviso' : '' ?>">
             <span>Componentes por acabarse</span>
             <strong><?= count($porAcabarse) ?></strong>
         </a>
@@ -57,28 +59,6 @@ $iconosContacto = [
             <strong><?= Numero::moneda($comprasPorPagar['vencidas'] > 0 ? $comprasPorPagar['vencido'] : $comprasPorPagar['saldo']) ?></strong>
         </a>
     </div>
-
-    <?php if ($porAcabarse !== []): ?>
-        <section class="avisoExistencia" aria-label="Componentes por debajo del mínimo">
-            <h2>Le queda poco de estos componentes</h2>
-            <ul>
-                <?php foreach (array_slice($porAcabarse, 0, 5, true) as $idComponente => $componente): ?>
-                    <li>
-                        <a href="<?= $urlBase ?>/inventario/movimientos?articulo=componente&amp;id=<?= $idComponente ?>#historial"><?= htmlspecialchars($componente['nombre']) ?></a>
-                        <span class="etiqueta <?= $componente['estado'] === 'agotado' ? 'etiquetaAgotado' : 'etiquetaBajo' ?>">
-                            <?= $componente['estado'] === 'agotado' ? 'Agotado' : 'Quedan ' . UnidadMedida::cantidad($componente['existencia'], $componente['unidad']) ?>
-                        </span>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-            <p>
-                <?php if (count($porAcabarse) > 5): ?>
-                    <a href="<?= $urlBase ?>/inventario?existencia=bajo">Ver los <?= count($porAcabarse) ?></a> ·
-                <?php endif; ?>
-                <a href="<?= $urlBase ?>/compras-proveedor/nueva">Registrar una compra</a>
-            </p>
-        </section>
-    <?php endif; ?>
 <?php endif; ?>
 
 <?php if ($busqueda === ''): ?>
@@ -100,11 +80,11 @@ $iconosContacto = [
                         <li>
                             <?php if ($enlaceWhatsApp !== null): ?>
                                 <a href="<?= htmlspecialchars($enlaceWhatsApp) ?>" target="_blank" rel="noopener">
-                                    <?= Icono::svg($iconosContacto[$tipo] ?? 'web') ?> <?= htmlspecialchars($texto) ?>
+                                    <?= Icono::svg($iconosContacto[$tipo] ?? 'web') ?>                 <?= htmlspecialchars($texto) ?>
                                 </a>
                             <?php else: ?>
                                 <span title="<?= htmlspecialchars(TipoContacto::nombre($tipo)) ?>">
-                                    <?= Icono::svg($iconosContacto[$tipo] ?? 'web') ?> <?= htmlspecialchars($texto) ?>
+                                    <?= Icono::svg($iconosContacto[$tipo] ?? 'web') ?>                 <?= htmlspecialchars($texto) ?>
                                 </span>
                             <?php endif; ?>
                         </li>
@@ -113,38 +93,49 @@ $iconosContacto = [
             <?php endif; ?>
         </div>
         <?php if ($urlLogo !== null): ?>
-            <img src="<?= htmlspecialchars($urlLogo) ?>" alt="Logo de <?= htmlspecialchars((string) $tiendaVista->getTiendaNombre()) ?>" class="tiendaPortadaLogo">
+            <img src="<?= htmlspecialchars($urlLogo) ?>"
+                alt="Logo de <?= htmlspecialchars((string) $tiendaVista->getTiendaNombre()) ?>" class="tiendaPortadaLogo">
         <?php endif; ?>
     </section>
 <?php endif; ?>
 
-<?php if ($busqueda === '' && $hayPersonalizador): ?>
-    <section class="tiendaPersonaliza">
-        <div>
-            <h2>Arme su propia pieza</h2>
-            <p>Escoja las piezas, véala armada al instante y pídala a su gusto.</p>
-        </div>
-        <a href="<?= $urlBase ?>/tienda/<?= htmlspecialchars((string) $tiendaVista->getTiendaEnlace()) ?>/arma-tu-pieza"
-            class="boton">Arme su pieza</a>
-    </section>
-<?php endif; ?>
+<?php if ($busqueda === '' && ($hayPersonalizador || !$esDuenio)): ?>
+    <div class="tiendaAtajos">
+    <?php endif; ?>
 
-<?php if ($busqueda === '' && !$esDuenio): ?>
-    <section class="tiendaPersonaliza">
-        <div>
-            <h2>¿Vio una pieza que le gustó?</h2>
-            <p>Suba su foto y la tienda le dice qué lleva y cuánto cuesta.</p>
-        </div>
-        <a href="<?= $urlBase ?>/tienda/<?= htmlspecialchars((string) $tiendaVista->getTiendaEnlace()) ?>/cotizar"
-            class="boton">Cotizar por foto</a>
-    </section>
+    <?php if ($busqueda === '' && $hayPersonalizador): ?>
+        <section class="tiendaPersonaliza">
+            <div>
+                <h2>Arme su propia pieza</h2>
+                <p>Escoja las piezas, véala armada al instante y pídala a su gusto.</p>
+            </div>
+            <a href="<?= $urlBase ?>/tienda/<?= htmlspecialchars((string) $tiendaVista->getTiendaEnlace()) ?>/arma-tu-pieza"
+                class="boton">Arme su pieza</a>
+        </section>
+    <?php endif; ?>
+
+    <?php if ($busqueda === '' && !$esDuenio): ?>
+        <section class="tiendaPersonaliza">
+            <div>
+                <h2>¿Vio una pieza que le gustó?</h2>
+                <p>Suba su foto y la tienda le dice qué lleva y cuánto cuesta.</p>
+            </div>
+            <a href="<?= $urlBase ?>/tienda/<?= htmlspecialchars((string) $tiendaVista->getTiendaEnlace()) ?>/cotizar"
+                class="boton">Cotizar por foto</a>
+        </section>
+    <?php endif; ?>
+
+    <?php if ($busqueda === '' && ($hayPersonalizador || !$esDuenio)): ?>
+    </div>
 <?php endif; ?>
 
 <section id="productos" class="tiendaSeccion">
     <div class="tiendaSeccionEncabezado">
-        <h2><?= $busqueda !== '' ? 'Resultados para «' . htmlspecialchars($busqueda) . '»' : ($idLinea !== null ? htmlspecialchars($lineas[$idLinea]->getNombre()) : 'Nuestros productos') ?></h2>
+        <h2><?= $busqueda !== '' ? 'Resultados para «' . htmlspecialchars($busqueda) . '»' : ($idLinea !== null ? htmlspecialchars($lineas[$idLinea]->getNombre()) : 'Nuestros productos') ?>
+        </h2>
         <?php if ($busqueda !== ''): ?>
-            <a href="<?= $urlBase ?>/tienda/<?= htmlspecialchars((string) $tiendaVista->getTiendaEnlace()) ?>#productos">Ver todos</a>
+            <a href="<?= $urlBase ?>/tienda/<?= htmlspecialchars((string) $tiendaVista->getTiendaEnlace()) ?>#productos">Ver
+                todos</a>
         <?php else: ?>
             <span class="textoAyuda"><?= count($productos) === 1 ? '1 producto' : count($productos) . ' productos' ?></span>
         <?php endif; ?>
@@ -165,7 +156,8 @@ $iconosContacto = [
 
     <?php if ($productos === []): ?>
         <div class="estadoVacio">
-            <p><?= $busqueda !== '' ? 'No encontramos productos con esa búsqueda.' : ($idLinea !== null ? 'No hay productos de esta línea por ahora.' : 'Esta tienda todavía no tiene productos.') ?></p>
+            <p><?= $busqueda !== '' ? 'No encontramos productos con esa búsqueda.' : ($idLinea !== null ? 'No hay productos de esta línea por ahora.' : 'Esta tienda todavía no tiene productos.') ?>
+            </p>
             <?php if ($esDuenio && $busqueda === ''): ?>
                 <p><a href="<?= $urlBase ?>/productos/nuevo" class="boton">Agregar mi primer producto</a></p>
             <?php endif; ?>
@@ -186,7 +178,8 @@ $iconosContacto = [
                 <article class="tarjetaProducto <?= $hay <= 0 ? 'tarjetaProductoAgotada' : '' ?>">
                     <div class="fotoTarjetaMarco">
                         <img src="<?= htmlspecialchars($urlFoto) ?>" alt="" class="fotoTarjetaProducto" loading="lazy">
-                        <?php if ($hay <= 0): ?><span class="sello">Agotado</span><?php elseif ($hay <= 2): ?><span class="sello selloPocos"><?= $hay === 1 ? 'Último' : 'Últimos ' . $hay ?></span><?php endif; ?>
+                        <?php if ($hay <= 0): ?><span class="sello">Agotado</span><?php elseif ($hay <= 2): ?><span
+                                class="sello selloPocos"><?= $hay === 1 ? 'Último' : 'Últimos ' . $hay ?></span><?php endif; ?>
                     </div>
                     <div class="tarjetaProductoTexto">
                         <h3><?= htmlspecialchars($producto->getNombre()) ?></h3>
@@ -223,7 +216,8 @@ $iconosContacto = [
                         <p class="textoAyuda tarjetaProductoPie">Ya tiene en el carrito todo lo disponible.</p>
                     <?php endif; ?>
                     <?php if (!$esDuenio): ?>
-                        <a href="<?= $urlBase ?>/personalizar?tienda=<?= (int) $tiendaVista->getIdVendedor() ?>&amp;producto=<?= $idProducto ?>" class="enlacePersonalizar">Personalizar</a>
+                        <a href="<?= $urlBase ?>/personalizar?tienda=<?= (int) $tiendaVista->getIdVendedor() ?>&amp;producto=<?= $idProducto ?>"
+                            class="enlacePersonalizar">Personalizar</a>
                     <?php endif; ?>
                 </article>
             <?php endforeach; ?>

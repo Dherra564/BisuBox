@@ -66,7 +66,7 @@ $pestanas = ['' => 'Todos'] + array_combine(EstadoPedido::todos(), ['Confirmados
                                     <span class="etiqueta <?= EstadoPedido::claseEtiqueta($pedido->getEstado()) ?>"><?= $pedido->getEstado() ?></span>
                                 </td>
                                 <td data-etiqueta="" class="acciones">
-                                    <a href="<?= $urlBase ?>/mis-pedidos/detalle?id=<?= $pedido->getIdPedido() ?>">Ver</a>
+                                    <a href="<?= $urlBase ?>/mis-pedidos/detalle?id=<?= $pedido->getIdPedido() ?>" class="boton botonPequeno">Ver</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

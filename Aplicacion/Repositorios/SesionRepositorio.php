@@ -36,24 +36,6 @@ class SesionRepositorio
         }
     }
 
-    public function registrarCierre(Sesion $sesion): void
-    {
-
-        if ($sesion->estaActiva()) {
-            $sesion->cerrar();
-        }
-
-        $sql = 'UPDATE tbsesion
-                SET tbsesionfechacierre = :cierre,
-                    tbsesionactivo = 0
-                WHERE tbsesionid = :id';
-
-        BaseDatos::obtenerConexion()->prepare($sql)->execute([
-            ':cierre' => $sesion->getFechaCierreSesion()->format('Y-m-d H:i:s'),
-            ':id' => $sesion->getIdSesion(),
-        ]);
-    }
-
     public function cerrarPorId(int $idSesion): void
     {
         $sql = 'UPDATE tbsesion

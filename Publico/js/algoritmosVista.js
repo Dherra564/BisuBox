@@ -6,6 +6,7 @@ var AlgoritmosVista = (function () {
     var PROPORCION_HUECO = 0.005;
     var PROPORCION_HUECO_GRANDE = 0.3;
     var ALFA_ORILLA = 170;
+    var TOLERANCIA_ESTRICTA = 10;
 
     function mediana(valores) {
         var ordenados = Float64Array.from(valores).sort();
@@ -75,8 +76,8 @@ var AlgoritmosVista = (function () {
         return total > 0 && claros / total >= 0.4;
     }
 
-    function buscarPiezasBorradas(imagen, tolerancia, separacion) {
-        var estricta = quitarFondo(imagen, 10, true);
+       function buscarPiezasBorradas(imagen, separacion) {
+        var estricta = quitarFondo(imagen, TOLERANCIA_ESTRICTA, true);
         var finas = separarPiezas(estricta).piezas;
         var limiteArea = imagen.ancho * imagen.alto * 0.25;
         return finas.filter(function (fina) {
@@ -598,7 +599,6 @@ var AlgoritmosVista = (function () {
     }
 
     return {
-        LADO_MAXIMO: LADO_MAXIMO,
         escalaParaLado: escalaParaLado,
         colorDeFondo: colorDeFondo,
         quitarFondo: quitarFondo,
@@ -619,7 +619,6 @@ var AlgoritmosVista = (function () {
         largoParaCerrar: largoParaCerrar,
         acomodarCirculo: acomodarCirculo,
         curvaCollar: curvaCollar,
-        puntoEnCurva: puntoEnCurva,
         acomodarCollar: acomodarCollar
     };
 })();

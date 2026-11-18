@@ -1,6 +1,7 @@
 <?php
 
 use Aplicacion\Nucleo\DatosVenta;
+use Aplicacion\Nucleo\Icono;
 use Aplicacion\Nucleo\Numero;
 use Aplicacion\Nucleo\PeriodoFechas;
 use Aplicacion\Nucleo\WhatsApp;
@@ -38,11 +39,11 @@ $pestanas = ['' => 'Todas', DatosVenta::ESTADO_POR_COBRAR => 'Por cobrar', Datos
             <span class="tarjetaNumero"><?= Numero::moneda($resumen['total']) ?></span>
             <span class="textoAyuda"><?= $resumen['ventas'] === 1 ? '1 venta' : $resumen['ventas'] . ' ventas' ?></span>
         </div>
-        <div class="tarjeta tarjetaResumen">
+        <div class="tarjeta tarjetaResumen tarjetaResumenDestacada">
             <span class="tarjetaResumenTitulo">Por cobrar</span>
             <span class="tarjetaNumero"><?= Numero::moneda($resumen['porCobrar']) ?></span>
             <span
-                class="textoAyuda"><?= $resumen['vencido'] > 0 ? Numero::moneda($resumen['vencido']) . ' ya vencido' : 'Lo que le deben los clientes' ?></span>
+                class="textoAyuda <?= $resumen['vencido'] > 0 ? 'textoVencido' : '' ?>"><?= $resumen['vencido'] > 0 ? Numero::moneda($resumen['vencido']) . ' ya vencido' : 'Lo que le deben los clientes' ?></span>
         </div>
         <div class="tarjeta tarjetaResumen">
             <span class="tarjetaResumenTitulo">Con piezas personalizadas</span>
@@ -51,7 +52,7 @@ $pestanas = ['' => 'Todas', DatosVenta::ESTADO_POR_COBRAR => 'Por cobrar', Datos
         </div>
     </div>
 
-    <section class="panelCompras">
+    <section class="panelCompras panelVentas">
         <nav class="pestanas" aria-label="Estado del pago">
             <?php foreach ($pestanas as $codigo => $nombre): ?>
                 <a href="<?= htmlspecialchars($enlace(['estado' => $codigo, 'pagina' => null])) ?>"
@@ -134,46 +135,7 @@ $pestanas = ['' => 'Todas', DatosVenta::ESTADO_POR_COBRAR => 'Por cobrar', Datos
             <?php endif; ?>
         </form>
 
-        <?php if ($estado === DatosVenta::ESTADO_POR_COBRAR && $idCliente === null && $saldos !== []): ?>
-            <h2>Quién le debe</h2>
-            <div class="tablaContenedor">
-                <table class="tabla tablaVentas">
-                    <thead>
-                        <tr>
-                            <th>Cliente</th>
-                            <th class="numero">Ventas</th>
-                            <th class="numero">Saldo</th>
-                            <th>Vencimiento</th>
-                            <th><span class="soloLectores">Acciones</span></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($saldos as $saldo): ?>
-                            <tr>
-                                <td data-etiqueta="Cliente">
-                                    <?= htmlspecialchars($saldo['cliente'] !== '' ? $saldo['cliente'] : 'Cliente') ?></td>
-                                <td data-etiqueta="Ventas" class="numero"><?= $saldo['ventas'] ?></td>
-                                <td data-etiqueta="Saldo" class="numero"><strong><?= Numero::moneda($saldo['saldo']) ?></strong>
-                                </td>
-                                <td data-etiqueta="Vencimiento">
-                                    <?php if ($saldo['vencidas'] > 0): ?>
-                                        <span
-                                            class="etiqueta etiquetaCancelado"><?= $saldo['vencidas'] === 1 ? '1 vencida' : $saldo['vencidas'] . ' vencidas' ?></span>
-                                    <?php elseif ($saldo['proximo'] !== null): ?>
-                                        <span class="textoAyuda">Próxima: <?= $saldo['proximo']->format('d/m/Y') ?></span>
-                                    <?php endif; ?>
-                                </td>
-                                <td data-etiqueta="" class="acciones">
-                                    <a href="<?= htmlspecialchars($enlace(['cliente' => $saldo['idCliente'], 'pagina' => null])) ?>"
-                                        class="boton botonSecundario botonPequeno">Ver sus ventas</a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-            <h2>Ventas por cobrar</h2>
-        <?php endif; ?>
+        <h2 class="tituloVentas">Ventas</h2>
 
         <?php if ($ventas === []): ?>
             <p class="sinResultados">No hay ventas con esos filtros.</p>
@@ -214,18 +176,18 @@ $pestanas = ['' => 'Todas', DatosVenta::ESTADO_POR_COBRAR => 'Por cobrar', Datos
                                         <?php endif; ?>
                                     </span>
                                 </td>
-                                <td data-etiqueta="" class="acciones">
-                                    <a href="<?= $urlBase ?>/ventas/detalle?id=<?= $venta['id'] ?>"
-                                        class="boton botonSecundario botonPequeno">Ver venta</a>
+                                <td data-etiqueta="" class="acciones accionesVenta">
                                     <?php if ($venta['estadoPago'] === DatosVenta::ESTADO_POR_COBRAR): ?>
                                         <a href="<?= $urlBase ?>/ventas/detalle?id=<?= $venta['id'] ?>#monto"
                                             class="boton botonPequeno">Abonar</a>
                                         <?php $recordar = WhatsApp::enlace($venta['telefono'], DatosVenta::recordatorio($venta, $tienda)); ?>
                                         <?php if ($recordar !== null): ?>
-                                            <a href="<?= htmlspecialchars($recordar) ?>" class="boton botonSecundario botonPequeno"
-                                                target="_blank" rel="noopener">WhatsApp</a>
+                                            <a href="<?= htmlspecialchars($recordar) ?>" class="botonIconoWhatsApp"
+                                                target="_blank" rel="noopener" aria-label="Recordarle por WhatsApp"
+                                                title="Recordarle por WhatsApp"><?= Icono::svg('whatsapp') ?></a>
                                         <?php endif; ?>
                                     <?php endif; ?>
+                                    <a href="<?= $urlBase ?>/ventas/detalle?id=<?= $venta['id'] ?>" class="<?= $venta['estadoPago'] === DatosVenta::ESTADO_POR_COBRAR ? 'enlaceAccion' : 'boton botonPequeno' ?>">Ver</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

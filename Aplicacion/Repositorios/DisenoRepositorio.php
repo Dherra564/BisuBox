@@ -115,21 +115,6 @@ class DisenoRepositorio
         return $disenos;
     }
 
-    public function requerimientos(array $disenos): array
-    {
-        $componentes = [];
-        $hilo = [];
-        foreach ($disenos as $diseno) {
-            foreach ($diseno['conteo'] as $idComponente => $cantidad) {
-                $componentes[$idComponente] = ($componentes[$idComponente] ?? 0) + $cantidad;
-            }
-            if ($diseno['idHilo'] !== null) {
-                $hilo[$diseno['idHilo']] = ($hilo[$diseno['idHilo']] ?? 0) + $diseno['largo'] / 1000;
-            }
-        }
-        return ['componentes' => $componentes, 'hilos' => $hilo];
-    }
-
     public function quitar(int $idCliente, int $idDiseno): bool
     {
         $consulta = $this->conexion->prepare(

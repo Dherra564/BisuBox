@@ -12,13 +12,11 @@ use Throwable;
 class VendedorRepositorio
 {
     private PDO $conexion;
-    private UsuarioRepositorio $usuarioRepositorio;
     private VendedorContactoRepositorio $contactoRepositorio;
 
     public function __construct()
     {
         $this->conexion = BaseDatos::obtenerConexion();
-        $this->usuarioRepositorio = new UsuarioRepositorio();
         $this->contactoRepositorio = new VendedorContactoRepositorio();
     }
 
@@ -69,46 +67,6 @@ class VendedorRepositorio
         $consulta->execute([self::normalizarEnlace($enlace), $excluirIdVendedor ?? 0]);
 
         return (int) $consulta->fetchColumn() > 0;
-    }
-
-    public function insertar(Vendedor $vendedor): int
-    {
-        $transaccionPropia = BaseDatos::iniciarTransaccion();
-
-        try {
-            $idUsuario = $this->usuarioRepositorio->insertar($vendedor);
-            $idVendedor = BaseDatos::generarId('tbvendedor', 'tbvendedorid');
-
-            $consulta = $this->conexion->prepare(
-                'INSERT INTO tbvendedor (tbvendedorid, tbvendedorusuarioid, tbvendedortiendanombre, tbvendedortiendaenlace,
-                    tbvendedortiendadescripcion, tbvendedortiendalogo, tbvendedoractivo)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)'
-            );
-            $consulta->execute([
-                $idVendedor,
-                $idUsuario,
-                UsuarioRepositorio::limpiarEspacios((string) $vendedor->getTiendaNombre()),
-                self::normalizarEnlace((string) $vendedor->getTiendaEnlace()),
-                self::descripcionOVacio($vendedor->getTiendaDescripcion()),
-                $vendedor->getTiendaLogo(),
-                $vendedor->getTiendaActiva() ? 1 : 0,
-            ]);
-
-            $this->contactoRepositorio->reemplazar($idVendedor, $vendedor->getContactos());
-
-            if ($transaccionPropia) {
-                BaseDatos::confirmarTransaccion();
-            }
-        } catch (Throwable $error) {
-            if ($transaccionPropia) {
-                BaseDatos::revertirTransaccion();
-            }
-            throw $error;
-        }
-
-        $vendedor->setIdVendedor($idVendedor);
-
-        return $idVendedor;
     }
 
     public function abrirTienda(Vendedor $vendedor): int

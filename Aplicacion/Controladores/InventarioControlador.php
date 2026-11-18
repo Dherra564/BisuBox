@@ -123,6 +123,10 @@ class InventarioControlador
                     'soloEnteros' => true,
                     'activo' => $producto->getActivo(),
                     'detalle' => '/productos/detalle?id=' . $idArticulo,
+                    'foto' => $producto->getFoto() !== null ? '/fotos/producto?archivo=' . urlencode($producto->getFoto()) : null,
+                    'grupo' => null,
+                    'estado' => null,
+                    'minimo' => 0.0,
                 ];
             }
         } elseif ($articulo === MovimientoInventario::COMPONENTE && $idArticulo > 0) {
@@ -137,6 +141,10 @@ class InventarioControlador
                     'soloEnteros' => $componente->getUnidad() === UnidadMedida::UNIDAD,
                     'activo' => $componente->getActivo(),
                     'detalle' => '/componentes/editar?id=' . $idArticulo,
+                    'foto' => $componente->getFoto() !== null ? '/fotos/componente?archivo=' . urlencode($componente->getFoto()) : null,
+                    'grupo' => $componente->getNombreTipo(),
+                    'estado' => $componente->getEstadoExistencia(),
+                    'minimo' => $componente->getExistenciaMinima(),
                 ];
             }
         }

@@ -33,66 +33,69 @@ $rutaCancelar = $esNuevo ? '/proveedores' : '/proveedores/detalle?id=' . (int) $
         <input type="hidden" name="id" value="<?php echo (int) $proveedor->getIdProveedor() ?>">
     <?php endif; ?>
 
-    <section class="formularioSeccion">
-        <h2>Datos del proveedor</h2>
+    <div class="disenoFormProveedor">
+        <section class="formularioSeccion">
+            <h2>Datos del proveedor</h2>
 
-        <div class="<?php echo $claseCampo('nombre') ?>">
-            <label for="nombre">Nombre de la empresa <span class="obligatorio">*</span></label>
-            <input type="text" id="nombre" name="nombre" minlength="3" maxlength="50" required
-                data-regla="nombreComercial" data-contador data-mensaje-requerido="Ingrese el nombre del proveedor"
-                data-mensaje-largo="El nombre debe tener entre 3 y 50 caracteres"
-                value="<?php echo $valor('nombre') ?>">
-            <p class="textoAyuda">Por ejemplo Perlas del Valle S.A.</p>
-            <?php echo $mensajeError('nombre') ?>
-        </div>
-    </section>
-
-    <section class="formularioSeccion">
-        <h2>Contacto</h2>
-
-        <div class="filaCampos">
-            <div class="<?php echo $claseCampo('telefono') ?>">
-                <label for="telefono">Teléfono o celular <span class="obligatorio">*</span></label>
-                <input type="tel" id="telefono" name="telefono" maxlength="15" required inputmode="tel"
-                    data-regla="telefono" data-mensaje-requerido="Ingrese el teléfono" data-mascara-telefono
-                    value="<?php echo $valor('telefono') ?>">
-                <p class="textoAyuda">8 dígitos, por ejemplo 8845-1290</p>
-                <?php echo $mensajeError('telefono') ?>
+            <div class="<?php echo $claseCampo('nombre') ?>">
+                <label for="nombre">Nombre de la empresa <span class="obligatorio">*</span></label>
+                <input type="text" id="nombre" name="nombre" minlength="3" maxlength="50" required
+                    data-regla="nombreComercial" data-contador data-mensaje-requerido="Ingrese el nombre del proveedor"
+                    data-mensaje-largo="El nombre debe tener entre 3 y 50 caracteres"
+                    value="<?php echo $valor('nombre') ?>">
+                <p class="textoAyuda">Por ejemplo Perlas del Valle S.A.</p>
+                <?php echo $mensajeError('nombre') ?>
             </div>
-            <div class="<?php echo $claseCampo('correo') ?>">
-                <label for="correo">Correo <span class="obligatorio">*</span></label>
-                <input type="email" id="correo" name="correo" maxlength="150" required autocomplete="off"
-                    data-regla="correo" data-mensaje-requerido="Ingrese el correo"
-                    value="<?php echo $valor('correo') ?>">
-                <p class="textoAyuda">Por ejemplo ventas@proveedor.com</p>
-                <?php echo $mensajeError('correo') ?>
-            </div>
-        </div>
-    </section>
 
-    <section class="formularioSeccion">
-        <h2>Líneas que vende</h2>
-        <?php $lineasVisibles = array_filter($lineas, fn($linea): bool => $linea->getActivo() || in_array($linea->getIdLinea(), $datos['lineas'], true)); ?>
-        <?php if ($lineasVisibles === []): ?>
-            <p class="textoAyuda">Todavía no tiene líneas de producto. <a href="<?php echo $urlBase ?>/lineas/nueva">Cree una</a>, por ejemplo Perlas o Cadenas, para saber qué le compra a cada proveedor.</p>
-        <?php else: ?>
-            <div class="<?php echo isset($errores['lineas']) ? 'campo campoConError' : 'campo' ?>">
-                <div class="listaCasillasLinea">
-                    <?php foreach ($lineasVisibles as $linea): ?>
-                        <div class="campoCasilla">
-                            <input type="checkbox" id="linea-<?php echo $linea->getIdLinea() ?>" name="lineas[]" value="<?php echo $linea->getIdLinea() ?>"
-                                <?php echo in_array($linea->getIdLinea(), $datos['lineas'], true) ? 'checked' : '' ?>>
-                            <label for="linea-<?php echo $linea->getIdLinea() ?>"><?php echo htmlspecialchars($linea->getNombre()) ?><?php echo $linea->getActivo() ? '' : ' (desactivada)' ?></label>
-                        </div>
-                    <?php endforeach; ?>
+            <div class="filaCampos">
+                <div class="<?php echo $claseCampo('telefono') ?>">
+                    <label for="telefono">Teléfono o celular <span class="obligatorio">*</span></label>
+                    <input type="tel" id="telefono" name="telefono" maxlength="15" required inputmode="tel"
+                        data-regla="telefono" data-mensaje-requerido="Ingrese el teléfono" data-mascara-telefono
+                        value="<?php echo $valor('telefono') ?>">
+                    <p class="textoAyuda">8 dígitos, por ejemplo 8845-1290</p>
+                    <?php echo $mensajeError('telefono') ?>
                 </div>
-                <p class="textoAyuda">Opcional. Al registrar una compra de esa línea, este proveedor sale de primero.</p>
-                <?php echo $mensajeError('lineas') ?>
+                <div class="<?php echo $claseCampo('correo') ?>">
+                    <label for="correo">Correo <span class="obligatorio">*</span></label>
+                    <input type="email" id="correo" name="correo" maxlength="150" required autocomplete="off"
+                        data-regla="correo" data-mensaje-requerido="Ingrese el correo"
+                        value="<?php echo $valor('correo') ?>">
+                    <p class="textoAyuda">Por ejemplo ventas@proveedor.com</p>
+                    <?php echo $mensajeError('correo') ?>
+                </div>
             </div>
-        <?php endif; ?>
-    </section>
+        </section>
 
-    <div class="grupoBotones accionesFormulario">
+        <section class="formularioSeccion">
+            <h2>Líneas que vende</h2>
+            <?php $lineasVisibles = array_filter($lineas, fn($linea): bool => $linea->getActivo() || in_array($linea->getIdLinea(), $datos['lineas'], true)); ?>
+            <?php if ($lineasVisibles === []): ?>
+                <p class="textoAyuda">Todavía no tiene líneas de producto. <a
+                        href="<?php echo $urlBase ?>/lineas/nueva">Cree una</a>, por ejemplo Perlas o Cadenas, para saber
+                    qué le compra a cada proveedor.</p>
+            <?php else: ?>
+                <div class="<?php echo isset($errores['lineas']) ? 'campo campoConError' : 'campo' ?>">
+                    <div class="listaCasillasLinea">
+                        <?php foreach ($lineasVisibles as $linea): ?>
+                            <div class="campoCasilla">
+                                <input type="checkbox" id="linea-<?php echo $linea->getIdLinea() ?>" name="lineas[]"
+                                    value="<?php echo $linea->getIdLinea() ?>" <?php echo in_array($linea->getIdLinea(), $datos['lineas'], true) ? 'checked' : '' ?>>
+                                <label
+                                    for="linea-<?php echo $linea->getIdLinea() ?>"><?php echo htmlspecialchars($linea->getNombre()) ?><?php echo $linea->getActivo() ? '' : ' (desactivada)' ?></label>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <p class="textoAyuda">Opcional. Al registrar una compra de esa línea, este proveedor sale de primero.
+                    </p>
+                    <?php echo $mensajeError('lineas') ?>
+                </div>
+            <?php endif; ?>
+        </section>
+
+    </div>
+
+    <div class="grupoBotones accionesFormulario accionesComponente">
         <a href="<?php echo $urlBase . $rutaCancelar ?>" class="boton botonSecundario">Cancelar</a>
         <button type="submit" class="boton"><?php echo $esNuevo ? 'Registrar proveedor' : 'Guardar cambios' ?></button>
     </div>

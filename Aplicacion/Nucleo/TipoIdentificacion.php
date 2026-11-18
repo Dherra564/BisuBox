@@ -58,11 +58,6 @@ class TipoIdentificacion
         return $tipo !== null && isset(self::TIPOS[$tipo]);
     }
 
-    public static function nombre(?string $tipo): string
-    {
-        return $tipo !== null && isset(self::TIPOS[$tipo]) ? self::TIPOS[$tipo]['nombre'] : 'Sin tipo';
-    }
-
     public static function mensaje(string $tipo): string
     {
         return self::TIPOS[$tipo]['mensaje'];

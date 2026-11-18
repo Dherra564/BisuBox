@@ -2,8 +2,6 @@
 
 namespace Aplicacion\Modelos;
 
-use Aplicacion\Modelos\ProductoComponente;
-use Aplicacion\Modelos\ProductoExtra;
 use DateTime;
 
 class Producto

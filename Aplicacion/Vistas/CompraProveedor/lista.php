@@ -8,6 +8,10 @@ $titulo = 'Compras a proveedores';
 $paginaActual = 'proveedores';
 $volverA = ['texto' => 'Proveedores', 'ruta' => '/proveedores'];
 $scriptsExtra = ['filtrosCompras.js'];
+$botonesAccion = $hayCompras ? [
+    ['texto' => 'Compras por pagar', 'ruta' => '/compras-por-pagar', 'secundario' => true],
+    ['texto' => '+ Registrar compra', 'ruta' => '/compras-proveedor/nueva' . ($proveedor !== null ? '?proveedor=' . $proveedor : '')],
+] : [];
 require __DIR__ . '/../Plantilla/encabezado.php';
 
 $parametros = array_filter(['proveedor' => $proveedor, 'estado' => $estado !== 'todas' ? $estado : null])
@@ -58,7 +62,7 @@ $esRango = $periodo['periodo'] === PeriodoFechas::RANGO;
             <span class="textoAyuda">Suma de los costos de envío</span>
         </div>
         <a href="<?= $urlBase ?>/compras-por-pagar"
-            class="tarjeta tarjetaResumen <?= $resumen['saldo'] > 0 ? 'tarjetaAdvertencia' : '' ?>">
+            class="tarjeta tarjetaResumen <?= $resumen['saldo'] > 0 ? 'tarjetaAdvertencia tarjetaPorAcabarse' : '' ?>">
             <span class="tarjetaResumenTitulo">Por pagar</span>
             <span class="tarjetaNumero">
                 <?= Numero::moneda($resumen['saldo']) ?>
@@ -69,7 +73,7 @@ $esRango = $periodo['periodo'] === PeriodoFechas::RANGO;
         </a>
     </div>
 
-    <section class="panelCompras">
+    <section class="panelCompras panelVentas">
         <nav class="pestanas" aria-label="Estado de las compras">
             <?php foreach ($estados as $codigo => $nombre): ?>
                 <a href="<?= $enlace(['estado' => $codigo === 'todas' ? null : $codigo, 'pagina' => null]) ?>"
@@ -194,9 +198,9 @@ $esRango = $periodo['periodo'] === PeriodoFechas::RANGO;
                                         </span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="acciones">
+                                <td data-etiqueta="" class="acciones">
                                     <a href="<?= $urlBase ?>/compras-proveedor/detalle?id=<?= $compra->getIdCompraProveedor() ?>"
-                                        class="boton botonSecundario botonPequeno">Ver</a>
+                                        class="boton botonPequeno">Ver</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -215,11 +219,6 @@ $esRango = $periodo['periodo'] === PeriodoFechas::RANGO;
     ?>
     <?php endif; ?>
 
-    <div class="grupoBotones accionesLista">
-        <a href="<?= $urlBase ?>/compras-por-pagar" class="boton botonSecundario">Compras por pagar</a>
-        <a href="<?= $urlBase ?>/compras-proveedor/nueva<?= $proveedor !== null ? '?proveedor=' . $proveedor : '' ?>"
-            class="boton">Registrar compra</a>
-    </div>
 <?php endif; ?>
 
 <?php require __DIR__ . '/../Plantilla/pie.php'; ?>

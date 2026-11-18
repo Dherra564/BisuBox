@@ -56,10 +56,12 @@ $pestanas = ['' => 'Todas'] + array_combine(
                                     <?= $cotizacion['precio'] !== null ? '<strong>' . Numero::moneda($cotizacion['precio']) . '</strong>' : '<span class="textoAyuda">Sin responder</span>' ?>
                                 </td>
                                 <td data-etiqueta="Estado">
-                                    <span class="etiqueta <?= EstadoCotizacion::claseEtiqueta($cotizacion['estado']) ?>"><?= $cotizacion['estado'] ?></span>
+                                    <span
+                                        class="etiqueta <?= EstadoCotizacion::claseEtiqueta($cotizacion['estado']) ?>"><?= $cotizacion['estado'] ?></span>
                                 </td>
                                 <td data-etiqueta="" class="acciones">
-                                    <a href="<?= $urlBase ?>/mis-cotizaciones/detalle?id=<?= $cotizacion['id'] ?>">Ver</a>
+                                    <a href="<?= $urlBase ?>/mis-cotizaciones/detalle?id=<?= $cotizacion['id'] ?>"
+                                        class="boton botonPequeno">Ver</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

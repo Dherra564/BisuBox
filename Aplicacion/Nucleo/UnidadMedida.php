@@ -33,11 +33,6 @@ class UnidadMedida
         return $unidad !== null && isset(self::UNIDADES[$unidad]);
     }
 
-    public static function nombre(?string $unidad): string
-    {
-        return self::existe($unidad) ? self::UNIDADES[$unidad]['nombre'] : 'Sin unidad';
-    }
-
     public static function etiquetaCosto(?string $unidad): string
     {
         return self::existe($unidad) ? self::UNIDADES[$unidad]['costo'] : 'Costo de cada uno';

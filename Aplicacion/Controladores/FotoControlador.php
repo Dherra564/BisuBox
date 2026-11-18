@@ -119,7 +119,7 @@ class FotoControlador
         readfile($ruta);
     }
 
-        public function mostrarCotizacion(): void
+    public function mostrarCotizacion(): void
     {
         Permiso::exigirSesion();
 
